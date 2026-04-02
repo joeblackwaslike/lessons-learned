@@ -25,7 +25,7 @@ flowchart LR
     aggregate --> promote["scan promote N"]
     promote --> lessons[lessons.json]
     lessons --> build[build]
-    build --> manifest[lesson-manifest.json]
+    build --> manifest[lesson-cache.json]
 
     class scan,aggregate,build normal
     class candidates,manifest fragmented
@@ -61,23 +61,17 @@ flowchart LR
 
 ## 4. Architecture Overview
 
-Two components with a clean handoff:
+The slash command is the entire interface — Claude's conversation context replaces a terminal TUI. No separate process, no stdin handoff, no terminal UI library required.
 
 ```text
-/lessons:review (slash command — runs in Claude's context)
+/lessons:review (slash command — entirely within Claude's context)
   Phase 1: Scan          → node scripts/lessons.mjs scan
   Phase 2: Aggregate     → node scripts/lessons.mjs scan aggregate
   Phase 3: LLM review    → Claude reads candidates, filters, generates fields
-  Phase 4: Write session → data/review-sessions/<ulid>.json
-  Phase 5: Hand off      → node scripts/lessons.mjs review --session <file>
-
-lessons.mjs review subcommand (Node.js TUI — runs in terminal)
-  Reads session JSON
-  Renders Ink TUI: checkbox list + split-pane field editor
-  User confirms
-  Writes status transitions to SQLite DB
-  Rebuilds hook manifest
-  Prints report
+  Phase 4: Present       → Claude displays numbered candidate list in conversation
+  Phase 5: User responds → natural language ("approve 1 3, edit 2 summary to X, skip 4")
+  Phase 6: Claude acts   → runs node scripts/lessons.mjs promote --ids ... to write DB
+  Phase 7: Report        → Claude summarises what was promoted/archived/skipped
 ```
 
 ---
@@ -199,7 +193,7 @@ stateDiagram-v2
     candidate --> archived: LLM marks as noise
 
     active --> archived: future - manual deprecation
-    archived --> candidate: future - /lessons:restore
+    archived --> candidate: future - lessons restore command
 
     note right of candidate
         Fields may be sparse.
@@ -216,7 +210,7 @@ stateDiagram-v2
         archivedAt recorded.
         Retained forever in DB.
         Hidden unless --show-archived.
-        Restorable via /lessons:restore.
+        Restorable via lessons restore command.
     end note
 ```
 
@@ -241,7 +235,7 @@ Key transitions:
 3. Verify counts match source files
 4. Rename originals to `.bak`
 
-### 5.7 lesson-manifest.json — kept as generated cache
+### 5.7 lesson-cache.json — kept as generated cache
 
 With SQLite, hook scripts _could_ query the DB directly. However, hooks run on every Claude tool call and must be fast. The manifest is a pre-compiled cache: regexes already compiled, records filtered to `status: "active"`, injection budget config embedded. It is **regenerated** by `lessons.mjs build` whenever active records change.
 
@@ -325,13 +319,15 @@ sequenceDiagram
     Claude->>Claude: run noise filter
     Claude->>Claude: generate fields for keepers
 
-    Claude->>CLI: review --session data/review-sessions/ulid.json
-    Note over CLI,User: TUI takes over terminal
+    Claude-->>User: numbered candidate list in conversation
 
-    User->>CLI: navigate, select, edit fields, confirm
+    User->>Claude: natural language response
+    Note over User,Claude: e.g. "approve 1 3, edit 2 summary to X, skip 4"
+
+    Claude->>CLI: promote --ids ... (with edited fields as JSON)
     CLI->>DB: write status transitions (WAL)
-    CLI->>CLI: rebuild lesson-manifest.json
-    CLI-->>User: promotion report
+    CLI->>CLI: rebuild lesson-cache.json
+    Claude-->>User: promotion report
 ```
 
 ### 8.2 LLM noise filter logic
@@ -405,164 +401,121 @@ Written to `data/review-sessions/<ulid>.json`. Session IDs are ULIDs — lexicog
 
 ---
 
-## 9. Phase 4 — Interactive TUI (`scripts/review/ui.mjs`)
+## 9. Phase 4 — Conversational Review
 
-Uses **`ink`** — the React-for-terminals library that powers Claude Code's own UI. End-users receive a pre-built bundle (see §11) — no `npm install` required.
+The slash command presents candidates directly in the Claude conversation. No terminal TUI, no stdin, no external process. The LLM context is the interface.
 
-### 9.1 List view
+### 9.1 Candidate presentation format
+
+Claude presents reviewed candidates as a numbered list after the LLM review pass:
 
 ```text
-╔═════════════════════════════════════════════════════════════════╗
-║  lessons:review — 5 candidates ready                            ║
-║  ↑↓ navigate · space select · → view/edit · a all · ? help     ║
-╠═════════════════════════════════════════════════════════════════╣
-║                                                                 ║
-║  ◉  git stash silently drops untracked files                    ║
-║     tool:git  severity:data-loss  priority:7  conf:0.85        ║
-║                                                                 ║
-║▶ ◉  ts-node requires --esm for ESM module resolution            ║
-║     lang:ts  priority:5  conf:0.72                             ║
-║                                                                 ║
-║  ◉  npm ci fails when lockfile is out of sync                   ║
-║     tool:npm  topic:deps  priority:6  conf:0.80                ║
-║                                                                 ║
-║  ○  jsx file must use .tsx extension  [expand: ts-jsx-lesson]   ║
-║     lang:ts  priority:5  conf:0.68                             ║
-║                                                                 ║
-║  ── archived by LLM review ──────────────────────────────────── ║
-║  ↓  [situational] git restore conflict                          ║
-║  ↓  [near-duplicate] biome config schema                        ║
-║                                                                 ║
-╠═════════════════════════════════════════════════════════════════╣
-║  3 selected · Enter promote selected · Esc cancel              ║
-╚═════════════════════════════════════════════════════════════════╝
+Found 5 candidates. Archived 2 as noise. 3 ready for review:
+
+1. git stash silently drops untracked files
+   tool:git · severity:data-loss · priority:7 · conf:0.85
+   Mistake:     git stash only stashes tracked files — untracked files silently left behind
+   Remediation: Use git stash -u (--include-untracked)
+   Trigger:     \bgit\s+stash\b(?!.*-u|--include-untracked)
+
+2. ts-node requires --esm for ESM module resolution
+   lang:ts · priority:5 · conf:0.72
+   Mistake:     Running ts-node on an ESM project without --esm causes ERR_REQUIRE_ESM
+   Remediation: Add --esm flag: ts-node --esm src/index.ts
+   Trigger:     \bts-node\b(?!.*--esm)
+
+3. jsx file must use .tsx extension  [expands: typescript-file-using-jsx]
+   lang:ts · priority:5 · conf:0.68
+   Mistake:     TypeScript files using JSX must have .tsx extension not .ts
+   Remediation: Rename .ts → .tsx for any file containing JSX
+   Trigger:     (none — SessionStart injection)
+
+Archived by LLM:
+  • [duplicate]    biome config schema — near-match of existing lesson
+  • [situational]  git restore conflict — specific to bisect task, not generalizable
+
+Reply with your decisions, e.g.:
+  approve 1 2       — promote as-is
+  skip 3            — leave as candidate for next session
+  edit 2 summary "ts-node needs --esm for ESM projects"
+  archive 1 "already know this"
+  approve all
 ```
 
-**Keyboard:**
+### 9.2 User response grammar
 
-- `↑` / `↓` — navigate rows
-- `Space` — toggle selected / unselected
-- `→` — open split-pane detail (editable for candidates; view-only with restore option for archived)
-- `a` — select all promote-eligible rows
-- `Enter` — confirm and promote selected rows
-- `Esc` — cancel (no changes written)
-- `?` — toggle help overlay
+Claude accepts flexible natural language. Recognised patterns:
 
-**Archived section:** Collapsed at bottom. Pressing `→` opens the row read-only with the LLM's archive reason visible, plus an **[Unarchive]** action that returns it to `status: "reviewed"`.
+| Intent                         | Example                                                |
+| ------------------------------ | ------------------------------------------------------ |
+| Approve one or more            | `approve 1 3`, `approve all`                           |
+| Skip (keep as candidate)       | `skip 2`, `skip all`                                   |
+| Archive with reason            | `archive 3 "too niche"`                                |
+| Edit a field then approve      | `edit 1 summary "X" then approve`, `edit 2 priority 8` |
+| Unarchive an LLM-archived item | `unarchive biome-config`                               |
+| Ask to see full details        | `show 2`                                               |
 
-**Session semantics:** Only rows the user explicitly interacts with are written to the DB. Untouched rows remain as `candidate` and reappear in the next session. Nothing is auto-archived by inaction.
-
-### 9.2 Field editor — split-pane (opens on `→`)
+After parsing the response, Claude confirms its interpretation before writing to the DB:
 
 ```text
-╔══════════════════════════════╦══════════════════════════════════╗
-║  ◉ ts-node / ESM module      ║  ┌ summary ──────────────────┐  ║
-║  ◉ git stash untracked       ║  │ ts-node requires --esm    │  ║
-║  ◉ npm ci lockfile           ║  │ for ESM module resolution  │  ║
-║▶ ◉ [editing]                 ║  └────────────────────────────┘  ║
-║  ○  jsx → .tsx (expand)      ║                                  ║
-║                              ║  ┌ mistake ───────────────────┐  ║
-║  ── archived ──              ║  │ Running ts-node on ESM     │  ║
-║  ↓ situational               ║  │ without --esm causes       │  ║
-║  ↓ near-duplicate            ║  │ ERR_REQUIRE_ESM.           │  ║
-║                              ║  └────────────────────────────┘  ║
-║                              ║                                  ║
-║                              ║  ┌ remediation ───────────────┐  ║
-║                              ║  │ Add --esm flag:            │  ║
-║                              ║  │   ts-node --esm src/...    │  ║
-║                              ║  └────────────────────────────┘  ║
-║                              ║                                  ║
-║                              ║  ┌ tags ──────┐  ┌ priority ─┐  ║
-║                              ║  │ lang:ts    │  │ 5         │  ║
-║                              ║  └────────────┘  └───────────┘  ║
-║                              ║                                  ║
-║                              ║  ┌ injectOn ──────────────────┐  ║
-║                              ║  │ PreToolUse                 │  ║
-║                              ║  └────────────────────────────┘  ║
-╠══════════════════════════════╩══════════════════════════════════╣
-║  Tab/↑↓ fields · Enter edit · Esc back · changes auto-save     ║
-╚═════════════════════════════════════════════════════════════════╝
+Got it. About to:
+  ✓ Promote: git-stash-drops-untracked, ts-node-esm-flag
+  ↷ Skip:    jsx-tsx-extension (will reappear next session)
+
+Confirm? [y/n]
 ```
 
-All fields visible simultaneously in the right pane. Left pane stays navigable — switching rows auto-saves edits. `Enter` on a field enters inline edit mode; `Esc` discards; `Enter` again confirms.
+### 9.3 Promotion
 
----
+On confirmation, Claude runs:
 
-## 10. Phase 5 — Promotion
+```bash
+node scripts/lessons.mjs promote --ids <id1>,<id2> [--patch '{"id": {...fields}}']
+```
 
-SQLite WAL mode handles concurrency — no separate lockfile needed. Concurrent writes are serialized safely by the engine.
+The `promote` subcommand accepts a list of IDs (and optional field patches for edits) and writes the DB transitions atomically via SQLite WAL:
 
-On user confirmation:
+- **Promoted IDs** → `UPDATE status='active', reviewedAt=now()`
+- **Archived IDs** → `UPDATE status='archived', archivedAt=now(), archiveReason=...`
+- **Skipped IDs** → no write; remain `status='candidate'`
 
-1. **Explicitly selected** → `UPDATE status='active', reviewedAt=now()`
-2. **Explicitly deselected** → `UPDATE status='archived', archivedAt=now(), archiveReason='user-deselected'`
-3. **Not touched** → no DB write; remains `status='candidate'` for future sessions
-
-Then:
+Then rebuilds `lesson-cache.json` and reports:
 
 ```text
-node scripts/lessons.mjs build
-  SELECT * FROM lessons WHERE status='active' → lesson-manifest.json
-
-Report:
-  ✓ Added: git-stash-drops-untracked   (tool:git, priority:7)
-  ✓ Added: ts-node-esm-flag            (lang:ts,  priority:5)
-  ↷ Archived: 1 candidate (user-deselected)
-  ○ Skipped: 3 candidates (not reviewed — will appear next session)
-  Manifest rebuilt. 2 new lessons active.
+✓ Added: git-stash-drops-untracked   (tool:git, priority:7)
+✓ Added: ts-node-esm-flag            (lang:ts,  priority:5)
+↷ Skipped: jsx-tsx-extension (will reappear next session)
+lesson-cache.json rebuilt. 2 new lessons active.
 ```
 
 ---
 
-## 11. Dependency Distribution
+## 10. No External Dependencies
 
-`ink` and `react` are not required at runtime by end-users. The TUI is compiled into a self-contained bundle using `esbuild`:
+The conversational review approach eliminates all UI-related dependencies:
 
-```mermaid
-flowchart LR
-    classDef source fill:#2c3e50,color:#fff,stroke:#1a252f
-    classDef tool fill:#2980b9,color:#fff,stroke:#1a5276
-    classDef output fill:#27ae60,color:#fff,stroke:#1e8449
+- No `ink` / `react`
+- No `esbuild` build step
+- No bundled binary to commit and maintain
+- No stdin / terminal handoff problem
 
-    ui["scripts/review/ui.mjs"]
-    ink["ink + react"]
-    esbuild["esbuild<br/>--bundle --platform=node"]
-    bundle["scripts/review/ui.bundle.js<br/>committed to repo<br/>shipped with plugin"]
-
-    ui --> esbuild
-    ink --> esbuild
-    esbuild --> bundle
-
-    class ui,ink source
-    class esbuild tool
-    class bundle output
-```
-
-End-users receive the pre-built bundle — no `npm install`, no internet access required.
-
-**Alternatives considered:**
-
-- **Graceful degradation** — detect `ink` at runtime, fall back to `[y/n]` prompts. Rejected: two code paths, degraded UX for most users.
-- **Go binary** — statically compiled TUI, no runtime deps. Rejected: separate repo, cross-platform build matrix, release download mechanism — disproportionate infrastructure.
+The only runtime requirement is Node.js ≥ 22.5 (for `node:sqlite`), which is already required for the DB layer.
 
 ---
 
-## 12. Files to Create / Modify
+## 11. Files to Create / Modify
 
-| File                                 | Action           | Purpose                                                                       |
-| ------------------------------------ | ---------------- | ----------------------------------------------------------------------------- |
-| `data/lessons.db`                    | Create (migrate) | SQLite DB replacing lessons.json + filtered-candidates.json                   |
-| `data/review-sessions/`              | Create dir       | Permanent ULID-named audit logs                                               |
-| `scripts/migrate-db.mjs`             | Create           | One-time migration from JSON files to SQLite                                  |
-| `.claude/commands/lessons/review.md` | Create           | Slash command                                                                 |
-| `scripts/review/ui.mjs`              | Create           | Ink TUI (list view + split-pane editor)                                       |
-| `scripts/review/review.mjs`          | Create           | `review` subcommand entry point                                               |
-| `scripts/lessons.mjs`                | Modify           | Add `review`; rename `scan candidates` → `scan aggregate`; update DB paths    |
-| `scripts/scanner/*.mjs`              | Modify           | Write candidates to SQLite instead of filtered-candidates.json                |
-| `package.json`                       | Modify           | Add `ink`, `react`, `esbuild` as devDependencies; bump `engines.node >= 22.5` |
-| `scripts/review/ui.bundle.js`        | Generated        | Pre-built esbuild bundle — committed to repo, shipped with plugin             |
+| File                                 | Action           | Purpose                                                                                |
+| ------------------------------------ | ---------------- | -------------------------------------------------------------------------------------- |
+| `data/lessons.db`                    | Create (migrate) | SQLite DB replacing lessons.json + filtered-candidates.json                            |
+| `data/review-sessions/`              | Create dir       | Permanent ULID-named audit logs                                                        |
+| `scripts/migrate-db.mjs`             | Create           | One-time migration from JSON files to SQLite                                           |
+| `.claude/commands/lessons/review.md` | Create           | Slash command                                                                          |
+| `scripts/lessons.mjs`                | Modify           | Add `promote` subcommand; rename `scan candidates` → `scan aggregate`; update DB paths |
+| `scripts/scanner/*.mjs`              | Modify           | Write candidates to SQLite instead of filtered-candidates.json                         |
+| `package.json`                       | Modify           | Bump `engines.node >= 22.5`                                                            |
 
-`lesson-manifest.json` remains as a generated-only build artifact — the compiled output of `lessons build`, consumed by hook scripts for fast regex matching. Not a source-of-truth; regenerated on every promotion.
+`lesson-cache.json` remains as a generated-only build artifact — the compiled output of `lessons build`, consumed by hook scripts for fast regex matching. Not a source-of-truth; regenerated on every promotion.
 
 ---
 
