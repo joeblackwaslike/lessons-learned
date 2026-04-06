@@ -1,0 +1,27 @@
+{
+  "lessons": [
+    {
+      "id": "01JQFIXTURE000000000001A",
+      "slug": "fixture-git-stash-untracked-0001",
+      "summary": "git stash silently drops untracked files without -u flag",
+      "mistake": "Running `git stash` without the `-u` flag silently leaves untracked files behind, risking data loss when the stash is applied elsewhere.",
+      "remediation": "Use `git stash -u` or `git stash --include-untracked` to include untracked files in the stash.",
+      "injection": "## Lesson: git stash drops untracked files\nUse `git stash -u` to include untracked files. Plain `git stash` silently leaves them behind.\n**Fix**: `git stash -u` (or `--include-untracked`)",
+      "triggers": {
+        "toolNames": ["Bash"],
+        "commandPatterns": ["\\bgit\\s+stash\\b(?!.*(-u|--include-untracked|--all))"],
+        "pathPatterns": [],
+        "contentPatterns": []
+      },
+      "priority": 7,
+      "confidence": 0.95,
+      "needsReview": false,
+      "tags": ["tool:git", "severity:data-loss"],
+      "sourceSessionIds": [],
+      "occurrenceCount": 0,
+      "createdAt": "2026-04-01T00:00:00Z",
+      "updatedAt": "2026-04-01T00:00:00Z",
+      "contentHash": "sha256:fixture0000000000000000000000000000000000000000000000000000000001"
+    }
+  ]
+}

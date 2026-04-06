@@ -1,0 +1,23 @@
+{
+  "$schema": "../schemas/config.schema.json",
+  "type": "lessons-learned-config",
+  "version": 1,
+
+  "injectionBudgetBytes": 4096,
+  "maxLessonsPerInjection": 3,
+  "minConfidence": 0.5,
+  "minPriority": 1,
+  "compactionReinjectionThreshold": 7,
+
+  "scanPaths": ["~/.claude/projects/"],
+  "autoScanIntervalHours": 24,
+  "maxCandidatesPerScan": 50,
+
+  "scoring": {
+    "multiSessionBonus": 2,
+    "multiProjectBonus": 1,
+    "hangTimeoutBonus": 1,
+    "userCorrectionBonus": 1,
+    "singleOccurrencePenalty": -1
+  }
+}

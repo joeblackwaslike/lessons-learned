@@ -1,0 +1,105 @@
+site_name: lessons-learned
+repo_url: https://github.com/joeblackwaslike/lessons-learned
+site_url: https://joeblackwaslike.github.io/lessons-learned
+site_description: A Claude Code plugin that automatically captures coding mistakes and injects relevant lessons before tool calls — preventing the same mistakes from happening twice.
+site_author: Joe Black
+edit_uri: edit/main/docs/
+repo_name: joeblackwaslike/lessons-learned
+copyright: Maintained by <a href="https://github.com/joeblackwaslike">Joe Black</a>. MIT License.
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Installation: installation.md
+  - User Guide:
+      - Overview: user-guide/index.md
+      - How It Works: user-guide/how-it-works.md
+      - Working with Lessons: user-guide/lessons.md
+      - Slash Commands: user-guide/slash-commands.md
+      - Configuration: user-guide/configuration.md
+      - Scanning & Discovery: user-guide/scanning.md
+      - Emitting Lessons: user-guide/emitting-lessons.md
+  - Developer Guide:
+      - Overview: developer-guide/index.md
+      - Architecture: developer-guide/architecture.md
+      - Data Model: developer-guide/data-model.md
+      - Cross-Agent Adapters: developer-guide/adapters.md
+      - Testing: developer-guide/testing.md
+      - Contributing: developer-guide/contributing.md
+  - Reference:
+      - CLI: reference/cli.md
+      - Configuration: reference/configuration.md
+      - Schemas: reference/schemas.md
+      - Tag Taxonomy: reference/tags.md
+      - Hook Events: reference/hooks.md
+
+theme:
+  name: material
+  palette:
+    - media: '(prefers-color-scheme)'
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    - media: '(prefers-color-scheme: light)'
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: '(prefers-color-scheme: dark)'
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+  icon:
+    repo: fontawesome/brands/github
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.footer
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+
+plugins:
+  - search
+
+markdown_extensions:
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+  - admonition
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - tables
+  - footnotes
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/joeblackwaslike/lessons-learned
+  version:
+    provider: mike

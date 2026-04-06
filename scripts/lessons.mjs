@@ -1,0 +1,1266 @@
+#!/usr/bin/env node
+
+/**
+ * lessons — Manage the lessons-learned lesson store.
+ *
+ * Subcommands:
+ *   add               Add a new lesson (interactive, --json, or --file)
+ *   build             Rebuild the lesson manifest from the DB
+ *   edit              Edit fields on an existing lesson in place
+ *   list              List all lessons with key fields
+ *   promote           Promote candidates to active, archive, or patch fields
+ *   restore           Restore archived lessons back to active
+ *   review            Review T2 scan candidates against intake validation rules
+ *   scan              Incrementally scan session logs for new candidates
+ *   scan aggregate    List ranked candidates from the DB
+ *
+ * Usage:
+ *   node scripts/lessons.mjs <subcommand> [options]
+ *   node scripts/lessons.mjs --help
+ *   node scripts/lessons.mjs <subcommand> --help
+ */
+
+import {
+  readFileSync,
+  writeFileSync,
+  mkdirSync,
+  createReadStream,
+  readdirSync,
+  statSync,
+} from 'node:fs';
+import {
+  openDb,
+  closeDb,
+  getActiveRecords,
+  getCandidateRecords,
+  insertCandidate,
+  insertCandidateBatch,
+  promoteToActive,
+  archiveRecords,
+  restoreToActive,
+  updateRecord,
+  getRecordsByIds,
+  computeContentHash as computeContentHashFromDb,
+} from './db.mjs';
+import { join, resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { randomBytes } from 'node:crypto';
+import { createInterface } from 'node:readline';
+import { homedir } from 'node:os';
+import { scanLineForLessons } from './scanner/structured.mjs';
+import { HeuristicDetector } from './scanner/detector.mjs';
+import { extractFromStructured, extractFromHeuristic } from './scanner/extractor.mjs';
+import {
+  loadScanState,
+  saveScanState,
+  getResumeOffset,
+  updateOffset,
+} from './scanner/incremental.mjs';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const PLUGIN_ROOT = join(__dirname, '..');
+const DATA_DIR = process.env.LESSONS_DATA_DIR ?? join(PLUGIN_ROOT, 'data');
+const MANIFEST_PATH = process.env.LESSONS_MANIFEST_PATH ?? join(DATA_DIR, 'lesson-manifest.json');
+const CONFIG_PATH = join(DATA_DIR, 'config.json');
+const REVIEW_SESSIONS_DIR = join(DATA_DIR, 'review-sessions');
+const DEFAULT_SCAN_PATH = join(homedir(), '.claude', 'projects');
+
+// ─── Help ────────────────────────────────────────────────────────────
+
+const HELP = {
+  root: `
+lessons — Manage the lessons-learned lesson store.
+
+Usage:
+  node scripts/lessons.mjs <subcommand> [options]
+
+Subcommands:
+  add               Add a new lesson interactively or from JSON
+  build             Rebuild the lesson manifest from the DB
+  edit              Edit fields on an existing lesson in place
+  list              List all active lessons with their trigger patterns
+  promote           Promote candidates to active, archive, or patch fields
+  restore           Restore archived lessons back to active
+  review            Review candidates from the DB against validation rules
+  scan              Incrementally scan session logs for new candidates
+  scan aggregate    List ranked candidates from the DB (for /lessons:review)
+
+Options:
+  --help, -h   Show help for a subcommand
+
+Examples:
+  node scripts/lessons.mjs add --interactive
+  node scripts/lessons.mjs add --json '{"summary":"...","mistake":"...","remediation":"..."}'
+  node scripts/lessons.mjs build
+  node scripts/lessons.mjs list
+  node scripts/lessons.mjs review
+  node scripts/lessons.mjs scan
+  node scripts/lessons.mjs scan aggregate
+  node scripts/lessons.mjs promote --ids <id1>,<id2>
+  node scripts/lessons.mjs promote --ids <id1> --archive "<id2>:reason"
+`.trim(),
+
+  add: `
+lessons add — Add a new lesson to the store.
+
+Usage:
+  node scripts/lessons.mjs add --interactive
+  node scripts/lessons.mjs add --json '<json-string>'
+  node scripts/lessons.mjs add --file <path>
+  echo '<json>' | node scripts/lessons.mjs add
+
+Required fields (in JSON):
+  summary       One-line description of the lesson
+  mistake       What went wrong and why
+  remediation   The correction that resolves it
+
+Optional fields:
+  tool            Tool name(s), comma-separated (e.g. "Bash,Edit")
+  trigger         Shell command or path that triggers the issue
+  commandPatterns Array of regex strings to match Bash commands
+  pathPatterns    Array of glob patterns to match file paths
+  tags            Array of category:value strings
+  priority        Integer 1-10 (default: 5)
+  confidence      Float 0.0-1.0 (default: 0.8)
+
+Notes:
+  - Lessons below confidence 0.7 are flagged needsReview and excluded from the manifest.
+  - Duplicate detection uses both exact content hash and fuzzy Jaccard similarity (≥0.5).
+  - Intake validation rejects: truncated summaries, template placeholders, prose triggers.
+`.trim(),
+
+  build: `
+lessons build — Rebuild the lesson manifest from lessons.json.
+
+Usage:
+  node scripts/lessons.mjs build
+
+The manifest is a pre-compiled, runtime-optimized view of the lesson store.
+It contains only the fields needed for matching and injection, with regex
+patterns pre-compiled as { source, flags } objects.
+
+Lessons are excluded from the manifest if:
+  - confidence < minConfidence (from config.json, default 0.5)
+  - priority < minPriority (from config.json, default 1)
+  - needsReview is true
+`.trim(),
+
+  list: `
+lessons list — List all lessons with key fields.
+
+Usage:
+  node scripts/lessons.mjs list [--json]
+
+Options:
+  --json   Output as JSON array instead of formatted text
+`.trim(),
+
+  review: `
+lessons review — Review T2 scan candidates against intake validation rules.
+
+Usage:
+  node scripts/lessons.mjs review
+
+Reads from data/cross-project-candidates.json (written by: lessons scan candidates).
+Shows each candidate with a PASS/FAIL status based on intake validation rules:
+  - Mistake and remediation meet minimum length
+  - No unfilled template placeholders
+  - Trigger is a shell command, not prose
+  - Not a fuzzy duplicate of an existing lesson (Jaccard ≥ 0.5)
+`.trim(),
+
+  promote: `
+lessons promote — Promote candidates to active, archive, or patch fields.
+
+Usage:
+  node scripts/lessons.mjs promote --ids <id1>,<id2>
+  node scripts/lessons.mjs promote --ids <id1> --archive "<id2>:reason"
+  node scripts/lessons.mjs promote --ids <id1> --patch '{"<id1>": {"priority": 8}}'
+
+Options:
+  --ids <id1,...>             Comma-separated IDs to promote to status='active'
+  --archive "<id>:<reason>"   Archive an ID with a reason (repeatable)
+  --patch '<json>'            Per-id field overrides as a JSON object
+
+Notes:
+  - Promoted IDs move to status='active' and are included in the next manifest build
+  - Archived IDs move to status='archived' and are hidden from future reviews
+  - Skipped IDs (not mentioned) remain as status='candidate' for the next session
+  - A review session audit log is written to data/review-sessions/<ulid>.json
+  - The manifest is automatically rebuilt when any IDs are promoted
+`.trim(),
+
+  scan: `
+lessons scan — Incrementally scan session logs for new lesson candidates.
+
+Usage:
+  node scripts/lessons.mjs scan [options]
+
+Options:
+  --full            Force full rescan (ignore saved byte offsets)
+  --path <dir>      Scan a specific directory instead of ~/.claude/projects/
+  --tier1-only      Only structured scanning (#lesson tags)
+  --tier2-only      Only heuristic scanning (error→correction detection)
+  --dry-run         Show candidates without saving state
+  --verbose, -v     Show per-file scan details
+  --auto            Background/silent mode (no stdout)
+
+Subcommands:
+  aggregate         List ranked candidates from the DB (JSON output)
+`.trim(),
+
+  scanAggregate: `
+lessons scan aggregate — List ranked candidates from the DB.
+
+Reads from lessons.db and outputs a ranked JSON list of candidates,
+applying multi-session and multi-project confidence/priority boosts.
+This is the input for the /lessons:review LLM review pass.
+
+Usage:
+  node scripts/lessons.mjs scan aggregate
+
+Output: JSON to stdout — { generatedAt, totalCandidates, candidates[] }
+`.trim(),
+
+  edit: `
+lessons edit — Edit fields on an existing lesson in place.
+
+Usage:
+  node scripts/lessons.mjs edit --id <id> --patch '<json>'
+
+Options:
+  --id <id>        ID of the lesson to edit (any status)
+  --patch '<json>' JSON object of fields to update
+
+Patchable fields:
+  summary, mistake, remediation, injection, injectOn,
+  commandPatterns, pathPatterns, priority, confidence,
+  tags, block, blockReason
+
+Notes:
+  - Status is not changed — active lessons stay active, candidates stay candidates.
+  - The manifest is automatically rebuilt when an active lesson is edited.
+`.trim(),
+
+  restore: `
+lessons restore — Restore archived lessons back to active status.
+
+Usage:
+  node scripts/lessons.mjs restore --ids <id1>,<id2>,...
+
+Options:
+  --ids <id1,...>   Comma-separated IDs of archived lessons to restore
+
+Notes:
+  - Only lessons with status='archived' can be restored.
+  - archivedAt and archiveReason are cleared on restore.
+  - The manifest is automatically rebuilt after restore.
+`.trim(),
+};
+
+// ─── ULID ────────────────────────────────────────────────────────────
+
+const ENCODING = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+
+function generateUlid() {
+  let now = Date.now();
+  let timeStr = '';
+  for (let i = 10; i > 0; i--) {
+    const mod = now % ENCODING.length;
+    timeStr = ENCODING[mod] + timeStr;
+    now = (now - mod) / ENCODING.length;
+  }
+  const bytes = randomBytes(16);
+  let randStr = '';
+  for (let i = 0; i < 16; i++) randStr += ENCODING[bytes[i] % ENCODING.length];
+  return timeStr + randStr;
+}
+
+// ─── Slug ────────────────────────────────────────────────────────────
+
+function generateSlug(summary) {
+  const base = summary
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .slice(0, 40)
+    .replace(/-$/, '');
+  return `${base}-${randomBytes(2).toString('hex').slice(0, 4)}`;
+}
+
+// ─── Validation ──────────────────────────────────────────────────────
+
+const TEMPLATE_PLACEHOLDER_RE =
+  /<(what_went_wrong|the_correction|tool_name|command_or_action|category_value_tags)>/i;
+const PROSE_TRIGGER_RE =
+  /^(explaining|implementing|registering|seeing|fixing|doing|using|running|working|writing|checking|adding|removing|creating|updating|building|testing|debugging|reviewing)\b/i;
+const MIN_FIELD_LENGTH = 20;
+
+function validateLesson(input) {
+  const errors = [];
+  if (input.summary.endsWith('...')) errors.push('summary appears truncated (ends with ...)');
+  if (TEMPLATE_PLACEHOLDER_RE.test(input.summary))
+    errors.push('summary contains unfilled template placeholder');
+  if (input.summary.length < MIN_FIELD_LENGTH)
+    errors.push(`summary too short (${input.summary.length} chars, min ${MIN_FIELD_LENGTH})`);
+  if (TEMPLATE_PLACEHOLDER_RE.test(input.mistake))
+    errors.push('mistake contains unfilled template placeholder');
+  if (input.mistake.length < MIN_FIELD_LENGTH)
+    errors.push(`mistake too short (${input.mistake.length} chars, min ${MIN_FIELD_LENGTH})`);
+  if (TEMPLATE_PLACEHOLDER_RE.test(input.remediation))
+    errors.push('remediation contains unfilled template placeholder');
+  if (input.remediation.length < MIN_FIELD_LENGTH)
+    errors.push(
+      `remediation too short (${input.remediation.length} chars, min ${MIN_FIELD_LENGTH})`
+    );
+  if (input.trigger && PROSE_TRIGGER_RE.test(input.trigger.trim()))
+    errors.push(`trigger "${input.trigger}" looks like prose, not a shell command`);
+  return errors;
+}
+
+// ─── Fuzzy similarity ────────────────────────────────────────────────
+
+function tokenize(text) {
+  return new Set(
+    text
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .split(/\s+/)
+      .filter(w => w.length > 2)
+  );
+}
+
+function jaccardSimilarity(a, b) {
+  const A = tokenize(a),
+    B = tokenize(b);
+  const intersection = [...A].filter(w => B.has(w)).length;
+  const union = new Set([...A, ...B]).size;
+  return union === 0 ? 0 : intersection / union;
+}
+
+// ─── Lesson building ─────────────────────────────────────────────────
+
+function buildInjection(lesson) {
+  return `## Lesson: ${lesson.summary}\n${lesson.mistake}\n**Fix**: ${lesson.remediation}`;
+}
+
+function buildTriggers(input) {
+  const triggers = { toolNames: [], commandPatterns: [], pathPatterns: [], contentPatterns: [] };
+
+  if (input.tool)
+    triggers.toolNames = input.tool
+      .split(',')
+      .map(t => t.trim())
+      .filter(Boolean);
+
+  if (input.trigger) {
+    const escaped = input.trigger.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    triggers.commandPatterns = [`\\b${escaped}\\b`];
+  }
+
+  if (input.commandPatterns) {
+    const patterns = Array.isArray(input.commandPatterns)
+      ? input.commandPatterns
+      : [input.commandPatterns];
+    triggers.commandPatterns = patterns.filter(p => {
+      try {
+        new RegExp(p);
+        return true;
+      } catch {
+        return false;
+      }
+    });
+  }
+
+  if (input.pathPatterns) {
+    triggers.pathPatterns = Array.isArray(input.pathPatterns)
+      ? input.pathPatterns
+      : [input.pathPatterns];
+  }
+
+  return triggers;
+}
+
+// ─── Manifest building ───────────────────────────────────────────────
+
+function buildManifest() {
+  const db = openDb();
+  const lessons = getActiveRecords(db);
+  closeDb(db);
+
+  const config = JSON.parse(readFileSync(CONFIG_PATH, 'utf8'));
+  const minConfidence = config.minConfidence ?? 0.5;
+  const minPriority = config.minPriority ?? 1;
+
+  const manifestLessons = {};
+  let included = 0,
+    excluded = 0;
+
+  for (const lesson of lessons) {
+    if ((lesson.confidence ?? 0) < minConfidence) {
+      excluded++;
+      continue;
+    }
+    if ((lesson.priority ?? 0) < minPriority) {
+      excluded++;
+      continue;
+    }
+
+    const commandRegexSources = (lesson.commandPatterns ?? [])
+      .map(p => {
+        try {
+          new RegExp(p);
+          return { source: p, flags: '' };
+        } catch {
+          console.warn(`  Warning: invalid regex in ${lesson.slug}: ${p}`);
+          return null;
+        }
+      })
+      .filter(Boolean);
+
+    const pathRegexSources = (lesson.pathPatterns ?? [])
+      .map(p => {
+        const src = globToRegex(p);
+        try {
+          new RegExp(src);
+          return { source: src, flags: 'i' };
+        } catch {
+          console.warn(`  Warning: invalid path pattern in ${lesson.slug}: ${p}`);
+          return null;
+        }
+      })
+      .filter(Boolean);
+
+    manifestLessons[lesson.id] = {
+      slug: lesson.slug,
+      priority: lesson.priority,
+      toolNames: lesson.toolNames ?? [],
+      commandRegexSources,
+      pathRegexSources,
+      tags: lesson.tags ?? [],
+      injection: lesson.injection,
+      summary: lesson.summary,
+      block: !!lesson.block,
+      blockReason: lesson.blockReason ?? null,
+      sessionStart: (lesson.injectOn ?? []).includes('SessionStart'),
+    };
+    included++;
+  }
+
+  const manifest = {
+    $schema: '../schemas/manifest.schema.json',
+    type: 'lessons-learned-manifest',
+    version: 1,
+    generatedAt: new Date().toISOString(),
+    config: {
+      injectionBudgetBytes: config.injectionBudgetBytes ?? 4096,
+      maxLessonsPerInjection: config.maxLessonsPerInjection ?? 3,
+      minConfidence,
+      minPriority,
+      compactionReinjectionThreshold: config.compactionReinjectionThreshold ?? 7,
+    },
+    lessons: manifestLessons,
+  };
+
+  writeFileSync(MANIFEST_PATH, JSON.stringify(manifest, null, 2) + '\n', 'utf8');
+  console.log(`Built manifest: ${included} lessons included, ${excluded} excluded`);
+  console.log(`  → ${MANIFEST_PATH}`);
+}
+
+function globToRegex(pattern) {
+  if (/[\\^$|+()[\]{}]/.test(pattern)) return pattern;
+  return pattern
+    .replace(/\./g, '\\.')
+    .replace(/\*\*/g, '{{GLOBSTAR}}')
+    .replace(/\*/g, '[^/]*')
+    .replace(/\?/g, '.')
+    .replace(/\{\{GLOBSTAR\}\}/g, '.*');
+}
+
+// ─── Internal add (used by scan auto-promote) ────────────────────────
+
+/**
+ * Core lesson-add logic without process.exit or manifest rebuild.
+ * Returns { ok: true, lesson } or { ok: false, error: string }.
+ */
+function addLessonInternal(input) {
+  const validationErrors = validateLesson(input);
+  if (validationErrors.length > 0) {
+    return { ok: false, error: `validation: ${validationErrors.join('; ')}` };
+  }
+
+  const triggers = buildTriggers(input);
+  const now = new Date().toISOString();
+  const confidence = input.confidence ?? 0.8;
+  const slug = generateSlug(input.summary);
+  const commandPatterns = triggers.commandPatterns ?? [];
+
+  const record = {
+    id: generateUlid(),
+    slug,
+    status: confidence >= 0.7 ? 'active' : 'reviewed',
+    summary: input.summary,
+    mistake: input.mistake,
+    remediation: input.remediation,
+    injection:
+      input.injection ??
+      buildInjection({
+        summary: input.summary,
+        mistake: input.mistake,
+        remediation: input.remediation,
+      }),
+    injectOn: triggers.sessionStart ? ['SessionStart'] : ['PreToolUse'],
+    toolNames: triggers.toolNames ?? [],
+    commandPatterns,
+    pathPatterns: triggers.pathPatterns ?? [],
+    block: input.block ?? false,
+    blockReason: input.blockReason ?? null,
+    priority: input.priority ?? 5,
+    confidence,
+    tags: input.tags ?? [],
+    source: 'manual',
+    sourceSessionIds: input.sourceSessionIds ?? [],
+    occurrenceCount: input.occurrenceCount ?? 0,
+    sessionCount: 0,
+    projectCount: 0,
+    contentHash: computeContentHashFromDb({
+      mistake: input.mistake,
+      remediation: input.remediation,
+      commandPatterns,
+    }),
+    createdAt: now,
+    updatedAt: now,
+    reviewedAt: null,
+    archivedAt: null,
+    archiveReason: null,
+  };
+
+  const db = openDb();
+  const result = insertCandidate(db, record);
+  closeDb(db);
+
+  if (!result.ok) {
+    if (result.reason === 'duplicate_hash') {
+      return { ok: false, error: `duplicate content hash (${result.existing?.slug})` };
+    }
+    return { ok: false, error: `fuzzy duplicate of "${result.existing?.slug}"` };
+  }
+
+  return { ok: true, lesson: record };
+}
+
+// ─── Subcommands ─────────────────────────────────────────────────────
+
+async function cmdAdd(args) {
+  if (args.includes('--help') || args.includes('-h')) {
+    console.log(HELP.add);
+    return;
+  }
+
+  let input;
+
+  if (args.includes('--interactive') || args.includes('-i')) {
+    const rl = createInterface({ input: process.stdin, output: process.stderr });
+    const ask = q => new Promise(r => rl.question(q, r));
+    console.error('Add a new lesson (Ctrl+C to cancel)\n');
+    const summary = await ask('Summary (one line): ');
+    const mistake = await ask('Mistake: ');
+    const remediation = await ask('Remediation: ');
+    const tool = await ask('Tool(s) comma-separated (e.g. Bash,Edit): ');
+    const trigger = await ask('Trigger (command or path): ');
+    const tagsStr = await ask('Tags comma-separated (e.g. lang:python,tool:pytest): ');
+    const priorityStr = await ask('Priority 1-10 [5]: ');
+    const confidenceStr = await ask('Confidence 0.0-1.0 [0.8]: ');
+    rl.close();
+    input = {
+      summary: summary.trim(),
+      mistake: mistake.trim(),
+      remediation: remediation.trim(),
+      tool: tool.trim() || null,
+      trigger: trigger.trim() || null,
+      tags: tagsStr
+        ? tagsStr
+            .split(',')
+            .map(t => t.trim())
+            .filter(Boolean)
+        : [],
+      priority: priorityStr ? parseInt(priorityStr, 10) : 5,
+      confidence: confidenceStr ? parseFloat(confidenceStr) : 0.8,
+    };
+  } else if (args.includes('--json')) {
+    const idx = args.indexOf('--json');
+    if (!args[idx + 1]) {
+      console.error('Error: --json requires a JSON string');
+      process.exit(1);
+    }
+    input = JSON.parse(args[idx + 1]);
+  } else if (args.includes('--file')) {
+    const idx = args.indexOf('--file');
+    if (!args[idx + 1]) {
+      console.error('Error: --file requires a file path');
+      process.exit(1);
+    }
+    input = JSON.parse(readFileSync(args[idx + 1], 'utf8'));
+  } else {
+    try {
+      const stdin = readFileSync(0, 'utf8');
+      if (stdin.trim()) input = JSON.parse(stdin);
+    } catch {
+      /* no stdin */
+    }
+  }
+
+  if (!input) {
+    console.error(HELP.add);
+    process.exit(1);
+  }
+  if (!input.summary || !input.mistake || !input.remediation) {
+    console.error('Error: summary, mistake, and remediation are required');
+    process.exit(1);
+  }
+
+  const result = addLessonInternal(input);
+  if (!result.ok) {
+    console.error(`Failed: ${result.error}`);
+    process.exit(1);
+  }
+
+  const { lesson } = result;
+  console.log(`Added lesson: ${lesson.slug} (${lesson.id})`);
+  console.log(`  Summary:    ${lesson.summary}`);
+  console.log(`  Priority:   ${lesson.priority} | Confidence: ${lesson.confidence}`);
+  console.log(`  Tags:       ${lesson.tags.join(', ') || '(none)'}`);
+  console.log(`  Needs review: ${lesson.needsReview}`);
+  console.log('\nRebuilding manifest...');
+  buildManifest();
+}
+
+function cmdBuild(args) {
+  if (args.includes('--help') || args.includes('-h')) {
+    console.log(HELP.build);
+    return;
+  }
+  buildManifest();
+}
+
+function cmdList(args) {
+  if (args.includes('--help') || args.includes('-h')) {
+    console.log(HELP.list);
+    return;
+  }
+  const db = openDb();
+  const lessons = getActiveRecords(db);
+  closeDb(db);
+
+  if (args.includes('--json')) {
+    console.log(JSON.stringify(lessons, null, 2));
+    return;
+  }
+
+  console.log(`${lessons.length} lessons\n`);
+  for (const l of lessons) {
+    const sessionStart = (l.injectOn ?? []).includes('SessionStart') ? ' [session-start]' : '';
+    const patterns = l.commandPatterns?.length
+      ? l.commandPatterns.join(', ')
+      : l.pathPatterns?.length
+        ? l.pathPatterns.join(', ')
+        : '(no pattern)';
+    console.log(`${l.slug}${sessionStart}`);
+    console.log(`  ${l.summary}`);
+    console.log(`  patterns: ${patterns}`);
+    console.log(`  conf:${l.confidence} pri:${l.priority} tags:${l.tags.join(', ') || 'none'}`);
+    console.log();
+  }
+}
+
+function cmdReview(args) {
+  if (args.includes('--help') || args.includes('-h')) {
+    console.log(HELP.review);
+    return;
+  }
+
+  const db = openDb();
+  const candidates = getCandidateRecords(db);
+  const activeMistakeTexts = getActiveRecords(db).map(l => ({ slug: l.slug, mistake: l.mistake }));
+  closeDb(db);
+
+  if (candidates.length === 0) {
+    console.log('No candidates found. Run: node scripts/lessons.mjs scan');
+    return;
+  }
+
+  let pass = 0,
+    fail = 0;
+  for (const c of candidates) {
+    const errors = [];
+    if (!c.mistake || c.mistake.length < MIN_FIELD_LENGTH) errors.push('mistake too short');
+    if (!c.remediation || c.remediation.length < MIN_FIELD_LENGTH)
+      errors.push('remediation too short');
+    if (TEMPLATE_PLACEHOLDER_RE.test(c.mistake)) errors.push('mistake has placeholder');
+    if (TEMPLATE_PLACEHOLDER_RE.test(c.remediation)) errors.push('remediation has placeholder');
+    const trigger = (c.commandPatterns ?? [])[0];
+    if (trigger && PROSE_TRIGGER_RE.test(trigger.trim()))
+      errors.push(`prose trigger: "${trigger}"`);
+    const dup = activeMistakeTexts.find(l => jaccardSimilarity(c.mistake, l.mistake) >= 0.5);
+    if (dup)
+      errors.push(
+        `fuzzy duplicate of "${dup.slug}" (${jaccardSimilarity(c.mistake, dup.mistake).toFixed(2)})`
+      );
+
+    const status = errors.length === 0 ? '✓ PASS' : '✗ FAIL';
+    if (errors.length === 0) pass++;
+    else fail++;
+
+    const tool = c.toolNames?.[0] ?? 'unknown';
+    console.log(`\n${status} | ${tool} | conf:${c.confidence} | sessions:${c.sessionCount}`);
+    console.log(`  [${c.id}]`);
+    console.log(`  Mistake:  ${c.mistake.replace(/\n/g, ' ').slice(0, 100)}`);
+    console.log(`  Fix:      ${c.remediation.replace(/\n/g, ' ').slice(0, 100)}`);
+    if (errors.length > 0) console.log(`  Issues:   ${errors.join(', ')}`);
+  }
+
+  console.log(`\n${pass} pass, ${fail} fail out of ${candidates.length} candidates`);
+  console.log(`\nTo promote: node scripts/lessons.mjs promote --ids <id1>,<id2>`);
+}
+
+// ─── Promote subcommand ──────────────────────────────────────────────
+
+async function cmdPromote(args) {
+  if (args.includes('--help') || args.includes('-h')) {
+    console.log(HELP.promote);
+    return;
+  }
+
+  // Parse --ids
+  const idsIdx = args.indexOf('--ids');
+  const promoteIds =
+    idsIdx !== -1
+      ? args[idsIdx + 1]
+          .split(',')
+          .map(s => s.trim())
+          .filter(Boolean)
+      : [];
+
+  // Parse --archive (repeatable): "--archive id:reason"
+  const archiveItems = [];
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--archive' && args[i + 1]) {
+      const colonIdx = args[i + 1].indexOf(':');
+      if (colonIdx === -1) {
+        console.error(`--archive: expected "id:reason", got: ${args[i + 1]}`);
+        process.exit(1);
+      }
+      archiveItems.push({
+        id: args[i + 1].slice(0, colonIdx),
+        reason: args[i + 1].slice(colonIdx + 1),
+      });
+    }
+  }
+
+  // Parse --patch
+  const patchIdx = args.indexOf('--patch');
+  const patches = patchIdx !== -1 ? JSON.parse(args[patchIdx + 1]) : {};
+
+  if (promoteIds.length === 0 && archiveItems.length === 0) {
+    console.error('promote: requires --ids and/or --archive');
+    console.error('Run with --help for usage.');
+    process.exit(1);
+  }
+
+  // Validate all IDs exist
+  const db = openDb();
+  const allIds = [...promoteIds, ...archiveItems.map(a => a.id)];
+  const existing = getRecordsByIds(db, allIds);
+  const foundIds = new Set(existing.map(r => r.id));
+  const missing = allIds.filter(id => !foundIds.has(id));
+  if (missing.length > 0) {
+    closeDb(db);
+    console.error(`promote: unknown IDs: ${missing.join(', ')}`);
+    process.exit(1);
+  }
+
+  const promoted = promoteIds.length > 0 ? promoteToActive(db, promoteIds, patches) : [];
+  const archived = archiveItems.length > 0 ? archiveRecords(db, archiveItems) : [];
+  closeDb(db);
+
+  // Write review session audit log
+  const sessionId = generateUlid();
+  mkdirSync(REVIEW_SESSIONS_DIR, { recursive: true });
+  const sessionRecord = {
+    id: sessionId,
+    createdAt: new Date().toISOString(),
+    promoted: promoted.map(r => r.id),
+    archived: archived.map(r => ({
+      id: r.id,
+      reason: archiveItems.find(a => a.id === r.id)?.reason,
+    })),
+    ...(Object.keys(patches).length > 0 ? { patches } : {}),
+  };
+  writeFileSync(
+    join(REVIEW_SESSIONS_DIR, `${sessionId}.json`),
+    JSON.stringify(sessionRecord, null, 2) + '\n',
+    'utf8'
+  );
+
+  if (promoted.length > 0) {
+    console.log(`Promoted ${promoted.length} lesson(s):`);
+    for (const r of promoted) console.log(`  + ${r.slug} (${r.id})`);
+    buildManifest();
+  }
+  if (archived.length > 0) {
+    console.log(`Archived ${archived.length} lesson(s):`);
+    for (const r of archived) console.log(`  - ${r.slug} (${r.id})`);
+  }
+  console.log(`Review session saved: data/review-sessions/${sessionId}.json`);
+}
+
+// ─── Edit subcommand ─────────────────────────────────────────────────
+
+function cmdEdit(args) {
+  if (args.includes('--help') || args.includes('-h')) {
+    console.log(HELP.edit);
+    return;
+  }
+
+  const idIdx = args.indexOf('--id');
+  const patchIdx = args.indexOf('--patch');
+
+  if (idIdx === -1 || !args[idIdx + 1]) {
+    console.error('edit: --id is required');
+    process.exit(1);
+  }
+  if (patchIdx === -1 || !args[patchIdx + 1]) {
+    console.error('edit: --patch is required');
+    process.exit(1);
+  }
+
+  const id = args[idIdx + 1];
+  let patch;
+  try {
+    patch = JSON.parse(args[patchIdx + 1]);
+  } catch {
+    console.error('edit: --patch must be valid JSON');
+    process.exit(1);
+  }
+
+  const db = openDb();
+  const records = getRecordsByIds(db, [id]);
+  if (records.length === 0) {
+    closeDb(db);
+    console.error(`edit: unknown ID: ${id}`);
+    process.exit(1);
+  }
+
+  const result = updateRecord(db, id, patch);
+  const wasActive = records[0].status === 'active';
+  closeDb(db);
+
+  if (!result) {
+    console.error('edit: no patchable fields found in --patch');
+    process.exit(1);
+  }
+
+  console.log(`Updated ${result.slug} (${result.id})`);
+  if (wasActive) {
+    buildManifest();
+  }
+}
+
+// ─── Restore subcommand ──────────────────────────────────────────────
+
+function cmdRestore(args) {
+  if (args.includes('--help') || args.includes('-h')) {
+    console.log(HELP.restore);
+    return;
+  }
+
+  const idsIdx = args.indexOf('--ids');
+  if (idsIdx === -1 || !args[idsIdx + 1]) {
+    console.error('restore: --ids is required');
+    process.exit(1);
+  }
+
+  const ids = args[idsIdx + 1]
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean);
+
+  const db = openDb();
+  const records = getRecordsByIds(db, ids);
+  const foundIds = new Set(records.map(r => r.id));
+  const missing = ids.filter(id => !foundIds.has(id));
+  if (missing.length > 0) {
+    closeDb(db);
+    console.error(`restore: unknown IDs: ${missing.join(', ')}`);
+    process.exit(1);
+  }
+
+  const notArchived = records.filter(r => r.status !== 'archived');
+  if (notArchived.length > 0) {
+    closeDb(db);
+    console.error(
+      `restore: these IDs are not archived: ${notArchived.map(r => r.slug).join(', ')}`
+    );
+    process.exit(1);
+  }
+
+  const restored = restoreToActive(db, ids);
+  closeDb(db);
+
+  console.log(`Restored ${restored.length} lesson(s):`);
+  for (const r of restored) console.log(`  + ${r.slug} (${r.id})`);
+  buildManifest();
+}
+
+// ─── Scan subcommand ─────────────────────────────────────────────────
+
+async function cmdScan(args) {
+  if (args.includes('--help') || args.includes('-h')) {
+    console.log(HELP.scan);
+    return;
+  }
+
+  // Route scan sub-subcommands
+  const sub = args.find(a => !a.startsWith('-'));
+  if (sub === 'aggregate') {
+    runScanAggregate();
+  } else if (sub === 'candidates') {
+    // Renamed: 'scan candidates' → 'scan aggregate'
+    process.stderr.write("Note: 'scan candidates' has been renamed to 'scan aggregate'\n");
+    runScanAggregate();
+  } else if (sub === 'promote') {
+    console.error(
+      "'scan promote' has been removed. Use: node scripts/lessons.mjs promote --ids <id>"
+    );
+    process.exit(1);
+  } else {
+    await runScan(args);
+  }
+}
+
+async function runScan(args) {
+  const flags = {
+    full: args.includes('--full'),
+    tier1Only: args.includes('--tier1-only'),
+    tier2Only: args.includes('--tier2-only'),
+    dryRun: args.includes('--dry-run'),
+    verbose: args.includes('--verbose') || args.includes('-v'),
+    auto: args.includes('--auto'),
+    path: null,
+  };
+
+  const pathIdx = args.indexOf('--path');
+  if (pathIdx !== -1 && args[pathIdx + 1]) flags.path = resolve(args[pathIdx + 1]);
+
+  const log = flags.auto ? () => {} : console.log.bind(console);
+  const scanPath = flags.path ?? DEFAULT_SCAN_PATH;
+
+  log(`Scanning: ${scanPath}`);
+  log(`Mode: ${flags.tier1Only ? 'Tier 1 only' : flags.tier2Only ? 'Tier 2 only' : 'Both tiers'}`);
+  log(`Type: ${flags.full ? 'Full rescan' : 'Incremental'}`);
+  log();
+
+  const files = findJsonlFiles(scanPath);
+  log(`Found ${files.length} JSONL files`);
+
+  if (files.length === 0) {
+    log('No session files found. Nothing to scan.');
+    return;
+  }
+
+  const state = flags.full ? { files: {}, lastFullScanAt: null } : loadScanState();
+  const allCandidates = [];
+  let filesScanned = 0,
+    filesSkipped = 0,
+    totalNewBytes = 0;
+
+  for (const filePath of files) {
+    const offset = flags.full ? 0 : getResumeOffset(state, filePath);
+    const fileSize = statSync(filePath).size;
+
+    if (!flags.full && offset >= fileSize) {
+      filesSkipped++;
+      continue;
+    }
+
+    const newBytes = fileSize - offset;
+    if (flags.verbose) log(`  Scanning: ${filePath} (${newBytes} new bytes)`);
+
+    const { candidates, bytesRead } = await scanFile(filePath, offset, flags);
+    allCandidates.push(...candidates);
+    updateOffset(state, filePath, bytesRead);
+    filesScanned++;
+    totalNewBytes += newBytes;
+  }
+
+  log(
+    `\nScanned ${filesScanned} files (${filesSkipped} skipped, ${formatBytes(totalNewBytes)} processed)`
+  );
+
+  const deduplicated = deduplicateCandidates(allCandidates);
+  log(`Found ${allCandidates.length} raw candidates → ${deduplicated.length} after dedup`);
+
+  if (deduplicated.length > 0) {
+    log('\n─── Candidates ────────────────────────────────────────');
+    for (const c of deduplicated) {
+      log(
+        `\n[${c.source}] ${c.tool ?? 'unknown'} | confidence: ${c.confidence.toFixed(2)} | priority: ${c.priority}`
+      );
+      log(`  Mistake: ${truncate(c.mistake, 120)}`);
+      log(`  Fix: ${truncate(c.remediation, 120)}`);
+      if (c.tags.length > 0) log(`  Tags: ${c.tags.join(', ')}`);
+      if (c.occurrenceCount > 1)
+        log(`  Seen ${c.occurrenceCount}x across ${c.sourceSessionIds.length} sessions`);
+    }
+  }
+
+  // Write all candidates to DB (no auto-promote — use /lessons:review to promote)
+  if (!flags.dryRun && deduplicated.length > 0) {
+    const records = deduplicated.map(mapCandidateToDbRecord);
+    const db = openDb();
+    const result = insertCandidateBatch(db, records);
+    closeDb(db);
+    log(
+      `\nSaved ${result.inserted} new candidate(s) to DB (${result.skipped} skipped as duplicates)`
+    );
+    if (result.skipped > 0 && flags.verbose) {
+      for (const reason of result.skippedReasons) log(`  Skipped: ${reason}`);
+    }
+  }
+
+  if (!flags.dryRun) {
+    state.lastFullScanAt = flags.full ? new Date().toISOString() : state.lastFullScanAt;
+    saveScanState(state);
+    log('\nScan state saved.');
+  } else {
+    log('\nDry run — state not saved.');
+  }
+}
+
+function mapCandidateToDbRecord(c) {
+  const firstWord = ((c.trigger ?? '').trim().match(/^[a-zA-Z0-9_-]+/) ?? [])[0] ?? '';
+  const commandPatterns = firstWord ? [`\\b${firstWord}\\b`] : [];
+  const slug = generateSlug(autoSummary(c));
+  return {
+    id: generateUlid(),
+    slug,
+    status: 'candidate',
+    summary: autoSummary(c),
+    mistake: c.mistake,
+    remediation: c.remediation,
+    injection: null,
+    injectOn: ['PreToolUse'],
+    toolNames: c.tool ? [c.tool] : [],
+    commandPatterns,
+    pathPatterns: [],
+    block: false,
+    blockReason: null,
+    priority: c.priority,
+    confidence: c.confidence,
+    tags: c.tags ?? [],
+    source: c.source ?? 'heuristic',
+    sourceSessionIds: (c.sourceSessionIds ?? []).slice(0, 5),
+    occurrenceCount: c.occurrenceCount ?? 1,
+    sessionCount: (c.sourceSessionIds ?? []).length || 1,
+    projectCount: 1,
+    contentHash: computeContentHashFromDb({
+      mistake: c.mistake,
+      remediation: c.remediation,
+      commandPatterns,
+    }),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    reviewedAt: null,
+    archivedAt: null,
+    archiveReason: null,
+  };
+}
+
+function runScanAggregate() {
+  const db = openDb();
+  const rows = getCandidateRecords(db);
+  closeDb(db);
+
+  if (rows.length === 0) {
+    console.log(
+      JSON.stringify(
+        { generatedAt: new Date().toISOString(), totalCandidates: 0, candidates: [] },
+        null,
+        2
+      )
+    );
+    return;
+  }
+
+  const candidates = rows.map((r, i) => ({
+    index: i + 1,
+    id: r.id,
+    slug: r.slug,
+    tool: r.toolNames?.[0] ?? null,
+    confidence: Math.min(1.0, parseFloat((r.confidence + 0.1 * (r.projectCount - 1)).toFixed(2))),
+    priority: Math.min(10, r.priority + r.projectCount),
+    occurrenceCount: r.occurrenceCount,
+    sessionCount: r.sessionCount,
+    projectCount: r.projectCount,
+    mistake: r.mistake,
+    remediation: r.remediation,
+    tags: r.tags,
+    sourceSessionIds: r.sourceSessionIds,
+    createdAt: r.createdAt,
+  }));
+
+  process.stdout.write(
+    JSON.stringify(
+      { generatedAt: new Date().toISOString(), totalCandidates: candidates.length, candidates },
+      null,
+      2
+    ) + '\n'
+  );
+}
+
+// ─── Scan helpers ────────────────────────────────────────────────────
+
+function findJsonlFiles(dir, maxDepth = 5, depth = 0) {
+  if (depth > maxDepth) return [];
+  const files = [];
+  let entries;
+  try {
+    entries = readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return [];
+  }
+  for (const entry of entries) {
+    const fullPath = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...findJsonlFiles(fullPath, maxDepth, depth + 1));
+    } else if (entry.isFile() && entry.name.endsWith('.jsonl')) {
+      files.push(fullPath);
+    }
+  }
+  return files;
+}
+
+async function scanFile(filePath, startOffset, flags) {
+  const candidates = [];
+  const detector = new HeuristicDetector();
+  let bytesRead = startOffset;
+
+  const stream = createReadStream(filePath, { start: startOffset || undefined, encoding: 'utf8' });
+  const rl = createInterface({ input: stream, crlfDelay: Infinity });
+
+  for await (const line of rl) {
+    bytesRead += Buffer.byteLength(line, 'utf8') + 1;
+    if (!line.trim()) continue;
+
+    if (!flags.tier2Only) {
+      for (const tag of scanLineForLessons(line)) candidates.push(extractFromStructured(tag));
+    }
+    if (!flags.tier1Only) detector.feedLine(line);
+  }
+
+  if (!flags.tier1Only) {
+    for (const window of detector.flush()) candidates.push(extractFromHeuristic(window));
+  }
+
+  return { candidates, bytesRead };
+}
+
+function deduplicateCandidates(candidates) {
+  const byHash = new Map();
+  for (const c of candidates) {
+    const existing = byHash.get(c.contentHash);
+    if (!existing) {
+      byHash.set(c.contentHash, {
+        ...c,
+        occurrenceCount: 1,
+        sourceSessionIds: [c.sessionId].filter(Boolean),
+      });
+    } else {
+      existing.occurrenceCount++;
+      if (c.sessionId && !existing.sourceSessionIds.includes(c.sessionId))
+        existing.sourceSessionIds.push(c.sessionId);
+      if (c.source === 'structured' && existing.source === 'heuristic') {
+        const { occurrenceCount, sourceSessionIds } = existing;
+        Object.assign(existing, c);
+        existing.occurrenceCount = occurrenceCount;
+        existing.sourceSessionIds = sourceSessionIds;
+      }
+      if (existing.sourceSessionIds.length >= 2) {
+        existing.priority = Math.min(10, existing.priority + 2);
+        existing.confidence = Math.min(1.0, existing.confidence + 0.1);
+      }
+    }
+  }
+  return [...byHash.values()];
+}
+
+function autoSummary(candidate) {
+  const text = candidate.mistake ?? '';
+  const firstLine = text.split('\n').find(l => l.trim().length > 10) ?? text;
+  const clean = firstLine.replace(/\s+/g, ' ').trim();
+  if (clean.length <= 120) return clean;
+  const boundary = clean.slice(0, 120).search(/[.—]/);
+  if (boundary > 20) return clean.slice(0, boundary + 1).trim();
+  const wordBoundary = clean.slice(0, 120).lastIndexOf(' ');
+  return clean.slice(0, wordBoundary > 20 ? wordBoundary : 120).trim() + '...';
+}
+
+function formatBytes(bytes) {
+  if (bytes < 1024) return `${bytes}B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)}MB`;
+}
+
+function truncate(str, maxLen) {
+  if (!str) return '';
+  const oneLine = str.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+  return oneLine.length > maxLen ? oneLine.slice(0, maxLen - 3) + '...' : oneLine;
+}
+
+// ─── Dispatch ────────────────────────────────────────────────────────
+
+async function main() {
+  const [, , subcommand, ...rest] = process.argv;
+
+  if (!subcommand || subcommand === '--help' || subcommand === '-h') {
+    console.log(HELP.root);
+    return;
+  }
+
+  switch (subcommand) {
+    case 'add':
+      await cmdAdd(rest);
+      break;
+    case 'build':
+      cmdBuild(rest);
+      break;
+    case 'list':
+      cmdList(rest);
+      break;
+    case 'promote':
+      await cmdPromote(rest);
+      break;
+    case 'edit':
+      cmdEdit(rest);
+      break;
+    case 'restore':
+      cmdRestore(rest);
+      break;
+    case 'review':
+      cmdReview(rest);
+      break;
+    case 'scan':
+      await cmdScan(rest);
+      break;
+    default:
+      console.error(`Unknown subcommand: ${subcommand}`);
+      console.error('Run with --help to see available subcommands.');
+      process.exit(1);
+  }
+}
+
+main().catch(err => {
+  console.error('Error:', err.message);
+  process.exit(1);
+});

@@ -1,0 +1,42 @@
+{
+  "type": "lessons-learned-manifest",
+  "version": 1,
+  "generatedAt": "2026-04-01T00:00:00.000Z",
+  "config": {
+    "injectionBudgetBytes": 4096,
+    "maxLessonsPerInjection": 3,
+    "minConfidence": 0.5,
+    "minPriority": 1,
+    "compactionReinjectionThreshold": 7
+  },
+  "lessons": {
+    "01JQTEST0000000000000001": {
+      "slug": "pytest-no-header-test",
+      "priority": 9,
+      "toolNames": ["Bash"],
+      "commandRegexSources": [
+        { "source": "\\bpytest\\b(?!.*(--no-header|-p no:faulthandler|TERM=dumb))", "flags": "" }
+      ],
+      "pathRegexSources": [],
+      "tags": ["lang:python", "tool:pytest", "severity:hang"],
+      "injection": "## REQUIRED: pytest TTY fix\nAdd `-p no:faulthandler --no-header` to every pytest command.",
+      "summary": "pytest hangs without TTY flags",
+      "block": true,
+      "blockReason": "pytest is missing required flags. Rerun as: `{command} -p no:faulthandler --no-header`",
+      "sessionStart": false
+    },
+    "01JQTEST0000000000000002": {
+      "slug": "mock-patch-namespace-test",
+      "priority": 7,
+      "toolNames": ["Bash", "Edit", "Write"],
+      "commandRegexSources": [{ "source": "mock\\.patch\\(|@patch\\(", "flags": "" }],
+      "pathRegexSources": [{ "source": "test.*\\.py$", "flags": "i" }],
+      "tags": ["lang:python", "tool:unittest", "topic:testing"],
+      "injection": "## Lesson: mock.patch namespace\nPatch where the name is looked up, not where it is defined.",
+      "summary": "mock.patch must target the importing module namespace",
+      "block": false,
+      "blockReason": null,
+      "sessionStart": false
+    }
+  }
+}

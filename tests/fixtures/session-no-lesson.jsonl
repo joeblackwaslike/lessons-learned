@@ -1,0 +1,2 @@
+{"type":"user","message":{"role":"user","content":[{"type":"text","text":"list the files"}]},"sessionId":"fixture-session-002","timestamp":"2026-04-01T00:00:00Z"}
+{"type":"assistant","message":{"role":"assistant","id":"msg_fixture_002","content":[{"type":"text","text":"Here are the files in the current directory."}]},"sessionId":"fixture-session-002","timestamp":"2026-04-01T00:00:01Z"}

@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/joeblackwaslike/lessons-learned/schemas/config.schema.json",
+  "title": "Lessons Learned Config",
+  "description": "Configuration for the lessons-learned plugin",
+  "type": "object",
+  "required": ["type", "version"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference for IDE validation"
+    },
+    "type": {
+      "const": "lessons-learned-config",
+      "description": "Discriminator field for file type identification"
+    },
+    "version": {
+      "type": "integer",
+      "const": 1,
+      "description": "Schema version for migration support"
+    },
+    "injectionBudgetBytes": {
+      "type": "integer",
+      "default": 4096,
+      "minimum": 256,
+      "description": "Maximum total bytes of lesson text injected per hook invocation"
+    },
+    "maxLessonsPerInjection": {
+      "type": "integer",
+      "default": 3,
+      "minimum": 1,
+      "maximum": 10,
+      "description": "Hard cap on number of lessons injected per hook invocation"
+    },
+    "minConfidence": {
+      "type": "number",
+      "default": 0.5,
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "Lessons below this confidence are stored but never injected"
+    },
+    "minPriority": {
+      "type": "integer",
+      "default": 1,
+      "minimum": 1,
+      "maximum": 10,
+      "description": "Lessons below this priority are excluded from the manifest"
+    },
+    "compactionReinjectionThreshold": {
+      "type": "integer",
+      "default": 7,
+      "minimum": 1,
+      "maximum": 10,
+      "description": "After context compaction, lessons >= this priority are cleared from dedup state for re-injection"
+    },
+    "scanPaths": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": ["~/.claude/projects/"],
+      "description": "Directories to scan for session JSONL files"
+    },
+    "autoScanIntervalHours": {
+      "type": "integer",
+      "default": 24,
+      "minimum": 1,
+      "description": "Auto-scan if last scan is older than this many hours"
+    },
+    "maxCandidatesPerScan": {
+      "type": "integer",
+      "default": 50,
+      "minimum": 1,
+      "description": "Cap on candidate lessons per scan run"
+    },
+    "scoring": {
+      "type": "object",
+      "description": "Weights for priority/confidence computation",
+      "properties": {
+        "multiSessionBonus": {
+          "type": "integer",
+          "default": 2,
+          "description": "Priority boost for patterns seen in 2+ sessions"
+        },
+        "multiProjectBonus": {
+          "type": "integer",
+          "default": 1,
+          "description": "Priority boost for patterns seen in 2+ projects"
+        },
+        "hangTimeoutBonus": {
+          "type": "integer",
+          "default": 1,
+          "description": "Priority boost for hang/timeout failures"
+        },
+        "userCorrectionBonus": {
+          "type": "integer",
+          "default": 1,
+          "description": "Priority boost for explicit user corrections"
+        },
+        "singleOccurrencePenalty": {
+          "type": "integer",
+          "default": -1,
+          "description": "Priority penalty for one-off patterns"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

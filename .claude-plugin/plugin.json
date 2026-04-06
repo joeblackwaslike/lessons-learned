@@ -1,0 +1,12 @@
+{
+  "name": "lessons-learned",
+  "version": "0.1.0",
+  "description": "Automatic mistake capture and proactive lesson injection for AI coding agents. Mines conversation logs for mistake patterns, structures them as indexed lessons, and injects relevant warnings before the agent repeats the mistake.",
+  "author": {
+    "name": "Joe Black"
+  },
+  "homepage": "https://github.com/joeblackwaslike/lessons-learned",
+  "repository": "https://github.com/joeblackwaslike/lessons-learned.git",
+  "license": "MIT",
+  "keywords": ["lessons", "mistakes", "patterns", "injection", "hooks", "dedup", "scanner"]
+}

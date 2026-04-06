@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "checkJs": true,
+    "noEmit": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "types": ["node"],
+    "allowJs": true,
+    "strict": false,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "paths": {
+      "punycode": ["./types.d.ts"]
+    }
+  },
+  "include": ["core/**/*.mjs", "hooks/**/*.mjs", "scripts/**/*.mjs", "tests/**/*.mjs"],
+  "exclude": ["node_modules", "node_modules/**/*"]
+}

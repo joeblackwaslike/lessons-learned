@@ -1,0 +1,30 @@
+
+# Dependencies
+node_modules/
+
+# Generated runtime state
+data/scan-state.json
+data/all-candidates.txt
+data/cross-project-candidates.txt
+
+# Local tool state (Claude Code, plugin registry, agent skills)
+.claude/
+.agents/
+.plugin/
+.serena/
+
+# Review session logs (runtime state)
+data/review-sessions/
+
+# Beads / Dolt files (added by bd init)
+.dolt/
+*.db
+.beads-credential-key
+.beads/dolt/
+.beads/embeddeddolt/
+.beads/interactions.jsonl
+
+# OS artifacts
+.DS_Store
+*.swp
+*.swo
