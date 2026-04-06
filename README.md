@@ -1,20 +1,20 @@
 # lessons-learned
 
-A Claude Code plugin that automatically captures coding mistakes from session logs and injects relevant lessons as context before tool calls — preventing the same mistakes from happening twice.
+A plugin that automatically captures coding mistakes from session logs and injects relevant lessons as context before tool calls — preventing the same mistakes from happening twice.
 
 [![CI](https://github.com/joeblackwaslike/lessons-learned/actions/workflows/ci.yml/badge.svg)](https://github.com/joeblackwaslike/lessons-learned/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ## How it works
 
-**Capture** — During sessions, Claude emits structured `#lesson` tags when it makes and corrects a mistake. A background scanner also detects error→correction patterns heuristically from session logs.
+**Capture** — Claude emits structured `#lesson` tags when it makes and corrects a mistake. A background scanner also detects error→correction patterns heuristically from session logs.
 
-**Inject** — Before every `Bash`, `Read`, `Edit`, `Write`, or `Glob` tool call, the `PreToolUse` hook matches the command or file path against the lesson store and injects up to 3 relevant lessons as `additionalContext`. At session start, the `#lesson` protocol format is injected so Claude knows how to emit new lessons.
+**Inject** — Before every tool call, the `PreToolUse` hook matches the command or file path against the lesson store and injects up to 3 relevant lessons as `additionalContext`. At session start, the `#lesson` protocol is injected so the agent knows how to emit new lessons.
 
 **Loop** — New lessons flow from session logs back into the store via `lessons scan` and `lessons add`, tightening the feedback loop over time.
 
 ```
-Session log  ──scan──►  candidates  ──review──►  lessons.json
+Session log  ──scan──►  candidates  ──review──►  lesson store
                                                        │
                                                   lessons build
                                                        │
@@ -23,96 +23,25 @@ Session log  ──scan──►  candidates  ──review──►  lessons.jso
 tool call  ──PreToolUse hook──►  match  ──inject──►  additionalContext
 ```
 
-## Features
-
-### Core pipeline
-
-| Feature                                                                                                                                                                               | Status     |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
-| **PreToolUse injection hook** — 6-stage match→dedup→select→inject pipeline fires before every `Bash`, `Read`, `Edit`, `Write`, `Glob` call                                            | ✅ Shipped |
-| **Negative-lookahead patterns** — patterns like `\bpytest\b(?!.*(--no-header))` suppress injection when the fix is already applied                                                    | ✅ Shipped |
-| **Injection budget** — configurable byte cap (default 4 KB) and lesson cap (default 3) per hook call, with `summary` fallback if a lesson exceeds remaining budget                    | ✅ Shipped |
-| **Manifest pre-compilation** — `lesson-manifest.json` pre-compiles all regex sources and pre-renders injection text; the hot-path hook does zero file I/O beyond loading the manifest | ✅ Shipped |
-| **Tool call blocking** — lessons can set `block: true` to deny the tool call entirely with a reason, not just warn                                                                    | ✅ Shipped |
-
-### Dedup and session management
-
-| Feature                                                                                                                                                                                | Status     |
-| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
-| **3-layer dedup** — env var (`LESSONS_SEEN`) + session temp file + `O_EXCL` claim directory; each lesson injected at most once per session even with parallel subagents                | ✅ Shipped |
-| **Context compaction re-injection** — high-priority lessons (≥ threshold, default 7) are cleared from dedup on `compact` events so they re-inject after Claude's context is summarized | ✅ Shipped |
-| **Session reset** — all dedup state wiped on `clear` events                                                                                                                            | ✅ Shipped |
-
-### Lesson discovery
-
-| Feature                                                                                                                                                                                                | Status     |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------- |
-| **Tier 1 scanner** — structured `#lesson … #/lesson` tag parsing from session JSONL; simple regex grep, ~95% accuracy, ~200ms full scan                                                                | ✅ Shipped |
-| **Tier 2 scanner** — heuristic sliding-window detection of error→correction sequences for historical sessions and compliance gaps                                                                      | ✅ Shipped |
-| **Incremental scanning** — byte-offset tracking per file; only processes new data since last scan; constant ~1 MB memory regardless of log file size                                                   | ✅ Shipped |
-| **Confidence + priority scoring** — composite scores from observable signals (multi-session, multi-project, hang/data-loss severity, user correction); low-confidence candidates flagged `needsReview` | ✅ Shipped |
-| **Background scan on startup** — `session-start-scan.mjs` fires a background incremental scan on every session startup                                                                                 | ✅ Shipped |
-
-### Session start protocol
-
-| Feature                                                                                                                                                                 | Status     |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
-| **`#lesson` self-reporting protocol** — SessionStart hook injects a standing instruction so Claude emits structured `#lesson` tags when it makes and corrects a mistake | ✅ Shipped |
-| **Subagent protocol injection** — SubagentStart hook ensures spawned subagents also receive the `#lesson` format instruction                                            | ✅ Shipped |
-| **Session-start lessons** — lessons tagged `sessionStart: true` (e.g. cross-cutting reminders) are injected at session start rather than per-tool-call                  | ✅ Shipped |
-
-### CLI management
-
-| Feature                                                                                                                                               | Status     |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
-| **`lessons add`** — add lessons interactively, from `--json`, `--file`, or stdin with full intake validation (length, no placeholders, Jaccard dedup) | ✅ Shipped |
-| **`lessons build`** — compile `lessons.json` → `lesson-manifest.json` with pre-compiled regex and pre-rendered injection text                         | ✅ Shipped |
-| **`lessons list`** — list lessons with patterns, confidence, priority, and tags                                                                       | ✅ Shipped |
-| **`lessons scan`** — incremental scan of session logs, candidate review, and `scan promote` for Tier 2 candidates                                     | ✅ Shipped |
-| **`lessons review`** — review auto-discovered candidates against validation rules                                                                     | ✅ Shipped |
-| **Slash commands** — `/lessons:add`, `/lessons:review`, `/lessons:manage`, `/lessons:config`                                                          | ✅ Shipped |
-
-### Cross-agent support
-
-| Feature                                                                                                                               | Status     |
-| ------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
-| **Claude Code** — native adapter (default)                                                                                            | ✅ Shipped |
-| **OpenAI Codex** — tool name normalization (`shell→Bash`, `apply_patch→Edit`, etc.) via `LESSONS_AGENT_PLATFORM=codex`                | ✅ Shipped |
-| **Gemini CLI** — tool name normalization (`run_shell_command→Bash`, `replace_in_file→Edit`, etc.) via `LESSONS_AGENT_PLATFORM=gemini` | ✅ Shipped |
-| **Formal adapter interface** — documented adapter contract for adding new agent platforms without changing core logic                 | 🚧 Planned |
-
-### Data and schemas
-
-| Feature                                                                                                                                               | Status                      |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
-| **JSON schemas** — `$schema` references on all data files (`config.json`, `lessons.json`, `lesson-manifest.json`) for IDE autocomplete and validation | ✅ Shipped                  |
-| **30 curated seed lessons** — hand-authored lessons covering pytest, git, pip, npm, mock.patch, vitest, Node.js, browser automation, shell, and more  | ✅ Shipped                  |
-| **Content patterns** — trigger on file content or command output in addition to command string and file path                                          | 🔬 Tentative (post-harvest) |
-
-### Planned features
-
-| Feature                                                                                                                                                                                                                                            | Status     |
-| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
-| **CLI tool intelligence aggregation** — when 5+ lessons accumulate for a single tool (e.g. `tool:pytest`), auto-aggregate them into a coherent skill file in `skills/cli-intel/` that gets injected as a single unit instead of individual lessons | 📋 Phase 3 |
-| **LLM-assisted candidate classification** — pipe Tier 2 heuristic candidates through the current Claude session for structured review and schema population                                                                                        | 📋 Phase 3 |
-| **Project stack detection** — at runtime, detect presence of `pyproject.toml`, `package.json`, `go.mod` etc. and boost matching `lang:` lessons by +1 priority                                                                                     | 📋 Phase 4 |
-| **`--auto` scan mode** — fully automated heuristic-only classification for Tier 2 candidates without interactive review                                                                                                                            | 📋 Phase 4 |
-
-> **Status key:** ✅ Shipped · 🚧 Planned · 🔬 Tentative · 📋 Future phase
-
 ---
 
 ## Installation
 
-**Requirements:** Node.js ≥ 18, Claude Code
+### Requirements
 
-Clone the repo and add the hooks to `~/.claude/settings.json`:
+- Node.js ≥ 22.5
 
 ```bash
 git clone https://github.com/joeblackwaslike/lessons-learned.git ~/lessons-learned
+cd ~/lessons-learned
+npm ci
 ```
 
-Then add to `~/.claude/settings.json`:
+---
+
+### Claude Code
+
+Add to `~/.claude/settings.json`:
 
 ```json
 {
@@ -123,11 +52,11 @@ Then add to `~/.claude/settings.json`:
         "hooks": [
           {
             "type": "command",
-            "command": "node \"/absolute/path/to/lessons-learned/hooks/session-start-reset.mjs\""
+            "command": "node \"/Users/you/lessons-learned/hooks/session-start-reset.mjs\""
           },
           {
             "type": "command",
-            "command": "node \"/absolute/path/to/lessons-learned/hooks/session-start-lesson-protocol.mjs\""
+            "command": "node \"/Users/you/lessons-learned/hooks/session-start-lesson-protocol.mjs\""
           }
         ]
       },
@@ -136,7 +65,7 @@ Then add to `~/.claude/settings.json`:
         "hooks": [
           {
             "type": "command",
-            "command": "node \"/absolute/path/to/lessons-learned/hooks/session-start-scan.mjs\"",
+            "command": "node \"/Users/you/lessons-learned/hooks/session-start-scan.mjs\"",
             "timeout": 5
           }
         ]
@@ -148,7 +77,7 @@ Then add to `~/.claude/settings.json`:
         "hooks": [
           {
             "type": "command",
-            "command": "node \"/absolute/path/to/lessons-learned/hooks/pretooluse-lesson-inject.mjs\"",
+            "command": "node \"/Users/you/lessons-learned/hooks/pretooluse-lesson-inject.mjs\"",
             "timeout": 5
           }
         ]
@@ -160,7 +89,7 @@ Then add to `~/.claude/settings.json`:
         "hooks": [
           {
             "type": "command",
-            "command": "node \"/absolute/path/to/lessons-learned/hooks/subagent-start-lesson-protocol.mjs\"",
+            "command": "node \"/Users/you/lessons-learned/hooks/subagent-start-lesson-protocol.mjs\"",
             "timeout": 5
           }
         ]
@@ -170,17 +99,200 @@ Then add to `~/.claude/settings.json`:
 }
 ```
 
-Replace `/absolute/path/to/lessons-learned` with the actual path (e.g. `/Users/you/lessons-learned`).
+Replace `/Users/you/lessons-learned` with your actual clone path. Restart Claude Code for hooks to take effect.
 
-## Cross-agent setup
+> **Tip:** `echo $(pwd)` from inside the repo gives you the path to paste.
 
-The injection hook works across Claude Code, Codex, and Gemini CLI. Set `LESSONS_AGENT_PLATFORM` before the hook command to normalize tool names:
+---
+
+### Gemini CLI
+
+Set `LESSONS_AGENT_PLATFORM=gemini` so tool names are normalized correctly (`run_shell_command` → `Bash`, etc.).
+
+Add to your Gemini CLI config (typically `~/.gemini/settings.json`):
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "run_shell_command|read_file|write_file|replace_in_file|find_files",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "LESSONS_AGENT_PLATFORM=gemini node \"/Users/you/lessons-learned/hooks/pretooluse-lesson-inject.mjs\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+> **Note:** Gemini CLI's `BeforeTool` hook supports `additionalContext` injection in recent versions. Older versions may only support block decisions. Check your Gemini CLI version.
+
+---
+
+### OpenAI Codex
+
+Set `LESSONS_AGENT_PLATFORM=codex` so tool names are normalized (`shell` → `Bash`, `apply_patch` → `Edit`, etc.).
+
+Add to your Codex config:
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "shell|apply_patch|read_file|write_file|find_files",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "LESSONS_AGENT_PLATFORM=codex node \"/Users/you/lessons-learned/hooks/pretooluse-lesson-inject.mjs\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+---
+
+### opencode
+
+opencode uses the same tool names as Claude Code (`Bash`, `Read`, `Edit`, `Write`, `Glob`). Add to `opencode.json` in your project or `~/.config/opencode/opencode.json` globally:
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Read|Edit|Write|Glob",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"/Users/you/lessons-learned/hooks/pretooluse-lesson-inject.mjs\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+> **Note:** If your version of opencode does not yet support `PreToolUse` hooks natively, add the lesson protocol as a standing instruction via `opencode.json` `instructions` field or in your project's `AGENTS.md` — see [Manual injection](#manual-injection-cursor-and-agents-without-hook-support) below.
+
+---
+
+### Cursor
+
+Cursor does not expose a `PreToolUse` hook. Use the manual injection approach instead: add the lesson protocol and a summary of high-priority lessons to your `.cursorrules` file or project system prompt.
+
+Generate a snapshot of your current lessons for pasting:
+
+```bash
+node scripts/lessons.mjs list --format cursorrules > .cursorrules-lessons
+```
+
+Then include the output in your `.cursorrules` file. You'll need to regenerate this after adding or editing lessons.
+
+For richer integration, expose the lesson store via an MCP server and configure it in Cursor's MCP settings — see [MCP integration](#mcp-integration).
+
+---
+
+### OpenClaw
+
+OpenClaw supports tool call interception via the Plugin SDK's `before_tool_call` hook. Create a plugin and register the hook:
+
+```js
+// lessons-learned-plugin/index.js
+import { execSync } from 'node:child_process';
+
+export default {
+  name: 'lessons-learned',
+  hooks: {
+    before_tool_call({ tool, input }) {
+      const payload = JSON.stringify({
+        tool_name: tool,
+        tool_input: input,
+        session_id: process.env.SESSION_ID ?? 'openclaw',
+      });
+      const result = execSync(
+        `echo '${payload}' | node /Users/you/lessons-learned/hooks/pretooluse-lesson-inject.mjs`,
+        { encoding: 'utf8' }
+      );
+      const out = JSON.parse(result);
+      if (out?.hookSpecificOutput?.additionalContext) {
+        // prepend lesson context to the tool input or system message
+      }
+    },
+  },
+};
+```
+
+Register the plugin in your OpenClaw config. See the [Plugin Architecture docs](https://docs.openclaw.ai) for full integration details.
+
+---
+
+### Manual injection (Cursor and agents without hook support)
+
+For agents that don't support `PreToolUse` hooks, you can inject the lesson protocol and a high-priority lesson digest as a standing system prompt or rules file.
+
+**Step 1** — Export a lesson digest:
+
+```bash
+node scripts/lessons.mjs list --json | \
+  node -e "
+    const lessons = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
+    const top = lessons.filter(l => l.priority >= 7).slice(0, 15);
+    console.log('## Lessons — required reading\n');
+    top.forEach(l => console.log('- **' + l.summary + '**\n  Fix: ' + l.remediation));
+  "
+```
+
+**Step 2** — Paste the output into your agent's system prompt, `.cursorrules`, or `AGENTS.md`.
+
+**Step 3** — Re-run after adding new high-priority lessons.
+
+---
+
+### Tool name mapping
+
+| Canonical | Claude Code | Gemini CLI          | Codex         | opencode | OpenClaw     |
+| --------- | ----------- | ------------------- | ------------- | -------- | ------------ |
+| `Bash`    | `Bash`      | `run_shell_command` | `shell`       | `Bash`   | `bash`       |
+| `Read`    | `Read`      | `read_file`         | `read_file`   | `Read`   | `read_file`  |
+| `Edit`    | `Edit`      | `replace_in_file`   | `apply_patch` | `Edit`   | `edit_file`  |
+| `Write`   | `Write`     | `write_file`        | `write_file`  | `Write`  | `write_file` |
+| `Glob`    | `Glob`      | `find_files`        | `find_files`  | `Glob`   | `find_files` |
+
+Set `LESSONS_AGENT_PLATFORM` to normalize non-Claude-Code tool names automatically:
 
 | Platform     | `LESSONS_AGENT_PLATFORM` |
 | ------------ | ------------------------ |
 | Claude Code  | _(default, unset)_       |
-| OpenAI Codex | `codex`                  |
 | Gemini CLI   | `gemini`                 |
+| OpenAI Codex | `codex`                  |
+| opencode     | _(same as Claude Code)_  |
+
+---
+
+### MCP integration
+
+The lesson store can be exposed as an MCP tool server for agents that support MCP but not native hooks (e.g. Cursor, Windsurf):
+
+```bash
+# Coming soon — MCP server adapter
+# node scripts/lessons.mjs serve --mcp --port 3456
+```
+
+MCP adapter is on the roadmap. Until then, use [manual injection](#manual-injection-cursor-and-agents-without-hook-support).
+
+---
 
 ## CLI
 
@@ -193,42 +305,18 @@ node scripts/lessons.mjs <subcommand> [options]
 | Subcommand        | Purpose                                                           |
 | ----------------- | ----------------------------------------------------------------- |
 | `add`             | Add a new lesson interactively, from `--json`, `--file`, or stdin |
-| `build`           | Rebuild `data/lesson-manifest.json` from `data/lessons.json`      |
+| `build`           | Rebuild `data/lesson-manifest.json`                               |
 | `list`            | List all lessons with patterns and metadata                       |
 | `review`          | Review Tier 2 candidates against validation rules                 |
 | `scan`            | Incrementally scan session logs for new candidates                |
 | `scan candidates` | Full scan filtered to recurring cross-project patterns            |
 | `scan promote N`  | Promote candidate N into the lesson store                         |
 
-Run any subcommand with `--help` for full options. npm script aliases: `npm run scan`, `npm run build`.
+Run any subcommand with `--help` for full options. Shorthand: `npm run build`, `npm run scan`.
 
-## Lesson format
+---
 
-Lessons live in `data/lessons.json`. Key fields:
-
-```json
-{
-  "id": "pytest-tty-hanging-k9m2",
-  "summary": "pytest hangs in non-interactive envs due to TTY detection",
-  "mistake": "Running pytest directly in a non-interactive environment causes it to hang waiting for TTY input due to its automatic terminal detection.",
-  "remediation": "Use `python -m pytest --no-header -p no:faulthandler` or set TERM=dumb to disable TTY detection.",
-  "triggers": {
-    "commandPatterns": ["\\bpytest\\b(?!.*(--no-header|-p no:faulthandler|TERM=dumb))"],
-    "toolNames": ["Bash"]
-  },
-  "tags": ["lang:python", "tool:pytest", "severity:hang"],
-  "confidence": 0.95,
-  "priority": 8
-}
-```
-
-After editing `lessons.json` directly, always run:
-
-```bash
-node scripts/lessons.mjs build
-```
-
-### Emitting lessons from sessions
+## Emitting lessons
 
 When Claude encounters and recovers from a mistake, it emits a structured tag:
 
@@ -244,34 +332,65 @@ tags: tool:git, severity:data-loss
 
 These are automatically picked up by the scanner on the next session start.
 
+---
+
 ## Configuration
 
-`data/config.json` controls injection and scanning behavior:
+`data/config.json` controls injection and scanning behavior. Every field has a `LESSONS_*` environment variable equivalent that takes precedence.
 
-| Field                    | Default                   | Purpose                                |
-| ------------------------ | ------------------------- | -------------------------------------- |
-| `injectionBudgetBytes`   | `4096`                    | Max bytes injected per hook call       |
-| `maxLessonsPerInjection` | `3`                       | Max lessons injected per tool call     |
-| `minConfidence`          | `0.5`                     | Minimum confidence to inject           |
-| `minPriority`            | `1`                       | Minimum priority to inject             |
-| `scanPaths`              | `["~/.claude/projects/"]` | Directories scanned for session logs   |
-| `autoScanIntervalHours`  | `24`                      | Minimum hours between background scans |
+| Field                            | Default                   | Env var                                    |
+| -------------------------------- | ------------------------- | ------------------------------------------ |
+| `injectionBudgetBytes`           | `4096`                    | `LESSONS_INJECTION_BUDGET_BYTES`           |
+| `maxLessonsPerInjection`         | `3`                       | `LESSONS_MAX_LESSONS_PER_INJECTION`        |
+| `minConfidence`                  | `0.5`                     | `LESSONS_MIN_CONFIDENCE`                   |
+| `minPriority`                    | `1`                       | `LESSONS_MIN_PRIORITY`                     |
+| `compactionReinjectionThreshold` | `7`                       | `LESSONS_COMPACTION_REINJECTION_THRESHOLD` |
+| `scanPaths`                      | `["~/.claude/projects/"]` | `LESSONS_SCAN_PATHS` _(colon-separated)_   |
+| `autoScanIntervalHours`          | `24`                      | `LESSONS_AUTO_SCAN_INTERVAL_HOURS`         |
+| `maxCandidatesPerScan`           | `50`                      | `LESSONS_MAX_CANDIDATES_PER_SCAN`          |
 
-## Two-tier scanning
+---
 
-**Tier 1 (structured):** Greps for `#lesson … #/lesson` tags emitted by Claude. High confidence — auto-promotes on interactive review.
+## Features
 
-**Tier 2 (heuristic):** Sliding-window pattern detection over JSONL session logs. Identifies error→correction sequences without explicit tags. Requires manual promotion via `lessons scan promote`.
+### Core pipeline
 
-## Lesson store
+| Feature                                                                             | Status     |
+| ----------------------------------------------------------------------------------- | ---------- |
+| PreToolUse injection — 6-stage match→dedup→select→inject pipeline                   | ✅ Shipped |
+| Negative-lookahead patterns — suppress injection when fix is already applied        | ✅ Shipped |
+| Injection budget — configurable byte cap (default 4 KB) + lesson cap (default 3)    | ✅ Shipped |
+| Manifest pre-compilation — hot-path hook does zero file I/O beyond loading manifest | ✅ Shipped |
+| Tool call blocking — `block: true` denies the tool call entirely with a reason      | ✅ Shipped |
 
-The repo ships with 30 curated seed lessons covering common failure patterns:
+### Dedup and session management
 
-- Python: pytest TTY hang, mock.patch namespace, pip venv targeting, virtualenv vars
-- JavaScript/Node: vitest parallel isolation, npm link peer deps, Node.js deprecation warnings
-- Git: stash untracked files, heredoc commit messages, commit signing conflicts
-- Browser/CDP: Chrome DevTools ECONNREFUSED, async eval returning undefined
-- Shell/tools: oh-my-zsh NVM warnings, pre-commit hook failures, Biome v2 config schema
+| Feature                                                                                     | Status     |
+| ------------------------------------------------------------------------------------------- | ---------- |
+| 3-layer dedup — env var + session temp file + O_EXCL claim dir; once per session per lesson | ✅ Shipped |
+| Context compaction re-injection — high-priority lessons re-inject after `/compact`          | ✅ Shipped |
+| Session reset — all dedup state wiped on `clear` events                                     | ✅ Shipped |
+
+### Lesson discovery
+
+| Feature                                                                               | Status     |
+| ------------------------------------------------------------------------------------- | ---------- |
+| Tier 1 scanner — structured `#lesson` tag parsing; ~95% accuracy                      | ✅ Shipped |
+| Tier 2 scanner — heuristic sliding-window error→correction detection                  | ✅ Shipped |
+| Incremental scanning — byte-offset tracking; constant ~1 MB memory                    | ✅ Shipped |
+| Confidence + priority scoring — multi-session, multi-project, hang/correction signals | ✅ Shipped |
+| Background scan on startup                                                            | ✅ Shipped |
+
+### Planned
+
+| Feature                                                                             | Status     |
+| ----------------------------------------------------------------------------------- | ---------- |
+| MCP server adapter for Cursor / Windsurf / agents without hook support              | 📋 Roadmap |
+| CLI tool intelligence aggregation — aggregate 5+ per-tool lessons into a skill file | 📋 Roadmap |
+| LLM-assisted Tier 2 candidate classification                                        | 📋 Roadmap |
+| Project stack detection — boost `lang:` lessons when relevant lockfiles detected    | 📋 Roadmap |
+
+---
 
 ## Development
 
@@ -279,10 +398,11 @@ The repo ships with 30 curated seed lessons covering common failure patterns:
 npm ci
 npm run lint        # ESLint
 npm run typecheck   # tsc --checkJs
-npm test            # all 188 tests
+npm test            # all tests
+just --list         # all dev tasks
 ```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for adding lessons and the full test architecture.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full workflow and [docs](https://joeblackwaslike.github.io/lessons-learned) for the complete reference.
 
 ## License
 
