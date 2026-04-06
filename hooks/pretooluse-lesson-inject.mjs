@@ -44,8 +44,15 @@ try {
 }
 
 const config = manifest.config ?? {};
-const maxLessons = config.maxLessonsPerInjection ?? 3;
-const budgetBytes = config.injectionBudgetBytes ?? 4096;
+// Runtime env var overrides take precedence over manifest-embedded config
+const maxLessons =
+  process.env.LESSONS_MAX_LESSONS_PER_INJECTION !== undefined
+    ? parseInt(process.env.LESSONS_MAX_LESSONS_PER_INJECTION, 10)
+    : (config.maxLessonsPerInjection ?? 3);
+const budgetBytes =
+  process.env.LESSONS_INJECTION_BUDGET_BYTES !== undefined
+    ? parseInt(process.env.LESSONS_INJECTION_BUDGET_BYTES, 10)
+    : (config.injectionBudgetBytes ?? 4096);
 
 // ─── Stage 3: Match + Block check ───────────────────────────────────
 

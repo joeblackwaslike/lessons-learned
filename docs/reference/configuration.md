@@ -4,13 +4,30 @@ Full reference for all fields in `data/config.json`.
 
 Schema: [`schemas/config.schema.json`](../../schemas/config.schema.json)
 
+Every field has an environment variable equivalent that takes precedence over the config file. Env vars are read at runtime — no config file edit or manifest rebuild is required.
+
+| Field                            | Environment variable                       | Type    |
+| -------------------------------- | ------------------------------------------ | ------- |
+| `injectionBudgetBytes`           | `LESSONS_INJECTION_BUDGET_BYTES`           | integer |
+| `maxLessonsPerInjection`         | `LESSONS_MAX_LESSONS_PER_INJECTION`        | integer |
+| `minConfidence`                  | `LESSONS_MIN_CONFIDENCE`                   | float   |
+| `minPriority`                    | `LESSONS_MIN_PRIORITY`                     | integer |
+| `compactionReinjectionThreshold` | `LESSONS_COMPACTION_REINJECTION_THRESHOLD` | integer |
+| `scanPaths`                      | `LESSONS_SCAN_PATHS` _(colon-separated)_   | string  |
+| `autoScanIntervalHours`          | `LESSONS_AUTO_SCAN_INTERVAL_HOURS`         | integer |
+| `maxCandidatesPerScan`           | `LESSONS_MAX_CANDIDATES_PER_SCAN`          | integer |
+| _(config file path)_             | `LESSONS_CONFIG_PATH`                      | path    |
+
+!!! note "Rebuild requirement"
+Env vars for `minConfidence` and `minPriority` only take effect at manifest build time (`node scripts/lessons.mjs build`). The injection hook reads these from the embedded manifest config, not directly from env. All other env vars are read at hook runtime.
+
 ---
 
 ## Injection settings
 
 ### `injectionBudgetBytes`
 
-**Type:** `integer` **Default:** `4096` **Min:** `256`
+**Type:** `integer` **Default:** `4096` **Min:** `256` **Env:** `LESSONS_INJECTION_BUDGET_BYTES`
 
 Maximum total bytes of lesson text injected as `additionalContext` per hook invocation.
 
@@ -26,7 +43,7 @@ The first lesson is always injected regardless of budget.
 
 ### `maxLessonsPerInjection`
 
-**Type:** `integer` **Default:** `3` **Min:** `1` **Max:** `10`
+**Type:** `integer` **Default:** `3` **Min:** `1` **Max:** `10` **Env:** `LESSONS_MAX_LESSONS_PER_INJECTION`
 
 Hard cap on the number of lessons injected per hook invocation. Applied after priority sorting, before the byte budget check.
 
@@ -36,7 +53,7 @@ Set to `1` for maximum focus on the single highest-priority lesson. Set higher t
 
 ### `minConfidence`
 
-**Type:** `number` **Default:** `0.5` **Range:** `0.0–1.0`
+**Type:** `number` **Default:** `0.5` **Range:** `0.0–1.0` **Env:** `LESSONS_MIN_CONFIDENCE`
 
 Lessons with `confidence` below this value are excluded from the manifest at `lessons build` time. They still exist in `lessons.json`.
 
@@ -53,7 +70,7 @@ Changes require `node scripts/lessons.mjs build`.
 
 ### `minPriority`
 
-**Type:** `integer` **Default:** `1` **Range:** `1–10`
+**Type:** `integer` **Default:** `1` **Range:** `1–10` **Env:** `LESSONS_MIN_PRIORITY`
 
 Lessons with `priority` below this value are excluded from the manifest. Use to suppress low-confidence or low-priority lessons from injection without archiving them.
 
@@ -63,7 +80,7 @@ Changes require `node scripts/lessons.mjs build`.
 
 ### `compactionReinjectionThreshold`
 
-**Type:** `integer` **Default:** `7` **Range:** `1–10`
+**Type:** `integer` **Default:** `7` **Range:** `1–10` **Env:** `LESSONS_COMPACTION_REINJECTION_THRESHOLD`
 
 After Claude Code's `/compact` command compresses the conversation, dedup state is partially cleared. Lessons with `priority >= compactionReinjectionThreshold` have their dedup entries removed, allowing them to re-inject in the new context window.
 
@@ -75,7 +92,7 @@ Set lower to re-inject more lessons after compaction. Set to `10` to prevent any
 
 ### `scanPaths`
 
-**Type:** `string[]` **Default:** `["~/.claude/projects/"]`
+**Type:** `string[]` **Default:** `["~/.claude/projects/"]` **Env:** `LESSONS_SCAN_PATHS` _(colon-separated)_
 
 Directories to search for Claude Code session JSONL files. Tilde (`~`) is expanded at scan time.
 
@@ -85,7 +102,7 @@ Add additional paths if your agent writes session logs to non-standard locations
 
 ### `autoScanIntervalHours`
 
-**Type:** `integer` **Default:** `24` **Min:** `1`
+**Type:** `integer` **Default:** `24` **Min:** `1` **Env:** `LESSONS_AUTO_SCAN_INTERVAL_HOURS`
 
 Minimum interval between automatic background scans in hours. The background scan (fired on session `startup`) is skipped if the last scan was less than this many hours ago.
 
@@ -97,7 +114,7 @@ Note: setting to `0` is not in the schema minimum (`1`) — force a scan manuall
 
 ### `maxCandidatesPerScan`
 
-**Type:** `integer` **Default:** `50` **Min:** `1`
+**Type:** `integer` **Default:** `50` **Min:** `1` **Env:** `LESSONS_MAX_CANDIDATES_PER_SCAN`
 
 Maximum number of candidates written per scan run. Prevents unbounded candidate accumulation in repositories with very large session archives.
 

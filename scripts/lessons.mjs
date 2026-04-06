@@ -61,7 +61,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const PLUGIN_ROOT = join(__dirname, '..');
 const DATA_DIR = process.env.LESSONS_DATA_DIR ?? join(PLUGIN_ROOT, 'data');
 const MANIFEST_PATH = process.env.LESSONS_MANIFEST_PATH ?? join(DATA_DIR, 'lesson-manifest.json');
-const CONFIG_PATH = join(DATA_DIR, 'config.json');
+const CONFIG_PATH = process.env.LESSONS_CONFIG_PATH ?? join(DATA_DIR, 'config.json');
 const REVIEW_SESSIONS_DIR = join(DATA_DIR, 'review-sessions');
 const DEFAULT_SCAN_PATH = join(homedir(), '.claude', 'projects');
 
@@ -382,6 +382,58 @@ function buildTriggers(input) {
   return triggers;
 }
 
+// ─── Config loading ──────────────────────────────────────────────────
+
+/**
+ * Load config.json and apply LESSONS_* environment variable overrides.
+ *
+ * Environment variables (all optional):
+ *   LESSONS_CONFIG_PATH                    — override path to config.json
+ *   LESSONS_INJECTION_BUDGET_BYTES         — injectionBudgetBytes (integer)
+ *   LESSONS_MAX_LESSONS_PER_INJECTION      — maxLessonsPerInjection (integer)
+ *   LESSONS_MIN_CONFIDENCE                 — minConfidence (float)
+ *   LESSONS_MIN_PRIORITY                   — minPriority (integer)
+ *   LESSONS_COMPACTION_REINJECTION_THRESHOLD — compactionReinjectionThreshold (integer)
+ *   LESSONS_SCAN_PATHS                     — scanPaths (colon-separated list)
+ *   LESSONS_AUTO_SCAN_INTERVAL_HOURS       — autoScanIntervalHours (integer)
+ *   LESSONS_MAX_CANDIDATES_PER_SCAN        — maxCandidatesPerScan (integer)
+ *
+ * @returns {Record<string, unknown>}
+ */
+function loadConfig() {
+  let base = {};
+  try {
+    base = JSON.parse(readFileSync(CONFIG_PATH, 'utf8'));
+  } catch {
+    // missing config.json is fine — defaults apply
+  }
+
+  const env = process.env;
+  const overrides = {};
+
+  if (env.LESSONS_INJECTION_BUDGET_BYTES !== undefined)
+    overrides.injectionBudgetBytes = parseInt(env.LESSONS_INJECTION_BUDGET_BYTES, 10);
+  if (env.LESSONS_MAX_LESSONS_PER_INJECTION !== undefined)
+    overrides.maxLessonsPerInjection = parseInt(env.LESSONS_MAX_LESSONS_PER_INJECTION, 10);
+  if (env.LESSONS_MIN_CONFIDENCE !== undefined)
+    overrides.minConfidence = parseFloat(env.LESSONS_MIN_CONFIDENCE);
+  if (env.LESSONS_MIN_PRIORITY !== undefined)
+    overrides.minPriority = parseInt(env.LESSONS_MIN_PRIORITY, 10);
+  if (env.LESSONS_COMPACTION_REINJECTION_THRESHOLD !== undefined)
+    overrides.compactionReinjectionThreshold = parseInt(
+      env.LESSONS_COMPACTION_REINJECTION_THRESHOLD,
+      10
+    );
+  if (env.LESSONS_SCAN_PATHS !== undefined)
+    overrides.scanPaths = env.LESSONS_SCAN_PATHS.split(':').filter(Boolean);
+  if (env.LESSONS_AUTO_SCAN_INTERVAL_HOURS !== undefined)
+    overrides.autoScanIntervalHours = parseInt(env.LESSONS_AUTO_SCAN_INTERVAL_HOURS, 10);
+  if (env.LESSONS_MAX_CANDIDATES_PER_SCAN !== undefined)
+    overrides.maxCandidatesPerScan = parseInt(env.LESSONS_MAX_CANDIDATES_PER_SCAN, 10);
+
+  return { ...base, ...overrides };
+}
+
 // ─── Manifest building ───────────────────────────────────────────────
 
 function buildManifest() {
@@ -389,7 +441,7 @@ function buildManifest() {
   const lessons = getActiveRecords(db);
   closeDb(db);
 
-  const config = JSON.parse(readFileSync(CONFIG_PATH, 'utf8'));
+  const config = loadConfig();
   const minConfidence = config.minConfidence ?? 0.5;
   const minPriority = config.minPriority ?? 1;
 

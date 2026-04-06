@@ -2,9 +2,39 @@
 
 All settings live in `data/config.json`. The file is read at hook time — no restart needed after changes unless you modify injection budget or lesson thresholds that affect the manifest.
 
+Every setting has an environment variable equivalent that takes precedence over `config.json`. This lets you override settings per-session or in CI without editing the config file.
+
 ---
 
-## Quick reference
+## Environment variable quick reference
+
+| Setting                          | Environment variable                       |
+| -------------------------------- | ------------------------------------------ |
+| `injectionBudgetBytes`           | `LESSONS_INJECTION_BUDGET_BYTES`           |
+| `maxLessonsPerInjection`         | `LESSONS_MAX_LESSONS_PER_INJECTION`        |
+| `minConfidence`                  | `LESSONS_MIN_CONFIDENCE`                   |
+| `minPriority`                    | `LESSONS_MIN_PRIORITY`                     |
+| `compactionReinjectionThreshold` | `LESSONS_COMPACTION_REINJECTION_THRESHOLD` |
+| `scanPaths`                      | `LESSONS_SCAN_PATHS` _(colon-separated)_   |
+| `autoScanIntervalHours`          | `LESSONS_AUTO_SCAN_INTERVAL_HOURS`         |
+| `maxCandidatesPerScan`           | `LESSONS_MAX_CANDIDATES_PER_SCAN`          |
+| _(config file path)_             | `LESSONS_CONFIG_PATH`                      |
+
+Example — inject only the top lesson, temporarily:
+
+```bash
+LESSONS_MAX_LESSONS_PER_INJECTION=1 node hooks/pretooluse-lesson-inject.mjs
+```
+
+Example — use a custom config file:
+
+```bash
+LESSONS_CONFIG_PATH=/tmp/ci-config.json node scripts/lessons.mjs build
+```
+
+---
+
+## Config file quick reference
 
 ```json
 {
@@ -40,7 +70,7 @@ These control what gets injected and how much.
 
 ### `injectionBudgetBytes`
 
-**Default:** `4096`
+**Default:** `4096` · **Env:** `LESSONS_INJECTION_BUDGET_BYTES`
 
 Maximum number of bytes of `additionalContext` injected per tool call. When multiple lessons match, they are added in priority order until the budget is exhausted. If a lesson's full text doesn't fit the remaining budget, the hook falls back to the one-line summary. If even the summary doesn't fit, the lesson is dropped for that call.
 
@@ -54,7 +84,7 @@ The budget does not accumulate across calls — it resets on every tool invocati
 
 ### `maxLessonsPerInjection`
 
-**Default:** `3`
+**Default:** `3` · **Env:** `LESSONS_MAX_LESSONS_PER_INJECTION`
 
 Maximum number of lessons injected per tool call, regardless of budget. Lessons are ranked by priority (descending) before the cap is applied.
 
@@ -66,7 +96,7 @@ Maximum number of lessons injected per tool call, regardless of budget. Lessons 
 
 ### `minConfidence`
 
-**Default:** `0.5`
+**Default:** `0.5` · **Env:** `LESSONS_MIN_CONFIDENCE`
 
 Lessons with `confidence` below this value are excluded from the manifest at build time. They still exist in `lessons.json` — they just don't inject.
 
@@ -88,7 +118,7 @@ Changes take effect after `node scripts/lessons.mjs build`.
 
 ### `minPriority`
 
-**Default:** `1`
+**Default:** `1` · **Env:** `LESSONS_MIN_PRIORITY`
 
 Lessons with `priority` below this value are excluded from the manifest. Priority 1 means "include everything except priority 0". Priority 0 is effectively disabled.
 
@@ -96,7 +126,7 @@ Changes take effect after `node scripts/lessons.mjs build`.
 
 ### `compactionReinjectionThreshold`
 
-**Default:** `7`
+**Default:** `7` · **Env:** `LESSONS_COMPACTION_REINJECTION_THRESHOLD`
 
 When Claude Code compacts the conversation (`/compact`), the dedup state is partially cleared. Lessons with `priority >= compactionReinjectionThreshold` have their dedup entries removed, so they will re-inject in the new context window even if they already fired earlier in the session.
 
@@ -116,13 +146,13 @@ These control how the background scanner discovers lesson candidates from sessio
 
 ### `scanPaths`
 
-**Default:** `["~/.claude/projects/"]`
+**Default:** `["~/.claude/projects/"]` · **Env:** `LESSONS_SCAN_PATHS` _(colon-separated)_
 
 Array of directory paths the scanner searches for JSONL session files. Tilde (`~`) is expanded at scan time. Add additional directories if your agent writes session logs elsewhere.
 
 ### `autoScanIntervalHours`
 
-**Default:** `24`
+**Default:** `24` · **Env:** `LESSONS_AUTO_SCAN_INTERVAL_HOURS`
 
 Minimum interval between automatic background scans, in hours. The scanner runs on session `startup` — if the last scan was less than `autoScanIntervalHours` ago, the startup scan is skipped.
 
@@ -130,7 +160,7 @@ Set to `0` to scan on every session startup (higher CPU cost on large log direct
 
 ### `maxCandidatesPerScan`
 
-**Default:** `50`
+**Default:** `50` · **Env:** `LESSONS_MAX_CANDIDATES_PER_SCAN`
 
 Maximum number of candidates written per scan run. Once the limit is reached, the scan stops processing new files. Prevents unbounded candidate accumulation in repos with very large session logs.
 
