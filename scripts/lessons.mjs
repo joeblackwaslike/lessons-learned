@@ -234,9 +234,8 @@ Options:
   --patch '<json>' JSON object of fields to update
 
 Patchable fields:
-  summary, mistake, remediation, injection, injectOn,
-  commandPatterns, pathPatterns, priority, confidence,
-  tags, block, blockReason
+  summary, mistake, remediation, type, injection,
+  commandPatterns, pathPatterns, priority, confidence, tags
 
 Notes:
   - Status is not changed — active lessons stay active, candidates stay candidates.
@@ -489,8 +488,6 @@ function buildManifest() {
       })
       .filter(Boolean);
 
-    const sessionStart = lesson.type === 'directive' || lesson.type === 'protocol';
-
     manifestLessons[lesson.id] = {
       slug: lesson.slug,
       type: lesson.type ?? 'hint',
@@ -501,7 +498,6 @@ function buildManifest() {
       tags: lesson.tags ?? [],
       message: buildInjection(lesson),
       summary: lesson.summary,
-      sessionStart,
       ...(isDisabled ? { disabled: true } : {}),
     };
     included++;

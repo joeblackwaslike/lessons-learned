@@ -154,6 +154,6 @@ describe('schema: block output', () => {
     const out = JSON.parse(stdout);
     const reason = out.hookSpecificOutput.permissionDecisionReason;
     assert.equal(typeof reason, 'string');
-    assert.ok(reason.length > 0, 'blockReason must not be empty');
+    assert.ok(reason.length > 0, 'permissionDecisionReason must not be empty');
   });
 });

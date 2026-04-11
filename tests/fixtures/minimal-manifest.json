@@ -12,6 +12,7 @@
   "lessons": {
     "01JQTEST0000000000000001": {
       "slug": "pytest-no-header-test",
+      "type": "guard",
       "priority": 9,
       "toolNames": ["Bash"],
       "commandRegexSources": [
@@ -19,10 +20,8 @@
       ],
       "pathRegexSources": [],
       "tags": ["lang:python", "tool:pytest", "severity:hang"],
-      "type": "guard",
       "message": "## REQUIRED: pytest TTY fix\nAdd `-p no:faulthandler --no-header` to every pytest command.\nRerun as: pytest -p no:faulthandler --no-header",
-      "summary": "pytest hangs without TTY flags",
-      "sessionStart": false
+      "summary": "pytest hangs without TTY flags"
     },
     "01JQTEST0000000000000002": {
       "slug": "mock-patch-namespace-test",
@@ -33,8 +32,7 @@
       "pathRegexSources": [{ "source": "test.*\\.py$", "flags": "i" }],
       "tags": ["lang:python", "tool:unittest", "topic:testing"],
       "message": "## Lesson: mock.patch namespace\nPatch where the name is looked up, not where it is defined.",
-      "summary": "mock.patch must target the importing module namespace",
-      "sessionStart": false
+      "summary": "mock.patch must target the importing module namespace"
     }
   }
 }

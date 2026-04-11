@@ -77,7 +77,7 @@ export function matchLessons(lessons, toolName, command, filePath) {
 
 /**
  * Find the first blocking lesson in a match list, if any.
- * Substitutes `{command}` in the blockReason with the actual command (capped at 120 chars).
+ * Substitutes `{command}` in the message with the actual command (capped at 120 chars).
  *
  * @param {Match[]} matches
  * @param {string} command

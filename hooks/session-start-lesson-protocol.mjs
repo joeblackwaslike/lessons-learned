@@ -67,7 +67,7 @@ function main() {
   try {
     const manifest = JSON.parse(readFileSync(MANIFEST_PATH, 'utf8'));
     const reasoningLessons = Object.values(manifest.lessons).filter(
-      l => l.sessionStart === true && !l.disabled
+      l => (l.type === 'protocol' || l.type === 'directive') && !l.disabled
     );
 
     if (reasoningLessons.length > 0) {

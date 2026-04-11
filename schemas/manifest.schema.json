@@ -64,11 +64,16 @@
     },
     "manifestLesson": {
       "type": "object",
-      "required": ["slug", "priority", "toolNames", "injection", "summary"],
+      "required": ["slug", "type", "priority", "toolNames", "message", "summary"],
       "properties": {
         "slug": {
           "type": "string",
           "description": "For logging and dedup claim filenames"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["directive", "guard", "hint", "protocol"],
+          "description": "Injection behavior: hint=context injection, guard=deny tool call, protocol=session-start only, directive=session-start + PreToolUse"
         },
         "priority": {
           "type": "integer",
@@ -98,13 +103,17 @@
           "items": { "type": "string" },
           "description": "For optional tag-based scoring"
         },
-        "injection": {
+        "message": {
           "type": "string",
           "description": "Pre-rendered markdown. The ONLY content read for injection. No file I/O needed."
         },
         "summary": {
           "type": "string",
-          "description": "Fallback if injection exceeds remaining budget"
+          "description": "Fallback if message exceeds remaining budget"
+        },
+        "disabled": {
+          "type": "boolean",
+          "description": "If true, lesson is excluded from all matching. Only present when true."
         }
       },
       "additionalProperties": false

@@ -67,18 +67,25 @@ This pattern fires on `pytest tests/` but not on `pytest --no-header tests/` —
 | 4–6   | Good-to-know patterns                     |
 | 1–3   | Situational, low-frequency                |
 
-### Blocking a tool call
+### Lesson types
 
-Set `block: true` and `blockReason` to deny the tool call entirely:
+The `type` field controls how a lesson affects tool calls:
 
-```json
-{
-  "block": true,
-  "blockReason": "pytest without --no-header hangs. Rerun as: {command} --no-header -p no:faulthandler"
-}
+| Type        | Behavior                                                    |
+| ----------- | ----------------------------------------------------------- |
+| `hint`      | Inject as `additionalContext` on matching tool call         |
+| `guard`     | Deny the tool call entirely; message shown to the agent     |
+| `protocol`  | Inject at session start (reasoning reminders)               |
+| `directive` | Inject at session start and on matching tool calls          |
+
+**Guard lessons** (blocking): set `type: "guard"` to deny a tool call entirely. The `message` field is shown to the agent as the denial reason. Use `{command}` in the message for a substituted snippet of the actual command (truncated to 120 chars):
+
+```yaml
+type: guard
+message: "pytest without --no-header hangs. Rerun as: {command} --no-header -p no:faulthandler"
 ```
 
-`{command}` in `blockReason` is substituted with the actual command at block time (truncated to 120 chars). Use blocking sparingly — only for commands with known data-loss or irreversible consequences.
+Use guard sparingly — only for commands with known data-loss or irreversible consequences.
 
 ---
 

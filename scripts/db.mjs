@@ -358,8 +358,8 @@ export function insertCandidateBatch(db, records) {
 /**
  * Promote records to status='active'. Applies optional per-id field patches first.
  *
- * Patchable fields: summary, mistake, remediation, injection, injectOn,
- * commandPatterns, pathPatterns, priority, confidence, tags, block, blockReason
+ * Patchable fields: summary, mistake, remediation, type, injection,
+ * commandPatterns, pathPatterns, priority, confidence, tags
  *
  * @param {DatabaseSync} db
  * @param {string[]} ids
@@ -380,15 +380,13 @@ export function promoteToActive(db, ids, patches = {}) {
           'summary',
           'mistake',
           'remediation',
+          'type',
           'injection',
-          'injectOn',
           'commandPatterns',
           'pathPatterns',
           'priority',
           'confidence',
           'tags',
-          'block',
-          'blockReason',
         ];
         const fields = Object.keys(patch).filter(k => PATCHABLE.includes(k));
         if (fields.length > 0) {
@@ -396,13 +394,7 @@ export function promoteToActive(db, ids, patches = {}) {
           const values = { id };
           for (const f of fields) {
             const val = patch[f];
-            values[f] = Array.isArray(val)
-              ? JSON.stringify(val)
-              : f === 'block'
-                ? val
-                  ? 1
-                  : 0
-                : val;
+            values[f] = Array.isArray(val) ? JSON.stringify(val) : val;
           }
           db.prepare(`UPDATE lessons SET ${setClauses}, updatedAt = :now WHERE id = :id`).run({
             ...values,
