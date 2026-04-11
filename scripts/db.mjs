@@ -21,14 +21,7 @@ const DATA_DIR = process.env.LESSONS_DATA_DIR ?? join(PLUGIN_ROOT, 'data');
 export const DB_PATH = process.env.LESSONS_DB_PATH ?? join(DATA_DIR, 'lessons.db');
 
 // JSON columns that need parse/stringify on every row.
-const JSON_COLUMNS = [
-  'injectOn',
-  'toolNames',
-  'commandPatterns',
-  'pathPatterns',
-  'tags',
-  'sourceSessionIds',
-];
+const JSON_COLUMNS = ['toolNames', 'commandPatterns', 'pathPatterns', 'tags', 'sourceSessionIds'];
 
 // ─── Schema ──────────────────────────────────────────────────────────
 
@@ -39,17 +32,15 @@ CREATE TABLE IF NOT EXISTS lessons (
   id               TEXT PRIMARY KEY,
   slug             TEXT NOT NULL UNIQUE,
   status           TEXT NOT NULL DEFAULT 'candidate'
-                   CHECK(status IN ('candidate','reviewed','active','archived')),
+                   CHECK(status IN ('candidate','reviewed','active','disabled','archived')),
+  type             TEXT NOT NULL DEFAULT 'hint'
+                   CHECK(type IN ('directive','guard','hint','protocol')),
   summary          TEXT NOT NULL,
   mistake          TEXT NOT NULL,
   remediation      TEXT NOT NULL,
-  injection        TEXT,
-  injectOn         TEXT NOT NULL DEFAULT '[]',
   toolNames        TEXT NOT NULL DEFAULT '[]',
   commandPatterns  TEXT NOT NULL DEFAULT '[]',
   pathPatterns     TEXT NOT NULL DEFAULT '[]',
-  block            INTEGER NOT NULL DEFAULT 0,
-  blockReason      TEXT,
   priority         INTEGER NOT NULL DEFAULT 5,
   confidence       REAL NOT NULL DEFAULT 0.8,
   tags             TEXT NOT NULL DEFAULT '[]',
@@ -83,6 +74,7 @@ CREATE INDEX IF NOT EXISTS idx_lessons_hash            ON lessons(contentHash);
 export function openDb(path = DB_PATH) {
   const db = new DatabaseSync(path);
   initSchema(db);
+  applyMigrations(db);
   return db;
 }
 
@@ -100,6 +92,81 @@ export function closeDb(db) {
  */
 export function initSchema(db) {
   db.exec(SCHEMA_SQL);
+}
+
+function applyMigrations(db) {
+  const cols = db
+    .prepare('PRAGMA table_info(lessons)')
+    .all()
+    .map(r => r.name);
+
+  // Migration: add type taxonomy + remove redundant columns
+  if (!cols.includes('type')) {
+    db.exec(`ALTER TABLE lessons ADD COLUMN type TEXT NOT NULL DEFAULT 'hint'`);
+
+    // Backfill type from old block/injectOn fields (still present at this point)
+    db.exec(`UPDATE lessons SET type='guard' WHERE block=1`);
+    db.exec(`UPDATE lessons SET type='protocol' WHERE injectOn='["SessionStart"]' AND block=0`);
+
+    // Fold the rerun guidance into the pytest guard lesson's remediation
+    db.exec(
+      `UPDATE lessons SET remediation = remediation || char(10) || 'Rerun as: pytest -p no:faulthandler --no-header'` +
+        ` WHERE slug LIKE 'pytest-tty-hanging%'`
+    );
+
+    // Recreate table to drop columns + update CHECK constraints (SQLite requirement)
+    db.exec('BEGIN');
+    db.exec(`
+      CREATE TABLE lessons_new (
+        id               TEXT PRIMARY KEY,
+        slug             TEXT NOT NULL UNIQUE,
+        status           TEXT NOT NULL DEFAULT 'candidate'
+                         CHECK(status IN ('candidate','reviewed','active','disabled','archived')),
+        type             TEXT NOT NULL DEFAULT 'hint'
+                         CHECK(type IN ('directive','guard','hint','protocol')),
+        summary          TEXT NOT NULL,
+        mistake          TEXT NOT NULL,
+        remediation      TEXT NOT NULL,
+        toolNames        TEXT NOT NULL DEFAULT '[]',
+        commandPatterns  TEXT NOT NULL DEFAULT '[]',
+        pathPatterns     TEXT NOT NULL DEFAULT '[]',
+        priority         INTEGER NOT NULL DEFAULT 5,
+        confidence       REAL NOT NULL DEFAULT 0.8,
+        tags             TEXT NOT NULL DEFAULT '[]',
+        source           TEXT NOT NULL DEFAULT 'heuristic'
+                         CHECK(source IN ('structured','heuristic','manual')),
+        sourceSessionIds TEXT NOT NULL DEFAULT '[]',
+        occurrenceCount  INTEGER NOT NULL DEFAULT 0,
+        sessionCount     INTEGER NOT NULL DEFAULT 0,
+        projectCount     INTEGER NOT NULL DEFAULT 0,
+        contentHash      TEXT NOT NULL,
+        createdAt        TEXT NOT NULL,
+        updatedAt        TEXT NOT NULL,
+        reviewedAt       TEXT,
+        archivedAt       TEXT,
+        archiveReason    TEXT
+      )
+    `);
+    db.exec(`
+      INSERT INTO lessons_new
+        SELECT id, slug, status, type, summary, mistake, remediation,
+               toolNames, commandPatterns, pathPatterns,
+               priority, confidence, tags, source, sourceSessionIds,
+               occurrenceCount, sessionCount, projectCount,
+               contentHash, createdAt, updatedAt, reviewedAt, archivedAt, archiveReason
+        FROM lessons
+    `);
+    db.exec('DROP TABLE lessons');
+    db.exec('ALTER TABLE lessons_new RENAME TO lessons');
+    db.exec('COMMIT');
+
+    db.exec('CREATE INDEX IF NOT EXISTS idx_lessons_status          ON lessons(status)');
+    db.exec('CREATE INDEX IF NOT EXISTS idx_lessons_priority        ON lessons(priority DESC)');
+    db.exec(
+      'CREATE INDEX IF NOT EXISTS idx_lessons_status_priority ON lessons(status, priority DESC)'
+    );
+    db.exec('CREATE INDEX IF NOT EXISTS idx_lessons_hash            ON lessons(contentHash)');
+  }
 }
 
 // ─── Serialization ───────────────────────────────────────────────────
@@ -122,7 +189,6 @@ export function deserializeRow(row) {
       plain[col] = [];
     }
   }
-  plain.block = plain.block === 1 || plain.block === true;
   return plain;
 }
 
@@ -133,7 +199,6 @@ function serializeRecord(record) {
       out[col] = JSON.stringify(out[col]);
     }
   }
-  out.block = out.block ? 1 : 0;
   return out;
 }
 
@@ -214,16 +279,13 @@ export function insertCandidate(db, record) {
     id,
     slug: record.slug,
     status: record.status ?? 'candidate',
+    type: record.type ?? 'hint',
     summary: record.summary,
     mistake: record.mistake,
     remediation: record.remediation,
-    injection: record.injection ?? null,
-    injectOn: record.injectOn ?? ['PreToolUse'],
     toolNames: record.toolNames ?? [],
     commandPatterns: record.commandPatterns ?? [],
     pathPatterns: record.pathPatterns ?? [],
-    block: record.block ?? false,
-    blockReason: record.blockReason ?? null,
     priority: record.priority ?? 5,
     confidence: record.confidence ?? 0.8,
     tags: record.tags ?? [],
@@ -243,15 +305,15 @@ export function insertCandidate(db, record) {
   db.prepare(
     `
     INSERT INTO lessons (
-      id, slug, status, summary, mistake, remediation, injection,
-      injectOn, toolNames, commandPatterns, pathPatterns,
-      block, blockReason, priority, confidence, tags, source,
+      id, slug, status, type, summary, mistake, remediation,
+      toolNames, commandPatterns, pathPatterns,
+      priority, confidence, tags, source,
       sourceSessionIds, occurrenceCount, sessionCount, projectCount,
       contentHash, createdAt, updatedAt, reviewedAt, archivedAt, archiveReason
     ) VALUES (
-      :id, :slug, :status, :summary, :mistake, :remediation, :injection,
-      :injectOn, :toolNames, :commandPatterns, :pathPatterns,
-      :block, :blockReason, :priority, :confidence, :tags, :source,
+      :id, :slug, :status, :type, :summary, :mistake, :remediation,
+      :toolNames, :commandPatterns, :pathPatterns,
+      :priority, :confidence, :tags, :source,
       :sourceSessionIds, :occurrenceCount, :sessionCount, :projectCount,
       :contentHash, :createdAt, :updatedAt, :reviewedAt, :archivedAt, :archiveReason
     )
@@ -386,15 +448,12 @@ export function updateRecord(db, id, patch) {
     'summary',
     'mistake',
     'remediation',
-    'injection',
-    'injectOn',
+    'type',
     'commandPatterns',
     'pathPatterns',
     'priority',
     'confidence',
     'tags',
-    'block',
-    'blockReason',
   ];
   const fields = Object.keys(patch).filter(k => PATCHABLE.includes(k));
   if (fields.length === 0) return null;
@@ -404,7 +463,7 @@ export function updateRecord(db, id, patch) {
   const values = { id, now };
   for (const f of fields) {
     const val = patch[f];
-    values[f] = Array.isArray(val) ? JSON.stringify(val) : f === 'block' ? (val ? 1 : 0) : val;
+    values[f] = Array.isArray(val) ? JSON.stringify(val) : val;
   }
 
   db.prepare(`UPDATE lessons SET ${setClauses}, updatedAt = :now WHERE id = :id`).run(values);
@@ -490,6 +549,13 @@ export function archiveRecords(db, items) {
 export function getActiveRecords(db) {
   return db
     .prepare("SELECT * FROM lessons WHERE status='active' ORDER BY priority DESC")
+    .all()
+    .map(deserializeRow);
+}
+
+export function getManifestRecords(db) {
+  return db
+    .prepare("SELECT * FROM lessons WHERE status IN ('active','disabled') ORDER BY priority DESC")
     .all()
     .map(deserializeRow);
 }

@@ -7,11 +7,10 @@ import { matchLessons, findBlocker } from '../../../core/match.mjs';
 function makeLesson(overrides = {}) {
   return {
     slug: 'test-lesson',
+    type: 'hint',
     priority: 5,
-    injection: '## Test lesson',
+    message: '## Test lesson',
     summary: 'A test lesson',
-    block: false,
-    blockReason: null,
     toolNames: ['Bash'],
     commandRegexSources: [{ source: 'pytest', flags: '' }],
     ...overrides,
@@ -95,32 +94,29 @@ describe('matchLessons', () => {
         'L1',
         {
           slug: 'my-slug',
+          type: 'guard',
           priority: 8,
-          injection: '## My injection',
+          message: '## My injection',
           summary: 'My summary',
-          block: true,
-          blockReason: 'Dangerous: {command}',
         },
       ],
     ]);
     const [match] = matchLessons(lessons, 'Bash', 'pytest', '');
     assert.equal(match.id, 'L1');
     assert.equal(match.slug, 'my-slug');
+    assert.equal(match.type, 'guard');
     assert.equal(match.priority, 8);
-    assert.equal(match.injection, '## My injection');
+    assert.equal(match.message, '## My injection');
     assert.equal(match.summary, 'My summary');
-    assert.equal(match.block, true);
-    assert.equal(match.blockReason, 'Dangerous: {command}');
   });
 
   it('uses defaults for missing lesson fields', () => {
     const lessons = { L1: { toolNames: ['Bash'], commandRegexSources: [{ source: 'x' }] } };
     const [match] = matchLessons(lessons, 'Bash', 'x', '');
     assert.equal(match.slug, 'L1');
+    assert.equal(match.type, 'hint');
     assert.equal(match.priority, 5);
-    assert.equal(match.injection, '');
-    assert.equal(match.block, false);
-    assert.equal(match.blockReason, null);
+    assert.equal(match.message, '');
   });
 
   it('returns empty array for empty lessons object', () => {
@@ -170,39 +166,34 @@ describe('matchLessons', () => {
 // ─── findBlocker ───────────────────────────────────────────────────────────
 
 describe('findBlocker', () => {
-  it('returns null when no matches have block:true', () => {
-    const matches = [makeLesson({ block: false })];
+  it('returns null when no matches have type:guard', () => {
+    const matches = [makeLesson({ type: 'hint' })];
     assert.equal(findBlocker(matches, 'pytest'), null);
   });
 
-  it('returns null when block:true but blockReason is null', () => {
-    const matches = [makeLesson({ block: true, blockReason: null })];
-    assert.equal(findBlocker(matches, 'pytest'), null);
-  });
-
-  it('returns reason object for a blocking lesson', () => {
-    const matches = [makeLesson({ block: true, blockReason: 'Do not run this' })];
+  it('returns reason object for a guard lesson', () => {
+    const matches = [makeLesson({ type: 'guard', message: 'Do not run this' })];
     const result = findBlocker(matches, 'pytest');
     assert.deepEqual(result, { reason: 'Do not run this' });
   });
 
-  it('substitutes {command} placeholder in blockReason', () => {
-    const matches = [makeLesson({ block: true, blockReason: 'Blocked: {command}' })];
+  it('substitutes {command} placeholder in message', () => {
+    const matches = [makeLesson({ type: 'guard', message: 'Blocked: {command}' })];
     const result = findBlocker(matches, 'rm -rf /');
     assert.equal(result.reason, 'Blocked: rm -rf /');
   });
 
   it('truncates command to 120 chars in reason substitution', () => {
     const longCmd = 'a'.repeat(200);
-    const matches = [makeLesson({ block: true, blockReason: 'Blocked: {command}' })];
+    const matches = [makeLesson({ type: 'guard', message: 'Blocked: {command}' })];
     const result = findBlocker(matches, longCmd);
     assert.equal(result.reason, `Blocked: ${'a'.repeat(120)}`);
   });
 
-  it('returns first blocking lesson when multiple match', () => {
+  it('returns first guard lesson when multiple match', () => {
     const matches = [
-      makeLesson({ slug: 'first', block: true, blockReason: 'First block' }),
-      makeLesson({ slug: 'second', block: true, blockReason: 'Second block' }),
+      makeLesson({ slug: 'first', type: 'guard', message: 'First block' }),
+      makeLesson({ slug: 'second', type: 'guard', message: 'Second block' }),
     ];
     const result = findBlocker(matches, 'cmd');
     assert.equal(result.reason, 'First block');

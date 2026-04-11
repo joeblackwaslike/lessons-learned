@@ -32,6 +32,7 @@ import {
   openDb,
   closeDb,
   getActiveRecords,
+  getManifestRecords,
   getCandidateRecords,
   insertCandidate,
   insertCandidateBatch,
@@ -438,7 +439,7 @@ function loadConfig() {
 
 function buildManifest() {
   const db = openDb();
-  const lessons = getActiveRecords(db);
+  const lessons = getManifestRecords(db);
   closeDb(db);
 
   const config = loadConfig();
@@ -450,13 +451,17 @@ function buildManifest() {
     excluded = 0;
 
   for (const lesson of lessons) {
-    if ((lesson.confidence ?? 0) < minConfidence) {
-      excluded++;
-      continue;
-    }
-    if ((lesson.priority ?? 0) < minPriority) {
-      excluded++;
-      continue;
+    const isDisabled = lesson.status === 'disabled';
+
+    if (!isDisabled) {
+      if ((lesson.confidence ?? 0) < minConfidence) {
+        excluded++;
+        continue;
+      }
+      if ((lesson.priority ?? 0) < minPriority) {
+        excluded++;
+        continue;
+      }
     }
 
     const commandRegexSources = (lesson.commandPatterns ?? [])
@@ -484,18 +489,20 @@ function buildManifest() {
       })
       .filter(Boolean);
 
+    const sessionStart = lesson.type === 'directive' || lesson.type === 'protocol';
+
     manifestLessons[lesson.id] = {
       slug: lesson.slug,
+      type: lesson.type ?? 'hint',
       priority: lesson.priority,
       toolNames: lesson.toolNames ?? [],
       commandRegexSources,
       pathRegexSources,
       tags: lesson.tags ?? [],
-      injection: lesson.injection,
+      message: buildInjection(lesson),
       summary: lesson.summary,
-      block: !!lesson.block,
-      blockReason: lesson.blockReason ?? null,
-      sessionStart: (lesson.injectOn ?? []).includes('SessionStart'),
+      sessionStart,
+      ...(isDisabled ? { disabled: true } : {}),
     };
     included++;
   }
@@ -547,31 +554,23 @@ function addLessonInternal(input) {
   const confidence = input.confidence ?? 0.8;
   const slug = generateSlug(input.summary);
   const commandPatterns = triggers.commandPatterns ?? [];
+  const type = input.type ?? 'hint';
 
   const record = {
     id: generateUlid(),
     slug,
     status: confidence >= 0.7 ? 'active' : 'reviewed',
+    type,
     summary: input.summary,
     mistake: input.mistake,
     remediation: input.remediation,
-    injection:
-      input.injection ??
-      buildInjection({
-        summary: input.summary,
-        mistake: input.mistake,
-        remediation: input.remediation,
-      }),
-    injectOn: triggers.sessionStart ? ['SessionStart'] : ['PreToolUse'],
     toolNames: triggers.toolNames ?? [],
     commandPatterns,
     pathPatterns: triggers.pathPatterns ?? [],
-    block: input.block ?? false,
-    blockReason: input.blockReason ?? null,
     priority: input.priority ?? 5,
     confidence,
     tags: input.tags ?? [],
-    source: 'manual',
+    source: type === 'directive' ? 'manual' : 'manual',
     sourceSessionIds: input.sourceSessionIds ?? [],
     occurrenceCount: input.occurrenceCount ?? 0,
     sessionCount: 0,
@@ -619,6 +618,7 @@ async function cmdAdd(args) {
     const summary = await ask('Summary (one line): ');
     const mistake = await ask('Mistake: ');
     const remediation = await ask('Remediation: ');
+    const type = await ask('Type (directive/guard/hint/protocol) [hint]: ');
     const tool = await ask('Tool(s) comma-separated (e.g. Bash,Edit): ');
     const trigger = await ask('Trigger (command or path): ');
     const tagsStr = await ask('Tags comma-separated (e.g. lang:python,tool:pytest): ');
@@ -629,6 +629,7 @@ async function cmdAdd(args) {
       summary: summary.trim(),
       mistake: mistake.trim(),
       remediation: remediation.trim(),
+      type: type.trim() || 'hint',
       tool: tool.trim() || null,
       trigger: trigger.trim() || null,
       tags: tagsStr
@@ -672,6 +673,21 @@ async function cmdAdd(args) {
     process.exit(1);
   }
 
+  const VALID_TYPES = ['directive', 'guard', 'hint', 'protocol'];
+  if (input.type && !VALID_TYPES.includes(input.type)) {
+    console.error(`Error: type must be one of: ${VALID_TYPES.join(', ')}`);
+    process.exit(1);
+  }
+
+  if (input.type === 'directive') {
+    input.source = 'manual';
+  }
+
+  if (input.type === 'guard' && (!input.remediation || input.remediation.length < 20)) {
+    console.error('Error: guard lessons require actionable remediation (≥20 chars)');
+    process.exit(1);
+  }
+
   const result = addLessonInternal(input);
   if (!result.ok) {
     console.error(`Failed: ${result.error}`);
@@ -681,9 +697,9 @@ async function cmdAdd(args) {
   const { lesson } = result;
   console.log(`Added lesson: ${lesson.slug} (${lesson.id})`);
   console.log(`  Summary:    ${lesson.summary}`);
+  console.log(`  Type:       ${lesson.type}`);
   console.log(`  Priority:   ${lesson.priority} | Confidence: ${lesson.confidence}`);
   console.log(`  Tags:       ${lesson.tags.join(', ') || '(none)'}`);
-  console.log(`  Needs review: ${lesson.needsReview}`);
   console.log('\nRebuilding manifest...');
   buildManifest();
 }
@@ -712,13 +728,15 @@ function cmdList(args) {
 
   console.log(`${lessons.length} lessons\n`);
   for (const l of lessons) {
-    const sessionStart = (l.injectOn ?? []).includes('SessionStart') ? ' [session-start]' : '';
+    const typeLabel = l.type ? ` [${l.type}]` : '';
+    const sessionStart = l.type === 'directive' || l.type === 'protocol';
+    const injectLabel = sessionStart ? ' [session-start]' : '';
     const patterns = l.commandPatterns?.length
       ? l.commandPatterns.join(', ')
       : l.pathPatterns?.length
         ? l.pathPatterns.join(', ')
         : '(no pattern)';
-    console.log(`${l.slug}${sessionStart}`);
+    console.log(`${l.slug}${typeLabel}${injectLabel}`);
     console.log(`  ${l.summary}`);
     console.log(`  patterns: ${patterns}`);
     console.log(`  conf:${l.confidence} pri:${l.priority} tags:${l.tags.join(', ') || 'none'}`);
@@ -1098,16 +1116,13 @@ function mapCandidateToDbRecord(c) {
     id: generateUlid(),
     slug,
     status: 'candidate',
+    type: 'hint',
     summary: autoSummary(c),
     mistake: c.mistake,
     remediation: c.remediation,
-    injection: null,
-    injectOn: ['PreToolUse'],
     toolNames: c.tool ? [c.tool] : [],
     commandPatterns,
     pathPatterns: [],
-    block: false,
-    blockReason: null,
     priority: c.priority,
     confidence: c.confidence,
     tags: c.tags ?? [],

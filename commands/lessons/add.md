@@ -10,38 +10,75 @@ Keep your questions brief and concrete. Use examples where helpful.
 
 ---
 
-## Step 1 — Anchor: what went wrong?
+## Step 1 — Type
+
+Ask the user to choose the lesson type. Explain each option clearly so they know exactly which to pick:
+
+> What kind of lesson is this?
+>
+> - **hint** — Advisory context injected before a matching tool call or file operation. Use this for most lessons: pitfalls to watch for, gotchas, things to double-check.
+> - **guard** — Blocks a tool call entirely and tells you what to do instead. Use this when the command is almost always wrong and needs to be stopped before it runs (e.g. a pytest flag that hangs the process).
+> - **protocol** — A reasoning reminder injected once at session start. Use this for procedural checklists, mental models, or workflow reminders (not tied to a specific command).
+> - **directive** — A high-authority coding principle injected at session start. Use this for hard rules about how code should be written (e.g. SOLID, YAGNI). Manually reviewed only.
+
+Wait for the answer. Store as `type`. Default to `hint` if unclear.
+
+---
+
+## Step 2 — Core content
+
+Questions vary by type:
+
+**For `hint` or `guard`:**
 
 Ask:
 
 > What went wrong? Describe the mistake — what happened and why it was a problem.
 > (Be specific: the more concrete, the better the lesson will match future situations.)
 
-Wait for the answer. Store it as `mistake`.
+Wait for the answer. Store as `mistake`.
 
----
-
-## Step 2 — Remediation
-
-Ask:
+Then ask:
 
 > What's the fix or the right approach to avoid this next time?
 
-Wait for the answer. Store it as `remediation`.
+For `guard`, prompt: "Include a specific rerun command or corrective action if applicable."
+
+Wait for the answer. Store as `remediation`.
+
+**For `protocol`:**
+
+Ask:
+
+> Describe the reasoning procedure or checklist. What should be done, and why does it matter?
+
+Wait for the answer. Use the response to populate both `mistake` (why it matters / what goes wrong without it) and `remediation` (the procedure itself). Ask a follow-up if the split isn't clear.
+
+**For `directive`:**
+
+Ask:
+
+> State the principle as a Problem/Solution pair:
+>
+> - **Problem**: What goes wrong without this principle?
+> - **Solution**: What should be done instead?
+
+Wait for the answer. Map Problem → `mistake`, Solution → `remediation`.
 
 ---
 
 ## Step 3 — Trigger
 
-Ask:
+Skip this step entirely for `directive` and `protocol` (they fire at session start, no trigger needed).
+
+For `hint` and `guard`, ask:
 
 > What triggers this lesson? This controls when it gets injected.
 > Options:
 >
-> - A shell command or prefix (e.g. `git stash`, `npm install`)
+> - A shell command or prefix (e.g. `git stash`, `npm install`, `pytest`)
 > - A tool name (e.g. `Bash`, `Edit`, `Write`)
 > - A file path pattern (e.g. `**/package.json`, `src/**/*.ts`)
-> - Session start (inject once at the top of every session)
 > - Skip — leave untriggered for now
 
 Wait for the answer. Map it:
@@ -49,7 +86,6 @@ Wait for the answer. Map it:
 - Shell command/prefix → `trigger` field (CLI will convert to `commandPatterns`)
 - Tool name(s) → `tool` field (comma-separated if multiple)
 - Path pattern(s) → `pathPatterns` array
-- Session start → `sessionStart: true`
 - Skip → omit trigger fields entirely
 
 ---
@@ -61,7 +97,7 @@ Based on the mistake text, generate a concise one-line summary (≤ 80 chars, pr
 Present it:
 
 > Here's a suggested summary:
-> **"<generated summary>"**
+> **"[generated summary]"**
 > Accept this, or type a replacement.
 
 If the user accepts (or says "ok", "good", "yes", "looks good"), use the generated summary.
@@ -85,16 +121,41 @@ Parse their answer:
 
 ---
 
-## Step 6 — Confirm and write
+## Step 6 — Quality scan
+
+Before showing the confirmation, review the collected fields and surface any issues as suggestions:
+
+- Summary over 80 chars or under 20 chars
+- Vague or generic `mistake` text (e.g. "something went wrong")
+- `remediation` that doesn't give actionable guidance
+- Type mismatch: session-start trigger with `hint`/`guard` type; blocking intent with `hint` type
+- Missing obvious tags (e.g. a `git` lesson with no `tool:git` tag; a Python lesson with no `lang:python` tag)
+- Tags that don't follow `category:value` convention
+- Anything that reads more naturally as a different type
+
+Present findings as:
+
+> **Suggestions before confirming:**
+>
+> - [suggestion 1]
+> - [suggestion 2]
+>   Accept as-is, or tell me what to change.
+
+If no issues found, skip this step and go straight to Step 7.
+
+---
+
+## Step 7 — Confirm and write
 
 Show a compact confirmation:
 
-```
+```text
 Ready to add:
+  Type:        <type>
   Summary:     <summary>
   Mistake:     <first line of mistake, truncated to ~80 chars>
   Remediation: <first line of remediation, truncated to ~80 chars>
-  Trigger:     <description of what was set, or "none">
+  Trigger:     <description of what was set, or "none (session-start)" for protocol/directive>
   Tags:        <tags or "none">
   Priority:    <priority>
 
@@ -111,6 +172,6 @@ On "yes", build the JSON and run:
 node scripts/lessons.mjs add --json '<json>'
 ```
 
-Where `<json>` is a single-line JSON object with all collected fields.
+Where `<json>` is a single-line JSON object with all collected fields, including `type`.
 
 Print the output from the command verbatim. If it fails validation, show the error clearly and ask the user to correct the offending field before retrying.

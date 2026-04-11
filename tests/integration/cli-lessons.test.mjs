@@ -163,7 +163,8 @@ describe('lessons build', () => {
     const manifest = JSON.parse(readFileSync(store.manifestPath, 'utf8'));
     for (const [, lesson] of Object.entries(manifest.lessons ?? {})) {
       assert.ok('slug' in lesson, 'slug missing');
-      assert.ok('injection' in lesson, 'injection missing');
+      assert.ok('message' in lesson, 'message missing');
+      assert.ok('type' in lesson, 'type missing');
       assert.ok('priority' in lesson, 'priority missing');
       assert.ok(Array.isArray(lesson.toolNames), 'toolNames should be array');
     }

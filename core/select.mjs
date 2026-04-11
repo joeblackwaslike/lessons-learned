@@ -45,7 +45,7 @@ export function selectCandidates(
       continue;
     }
 
-    const text = lesson.injection;
+    const text = lesson.message;
     const textBytes = Buffer.byteLength(text, 'utf8');
 
     if (injected.length === 0) {

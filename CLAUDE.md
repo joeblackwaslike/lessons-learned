@@ -1,5 +1,7 @@
 # lessons-learned
 
+![GitHub last commit](https://img.shields.io/github/last-commit/joeblackwaslike/lessons-learned?style=flat-square&link=https%3A%2F%2Fgithub.com%2Fjoeblackwaslike%2Flessons-learned%2Fcommits%2Fmain%2F)
+
 A Claude Code plugin that automatically captures coding mistakes and injects relevant lessons before tool calls to prevent recurrence.
 
 ## Plugin Development
@@ -15,6 +17,14 @@ Also consult `docs/architecture/` for design context:
 - `project.md` — mission, component map, and end-to-end pipeline overview
 - `data-model.md` — lesson schema, manifest format, scan state, candidate format
 - `testing-plan.md` — test strategy, unit/integration/E2E coverage targets
+
+## Superpowers Skills
+
+Use the uperpowers skills during development. When in doubt, invoke the skill — it's better to check and not need it than to skip it.
+
+## Beads for task management
+
+this repo uses beads for task management, use the beads skill provided by the beads plugin to
 
 ## Architecture
 
@@ -62,7 +72,8 @@ Run any subcommand with `--help` for full options.
 
 ## Lesson store
 
-Edit `data/lessons.json` directly for bulk changes. After any edit run:
+~Edit `data/lessons.json` directly for bulk changes. After any edit run:~
+FIXME: Update this to use sqlite database
 
 ```bash
 node scripts/lessons.mjs build

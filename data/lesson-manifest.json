@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-04-06T09:51:10.538Z",
+  "generatedAt": "2026-04-11T21:52:29.934Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -13,6 +13,7 @@
   "lessons": {
     "01KNH2EHTAPSE0CNT8XW8Z4CA4": {
       "slug": "parallel-agents-sharing-a-git-worktree-c-cad6",
+      "type": "hint",
       "priority": 10,
       "toolNames": [],
       "commandRegexSources": [
@@ -27,14 +28,13 @@
         "severity:data-loss",
         "topic:parallel-agents"
       ],
-      "injection": "## Lesson: Parallel agents sharing a git worktree corrupt the staging area and lose commits\nMultiple concurrent git processes writing to the same worktree corrupt the index and lose commits silently\n**Fix**: Each parallel agent must use an isolated git worktree via `git worktree add`; never share a worktree between concurrent agents",
+      "message": "## Lesson: Parallel agents sharing a git worktree corrupt the staging area and lose commits\nMultiple concurrent git processes writing to the same worktree corrupt the index and lose commits silently\n**Fix**: Each parallel agent must use an isolated git worktree via `git worktree add`; never share a worktree between concurrent agents",
       "summary": "Parallel agents sharing a git worktree corrupt the staging area and lose commits",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KNH2FRACBQMQWX29GPYE47D8": {
       "slug": "eval-on-user-supplied-command-strings-en-702a",
+      "type": "hint",
       "priority": 10,
       "toolNames": [],
       "commandRegexSources": [
@@ -48,14 +48,13 @@
         "language:bash",
         "severity:security"
       ],
-      "injection": "## Lesson: eval on user-supplied command strings enables shell injection\neval \"$cmd\" interprets shell metacharacters from untrusted input; an attacker-controlled value can execute arbitrary commands\n**Fix**: Replace eval with `bash -c` for subprocess isolation or use array-based command invocation: cmd_arr=(...); \"${cmd_arr[@]}\"",
+      "message": "## Lesson: eval on user-supplied command strings enables shell injection\neval \"$cmd\" interprets shell metacharacters from untrusted input; an attacker-controlled value can execute arbitrary commands\n**Fix**: Replace eval with `bash -c` for subprocess isolation or use array-based command invocation: cmd_arr=(...); \"${cmd_arr[@]}\"",
       "summary": "eval on user-supplied command strings enables shell injection",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KNH2KPDXH8S4RYNR1S7F0B8Y": {
       "slug": "secrets-hardcoded-in-source-files-are-pe-00f3",
+      "type": "hint",
       "priority": 10,
       "toolNames": [],
       "commandRegexSources": [],
@@ -85,14 +84,13 @@
         "severity:security",
         "topic:secrets"
       ],
-      "injection": "## Lesson: secrets hardcoded in source files are permanently exposed after any git commit\nAPI keys, passwords, or tokens written directly into .py/.js files and committed to git are irreversibly exposed in history\n**Fix**: Use environment variables, .env files (in .gitignore), or a secrets manager; rotate any credential that was committed",
+      "message": "## Lesson: secrets hardcoded in source files are permanently exposed after any git commit\nAPI keys, passwords, or tokens written directly into .py/.js files and committed to git are irreversibly exposed in history\n**Fix**: Use environment variables, .env files (in .gitignore), or a secrets manager; rotate any credential that was committed",
       "summary": "secrets hardcoded in source files are permanently exposed after any git commit",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KNH2G0RB0SYRNZ560XN030GF": {
       "slug": "awk-code-injection-via-unvalidated-shell-cf5a",
+      "type": "hint",
       "priority": 9,
       "toolNames": [],
       "commandRegexSources": [
@@ -106,14 +104,13 @@
         "language:bash",
         "severity:security"
       ],
-      "injection": "## Lesson: awk code injection via unvalidated shell variable interpolation in BEGIN block\nawk \"BEGIN {exit !($var > $max)}\" with unvalidated $var enables code injection through shell variable expansion\n**Fix**: Use awk -v to pass values as data: `awk -v val=\"$val\" -v max=\"$max\" 'BEGIN {exit !(val > max)}'`; validate numeric inputs first",
+      "message": "## Lesson: awk code injection via unvalidated shell variable interpolation in BEGIN block\nawk \"BEGIN {exit !($var > $max)}\" with unvalidated $var enables code injection through shell variable expansion\n**Fix**: Use awk -v to pass values as data: `awk -v val=\"$val\" -v max=\"$max\" 'BEGIN {exit !(val > max)}'`; validate numeric inputs first",
       "summary": "awk code injection via unvalidated shell variable interpolation in BEGIN block",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KNH2G6A4BCZMQKT5441HAJH2": {
       "slug": "jq-string-interpolation-of-shell-variabl-8803",
+      "type": "hint",
       "priority": 9,
       "toolNames": [],
       "commandRegexSources": [
@@ -128,14 +125,13 @@
         "language:bash",
         "severity:security"
       ],
-      "injection": "## Lesson: jq string interpolation of shell variables injects JSON when variable contains quotes\njq -cn \"{\\\"id\\\": \\\"$session_id\\\"}\" injects arbitrary JSON if $session_id contains quote characters\n**Fix**: Use jq --arg to pass values safely: `jq -cn --arg id \"$session_id\" '{id: $id}'`",
+      "message": "## Lesson: jq string interpolation of shell variables injects JSON when variable contains quotes\njq -cn \"{\\\"id\\\": \\\"$session_id\\\"}\" injects arbitrary JSON if $session_id contains quote characters\n**Fix**: Use jq --arg to pass values safely: `jq -cn --arg id \"$session_id\" '{id: $id}'`",
       "summary": "jq string interpolation of shell variables injects JSON when variable contains quotes",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KNH2GJG6DE29V8JSBZW34ZG2": {
       "slug": "sed-range-deletion-is-unbounded-when-the-64ac",
+      "type": "hint",
       "priority": 9,
       "toolNames": [],
       "commandRegexSources": [
@@ -150,14 +146,13 @@
         "language:bash",
         "severity:data-loss"
       ],
-      "injection": "## Lesson: sed range deletion is unbounded when the closing pattern is absent, deleting to EOF\nsed '/start/,/end/d' silently deletes everything from the start pattern to EOF when the closing pattern is missing\n**Fix**: Use awk with explicit state tracking for range deletion; never rely on sed range patterns on files without a guaranteed closing delimiter",
+      "message": "## Lesson: sed range deletion is unbounded when the closing pattern is absent, deleting to EOF\nsed '/start/,/end/d' silently deletes everything from the start pattern to EOF when the closing pattern is missing\n**Fix**: Use awk with explicit state tracking for range deletion; never rely on sed range patterns on files without a guaranteed closing delimiter",
       "summary": "sed range deletion is unbounded when the closing pattern is absent, deleting to EOF",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KNH2JJCKZP1HXFX85X5QV496": {
       "slug": "async-function-called-without-await-sile-3a80",
+      "type": "hint",
       "priority": 9,
       "toolNames": [],
       "commandRegexSources": [
@@ -173,14 +168,13 @@
         "topic:async",
         "severity:data-loss"
       ],
-      "injection": "## Lesson: Async function called without await silently returns a coroutine that never executes\nCalling `async_func()` without await returns a coroutine object that is immediately discarded; the function body never runs\n**Fix**: Always await async calls: `await func()` or schedule explicitly: `asyncio.create_task(func())` with a done_callback",
+      "message": "## Lesson: Async function called without await silently returns a coroutine that never executes\nCalling `async_func()` without await returns a coroutine object that is immediately discarded; the function body never runs\n**Fix**: Always await async calls: `await func()` or schedule explicitly: `asyncio.create_task(func())` with a done_callback",
       "summary": "Async function called without await silently returns a coroutine that never executes",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01JQSEED00000000000000002": {
       "slug": "mock-patch-namespace-v3x8",
+      "type": "hint",
       "priority": 8,
       "toolNames": [
         "Bash",
@@ -204,14 +198,13 @@
         "tool:unittest",
         "topic:testing"
       ],
-      "injection": "## Lesson: mock.patch target namespace\nPython `mock.patch` must target the *importing* module's namespace, not the source module.\n**Fix**: `@patch('myapp.views.requests.get')` not `@patch('requests.get')`. The patch target is where the name is looked up, not where it's defined.",
+      "message": "## Lesson: mock.patch must target the importing module's namespace, not the source\nPython `mock.patch('requests.get')` patches the source module but the importing module still sees the original. The test passes but the mock has no effect.\n**Fix**: Patch where the name is looked up: `@patch('myapp.views.requests.get')` not `@patch('requests.get')`.",
       "summary": "mock.patch must target the importing module's namespace, not the source",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KMZ3BJKZHP5D15BD1CYPT54F": {
       "slug": "vitest-hangs-in-non-interactive-terminal-0c00",
+      "type": "hint",
       "priority": 8,
       "toolNames": [
         "Bash"
@@ -229,14 +222,13 @@
         "topic:testing",
         "severity:hang"
       ],
-      "injection": "## Lesson: vitest hangs in non-interactive terminal without pool config\nRunning `vitest run` in Claude Code may hang or timeout because vitest defaults to parallel workers across all CPU cores. Large test suites with heavy DOM fixtures cause memory pressure, and the non-interactive terminal lacks proper signal handling for worker cleanup.\n**Fix**: Configure vitest with `pool: \"forks\"` and set `testTimeout: 30000`. For large fixture-heavy tests, use `singleFork: true` or reduce `maxWorkers`. Add `--reporter=verbose` to see progress in non-interactive terminals.",
+      "message": "## Lesson: vitest hangs in non-interactive terminal without pool config\nRunning `vitest run` in Claude Code may hang or timeout because vitest defaults to parallel workers across all CPU cores. Large test suites with heavy DOM fixtures cause memory pressure, and the non-interactive terminal lacks proper signal handling for worker cleanup.\n**Fix**: Configure vitest with `pool: \"forks\"` and set `testTimeout: 30000`. For large fixture-heavy tests, use `singleFork: true` or reduce `maxWorkers`. Add `--reporter=verbose` to see progress in non-interactive terminals.",
       "summary": "vitest hangs in non-interactive terminal without pool config",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KN35C6RJTVB1K632KXQ54KTY": {
       "slug": "vscode-gitenablecommitsigning-overrides-77d2",
+      "type": "hint",
       "priority": 8,
       "toolNames": [
         "Bash"
@@ -258,14 +250,13 @@
         "commit-signing",
         "gpg"
       ],
-      "injection": "## Lesson: VSCode git.enableCommitSigning overrides gitconfig commit.gpgsign causing commit to hang\nVSCode user setting git.enableCommitSigning: true passes -S to git directly, bypassing commit.gpgsign=false in gitconfig, causing commits to hang waiting for GPG passphrase\n**Fix**: Disable git.enableCommitSigning in VSCode user settings, or ensure GPG agent is running and key is available for signing",
+      "message": "## Lesson: VSCode git.enableCommitSigning overrides gitconfig commit.gpgsign causing commit to hang\nVSCode user setting git.enableCommitSigning: true passes -S to git directly, bypassing commit.gpgsign=false in gitconfig, causing commits to hang waiting for GPG passphrase\n**Fix**: Disable git.enableCommitSigning in VSCode user settings, or ensure GPG agent is running and key is available for signing",
       "summary": "VSCode git.enableCommitSigning overrides gitconfig commit.gpgsign causing commit to hang",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KNH2ER5SEDXPKCNENHH4WYZJ": {
       "slug": "set-e-kills-bash-scripts-silently-on-any-bf06",
+      "type": "hint",
       "priority": 8,
       "toolNames": [],
       "commandRegexSources": [
@@ -280,14 +271,13 @@
         "severity:blocker",
         "topic:shell"
       ],
-      "injection": "## Lesson: set -e kills bash scripts silently on any non-critical command failure without an EXIT trap\nset -euo pipefail with no EXIT trap makes any unguarded command failure silently abort the script with no output\n**Fix**: Add `trap '_log_exit $?' EXIT` and wrap non-critical operations in `{ ... } || warn` blocks to handle errors explicitly",
+      "message": "## Lesson: set -e kills bash scripts silently on any non-critical command failure without an EXIT trap\nset -euo pipefail with no EXIT trap makes any unguarded command failure silently abort the script with no output\n**Fix**: Add `trap '_log_exit $?' EXIT` and wrap non-critical operations in `{ ... } || warn` blocks to handle errors explicitly",
       "summary": "set -e kills bash scripts silently on any non-critical command failure without an EXIT trap",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KNH2EZQ2BRAGYC9QNKTJCGBQ": {
       "slug": "scripts-hang-waiting-on-stdin-when-run-i-7195",
+      "type": "hint",
       "priority": 8,
       "toolNames": [],
       "commandRegexSources": [
@@ -303,14 +293,13 @@
         "severity:hang",
         "env:claude-code"
       ],
-      "injection": "## Lesson: Scripts hang waiting on stdin when run in non-interactive shells (CI, Claude Code, pipes)\nScript reads stdin implicitly without redirect; hangs indefinitely in CI, Claude Code, or non-interactive shells\n**Fix**: Redirect stdin explicitly from /dev/null: `bash script.sh </dev/null` or add `</dev/null` to commands that do not expect interactive input",
+      "message": "## Lesson: Scripts hang waiting on stdin when run in non-interactive shells (CI, Claude Code, pipes)\nScript reads stdin implicitly without redirect; hangs indefinitely in CI, Claude Code, or non-interactive shells\n**Fix**: Redirect stdin explicitly from /dev/null: `bash script.sh </dev/null` or add `</dev/null` to commands that do not expect interactive input",
       "summary": "Scripts hang waiting on stdin when run in non-interactive shells (CI, Claude Code, pipes)",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KNH2F7KVA2RPB6KPKMHDMDV3": {
       "slug": "grep-exits-1-on-no-match-silently-aborti-d9ff",
+      "type": "hint",
       "priority": 8,
       "toolNames": [],
       "commandRegexSources": [
@@ -325,14 +314,13 @@
         "language:bash",
         "severity:blocker"
       ],
-      "injection": "## Lesson: grep exits 1 on no-match, silently aborting parent script under set -e\ngrep returns exit code 1 when no lines match; under set -e this kills the parent process silently\n**Fix**: Use `grep ... || true` for lookups where an empty result is valid; use exit code 2+ to detect real errors",
+      "message": "## Lesson: grep exits 1 on no-match, silently aborting parent script under set -e\ngrep returns exit code 1 when no lines match; under set -e this kills the parent process silently\n**Fix**: Use `grep ... || true` for lookups where an empty result is valid; use exit code 2+ to detect real errors",
       "summary": "grep exits 1 on no-match, silently aborting parent script under set -e",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KNH2GQWE0E2693PZVJDBGB23": {
       "slug": "git-stderr-redirected-to-devnull-silentl-1ec9",
+      "type": "hint",
       "priority": 8,
       "toolNames": [],
       "commandRegexSources": [
@@ -347,14 +335,13 @@
         "language:bash",
         "severity:data-loss"
       ],
-      "injection": "## Lesson: git stderr redirected to /dev/null silently caches wrong content on failure\ngit branch 2>/dev/null on failure writes empty or wrong output to cache; the error is swallowed and bad state persists\n**Fix**: Do not suppress git stderr for operations with side effects; validate output before writing to cache",
+      "message": "## Lesson: git stderr redirected to /dev/null silently caches wrong content on failure\ngit branch 2>/dev/null on failure writes empty or wrong output to cache; the error is swallowed and bad state persists\n**Fix**: Do not suppress git stderr for operations with side effects; validate output before writing to cache",
       "summary": "git stderr redirected to /dev/null silently caches wrong content on failure",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KNH2HXM0M2H29F2T108XQ2ES": {
       "slug": "missing-tool-dependency-check-silently-d-4a39",
+      "type": "hint",
       "priority": 8,
       "toolNames": [],
       "commandRegexSources": [
@@ -368,14 +355,13 @@
         "language:bash",
         "severity:blocker"
       ],
-      "injection": "## Lesson: Missing tool dependency check silently disables safety-critical features\nbc not installed; numeric fallback returns 0; budget enforcement silently becomes a no-op with no error\n**Fix**: Check required tools at function entry: `command -v bc >/dev/null || { echo 'bc required' >&2; return 1; }` — fail closed on absence",
+      "message": "## Lesson: Missing tool dependency check silently disables safety-critical features\nbc not installed; numeric fallback returns 0; budget enforcement silently becomes a no-op with no error\n**Fix**: Check required tools at function entry: `command -v bc >/dev/null || { echo 'bc required' >&2; return 1; }` — fail closed on absence",
       "summary": "Missing tool dependency check silently disables safety-critical features",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KNH2JDX2B935CGQJV8C3RH5P": {
       "slug": "asynciocreatetask-without-donecallback-s-97d8",
+      "type": "hint",
       "priority": 8,
       "toolNames": [],
       "commandRegexSources": [
@@ -390,14 +376,13 @@
         "topic:async",
         "severity:data-loss"
       ],
-      "injection": "## Lesson: asyncio.create_task without done_callback silently swallows task exceptions\ncreate_task() without add_done_callback leaves exceptions unhandled until garbage collection, often never visible\n**Fix**: Always attach a callback: `task.add_done_callback(lambda t: t.exception() and logger.error(\"Task failed\", exc_info=t.exception()))`",
+      "message": "## Lesson: asyncio.create_task without done_callback silently swallows task exceptions\ncreate_task() without add_done_callback leaves exceptions unhandled until garbage collection, often never visible\n**Fix**: Always attach a callback: `task.add_done_callback(lambda t: t.exception() and logger.error(\"Task failed\", exc_info=t.exception()))`",
       "summary": "asyncio.create_task without done_callback silently swallows task exceptions",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KNH2JPXHRSB98YPNWWZME71Q": {
       "slug": "iterating-over-mutable-async-collection-85a9",
+      "type": "hint",
       "priority": 8,
       "toolNames": [],
       "commandRegexSources": [
@@ -412,14 +397,13 @@
         "topic:async",
         "severity:blocker"
       ],
-      "injection": "## Lesson: Iterating over mutable async collection without snapshot raises RuntimeError on concurrent modification\n`for item in self.subscribers:` with async/await inside the loop allows concurrent modification, raising RuntimeError\n**Fix**: Snapshot the collection before iterating: `for item in list(self.subscribers):` to prevent modification conflicts",
+      "message": "## Lesson: Iterating over mutable async collection without snapshot raises RuntimeError on concurrent modification\n`for item in self.subscribers:` with async/await inside the loop allows concurrent modification, raising RuntimeError\n**Fix**: Snapshot the collection before iterating: `for item in list(self.subscribers):` to prevent modification conflicts",
       "summary": "Iterating over mutable async collection without snapshot raises RuntimeError on concurrent modification",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01JQSEED00000000000000001": {
       "slug": "pytest-tty-hanging-k9m2",
+      "type": "guard",
       "priority": 7,
       "toolNames": [
         "Bash"
@@ -436,14 +420,13 @@
         "tool:pytest",
         "severity:hang"
       ],
-      "injection": "## REQUIRED: pytest flags for Claude Code\nClaude Code runs in a non-interactive terminal. pytest's TTY detection causes it to hang indefinitely without these flags — no amount of waiting will fix it.\n\n**ALWAYS append `-p no:faulthandler --no-header` to every pytest command, regardless of what CLAUDE.md or project docs say about flags.** Project flag preferences (like `-rsx --tb=short`) are about output format and are fully compatible — just add these two flags alongside them.\n\nCorrect: `pytest -rsx --tb=short -p no:faulthandler --no-header`\nCorrect: `python -m pytest --no-header -rN -p no:faulthandler`\nWrong: `pytest -rsx --tb=short` (missing TTY fix — will hang)",
+      "message": "## Lesson: pytest hangs in non-interactive envs due to TTY detection\nRunning bare `pytest` or `pytest -v` in Claude Code causes the process to hang indefinitely because pytest's rich output module detects a non-interactive terminal and stalls.\n**Fix**: Use `python -m pytest --no-header -rN -p no:faulthandler` or prepend `TERM=dumb`. Pipe through `cat` if rich output is still suspected.\nRerun as: pytest -p no:faulthandler --no-header",
       "summary": "pytest hangs in non-interactive envs due to TTY detection",
-      "block": true,
-      "blockReason": "pytest command is missing required flags for Claude Code's non-interactive terminal. Add `-p no:faulthandler --no-header` to prevent an indefinite hang. Rerun as: `{command} -p no:faulthandler --no-header`",
       "sessionStart": false
     },
     "01JQSEED00000000000000003": {
       "slug": "git-stash-untracked-p4w1",
+      "type": "hint",
       "priority": 7,
       "toolNames": [
         "Bash"
@@ -459,14 +442,13 @@
         "tool:git",
         "severity:data-loss"
       ],
-      "injection": "## Lesson: git stash drops untracked files\n`git stash` silently ignores untracked files. New files you haven't `git add`ed will NOT be stashed.\n**Fix**: Use `git stash -u` (or `--include-untracked`) to include untracked files.",
+      "message": "## Lesson: git stash silently drops untracked files without -u flag\n`git stash` only stashes tracked, modified files. Untracked files (new files not yet `git add`ed) are silently left behind, leading to data loss if the user expects them to be stashed.\n**Fix**: Use `git stash -u` (or `--include-untracked`) to include untracked files.",
       "summary": "git stash silently drops untracked files without -u flag",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01JQSEED00000000000000004": {
       "slug": "pip-install-wrong-venv-j6n3",
+      "type": "hint",
       "priority": 7,
       "toolNames": [
         "Bash"
@@ -483,14 +465,13 @@
         "tool:pip",
         "topic:packaging"
       ],
-      "injection": "## Lesson: pip install may target wrong venv\n`pip install` uses whichever Python is first on PATH, which may not be the project's venv.\n**Fix**: Use `python -m pip install` to ensure you're installing into the active Python's environment, or verify with `which pip` first.",
+      "message": "## Lesson: pip install may target wrong virtualenv — use python -m pip install\n`pip install` uses whichever `pip` is first on PATH, which may not be the project's virtualenv. This silently installs packages into the wrong environment.\n**Fix**: Use `python -m pip install` to ensure you're installing into the active Python's environment, or verify with `which pip` first.",
       "summary": "pip install may target wrong virtualenv — use python -m pip install",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KMZ3BSN01D9VQR8DDGT2Q9TR": {
       "slug": "git-commit-with-heredoc-fails-due-to-she-599e",
+      "type": "hint",
       "priority": 7,
       "toolNames": [
         "Bash"
@@ -507,14 +488,13 @@
         "topic:shell",
         "severity:error"
       ],
-      "injection": "## Lesson: git commit with HEREDOC fails due to shell quoting issues\nUsing HEREDOC syntax in `git commit -m` with nested quotes, backticks, or special characters causes shell parsing failures. The HEREDOC delimiter can conflict with the shell's parsing of the commit message content.\n**Fix**: Use the pattern: git commit -m \"$(cat <<'EOF'\nCommit message here.\nEOF\n)\" — the single-quoted EOF delimiter prevents variable expansion and special character interpretation inside the message.",
+      "message": "## Lesson: git commit with HEREDOC fails due to shell quoting issues\nUsing HEREDOC syntax in `git commit -m` with nested quotes, backticks, or special characters causes shell parsing failures. The HEREDOC delimiter can conflict with the shell's parsing of the commit message content.\n**Fix**: Use the pattern: git commit -m \"$(cat <<'EOF'\nCommit message here.\nEOF\n)\" — the single-quoted EOF delimiter prevents variable expansion and special character interpretation inside the message.",
       "summary": "git commit with HEREDOC fails due to shell quoting issues",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KMZ3CSX8QR8EN5W6DYM6TEA4": {
       "slug": "pre-commit-hooks-lefthookhusky-fail-on-l-adf8",
+      "type": "hint",
       "priority": 7,
       "toolNames": [
         "Bash"
@@ -532,14 +512,13 @@
         "topic:ci",
         "severity:error"
       ],
-      "injection": "## Lesson: Pre-commit hooks (lefthook/husky) fail on lint errors in unstaged files\nGit commit fails because pre-commit hooks (lefthook, husky, pre-commit) run linters against the entire working tree, not just staged files. Lint errors in unstaged or pre-existing files block the commit even though those files are not being committed.\n**Fix**: Fix only the lint errors in files you are committing, or use `git stash --keep-index` before committing to temporarily hide unstaged changes. For persistent pre-existing lint issues, consider `--no-verify` only as a last resort and document why.",
+      "message": "## Lesson: Pre-commit hooks (lefthook/husky) fail on lint errors in unstaged files\nGit commit fails because pre-commit hooks (lefthook, husky, pre-commit) run linters against the entire working tree, not just staged files. Lint errors in unstaged or pre-existing files block the commit even though those files are not being committed.\n**Fix**: Fix only the lint errors in files you are committing, or use `git stash --keep-index` before committing to temporarily hide unstaged changes. For persistent pre-existing lint issues, consider `--no-verify` only as a last resort and document why.",
       "summary": "Pre-commit hooks (lefthook/husky) fail on lint errors in unstaged files",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KMZ3D31T2N5807D60Y60GAPA": {
       "slug": "vitest-parallel-tests-fail-due-to-shared-a9cc",
+      "type": "hint",
       "priority": 7,
       "toolNames": [
         "Bash"
@@ -557,14 +536,13 @@
         "topic:testing",
         "severity:flaky"
       ],
-      "injection": "## Lesson: Vitest parallel tests fail due to shared state or resource contention\nTests that pass individually fail when run together because vitest runs tests in parallel by default. Tests sharing database connections, DOM state, global variables, or file system resources cause intermittent failures due to race conditions.\n**Fix**: Use `--sequence.concurrent=false` or `pool: \"forks\"` with `poolOptions.forks.singleFork: true` in vitest config. Isolate shared resources with `beforeEach`/`afterEach` cleanup. For tests that truly cannot be parallelized, use `describe.sequential`.",
+      "message": "## Lesson: Vitest parallel tests fail due to shared state or resource contention\nTests that pass individually fail when run together because vitest runs tests in parallel by default. Tests sharing database connections, DOM state, global variables, or file system resources cause intermittent failures due to race conditions.\n**Fix**: Use `--sequence.concurrent=false` or `pool: \"forks\"` with `poolOptions.forks.singleFork: true` in vitest config. Isolate shared resources with `beforeEach`/`afterEach` cleanup. For tests that truly cannot be parallelized, use `describe.sequential`.",
       "summary": "Vitest parallel tests fail due to shared state or resource contention",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KN3P9QZCFBC04F12DFKVF3MV": {
       "slug": "git-stash-pop-fails-with-already-exists-808b",
+      "type": "hint",
       "priority": 7,
       "toolNames": [
         "Bash"
@@ -581,14 +559,13 @@
         "severity:error",
         "topic:stash"
       ],
-      "injection": "## Lesson: git stash pop fails with already exists, no checkout when untracked files were stashed but now exist in the working tree\ngit stash pop fails with exit code 1 and lists files as already exists, no checkout when the stash was created with -u (untracked files included) but those files have since been created in the working tree. Git refuses to overwrite them.\n**Fix**: Before running git stash pop, remove or reset the conflicting files: git clean -f <files> to delete untracked ones, or git checkout -- <files> to reset tracked ones. Alternatively use git stash show --name-only to see what the stash contains before popping.",
+      "message": "## Lesson: git stash pop fails with already exists, no checkout when untracked files were stashed but now exist in the working tree\ngit stash pop fails with exit code 1 and lists files as already exists, no checkout when the stash was created with -u (untracked files included) but those files have since been created in the working tree. Git refuses to overwrite them.\n**Fix**: Before running git stash pop, remove or reset the conflicting files: git clean -f <files> to delete untracked ones, or git checkout -- <files> to reset tracked ones. Alternatively use git stash show --name-only to see what the stash contains before popping.",
       "summary": "git stash pop fails with already exists, no checkout when untracked files were stashed but now exist in the working tree",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KNH2GX7ND2YW3Z6DB046EK7M": {
       "slug": "mktemp-without-a-trap-leaks-temp-files-o-b7f2",
+      "type": "hint",
       "priority": 7,
       "toolNames": [],
       "commandRegexSources": [
@@ -602,14 +579,13 @@
         "language:bash",
         "severity:resource-leak"
       ],
-      "injection": "## Lesson: mktemp without a trap leaks temp files on early exit under set -e\nset -e aborts before reaching inline cleanup; temp files accumulate indefinitely when any subsequent command fails\n**Fix**: Register cleanup immediately after mktemp: `trap 'rm -f \"$tmp\"' EXIT` — EXIT fires even on set -e abort",
+      "message": "## Lesson: mktemp without a trap leaks temp files on early exit under set -e\nset -e aborts before reaching inline cleanup; temp files accumulate indefinitely when any subsequent command fails\n**Fix**: Register cleanup immediately after mktemp: `trap 'rm -f \"$tmp\"' EXIT` — EXIT fires even on set -e abort",
       "summary": "mktemp without a trap leaks temp files on early exit under set -e",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KNH2H2APTDSVZBD88S6J49MK": {
       "slug": "cd-inside-a-bash-function-leaks-the-dire-9b4c",
+      "type": "hint",
       "priority": 7,
       "toolNames": [],
       "commandRegexSources": [
@@ -623,14 +599,13 @@
         "language:bash",
         "severity:silent-failure"
       ],
-      "injection": "## Lesson: cd inside a bash function leaks the directory change to all subsequent code\ncd in a function without restore changes the shell global cwd; the new directory persists after the function returns\n**Fix**: Use a subshell to isolate: `( cd \"$dir\" && ... )` or use pushd/popd pair within the function",
+      "message": "## Lesson: cd inside a bash function leaks the directory change to all subsequent code\ncd in a function without restore changes the shell global cwd; the new directory persists after the function returns\n**Fix**: Use a subshell to isolate: `( cd \"$dir\" && ... )` or use pushd/popd pair within the function",
       "summary": "cd inside a bash function leaks the directory change to all subsequent code",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KNH2H8ZXY0JT1Z1BDEGF6K9Z": {
       "slug": "xargs-word-splits-filenames-with-spaces-c0bd",
+      "type": "hint",
       "priority": 7,
       "toolNames": [],
       "commandRegexSources": [
@@ -645,14 +620,13 @@
         "tool:xargs",
         "severity:data-loss"
       ],
-      "injection": "## Lesson: xargs word-splits filenames with spaces, breaking them into separate arguments\necho \"$file\" | xargs or unquoted $var piped to xargs splits 'my file.sh' into two separate arguments\n**Fix**: Use bash arrays `\"${arr[@]}\"`, or pipe with `xargs -d '\n'` (newline delimiter), or pair find -print0 with xargs -0",
+      "message": "## Lesson: xargs word-splits filenames with spaces, breaking them into separate arguments\necho \"$file\" | xargs or unquoted $var piped to xargs splits 'my file.sh' into two separate arguments\n**Fix**: Use bash arrays `\"${arr[@]}\"`, or pipe with `xargs -d '\n'` (newline delimiter), or pair find -print0 with xargs -0",
       "summary": "xargs word-splits filenames with spaces, breaking them into separate arguments",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KNH2J9586HRGEYQBG9MJ233Z": {
       "slug": "bare-except-catches-everything-including-52b1",
+      "type": "hint",
       "priority": 7,
       "toolNames": [],
       "commandRegexSources": [
@@ -666,14 +640,13 @@
         "lang:python",
         "severity:silent-failure"
       ],
-      "injection": "## Lesson: Bare except: catches everything including KeyboardInterrupt and SystemExit, hiding all failures\nexcept: without a specific exception type catches signals and system exits, making all failures invisible and preventing proper shutdown\n**Fix**: Always catch specific exception classes: `except Exception as e:` with `logger.error(..., exc_info=True)`; never use bare `except:`",
+      "message": "## Lesson: Bare except: catches everything including KeyboardInterrupt and SystemExit, hiding all failures\nexcept: without a specific exception type catches signals and system exits, making all failures invisible and preventing proper shutdown\n**Fix**: Always catch specific exception classes: `except Exception as e:` with `logger.error(..., exc_info=True)`; never use bare `except:`",
       "summary": "Bare except: catches everything including KeyboardInterrupt and SystemExit, hiding all failures",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KNH2JW5VC844DQPGDWQN0H64": {
       "slug": "decorator-registry-stays-empty-because-t-bb41",
+      "type": "hint",
       "priority": 7,
       "toolNames": [],
       "commandRegexSources": [
@@ -687,14 +660,13 @@
         "lang:python",
         "severity:silent-failure"
       ],
-      "injection": "## Lesson: Decorator registry stays empty because the module containing registrations is never imported\nDecorator-based registration requires import-time side effects; if the decorated module is never imported, the registry is empty at runtime\n**Fix**: Explicitly import all modules with registrations in __init__.py or a loader module before using the registry",
+      "message": "## Lesson: Decorator registry stays empty because the module containing registrations is never imported\nDecorator-based registration requires import-time side effects; if the decorated module is never imported, the registry is empty at runtime\n**Fix**: Explicitly import all modules with registrations in __init__.py or a loader module before using the registry",
       "summary": "Decorator registry stays empty because the module containing registrations is never imported",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KNH2K1K99GGHQF08FGYPFE1H": {
       "slug": "systemd-environmentfile-silently-ignores-7408",
+      "type": "hint",
       "priority": 7,
       "toolNames": [],
       "commandRegexSources": [],
@@ -713,14 +685,13 @@
         "language:bash",
         "severity:silent-failure"
       ],
-      "injection": "## Lesson: systemd EnvironmentFile silently ignores lines with export prefix, leaving variables unset\nsystemd EnvironmentFile expects KEY=value only; `export KEY=value` lines are silently ignored, so the service starts with empty environment\n**Fix**: Either strip export from the env file, or use a bash wrapper: `ExecStart=/bin/bash -c '. ~/.env && exec /usr/bin/myapp'`",
+      "message": "## Lesson: systemd EnvironmentFile silently ignores lines with export prefix, leaving variables unset\nsystemd EnvironmentFile expects KEY=value only; `export KEY=value` lines are silently ignored, so the service starts with empty environment\n**Fix**: Either strip export from the env file, or use a bash wrapper: `ExecStart=/bin/bash -c '. ~/.env && exec /usr/bin/myapp'`",
       "summary": "systemd EnvironmentFile silently ignores lines with export prefix, leaving variables unset",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01JQSEED00000000000000005": {
       "slug": "npm-link-peer-deps-r2f7",
+      "type": "hint",
       "priority": 6,
       "toolNames": [
         "Bash"
@@ -737,14 +708,13 @@
         "tool:npm",
         "topic:packaging"
       ],
-      "injection": "## Lesson: npm link doesn't resolve peer deps\n`npm link` creates a symlink but does NOT install peer dependencies of the linked package.\n**Fix**: After `npm link <pkg>`, manually install any peer deps, or use `npm install <path>` instead for a proper install.",
+      "message": "## Lesson: npm link doesn't resolve peer dependencies of the linked package\n`npm link` creates a symlink but does NOT install peer dependencies of the linked package. This causes subtle runtime errors when peer deps are missing.\n**Fix**: After `npm link <pkg>`, manually install any peer deps, or use `npm install <path>` instead for a proper install.",
       "summary": "npm link doesn't resolve peer dependencies of the linked package",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KMZ3C0KEE5ZCSQWZZXQZZH67": {
       "slug": "chrome-devtools-econnrefused-when-chrome-5079",
+      "type": "hint",
       "priority": 6,
       "toolNames": [
         "Bash"
@@ -761,14 +731,13 @@
         "topic:debugging",
         "severity:error"
       ],
-      "injection": "## Lesson: Chrome DevTools ECONNREFUSED when Chrome not running or port 9222 not open\nMCP browser tools fail with `ECONNREFUSED 127.0.0.1:9222` because Chrome is not running with remote debugging enabled, or the debugging port is blocked by another Chrome instance.\n**Fix**: Ensure Chrome is launched with `--remote-debugging-port=9222`. If Chrome is already running, close it first — only one instance can bind port 9222. Check with `lsof -i :9222` to see what holds the port.",
+      "message": "## Lesson: Chrome DevTools ECONNREFUSED when Chrome not running or port 9222 not open\nMCP browser tools fail with `ECONNREFUSED 127.0.0.1:9222` because Chrome is not running with remote debugging enabled, or the debugging port is blocked by another Chrome instance.\n**Fix**: Ensure Chrome is launched with `--remote-debugging-port=9222`. If Chrome is already running, close it first — only one instance can bind port 9222. Check with `lsof -i :9222` to see what holds the port.",
       "summary": "Chrome DevTools ECONNREFUSED when Chrome not running or port 9222 not open",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KMZ3C8X94TV1BGK36KAVZE3R": {
       "slug": "browser-eval-returns-undefined-for-async-9cf3",
+      "type": "hint",
       "priority": 6,
       "toolNames": [
         "Bash"
@@ -785,14 +754,13 @@
         "topic:async",
         "severity:silent"
       ],
-      "injection": "## Lesson: Browser eval returns undefined for async/Promise code\nUsing `eval` or `evaluate` in browser automation tools with async code (fetch, await, Promises) returns `undefined` because the eval context does not await the Promise. The expression completes synchronously, returning the unresolved Promise object.\n**Fix**: Wrap async eval code in an IIFE: `(async () => { const res = await fetch(...); return res.json(); })()`. Or use the browser tool's built-in async evaluation if available (e.g., Playwright's `page.evaluate` auto-awaits returned Promises).",
+      "message": "## Lesson: Browser eval returns undefined for async/Promise code\nUsing `eval` or `evaluate` in browser automation tools with async code (fetch, await, Promises) returns `undefined` because the eval context does not await the Promise. The expression completes synchronously, returning the unresolved Promise object.\n**Fix**: Wrap async eval code in an IIFE: `(async () => { const res = await fetch(...); return res.json(); })()`. Or use the browser tool's built-in async evaluation if available (e.g., Playwright's `page.evaluate` auto-awaits returned Promises).",
       "summary": "Browser eval returns undefined for async/Promise code",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KMZ3DMJ9ZZVSM5TQYK70A4MB": {
       "slug": "webfetch-and-curl-fail-on-urls-that-requ-e368",
+      "type": "hint",
       "priority": 6,
       "toolNames": [
         "Bash"
@@ -809,14 +777,13 @@
         "topic:web-scraping",
         "severity:silent"
       ],
-      "injection": "## Lesson: WebFetch and curl fail on URLs that require browser JavaScript rendering\nUsing `WebFetch` or `curl` to fetch content from SPAs, job boards, or modern web apps returns 404, empty HTML, or redirect pages because the content is rendered client-side via JavaScript. The server returns a shell HTML page that requires JS execution.\n**Fix**: Use a headless browser tool (Playwright, Chrome DevTools MCP) instead of WebFetch/curl for JS-rendered content. If you only need structured data, check if the site has a public API or structured data in the initial HTML (JSON-LD, meta tags).",
+      "message": "## Lesson: WebFetch and curl fail on URLs that require browser JavaScript rendering\nUsing `WebFetch` or `curl` to fetch content from SPAs, job boards, or modern web apps returns 404, empty HTML, or redirect pages because the content is rendered client-side via JavaScript. The server returns a shell HTML page that requires JS execution.\n**Fix**: Use a headless browser tool (Playwright, Chrome DevTools MCP) instead of WebFetch/curl for JS-rendered content. If you only need structured data, check if the site has a public API or structured data in the initial HTML (JSON-LD, meta tags).",
       "summary": "WebFetch and curl fail on URLs that require browser JavaScript rendering",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KMZ3E0905VZCSMBPSXZM2HRV": {
       "slug": "biome-2x-config-schema-is-incompatible-w-3369",
+      "type": "hint",
       "priority": 6,
       "toolNames": [
         "Bash"
@@ -834,14 +801,13 @@
         "topic:linting",
         "severity:error"
       ],
-      "injection": "## Lesson: Biome 2.x config schema is incompatible with Biome 1.x\nBiome 2.x changed its config schema significantly — `formatter`, `linter`, and `organizeImports` sections moved or renamed. Biome 1.x configs cause cryptic validation errors or silently ignore rules when used with Biome 2.x, and vice versa.\n**Fix**: Check biome version with `npx biome --version`. For Biome 2.x, use `npx biome migrate` to auto-upgrade the config. The `$schema` field in `biome.json` should match the installed version.",
+      "message": "## Lesson: Biome 2.x config schema is incompatible with Biome 1.x\nBiome 2.x changed its config schema significantly — `formatter`, `linter`, and `organizeImports` sections moved or renamed. Biome 1.x configs cause cryptic validation errors or silently ignore rules when used with Biome 2.x, and vice versa.\n**Fix**: Check biome version with `npx biome --version`. For Biome 2.x, use `npx biome migrate` to auto-upgrade the config. The `$schema` field in `biome.json` should match the installed version.",
       "summary": "Biome 2.x config schema is incompatible with Biome 1.x",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KMZ3E7SCGVVWHAF2EG9R5D79": {
       "slug": "virtualenv-env-var-points-to-wrong-venv-8def",
+      "type": "hint",
       "priority": 6,
       "toolNames": [
         "Bash"
@@ -859,14 +825,13 @@
         "topic:packaging",
         "severity:silent"
       ],
-      "injection": "## Lesson: VIRTUAL_ENV env var points to wrong venv when using uv or switching projects\nThe `VIRTUAL_ENV` environment variable persists from a previous shell session or project, causing `uv`, `poetry`, or `pip` to warn about mismatched environments. Commands may silently operate on the wrong venv, installing packages in the wrong place.\n**Fix**: Run `source .venv/bin/activate` in the project directory to reset VIRTUAL_ENV, or use `uv run` which manages the venv automatically. Verify with `which python` before installing.",
+      "message": "## Lesson: VIRTUAL_ENV env var points to wrong venv when using uv or switching projects\nThe `VIRTUAL_ENV` environment variable persists from a previous shell session or project, causing `uv`, `poetry`, or `pip` to warn about mismatched environments. Commands may silently operate on the wrong venv, installing packages in the wrong place.\n**Fix**: Run `source .venv/bin/activate` in the project directory to reset VIRTUAL_ENV, or use `uv run` which manages the venv automatically. Verify with `which python` before installing.",
       "summary": "VIRTUAL_ENV env var points to wrong venv when using uv or switching projects",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KMZ3EGAAJKHA5ECVMCXME0TC": {
       "slug": "supabase-auth-returns-500-database-error-d1e9",
+      "type": "hint",
       "priority": 6,
       "toolNames": [
         "Bash"
@@ -883,14 +848,13 @@
         "topic:auth",
         "severity:error"
       ],
-      "injection": "## Lesson: Supabase auth returns 500 Database error when schema migrations are pending\nSupabase auth endpoints return `500 Database error querying schema` when the auth schema is out of sync — usually after running `supabase db reset` without restarting the auth service, or when migrations modify auth-related tables. The error looks like an application bug but is infrastructure state.\n**Fix**: Run `supabase stop && supabase start` to fully restart all services. If using local dev, `supabase db reset` followed by `supabase start` ensures clean state. Check `supabase status` to verify all services are healthy.",
+      "message": "## Lesson: Supabase auth returns 500 Database error when schema migrations are pending\nSupabase auth endpoints return `500 Database error querying schema` when the auth schema is out of sync — usually after running `supabase db reset` without restarting the auth service, or when migrations modify auth-related tables. The error looks like an application bug but is infrastructure state.\n**Fix**: Run `supabase stop && supabase start` to fully restart all services. If using local dev, `supabase db reset` followed by `supabase start` ensures clean state. Check `supabase status` to verify all services are healthy.",
       "summary": "Supabase auth returns 500 Database error when schema migrations are pending",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KN3KYY211W4G5C9E08K7GYQT": {
       "slug": "typescript-file-using-jsx-must-have-tsx-ce55",
+      "type": "hint",
       "priority": 6,
       "toolNames": [
         "Bash"
@@ -912,14 +876,13 @@
         "topic:tsx",
         "severity:error"
       ],
-      "injection": "## Lesson: TypeScript file using JSX must have .tsx extension, not .ts\nA .ts file containing JSX syntax produces TypeScript errors like TS1005 (expected >) because TypeScript does not parse JSX in .ts files — only in .tsx files.\n**Fix**: Rename the file from .ts to .tsx. If using a bundler, update any imports referencing the old filename.",
+      "message": "## Lesson: TypeScript file using JSX must have .tsx extension, not .ts\nA .ts file containing JSX syntax produces TypeScript errors like TS1005 (expected >) because TypeScript does not parse JSX in .ts files — only in .tsx files.\n**Fix**: Rename the file from .ts to .tsx. If using a bundler, update any imports referencing the old filename.",
       "summary": "TypeScript file using JSX must have .tsx extension, not .ts",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KN3KZ58VB8NHDTZVQZMAGMZE": {
       "slug": "vitest-run-run-double-argument-treats-se-983e",
+      "type": "hint",
       "priority": 6,
       "toolNames": [
         "Bash"
@@ -937,14 +900,13 @@
         "topic:testing",
         "severity:silent"
       ],
-      "injection": "## Lesson: vitest run run double-argument treats second run as a test filter pattern\nRunning vitest with run run (e.g. npx pnpm test -- run run) causes the second run to be interpreted as a filter pattern, silently running only tests matching the string run instead of all tests.\n**Fix**: Use vitest run exactly once: npx vitest run or pnpm test -- run. Do not pass run twice.",
+      "message": "## Lesson: vitest run run double-argument treats second run as a test filter pattern\nRunning vitest with run run (e.g. npx pnpm test -- run run) causes the second run to be interpreted as a filter pattern, silently running only tests matching the string run instead of all tests.\n**Fix**: Use vitest run exactly once: npx vitest run or pnpm test -- run. Do not pass run twice.",
       "summary": "vitest run run double-argument treats second run as a test filter pattern",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KNH2HGYNGNR68W7133V206C1": {
       "slug": "jq-tonumber-crashes-on-non-numeric-input-0536",
+      "type": "hint",
       "priority": 6,
       "toolNames": [],
       "commandRegexSources": [
@@ -958,14 +920,13 @@
         "tool:jq",
         "severity:blocker"
       ],
-      "injection": "## Lesson: jq tonumber crashes on non-numeric input; add on empty array returns null not 0\n`sort_by(.key | tonumber)` crashes on non-numeric keys; `[...] | add` on an empty array returns null instead of 0\n**Fix**: Guard tonumber: `select(.key | test(\"^[0-9]+$\")) | tonumber`; handle empty: `([...] | add) // 0`",
+      "message": "## Lesson: jq tonumber crashes on non-numeric input; add on empty array returns null not 0\n`sort_by(.key | tonumber)` crashes on non-numeric keys; `[...] | add` on an empty array returns null instead of 0\n**Fix**: Guard tonumber: `select(.key | test(\"^[0-9]+$\")) | tonumber`; handle empty: `([...] | add) // 0`",
       "summary": "jq tonumber crashes on non-numeric input; add on empty array returns null not 0",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KNH2HPGYYRJDJMZH1BXS4W3J": {
       "slug": "grep-c-with-echo-0-fallback-double-outpu-1aa4",
+      "type": "hint",
       "priority": 6,
       "toolNames": [],
       "commandRegexSources": [
@@ -980,14 +941,13 @@
         "language:bash",
         "severity:silent-failure"
       ],
-      "injection": "## Lesson: grep -c with || echo 0 fallback double-outputs '0\\n0' when count is zero\ngrep -c exits 1 on zero matches; `|| echo 0` fallback executes and produces both the empty count and the echoed 0\n**Fix**: Use `grep -c ... || true` then `count=${count:-0}` to capture properly; or `(grep -c ... || true)` in a subshell",
+      "message": "## Lesson: grep -c with || echo 0 fallback double-outputs '0\\n0' when count is zero\ngrep -c exits 1 on zero matches; `|| echo 0` fallback executes and produces both the empty count and the echoed 0\n**Fix**: Use `grep -c ... || true` then `count=${count:-0}` to capture properly; or `(grep -c ... || true)` in a subshell",
       "summary": "grep -c with || echo 0 fallback double-outputs '0\\n0' when count is zero",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KNH2J2PRGGZJ9GZ4KK0AATZQ": {
       "slug": "unquoted-bash-variable-in-comparison-fai-05b4",
+      "type": "hint",
       "priority": 6,
       "toolNames": [],
       "commandRegexSources": [
@@ -1001,14 +961,13 @@
         "language:bash",
         "severity:blocker"
       ],
-      "injection": "## Lesson: Unquoted bash variable in [[ ]] comparison fails under set -u on unset variables\n`[[ $var != true ]]` with $var unset triggers unbound variable error under set -u; quotes are not optional\n**Fix**: Always quote variables in comparisons: `[[ \"$var\" != \"true\" ]]` or use default expansion: `[[ \"${VAR:-}\" != \"true\" ]]`",
+      "message": "## Lesson: Unquoted bash variable in [[ ]] comparison fails under set -u on unset variables\n`[[ $var != true ]]` with $var unset triggers unbound variable error under set -u; quotes are not optional\n**Fix**: Always quote variables in comparisons: `[[ \"$var\" != \"true\" ]]` or use default expansion: `[[ \"${VAR:-}\" != \"true\" ]]`",
       "summary": "Unquoted bash variable in [[ ]] comparison fails under set -u on unset variables",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KNH2KGNNFMNZ3Z1Z9EPYMV8Y": {
       "slug": "env-file-parser-using-cut-d-fails-to-str-2d06",
+      "type": "hint",
       "priority": 6,
       "toolNames": [],
       "commandRegexSources": [
@@ -1022,14 +981,13 @@
         "language:bash",
         "severity:silent-failure"
       ],
-      "injection": "## Lesson: env file parser using cut -d= fails to strip export prefix from export KEY=value lines\nParser using `grep KEY= file | cut -d= -f2` silently skips or mispares `export KEY=value` lines, returning empty\n**Fix**: Normalize lines before parsing: `grep KEY= file | sed 's/^export //' | cut -d= -f2`",
+      "message": "## Lesson: env file parser using cut -d= fails to strip export prefix from export KEY=value lines\nParser using `grep KEY= file | cut -d= -f2` silently skips or mispares `export KEY=value` lines, returning empty\n**Fix**: Normalize lines before parsing: `grep KEY= file | sed 's/^export //' | cut -d= -f2`",
       "summary": "env file parser using cut -d= fails to strip export prefix from export KEY=value lines",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KNH365KM7YW7KRB1HMT2TQCE": {
       "slug": "agents-expand-scope-during-execution-int-1274",
+      "type": "hint",
       "priority": 6,
       "toolNames": [],
       "commandRegexSources": [],
@@ -1039,14 +997,13 @@
         "topic:planning",
         "category:specification-drift"
       ],
-      "injection": "## Lesson: Agents expand scope during execution, introducing unreviewed changes that add bugs\nBatch plan said 'add rate limiting' but agent also refactored auth middleware and added logging — unreviewed changes introduced bugs\n**Fix**: Add explicit prohibition to batch instructions: 'Do not implement anything not listed here. Note improvements in a progress file for future batches.'",
+      "message": "## Lesson: Agents expand scope during execution, introducing unreviewed changes that add bugs\nBatch plan said 'add rate limiting' but agent also refactored auth middleware and added logging — unreviewed changes introduced bugs\n**Fix**: Add explicit prohibition to batch instructions: 'Do not implement anything not listed here. Note improvements in a progress file for future batches.'",
       "summary": "Agents expand scope during execution, introducing unreviewed changes that add bugs",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KNH36AV9856BTMYA6N3AXE06": {
       "slug": "agent-written-tests-validate-the-agents-2fdf",
+      "type": "hint",
       "priority": 6,
       "toolNames": [],
       "commandRegexSources": [],
@@ -1056,14 +1013,13 @@
         "topic:planning",
         "category:specification-drift"
       ],
-      "injection": "## Lesson: Agent-written tests validate the agent's own misunderstanding instead of the spec (closed-loop self-grading)\nAgent wrote implementation and tests together; misunderstood 'cache results' as per-request instead of persistent; tests confirmed the misunderstanding\n**Fix**: Write tests from the spec before implementation, quoting spec text literally. Tests must be anchored to an external requirement, not derived from the implementation.",
+      "message": "## Lesson: Agent-written tests validate the agent's own misunderstanding instead of the spec (closed-loop self-grading)\nAgent wrote implementation and tests together; misunderstood 'cache results' as per-request instead of persistent; tests confirmed the misunderstanding\n**Fix**: Write tests from the spec before implementation, quoting spec text literally. Tests must be anchored to an external requirement, not derived from the implementation.",
       "summary": "Agent-written tests validate the agent's own misunderstanding instead of the spec (closed-loop self-grading)",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KNH36NCH76JR86ET2A8TANG4": {
       "slug": "file-reads-at-batch-start-become-stale-a-d847",
+      "type": "hint",
       "priority": 6,
       "toolNames": [],
       "commandRegexSources": [],
@@ -1073,14 +1029,13 @@
         "topic:context-management",
         "category:context-retrieval"
       ],
-      "injection": "## Lesson: File reads at batch start become stale — agent consumes old snapshot and misses changes from earlier tasks\nTask 1 added a new API endpoint; Task 2 used the batch-start file snapshot, missing the new endpoint; frontend integration broke\n**Fix**: Instruct agent to re-read files immediately before consuming them: 'Before Task 2, re-read src/api.py to see current state.' Or split into separate batches.",
+      "message": "## Lesson: File reads at batch start become stale — agent consumes old snapshot and misses changes from earlier tasks\nTask 1 added a new API endpoint; Task 2 used the batch-start file snapshot, missing the new endpoint; frontend integration broke\n**Fix**: Instruct agent to re-read files immediately before consuming them: 'Before Task 2, re-read src/api.py to see current state.' Or split into separate batches.",
       "summary": "File reads at batch start become stale — agent consumes old snapshot and misses changes from earlier tasks",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KNH3751QHZB33981K2NFZAAR": {
       "slug": "batches-ordered-top-down-fail-when-a-tas-6001",
+      "type": "hint",
       "priority": 6,
       "toolNames": [],
       "commandRegexSources": [],
@@ -1090,14 +1045,13 @@
         "topic:planning",
         "category:planning-control-flow"
       ],
-      "injection": "## Lesson: Batches ordered top-down fail when a task imports code that a later task produces\nBatch 1 (CLI) imported from Batch 3 (pipeline) which did not exist yet; ModuleNotFoundError on execution\n**Fix**: Draw the dependency graph before ordering. For each batch, list what it produces and what it consumes. Producers must always come before consumers.",
+      "message": "## Lesson: Batches ordered top-down fail when a task imports code that a later task produces\nBatch 1 (CLI) imported from Batch 3 (pipeline) which did not exist yet; ModuleNotFoundError on execution\n**Fix**: Draw the dependency graph before ordering. For each batch, list what it produces and what it consumes. Producers must always come before consumers.",
       "summary": "Batches ordered top-down fail when a task imports code that a later task produces",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KNH37RSV0QY5A5XGJWASPMVR": {
       "slug": "batch-executed-without-a-rollback-plan-l-19b8",
+      "type": "hint",
       "priority": 6,
       "toolNames": [],
       "commandRegexSources": [],
@@ -1107,14 +1061,13 @@
         "topic:planning",
         "category:planning-control-flow"
       ],
-      "injection": "## Lesson: Batch executed without a rollback plan leaves partial state that is harder to debug than a clean revert\nBatch failed after migration applied but ORM models were incomplete; retrying hit already-applied migration; partial state failed differently each time\n**Fix**: Commit all prior work before executing. On failure: use git stash to preserve and revert to clean state. Define the recovery path in the plan before executing.",
+      "message": "## Lesson: Batch executed without a rollback plan leaves partial state that is harder to debug than a clean revert\nBatch failed after migration applied but ORM models were incomplete; retrying hit already-applied migration; partial state failed differently each time\n**Fix**: Commit all prior work before executing. On failure: use git stash to preserve and revert to clean state. Define the recovery path in the plan before executing.",
       "summary": "Batch executed without a rollback plan leaves partial state that is harder to debug than a clean revert",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KNH37YW5BS58WXXTA45S2RZR": {
       "slug": "tasks-without-a-verification-command-pas-fc8f",
+      "type": "hint",
       "priority": 6,
       "toolNames": [],
       "commandRegexSources": [],
@@ -1124,14 +1077,13 @@
         "topic:planning",
         "category:planning-control-flow"
       ],
-      "injection": "## Lesson: Tasks without a verification command pass quality gates despite incorrect output\nTask 'improve error messages' had no verification command; quality gate passed but messages were unchanged; agent improvised a different change\n**Fix**: Write the verification command before the task description: 'This task is done when: <shell command> exits 0 with output <expected>'",
+      "message": "## Lesson: Tasks without a verification command pass quality gates despite incorrect output\nTask 'improve error messages' had no verification command; quality gate passed but messages were unchanged; agent improvised a different change\n**Fix**: Write the verification command before the task description: 'This task is done when: <shell command> exits 0 with output <expected>'",
       "summary": "Tasks without a verification command pass quality gates despite incorrect output",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KMZ3CHGQMTYQA0AFPQRGCSEG": {
       "slug": "oh-my-zsh-nvm-plugin-outputs-warnings-in-df6f",
+      "type": "hint",
       "priority": 5,
       "toolNames": [
         "Bash"
@@ -1148,14 +1100,13 @@
         "env:claude-code",
         "severity:noise"
       ],
-      "injection": "## Lesson: oh-my-zsh nvm plugin outputs warnings in non-interactive shells\nShell commands in Claude Code produce spurious `command not found: _omz_nvm_setup_completion` and `_omz_nvm_setup_autoload` warnings because oh-my-zsh nvm plugin initialization runs in non-interactive shells spawned by the Bash tool. These warnings pollute stdout/stderr and can confuse error detection.\n**Fix**: Prepend `SHELL=/bin/sh` or use `env -i PATH=$PATH command` to avoid loading zsh plugins. Alternatively, guard oh-my-zsh initialization in .zshrc with `[[ -o interactive ]] || return` at the top.",
+      "message": "## Lesson: oh-my-zsh nvm plugin outputs warnings in non-interactive shells\nShell commands in Claude Code produce spurious `command not found: _omz_nvm_setup_completion` and `_omz_nvm_setup_autoload` warnings because oh-my-zsh nvm plugin initialization runs in non-interactive shells spawned by the Bash tool. These warnings pollute stdout/stderr and can confuse error detection.\n**Fix**: Prepend `SHELL=/bin/sh` or use `env -i PATH=$PATH command` to avoid loading zsh plugins. Alternatively, guard oh-my-zsh initialization in .zshrc with `[[ -o interactive ]] || return` at the top.",
       "summary": "oh-my-zsh nvm plugin outputs warnings in non-interactive shells",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KMZ3DB3W7VMWBVSXT4G0MTNF": {
       "slug": "nodejs-deprecationwarnings-pollute-cli-o-112c",
+      "type": "hint",
       "priority": 5,
       "toolNames": [
         "Bash"
@@ -1173,14 +1124,13 @@
         "env:claude-code",
         "severity:noise"
       ],
-      "injection": "## Lesson: Node.js DeprecationWarnings pollute CLI output in non-interactive terminals\nNode.js emits `DeprecationWarning` messages to stderr (e.g., `--locale` flag, `punycode` module, `fs.Stats` constructor) that clutter tool output in Claude Code. These warnings are harmless but can be mistaken for errors and obscure actual error messages.\n**Fix**: Suppress with `NODE_NO_WARNINGS=1` or `--no-deprecation` flag. For specific warnings, use `--disable-warning=DEP0XXX`. Do not suppress all warnings in production — only in non-interactive agent contexts.",
+      "message": "## Lesson: Node.js DeprecationWarnings pollute CLI output in non-interactive terminals\nNode.js emits `DeprecationWarning` messages to stderr (e.g., `--locale` flag, `punycode` module, `fs.Stats` constructor) that clutter tool output in Claude Code. These warnings are harmless but can be mistaken for errors and obscure actual error messages.\n**Fix**: Suppress with `NODE_NO_WARNINGS=1` or `--no-deprecation` flag. For specific warnings, use `--disable-warning=DEP0XXX`. Do not suppress all warnings in production — only in non-interactive agent contexts.",
       "summary": "Node.js DeprecationWarnings pollute CLI output in non-interactive terminals",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KMZ3ERT3Q1Q1CKMDSMZTY9DP": {
       "slug": "subagents-may-not-have-access-to-bash-to-6a73",
+      "type": "protocol",
       "priority": 5,
       "toolNames": [],
       "commandRegexSources": [],
@@ -1191,14 +1141,13 @@
         "severity:error",
         "category:reasoning"
       ],
-      "injection": "## Lesson: Subagents may not have access to Bash tool — check available tools first\nSubagents spawned via the Agent tool may have a restricted tool set. Attempting to use `Bash` when it is not available produces `Error: No such tool available: Bash`. This wastes a turn and breaks the agent workflow.\n**Fix**: Before assuming Bash is available, check the agent context. Use Read/Grep/Glob for file operations, and only fall back to Bash for commands that truly require shell execution. In restricted contexts, use available MCP tools or ask the parent agent to execute shell commands.",
+      "message": "## Lesson: Subagents may not have access to Bash tool — check available tools first\nSubagents spawned via the Agent tool may have a restricted tool set. Attempting to use `Bash` when it is not available produces `Error: No such tool available: Bash`. This wastes a turn and breaks the agent workflow.\n**Fix**: Before assuming Bash is available, check the agent context. Use Read/Grep/Glob for file operations, and only fall back to Bash for commands that truly require shell execution. In restricted contexts, use available MCP tools or ask the parent agent to execute shell commands.",
       "summary": "Subagents may not have access to Bash tool — check available tools first",
-      "block": false,
-      "blockReason": null,
       "sessionStart": true
     },
     "01KN3KZC98WFJYYJ3HCQBDRX3K": {
       "slug": "zod-v4-zodresolver-requires-zodv4core-to-ac16",
+      "type": "hint",
       "priority": 5,
       "toolNames": [
         "Bash"
@@ -1216,14 +1165,13 @@
         "topic:validation",
         "severity:error"
       ],
-      "injection": "## Lesson: Zod v4 zodResolver requires zod/v4/core to be importable — v3 and v4 resolvers are not interchangeable\nUsing zodResolver from @hookform/resolvers with Zod v4 schemas fails because the resolver expects zod/v4/core to be importable and the schema types differ between v3 and v4. Mixing versions produces runtime type mismatches.\n**Fix**: Ensure @hookform/resolvers is updated to a version that supports Zod v4, and import zodResolver from @hookform/resolvers/zod. Do not mix Zod v3 and v4 schemas in the same form.",
+      "message": "## Lesson: Zod v4 zodResolver requires zod/v4/core to be importable — v3 and v4 resolvers are not interchangeable\nUsing zodResolver from @hookform/resolvers with Zod v4 schemas fails because the resolver expects zod/v4/core to be importable and the schema types differ between v3 and v4. Mixing versions produces runtime type mismatches.\n**Fix**: Ensure @hookform/resolvers is updated to a version that supports Zod v4, and import zodResolver from @hookform/resolvers/zod. Do not mix Zod v3 and v4 schemas in the same form.",
       "summary": "Zod v4 zodResolver requires zod/v4/core to be importable — v3 and v4 resolvers are not interchangeable",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KNH2K94RAG8TM94Y7HK9QYEH": {
       "slug": "local-keyword-used-outside-a-bash-functi-2b18",
+      "type": "hint",
       "priority": 5,
       "toolNames": [],
       "commandRegexSources": [
@@ -1237,14 +1185,13 @@
         "language:bash",
         "severity:silent-failure"
       ],
-      "injection": "## Lesson: local keyword used outside a bash function is undefined behavior and fails in dash/sh\nbash tolerates `local var` at script top-level but it is undefined behavior; fails with `local: can only be used in a function` in dash/sh\n**Fix**: Reserve `local` for function bodies only; use plain assignment at script top-level",
+      "message": "## Lesson: local keyword used outside a bash function is undefined behavior and fails in dash/sh\nbash tolerates `local var` at script top-level but it is undefined behavior; fails with `local: can only be used in a function` in dash/sh\n**Fix**: Reserve `local` for function bodies only; use plain assignment at script top-level",
       "summary": "local keyword used outside a bash function is undefined behavior and fails in dash/sh",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KNH360TF0FAY2P7ZWAD009PK": {
       "slug": "acceptance-criteria-written-as-vague-beh-d941",
+      "type": "hint",
       "priority": 5,
       "toolNames": [],
       "commandRegexSources": [],
@@ -1254,14 +1201,13 @@
         "topic:planning",
         "category:specification-drift"
       ],
-      "injection": "## Lesson: Acceptance criteria written as vague behavior descriptions allow agents to pass trivially wrong implementations\nSpecifying criteria like 'authentication works' lets an agent implement any solution that satisfies the literal words, even a trivial one that misses the intent\n**Fix**: Write every acceptance criterion as a shell command with exact expected output: `curl -H 'Authorization: Bearer invalid' /api && echo FAIL || echo OK`",
+      "message": "## Lesson: Acceptance criteria written as vague behavior descriptions allow agents to pass trivially wrong implementations\nSpecifying criteria like 'authentication works' lets an agent implement any solution that satisfies the literal words, even a trivial one that misses the intent\n**Fix**: Write every acceptance criterion as a shell command with exact expected output: `curl -H 'Authorization: Bearer invalid' /api && echo FAIL || echo OK`",
       "summary": "Acceptance criteria written as vague behavior descriptions allow agents to pass trivially wrong implementations",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KNH36G1T1RNFHVTTANEKB2JX": {
       "slug": "single-example-in-a-spec-is-treated-as-t-0f87",
+      "type": "hint",
       "priority": 5,
       "toolNames": [],
       "commandRegexSources": [],
@@ -1271,14 +1217,13 @@
         "topic:planning",
         "category:specification-drift"
       ],
-      "injection": "## Lesson: Single example in a spec is treated as the complete contract — missing formats cause production failures\nSpec gave one example date '2024-01-15'; agent implemented ISO-only parsing; production had US format and null values\n**Fix**: Provide at least 3 examples per behavior: happy path, error case, boundary condition. Explicitly state what is NOT required.",
+      "message": "## Lesson: Single example in a spec is treated as the complete contract — missing formats cause production failures\nSpec gave one example date '2024-01-15'; agent implemented ISO-only parsing; production had US format and null values\n**Fix**: Provide at least 3 examples per behavior: happy path, error case, boundary condition. Explicitly state what is NOT required.",
       "summary": "Single example in a spec is treated as the complete contract — missing formats cause production failures",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KNH36TPQJN6DDCS62SBYG6QP": {
       "slug": "late-requirements-placed-mid-context-are-871d",
+      "type": "hint",
       "priority": 5,
       "toolNames": [],
       "commandRegexSources": [],
@@ -1288,14 +1233,13 @@
         "topic:context-management",
         "category:context-retrieval"
       ],
-      "injection": "## Lesson: Late requirements placed mid-context are silently missed — agent attention degrades past ~6000 chars\nRequirements placed after 7000 chars of context; a 500ms timeout requirement was missed because it fell in the low-attention middle region\n**Fix**: Place task description first, reference material in the middle, acceptance criteria last. Keep total context under 6000 chars per batch.",
+      "message": "## Lesson: Late requirements placed mid-context are silently missed — agent attention degrades past ~6000 chars\nRequirements placed after 7000 chars of context; a 500ms timeout requirement was missed because it fell in the low-attention middle region\n**Fix**: Place task description first, reference material in the middle, acceptance criteria last. Keep total context under 6000 chars per batch.",
       "summary": "Late requirements placed mid-context are silently missed — agent attention degrades past ~6000 chars",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KNH37A72SZMHJ4YS1V6PDZ2E": {
       "slug": "batches-over-5-tasks-or-250-lines-produc-2f49",
+      "type": "hint",
       "priority": 5,
       "toolNames": [],
       "commandRegexSources": [],
@@ -1305,14 +1249,13 @@
         "topic:planning",
         "category:planning-control-flow"
       ],
-      "injection": "## Lesson: Batches over 5 tasks or 250 lines produce subtle bugs in later tasks due to degraded context attention\n8-task batch had subtle bugs in tasks 7-8: missed validation, off-by-one pagination, missing assertion — all in the context-depleted region\n**Fix**: Split batches at natural module boundaries when exceeding 5 tasks or ~250 estimated lines of output",
+      "message": "## Lesson: Batches over 5 tasks or 250 lines produce subtle bugs in later tasks due to degraded context attention\n8-task batch had subtle bugs in tasks 7-8: missed validation, off-by-one pagination, missing assertion — all in the context-depleted region\n**Fix**: Split batches at natural module boundaries when exceeding 5 tasks or ~250 estimated lines of output",
       "summary": "Batches over 5 tasks or 250 lines produce subtle bugs in later tasks due to degraded context attention",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KN38M1AD6NC4W6RBJPCX71NY": {
       "slug": "forgot-childunref-parent-process-stays-a-9121",
+      "type": "protocol",
       "priority": 4,
       "toolNames": [],
       "commandRegexSources": [],
@@ -1324,14 +1267,13 @@
         "candidate:node-gotchas-skill",
         "category:reasoning"
       ],
-      "injection": "## Lesson: Forgot child.unref() — parent process stays alive until the child finishes, blocking the session-start hook\nForgot child.unref() — parent process stays alive until the child finishes, blocking the session-start hook\n**Fix**: Always call child.unref() after detached spawn to let the parent exit immediately",
+      "message": "## Lesson: Forgot child.unref() — parent process stays alive until the child finishes, blocking the session-start hook\nForgot child.unref() — parent process stays alive until the child finishes, blocking the session-start hook\n**Fix**: Always call child.unref() after detached spawn to let the parent exit immediately",
       "summary": "Forgot child.unref() — parent process stays alive until the child finishes, blocking the session-start hook",
-      "block": false,
-      "blockReason": null,
       "sessionStart": true
     },
     "01KN38M1JVP0MVNQGD3HKKM7DA": {
       "slug": "used-lessons-learnedlocal-as-the-plugin-60d8",
+      "type": "protocol",
       "priority": 4,
       "toolNames": [],
       "commandRegexSources": [],
@@ -1342,14 +1284,13 @@
         "severity:silent-failure",
         "category:reasoning"
       ],
-      "injection": "## Lesson: Used `lessons-learned@local` as the plugin key, but \"local\" is not a registered marketplace in kn...\nUsed `lessons-learned@local` as the plugin key, but \"local\" is not a registered marketplace in known_marketplaces.json — Claude Code ignores entries whose marketplace isn't known, silently not loading the plugin\n**Fix**: For local dev plugins, add hooks directly to ~/.claude/settings.json with absolute paths instead of fighting the plugin registry. Only use the installed_plugins.json + enabledPlugins approach for plugins installed from a real registered marketplace",
+      "message": "## Lesson: Used `lessons-learned@local` as the plugin key, but \"local\" is not a registered marketplace in kn...\nUsed `lessons-learned@local` as the plugin key, but \"local\" is not a registered marketplace in known_marketplaces.json — Claude Code ignores entries whose marketplace isn't known, silently not loading the plugin\n**Fix**: For local dev plugins, add hooks directly to ~/.claude/settings.json with absolute paths instead of fighting the plugin registry. Only use the installed_plugins.json + enabledPlugins approach for plugins installed from a real registered marketplace",
       "summary": "Used `lessons-learned@local` as the plugin key, but \"local\" is not a registered marketplace in kn...",
-      "block": false,
-      "blockReason": null,
       "sessionStart": true
     },
     "01KN38M1NYYV4Z92DZQPGTEWHK": {
       "slug": "used-decision-deny-reason-systemmessage-f9e4",
+      "type": "protocol",
       "priority": 4,
       "toolNames": [],
       "commandRegexSources": [],
@@ -1360,14 +1301,13 @@
         "category:protocol",
         "category:reasoning"
       ],
-      "injection": "## Lesson: used `{ decision: \"deny\", reason, systemMessage }` (PermissionRequest schema) instead of `{ hookS...\nused `{ decision: \"deny\", reason, systemMessage }` (PermissionRequest schema) instead of `{ hookSpecificOutput: { hookEventName: \"PreToolUse\", permissionDecision: \"deny\", permissionDecisionReason } }` — Claude Code silently ignored the unknown schema and executed anyway, giving no error signal\n**Fix**: always read the compiled source of a working plugin (safety-net) before implementing an underdocumented protocol; and write a schema assertion test so \"wrong contract\" fails loudly instead of silently",
+      "message": "## Lesson: used `{ decision: \"deny\", reason, systemMessage }` (PermissionRequest schema) instead of `{ hookS...\nused `{ decision: \"deny\", reason, systemMessage }` (PermissionRequest schema) instead of `{ hookSpecificOutput: { hookEventName: \"PreToolUse\", permissionDecision: \"deny\", permissionDecisionReason } }` — Claude Code silently ignored the unknown schema and executed anyway, giving no error signal\n**Fix**: always read the compiled source of a working plugin (safety-net) before implementing an underdocumented protocol; and write a schema assertion test so \"wrong contract\" fails loudly instead of silently",
       "summary": "used `{ decision: \"deny\", reason, systemMessage }` (PermissionRequest schema) instead of `{ hookS...",
-      "block": false,
-      "blockReason": null,
       "sessionStart": true
     },
     "01KN38M1TECTA85XF00XY8NFMB": {
       "slug": "observed-that-read-tool-results-caused-f-29e8",
+      "type": "protocol",
       "priority": 4,
       "toolNames": [],
       "commandRegexSources": [],
@@ -1377,14 +1317,13 @@
         "severity:silent-failure",
         "category:reasoning"
       ],
-      "injection": "## Lesson: observed that Read tool results caused false positives, then jumped from \"exclude Read\" to \"only ...\nobserved that Read tool results caused false positives, then jumped from \"exclude Read\" to \"only allow Bash/TaskOutput\" — an allowlist that silently dropped MCP tools, Edit, Write, and all future tools not explicitly listed\n**Fix**: match the scope of the fix to the scope of the observation; if the problem is \"X is noisy,\" exclude X — don't redesign around the absence of X",
+      "message": "## Lesson: observed that Read tool results caused false positives, then jumped from \"exclude Read\" to \"only ...\nobserved that Read tool results caused false positives, then jumped from \"exclude Read\" to \"only allow Bash/TaskOutput\" — an allowlist that silently dropped MCP tools, Edit, Write, and all future tools not explicitly listed\n**Fix**: match the scope of the fix to the scope of the observation; if the problem is \"X is noisy,\" exclude X — don't redesign around the absence of X",
       "summary": "observed that Read tool results caused false positives, then jumped from \"exclude Read\" to \"only ...",
-      "block": false,
-      "blockReason": null,
       "sessionStart": true
     },
     "01KNH3709KYRZVYC4ZZWY0359X": {
       "slug": "lesson-reminders-placed-at-batch-start-a-c7e1",
+      "type": "hint",
       "priority": 4,
       "toolNames": [],
       "commandRegexSources": [],
@@ -1394,14 +1333,13 @@
         "topic:context-management",
         "category:context-retrieval"
       ],
-      "injection": "## Lesson: Lesson reminders placed at batch start are forgotten by the time the guarded task executes\nAll lesson summaries injected at batch start (2000 chars); by Task 4, agent forgot the bare-except lesson and wrote `except: pass`\n**Fix**: Co-locate each lesson reminder immediately before the task it guards: [Task N] → [one-line lesson reminder] → [acceptance criteria]",
+      "message": "## Lesson: Lesson reminders placed at batch start are forgotten by the time the guarded task executes\nAll lesson summaries injected at batch start (2000 chars); by Task 4, agent forgot the bare-except lesson and wrote `except: pass`\n**Fix**: Co-locate each lesson reminder immediately before the task it guards: [Task N] → [one-line lesson reminder] → [acceptance criteria]",
       "summary": "Lesson reminders placed at batch start are forgotten by the time the guarded task executes",
-      "block": false,
-      "blockReason": null,
       "sessionStart": false
     },
     "01KN38M1DX1EC9G9Y7MBMZDHN8": {
       "slug": "said-run-pytest-tests-without-specifying-20c5",
+      "type": "protocol",
       "priority": 3,
       "toolNames": [],
       "commandRegexSources": [],
@@ -1412,14 +1350,13 @@
         "severity:confusion",
         "category:reasoning"
       ],
-      "injection": "## Lesson: Said \"run `pytest tests/`\" without specifying that the user should ask Claude to run it — ambiguo...\nSaid \"run `pytest tests/`\" without specifying that the user should ask Claude to run it — ambiguous whether they should type it in terminal or prompt Claude\n**Fix**: When describing PreToolUse hook tests, always frame it as \"ask Claude to run X\" to make clear the hook only fires when Claude invokes the tool, not when the user runs commands directly",
+      "message": "## Lesson: Said \"run `pytest tests/`\" without specifying that the user should ask Claude to run it — ambiguo...\nSaid \"run `pytest tests/`\" without specifying that the user should ask Claude to run it — ambiguous whether they should type it in terminal or prompt Claude\n**Fix**: When describing PreToolUse hook tests, always frame it as \"ask Claude to run X\" to make clear the hook only fires when Claude invokes the tool, not when the user runs commands directly",
       "summary": "Said \"run `pytest tests/`\" without specifying that the user should ask Claude to run it — ambiguo...",
-      "block": false,
-      "blockReason": null,
       "sessionStart": true
     },
     "01KN38M1GD7BR75VC3DZS1ZZ3D": {
       "slug": "didnt-warn-that-plan-mode-suppresses-too-0aeb",
+      "type": "protocol",
       "priority": 3,
       "toolNames": [],
       "commandRegexSources": [],
@@ -1430,14 +1367,13 @@
         "severity:confusion",
         "category:reasoning"
       ],
-      "injection": "## Lesson: Didn't warn that plan mode suppresses tool calls — if Claude enters plan mode, PreToolUse never f...\nDidn't warn that plan mode suppresses tool calls — if Claude enters plan mode, PreToolUse never fires because Bash is never called, so the hook test produces a false negative\n**Fix**: When testing PreToolUse hooks, tell the user to disable plan mode or explicitly say \"don't plan, just run it\" so the hook actually fires",
+      "message": "## Lesson: Didn't warn that plan mode suppresses tool calls — if Claude enters plan mode, PreToolUse never f...\nDidn't warn that plan mode suppresses tool calls — if Claude enters plan mode, PreToolUse never fires because Bash is never called, so the hook test produces a false negative\n**Fix**: When testing PreToolUse hooks, tell the user to disable plan mode or explicitly say \"don't plan, just run it\" so the hook actually fires",
       "summary": "Didn't warn that plan mode suppresses tool calls — if Claude enters plan mode, PreToolUse never f...",
-      "block": false,
-      "blockReason": null,
       "sessionStart": true
     },
     "01KN38M1R38W3BZFZNNFBGAWHE": {
       "slug": "interpreted-command-with-flags-got-block-42fb",
+      "type": "protocol",
       "priority": 3,
       "toolNames": [],
       "commandRegexSources": [],
@@ -1448,10 +1384,8 @@
         "severity:wasted-effort",
         "category:reasoning"
       ],
-      "injection": "## Lesson: interpreted \"command WITH flags got blocked\" when the output was actually showing the corrected r...\ninterpreted \"command WITH flags got blocked\" when the output was actually showing the corrected retry after the block — jumped to debugging a non-existent problem\n**Fix**: before diagnosing output as wrong, trace the expected flow (block → self-correct → retry) and verify it matches what's shown",
+      "message": "## Lesson: interpreted \"command WITH flags got blocked\" when the output was actually showing the corrected r...\ninterpreted \"command WITH flags got blocked\" when the output was actually showing the corrected retry after the block — jumped to debugging a non-existent problem\n**Fix**: before diagnosing output as wrong, trace the expected flow (block → self-correct → retry) and verify it matches what's shown",
       "summary": "interpreted \"command WITH flags got blocked\" when the output was actually showing the corrected r...",
-      "block": false,
-      "blockReason": null,
       "sessionStart": true
     }
   }

@@ -8,7 +8,7 @@
  */
 
 /**
- * @typedef {{ id?: string, slug: string, priority: number, injection: string, summary: string, block: boolean, blockReason: string|null }} Match
+ * @typedef {{ id?: string, slug: string, type: string, priority: number, message: string, summary: string }} Match
  */
 
 /**
@@ -24,6 +24,8 @@ export function matchLessons(lessons, toolName, command, filePath) {
   const matches = [];
 
   for (const [id, lesson] of Object.entries(lessons)) {
+    if (lesson.disabled) continue;
+
     const toolNames = lesson.toolNames ?? [];
     if (!toolNames.includes(toolName)) continue;
 
@@ -61,11 +63,10 @@ export function matchLessons(lessons, toolName, command, filePath) {
       matches.push({
         id,
         slug: lesson.slug ?? id,
+        type: lesson.type ?? 'hint',
         priority: lesson.priority ?? 5,
-        injection: lesson.injection ?? '',
+        message: lesson.message ?? '',
         summary: lesson.summary ?? '',
-        block: lesson.block ?? false,
-        blockReason: lesson.blockReason ?? null,
       });
     }
   }
@@ -83,7 +84,7 @@ export function matchLessons(lessons, toolName, command, filePath) {
  * @returns {{ reason: string } | null}
  */
 export function findBlocker(matches, command) {
-  const blocker = matches.find(m => m.block && m.blockReason);
+  const blocker = matches.find(m => m.type === 'guard');
   if (!blocker) return null;
-  return { reason: blocker.blockReason.replace('{command}', command.slice(0, 120)) };
+  return { reason: blocker.message.replace('{command}', command.slice(0, 120)) };
 }

@@ -66,12 +66,14 @@ function main() {
   // Append reasoning/meta lessons flagged for session-start injection
   try {
     const manifest = JSON.parse(readFileSync(MANIFEST_PATH, 'utf8'));
-    const reasoningLessons = Object.values(manifest.lessons).filter(l => l.sessionStart === true);
+    const reasoningLessons = Object.values(manifest.lessons).filter(
+      l => l.sessionStart === true && !l.disabled
+    );
 
     if (reasoningLessons.length > 0) {
       output += '\n\n# [lessons-learned] Reasoning Reminders\n';
       for (const l of reasoningLessons) {
-        output += `\n${l.injection}\n`;
+        output += `\n${l.message}\n`;
       }
     }
   } catch {

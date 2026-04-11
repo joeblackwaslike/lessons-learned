@@ -7,11 +7,10 @@ import { selectCandidates } from '../../../core/select.mjs';
 function makeMatch(overrides = {}) {
   return {
     slug: 'test-slug',
+    type: 'hint',
     priority: 5,
-    injection: 'A short lesson text.',
+    message: 'A short lesson text.',
     summary: 'A brief summary.',
-    block: false,
-    blockReason: null,
     ...overrides,
   };
 }
@@ -29,7 +28,7 @@ describe('selectCandidates', () => {
   });
 
   it('injects a single matching lesson', () => {
-    const matches = [makeMatch({ slug: 's1', injection: 'Lesson text' })];
+    const matches = [makeMatch({ slug: 's1', message: 'Lesson text' })];
     const { injected } = selectCandidates(matches, new Set(), { claimFn: alwaysClaim });
     assert.equal(injected.length, 1);
     assert.equal(injected[0].slug, 's1');
@@ -51,10 +50,10 @@ describe('selectCandidates', () => {
 
   it('respects maxLessons cap', () => {
     const matches = [
-      makeMatch({ slug: 's1', injection: 'L1' }),
-      makeMatch({ slug: 's2', injection: 'L2' }),
-      makeMatch({ slug: 's3', injection: 'L3' }),
-      makeMatch({ slug: 's4', injection: 'L4' }),
+      makeMatch({ slug: 's1', message: 'L1' }),
+      makeMatch({ slug: 's2', message: 'L2' }),
+      makeMatch({ slug: 's3', message: 'L3' }),
+      makeMatch({ slug: 's4', message: 'L4' }),
     ];
     const { injected } = selectCandidates(matches, new Set(), {
       maxLessons: 2,
@@ -69,7 +68,7 @@ describe('selectCandidates', () => {
 
   it('always injects the first lesson regardless of budget', () => {
     const bigText = 'x'.repeat(10_000);
-    const matches = [makeMatch({ slug: 's1', injection: bigText })];
+    const matches = [makeMatch({ slug: 's1', message: bigText })];
     const { injected } = selectCandidates(matches, new Set(), {
       budgetBytes: 1,
       claimFn: alwaysClaim,
@@ -82,8 +81,8 @@ describe('selectCandidates', () => {
     const bigText = 'x'.repeat(5_000);
     const bigSummary = 'y'.repeat(5_000);
     const matches = [
-      makeMatch({ slug: 's1', injection: 'Short L1' }),
-      makeMatch({ slug: 's2', injection: bigText, summary: bigSummary }),
+      makeMatch({ slug: 's1', message: 'Short L1' }),
+      makeMatch({ slug: 's2', message: bigText, summary: bigSummary }),
     ];
     const { injected, dropped } = selectCandidates(matches, new Set(), {
       budgetBytes: 100,
@@ -96,8 +95,8 @@ describe('selectCandidates', () => {
 
   it('falls back to summary when full injection exceeds remaining budget', () => {
     const matches = [
-      makeMatch({ slug: 's1', injection: 'Short lesson one' }),
-      makeMatch({ slug: 's2', injection: 'x'.repeat(500), summary: 'Brief summary' }),
+      makeMatch({ slug: 's1', message: 'Short lesson one' }),
+      makeMatch({ slug: 's2', message: 'x'.repeat(500), summary: 'Brief summary' }),
     ];
     const { injected } = selectCandidates(matches, new Set(), {
       budgetBytes: 200,
@@ -130,8 +129,8 @@ describe('selectCandidates', () => {
 
   it('processes matches in priority order (caller responsibility)', () => {
     const matches = [
-      makeMatch({ slug: 'high', injection: 'H' }),
-      makeMatch({ slug: 'low', injection: 'L' }),
+      makeMatch({ slug: 'high', message: 'H' }),
+      makeMatch({ slug: 'low', message: 'L' }),
     ];
     const { injected } = selectCandidates(matches, new Set(), {
       maxLessons: 1,
