@@ -137,7 +137,7 @@ Tests for `selectCandidates`:
 - Tag with all fields parsed correctly
 - Multiple tags in one block
 - Tag inside code fence (fence delimiters stripped)
-- Missing `mistake` or `fix` → skipped
+- Missing `problem` or `solution` → skipped
 
 ---
 

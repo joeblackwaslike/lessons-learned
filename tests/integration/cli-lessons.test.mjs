@@ -18,8 +18,8 @@ const LESSONS_CLI = join(__dirname, '..', '..', 'scripts', 'lessons.mjs');
 // A well-formed lesson distinct from the fixture seed (git stash)
 const VALID_LESSON_2 = {
   summary: 'Use npm ci instead of npm install in CI pipelines for reproducibility',
-  mistake: 'Using npm install in CI can silently upgrade packages, breaking reproducibility',
-  remediation: 'Replace npm install with npm ci in all CI/CD pipelines for locked installs',
+  problem: 'Using npm install in CI can silently upgrade packages, breaking reproducibility',
+  solution: 'Replace npm install with npm ci in all CI/CD pipelines for locked installs',
   triggers: {
     toolNames: ['Bash'],
     commandPatterns: ['\\bnpm install\\b'],
@@ -92,8 +92,8 @@ describe('lessons add', () => {
     assert.ok(stderr.includes('Failed') || stderr.includes('validation'));
   });
 
-  it('rejects a lesson with short mistake (< 20 chars)', async () => {
-    const bad = { ...VALID_LESSON_2, mistake: 'npm install bad' };
+  it('rejects a lesson with short problem (< 20 chars)', async () => {
+    const bad = { ...VALID_LESSON_2, problem: 'npm install bad' };
     const { exitCode } = await run(LESSONS_CLI, {
       args: ['add', '--json', JSON.stringify(bad)],
       env: env(),
@@ -104,7 +104,7 @@ describe('lessons add', () => {
   it('rejects a lesson with unfilled template placeholders', async () => {
     const bad = {
       ...VALID_LESSON_2,
-      mistake: 'Running <what_went_wrong> causes problems in production',
+      problem: 'Running <what_went_wrong> causes problems in production',
     };
     const { exitCode } = await run(LESSONS_CLI, {
       args: ['add', '--json', JSON.stringify(bad)],

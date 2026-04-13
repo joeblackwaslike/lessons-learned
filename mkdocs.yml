@@ -26,6 +26,13 @@ nav:
       - Cross-Agent Adapters: developer-guide/adapters.md
       - Testing: developer-guide/testing.md
       - Contributing: developer-guide/contributing.md
+  - Research:
+      - Real-World Demand: research/real-world-demand.md
+      - Eval Framework Landscape: research/eval-framework-landscape.md
+  - PRDs:
+      - PRD-001: prds/001-lessons-learned-plugin.md
+      - PRD-002: prds/002-lessons-review-command.md
+      - PRD-003: prds/003-lessons-eval-framework.md
   - Reference:
       - CLI: reference/cli.md
       - Configuration: reference/configuration.md

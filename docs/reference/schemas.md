@@ -25,8 +25,8 @@ Validates `data/lessons.json` — the source of truth for all lesson records.
 | `id`               | `string`   | ✓        | Pattern: `^[0-9A-Z]{26}$`                       | ULID — collision-free, sortable by creation time |
 | `slug`             | `string`   | ✓        | Pattern: `^[a-z0-9]+(-[a-z0-9]+)*-[a-z0-9]{4}$` | kebab-case + 4-char random suffix                |
 | `summary`          | `string`   | ✓        | Max 120 chars                                   | One-line description; fallback injection text    |
-| `mistake`          | `string`   | ✓        | —                                               | Root cause explanation                           |
-| `remediation`      | `string`   | ✓        | —                                               | Concrete fix                                     |
+| `problem`          | `string`   | ✓        | —                                               | Root cause explanation                           |
+| `solution`         | `string`   | ✓        | —                                               | Concrete fix                                     |
 | `injection`        | `string`   | ✓        | —                                               | Pre-rendered markdown for hook injection         |
 | `triggers`         | `Triggers` | ✓        | See below                                       | What activates this lesson                       |
 | `priority`         | `integer`  | ✓        | 1–10                                            | Higher wins budget conflicts                     |
@@ -37,7 +37,7 @@ Validates `data/lessons.json` — the source of truth for all lesson records.
 | `occurrenceCount`  | `integer`  | —        | Min: 0                                          | Times pattern detected by scanner                |
 | `createdAt`        | `string`   | ✓        | ISO 8601                                        | Creation timestamp                               |
 | `updatedAt`        | `string`   | ✓        | ISO 8601                                        | Last update timestamp                            |
-| `contentHash`      | `string`   | ✓        | Pattern: `^sha256:[a-f0-9]{64}$`                | Dedup hash of mistake + remediation + triggers   |
+| `contentHash`      | `string`   | ✓        | Pattern: `^sha256:[a-f0-9]{64}$`                | Dedup hash of problem + solution + triggers      |
 
 ### Triggers object
 

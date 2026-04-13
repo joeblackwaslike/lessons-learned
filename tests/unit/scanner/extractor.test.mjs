@@ -13,8 +13,8 @@ function makeStructuredTag(overrides = {}) {
   return {
     tool: 'Bash',
     trigger: 'pytest tests/',
-    mistake: 'pytest hangs',
-    fix: 'use python -m pytest',
+    problem: 'pytest hangs',
+    solution: 'use python -m pytest',
     tags: ['lang:python', 'severity:hang'],
     sessionId: 'sess-001',
     messageId: 'msg-001',
@@ -56,9 +56,9 @@ describe('extractFromStructured', () => {
     assert.equal(result.source, 'structured');
   });
 
-  it('maps fix → remediation', () => {
-    const result = extractFromStructured(makeStructuredTag({ fix: 'Do X instead' }));
-    assert.equal(result.remediation, 'Do X instead');
+  it('maps solution field correctly', () => {
+    const result = extractFromStructured(makeStructuredTag({ solution: 'Do X instead' }));
+    assert.equal(result.solution, 'Do X instead');
   });
 
   it('copies all context fields', () => {
@@ -82,9 +82,9 @@ describe('extractFromStructured', () => {
     assert.equal(a.contentHash, b.contentHash);
   });
 
-  it('different mistake produces different contentHash', () => {
-    const a = extractFromStructured(makeStructuredTag({ mistake: 'error A' }));
-    const b = extractFromStructured(makeStructuredTag({ mistake: 'error B' }));
+  it('different problem produces different contentHash', () => {
+    const a = extractFromStructured(makeStructuredTag({ problem: 'error A' }));
+    const b = extractFromStructured(makeStructuredTag({ problem: 'error B' }));
     assert.notEqual(a.contentHash, b.contentHash);
   });
 
@@ -105,7 +105,7 @@ describe('extractFromStructured', () => {
   });
 
   it('handles missing optional fields without throwing', () => {
-    const tag = { mistake: 'Error occurred', fix: 'Fix it' };
+    const tag = { problem: 'Error occurred', solution: 'Fix it' };
     assert.doesNotThrow(() => extractFromStructured(tag));
     const result = extractFromStructured(tag);
     assert.equal(result.tool, null);
@@ -122,14 +122,14 @@ describe('extractFromHeuristic', () => {
     assert.equal(result.source, 'heuristic');
   });
 
-  it('extracts mistake from error turn text', () => {
+  it('extracts problem from error turn text', () => {
     const result = extractFromHeuristic(makeHeuristicWindow());
-    assert.ok(result.mistake.includes('TTY detection failed'));
+    assert.ok(result.problem.includes('TTY detection failed'));
   });
 
-  it('extracts remediation from correction turn text', () => {
+  it('extracts solution from correction turn text', () => {
     const result = extractFromHeuristic(makeHeuristicWindow());
-    assert.ok(result.remediation.includes('python -m pytest'));
+    assert.ok(result.solution.includes('python -m pytest'));
   });
 
   it('sets needsReview=true always for heuristic', () => {

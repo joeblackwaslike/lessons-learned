@@ -7,9 +7,9 @@ When Claude makes a mistake and corrects it during a session, it should emit a s
 ```
 #lesson
 tool: <tool_name>
-trigger: <the command or action that preceded the mistake>
-mistake: <what went wrong and why — be specific about root cause>
-fix: <the correction that resolved it>
+trigger: <the command or action that preceded the problem>
+problem: <what went wrong and why — be specific about root cause>
+solution: <the correction that resolved it>
 tags: <comma-separated category:value tags>
 #/lesson
 ```
@@ -20,8 +20,8 @@ tags: <comma-separated category:value tags>
 #lesson
 tool: Bash
 trigger: git stash
-mistake: git stash only stashes tracked files — untracked files silently left behind, risking data loss when the working tree looks clean but isn't
-fix: Use `git stash -u` to include untracked files
+problem: git stash only stashes tracked files — untracked files silently left behind, risking data loss when the working tree looks clean but isn't
+solution: Use `git stash -u` to include untracked files
 tags: tool:git, severity:data-loss
 #/lesson
 ```
@@ -31,11 +31,11 @@ tags: tool:git, severity:data-loss
 Emit naturally as part of your response whenever you:
 
 - Discover why a tool call failed and apply a different approach
-- Catch yourself about to repeat a known mistake
+- Catch yourself about to repeat a known problem
 - Receive a user correction ("no", "wrong", "that's not right")
 - Identify a root cause after debugging
 
-Do **not** force lesson tags where none apply. Only tag genuine mistake→correction sequences.
+Do **not** force lesson tags where none apply. Only tag genuine problem→solution sequences.
 
 ## How it gets captured
 

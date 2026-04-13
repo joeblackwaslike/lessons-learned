@@ -91,11 +91,11 @@ Key lesson fields:
 
 `lessons add` enforces these before writing:
 
-- `summary`, `mistake`, `remediation` each ≥ 20 chars
+- `summary`, `problem`, `solution` each ≥ 20 chars
 - No unfilled template placeholders (`<what_went_wrong>` etc.)
 - Summary must not end with `...` (truncation indicator)
 - Trigger must not be a prose gerund (e.g. "running pytest")
-- Jaccard similarity of `mistake` vs all existing lessons must be < 0.5
+- Jaccard similarity of `problem` vs all existing lessons must be < 0.5
 
 ## Two-tier scanning
 

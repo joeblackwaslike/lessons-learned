@@ -26,7 +26,7 @@ Run any subcommand with `--help` for full options.
 
 ```bash
 # Add a lesson from JSON (used by /lessons:add)
-node scripts/lessons.mjs add --json '{"summary":"...","mistake":"...","remediation":"..."}'
+node scripts/lessons.mjs add --json '{"summary":"...","problem":"...","solution":"..."}'
 
 # Promote candidates to active
 node scripts/lessons.mjs promote --ids id1,id2

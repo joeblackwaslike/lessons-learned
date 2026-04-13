@@ -48,7 +48,7 @@ All three gates run in CI on every push and PR.
 node scripts/lessons.mjs add
 ```
 
-The CLI prompts for summary, mistake, remediation, trigger patterns, and tags. It enforces validation rules before writing.
+The CLI prompts for summary, problem, solution, trigger patterns, and tags. It enforces validation rules before writing.
 
 ### Option 2 — Direct JSON edit
 
@@ -62,11 +62,11 @@ node scripts/lessons.mjs build
 
 `lessons add` enforces these before writing. Direct edits should respect them too:
 
-- `summary`, `mistake`, `remediation` each ≥ 20 characters
+- `summary`, `problem`, `solution` each ≥ 20 characters
 - No unfilled template placeholders (`<what_went_wrong>` etc.)
 - Summary must not end with `...`
 - Trigger must not be a prose gerund (e.g. "running pytest")
-- Jaccard similarity of `mistake` vs all existing lessons must be < 0.5 (no near-duplicates)
+- Jaccard similarity of `problem` vs all existing lessons must be < 0.5 (no near-duplicates)
 
 ### Trigger patterns
 
@@ -105,13 +105,13 @@ During a session, Claude can emit a structured tag when it makes and corrects a 
 #lesson
 tool: Bash
 trigger: git stash
-mistake: git stash silently drops untracked files without -u flag
-fix: Use `git stash -u` (--include-untracked) to include untracked files
+problem: git stash silently drops untracked files without -u flag
+solution: Use `git stash -u` (--include-untracked) to include untracked files
 tags: tool:git, severity:data-loss
 #/lesson
 ```
 
-Required fields: `mistake` and `fix`. Optional: `tool`, `trigger`, `tags`.
+Required fields: `problem` and `solution`. Optional: `tool`, `trigger`, `tags`.
 
 Tags follow `category:value` format. Common categories: `lang:`, `tool:`, `severity:`, `topic:`.
 

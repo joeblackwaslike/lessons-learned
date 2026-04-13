@@ -29,8 +29,8 @@ status           TEXT                      -- candidate | reviewed | active | di
 type             TEXT NOT NULL DEFAULT 'hint'
                  -- directive | guard | hint | protocol (see Type taxonomy below)
 summary          TEXT NOT NULL             -- ≥ 20 chars, no "..." suffix
-mistake          TEXT NOT NULL             -- ≥ 20 chars
-remediation      TEXT NOT NULL             -- ≥ 20 chars
+problem          TEXT NOT NULL             -- ≥ 20 chars
+solution         TEXT NOT NULL             -- ≥ 20 chars
 toolNames        TEXT NOT NULL DEFAULT '[]'   -- JSON array, exact tool name match
 commandPatterns  TEXT NOT NULL DEFAULT '[]'   -- JSON array of regex strings
 pathPatterns     TEXT NOT NULL DEFAULT '[]'   -- JSON array of glob strings
@@ -57,8 +57,8 @@ For `guard` lessons, the `message` field supports a `{command}` placeholder that
 | Field               | Constraint                                                                |
 | ------------------- | ------------------------------------------------------------------------- |
 | `summary`           | ≥ 20 chars, no `...` suffix, no template placeholders                     |
-| `mistake`           | ≥ 20 chars, no template placeholders                                      |
-| `remediation`       | ≥ 20 chars, no template placeholders                                      |
+| `problem`           | ≥ 20 chars, no template placeholders                                      |
+| `solution`          | ≥ 20 chars, no template placeholders                                      |
 | `commandPatterns`   | Must be valid regex; invalid patterns are silently dropped at build time  |
 | `type = 'protocol'` | Use sparingly — fires on every session startup, no dedup within a session |
 | `confidence`        | < 0.7 → `needsReview: true`, excluded from manifest                       |
@@ -146,8 +146,8 @@ Written by `lessons scan candidates`. Read by `lessons scan promote` and `lesson
       "sessionCount": 2, // Distinct sessions where this pattern was observed
       "projectCount": 1, // Distinct project directories
       "projects": ["jobsearch-tracker"],
-      "mistake": "...",
-      "remediation": "...",
+      "problem": "...",
+      "solution": "...",
       "tags": [],
       "trigger": "git stash", // Raw trigger text from the session
       "sourceSessionIds": ["..."],

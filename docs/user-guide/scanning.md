@@ -59,21 +59,21 @@ When Claude makes and corrects a mistake during a session, it emits a `#lesson` 
 #lesson
 tool: Bash
 trigger: git stash
-mistake: git stash only stashes tracked files — untracked files silently left behind
-fix: Use `git stash -u` to include untracked files
+problem: git stash only stashes tracked files — untracked files silently left behind
+solution: Use `git stash -u` to include untracked files
 tags: tool:git, severity:data-loss
 #/lesson
 ```
 
 The scanner greps for `#lesson` markers in assistant message lines, parses the block, and extracts a structured candidate with:
 
-- `tool`, `trigger`, `mistake`, `fix`, `tags` from the tag
+- `tool`, `trigger`, `problem`, `solution`, `tags` from the tag
 - `confidence` scored based on how many optional fields are present
 - `sessionId` and `messageId` for provenance
 
 **Tier 1 candidates auto-promote** during interactive scan if they pass validation:
 
-- `mistake` and `fix` each ≥ 20 chars
+- `problem` and `solution` each ≥ 20 chars
 - No template placeholders
 - Jaccard similarity vs existing lessons < 0.5
 
@@ -90,8 +90,8 @@ For sessions where Claude didn't emit `#lesson` tags, the heuristic detector app
 
 When both conditions match within a configurable window, the detector extracts a candidate with:
 
-- `mistake` derived from the error message
-- `remediation` derived from the correction
+- `problem` derived from the error message
+- `solution` derived from the correction
 - `confidence` in the 0.4–0.6 range (lower than Tier 1)
 - `needsReview: true` — always requires human confirmation
 

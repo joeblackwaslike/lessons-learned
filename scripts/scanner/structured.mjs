@@ -11,8 +11,8 @@
  *   #lesson
  *   tool: Bash
  *   trigger: pytest -v tests/
- *   mistake: pytest hangs due to TTY detection
- *   fix: Use python -m pytest --no-header -rN
+ *   problem: pytest hangs due to TTY detection
+ *   solution: Use python -m pytest --no-header -rN
  *   tags: lang:python, tool:pytest, severity:hang
  *   #/lesson
  *
@@ -46,7 +46,7 @@ function parseFieldLine(line) {
  *
  * @param {string} text — assistant response text
  * @returns {Array<Object>} — parsed lesson candidates
- *   Each candidate: { tool, trigger, mistake, fix, tags, raw }
+ *   Each candidate: { tool, trigger, problem, solution, tags, raw }
  */
 export function parseLessonTags(text) {
   if (!text || typeof text !== 'string') return [];
@@ -68,14 +68,14 @@ export function parseLessonTags(text) {
       }
     }
 
-    // Require at minimum: mistake and fix
-    if (!fields.mistake || !fields.fix) continue;
+    // Require at minimum: problem and solution
+    if (!fields.problem || !fields.solution) continue;
 
     candidates.push({
       tool: fields.tool ?? null,
       trigger: fields.trigger ?? null,
-      mistake: fields.mistake,
-      fix: fields.fix,
+      problem: fields.problem,
+      solution: fields.solution,
       tags: fields.tags
         ? fields.tags
             .split(',')

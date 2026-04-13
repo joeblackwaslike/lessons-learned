@@ -32,7 +32,7 @@ node scripts/lessons.mjs add [options]
 
 ### Interactive mode
 
-Prompts for: summary, mistake, remediation, trigger, tags, priority.
+Prompts for: summary, problem, solution, trigger, tags, priority.
 
 ```bash
 node scripts/lessons.mjs add
@@ -43,8 +43,8 @@ node scripts/lessons.mjs add
 ```bash
 node scripts/lessons.mjs add --json '{
   "summary": "git stash drops untracked files silently",
-  "mistake": "git stash only stashes tracked modified files — untracked files are silently left behind",
-  "remediation": "Use git stash -u (--include-untracked) to include untracked files",
+  "problem": "git stash only stashes tracked modified files — untracked files are silently left behind",
+  "solution": "Use git stash -u (--include-untracked) to include untracked files",
   "trigger": "git stash",
   "tags": ["tool:git", "severity:data-loss"],
   "priority": 9
@@ -61,7 +61,7 @@ node scripts/lessons.mjs add --file lesson.json
 
 All modes enforce:
 
-- `summary`, `mistake`, `remediation` each ≥ 20 characters
+- `summary`, `problem`, `solution` each ≥ 20 characters
 - No unfilled template placeholders
 - `summary` must not end with `...`
 - Trigger must not be a prose gerund

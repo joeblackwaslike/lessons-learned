@@ -99,7 +99,7 @@ Understand natural language freely. Common patterns:
 
 **"show details for SLUG or ID or number"** — show the full record with all fields expanded.
 
-**"search TERM"** — filter across all statuses, match against slug, summary, mistake, tags. Show matches grouped by status.
+**"search TERM"** — filter across all statuses, match against slug, summary, problem, tags. Show matches grouped by status.
 
 ### Promoting candidates
 
@@ -134,7 +134,7 @@ Note: `--ids` is not required when only archiving.
 
 ### Editing a lesson
 
-Supported fields: `summary`, `mistake`, `remediation`, `injection`, `injectOn`, `commandPatterns`, `pathPatterns`, `priority`, `confidence`, `tags`, `block`, `blockReason`
+Supported fields: `summary`, `problem`, `solution`, `injection`, `injectOn`, `commandPatterns`, `pathPatterns`, `priority`, `confidence`, `tags`, `block`, `blockReason`
 
 Works on any lesson regardless of status. Show the user the current value of the field(s) they want to change, confirm, then:
 

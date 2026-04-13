@@ -27,8 +27,8 @@ Format:
 #lesson
 tool: <tool_name>
 trigger: <what_command_or_action_triggered_the_issue>
-mistake: <what_went_wrong_and_why>
-fix: <the_correction_that_resolved_it>
+problem: <what_went_wrong_and_why>
+solution: <the_correction_that_resolved_it>
 tags: <comma_separated_category:value_tags>
 #/lesson
 \`\`\`
@@ -38,19 +38,19 @@ Example:
 #lesson
 tool: Bash
 trigger: git stash
-mistake: git stash only stashes tracked modified files — untracked files are silently left behind, risking data loss
-fix: Use \`git stash -u\` (or \`--include-untracked\`) to include untracked files
+problem: git stash only stashes tracked modified files — untracked files are silently left behind, risking data loss
+solution: Use \`git stash -u\` (or \`--include-untracked\`) to include untracked files
 tags: tool:git, severity:data-loss
 #/lesson
 \`\`\`
 
 Emit this tag naturally as part of your response whenever you:
 - Discover why a tool call failed and apply a different approach
-- Catch yourself about to repeat a known mistake
+- Catch yourself about to repeat a known problem
 - Receive a user correction ("no", "wrong", "that's not right")
 - Identify a root cause after debugging
 
-Do NOT force lesson tags where none apply. Only tag genuine mistake→correction sequences.`;
+Do NOT force lesson tags where none apply. Only tag genuine problem→solution sequences.`;
 
 function main() {
   try {

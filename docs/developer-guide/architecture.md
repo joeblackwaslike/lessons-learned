@@ -87,8 +87,8 @@ The scanner greps for these tags in session JSONL files. Tags are embedded in as
 
 When both match, the detector extracts:
 
-- `mistake` from the error turn
-- `remediation` from the correction turn
+- `problem` from the error turn
+- `solution` from the correction turn
 - `tool` and `trigger` from the preceding tool call
 - `confidence` in the 0.4–0.6 range (lower fidelity)
 
@@ -123,7 +123,7 @@ Candidates sit in the database until reviewed. The review surfaces them for huma
 
 **Tier 1 auto-promotes** on interactive scan if the candidate passes intake validation:
 
-- `mistake` and `fix` ≥ 20 chars
+- `problem` and `solution` ≥ 20 chars
 - No template placeholders (`<what_went_wrong>` etc.)
 - `summary` doesn't end with `...`
 - Trigger is not a prose gerund

@@ -23,8 +23,8 @@ import { createHash } from 'node:crypto';
  *   source: 'structured' | 'heuristic',
  *   tool: string|null,
  *   trigger: string|null,
- *   mistake: string,
- *   remediation: string,
+ *   problem: string,
+ *   solution: string,
  *   tags: string[],
  *   sessionId: string|null,
  *   messageId: string|null,
@@ -49,8 +49,8 @@ export function extractFromStructured(tag) {
     source: 'structured',
     tool: tag.tool ?? null,
     trigger: tag.trigger ?? null,
-    mistake: tag.mistake,
-    remediation: tag.fix,
+    problem: tag.problem,
+    solution: tag.solution,
     tags: tag.tags ?? [],
     sessionId: tag.sessionId ?? null,
     messageId: tag.messageId ?? null,
@@ -98,17 +98,17 @@ export function extractFromHeuristic(window) {
     }
   }
 
-  // Extract mistake and fix text from the error and correction turns
-  const mistake = errorTurn?.text?.slice(0, 500) ?? 'Unknown error';
-  const remediation = correctionTurn?.text?.slice(0, 500) ?? 'See correction';
+  // Extract problem and solution text from the error and correction turns
+  const problem = errorTurn?.text?.slice(0, 500) ?? 'Unknown error';
+  const solution = correctionTurn?.text?.slice(0, 500) ?? 'See correction';
 
   /** @type {LessonCandidate} */
   const candidate = {
     source: 'heuristic',
     tool,
     trigger,
-    mistake,
-    remediation,
+    problem,
+    solution,
     tags: inferTags(tool, trigger, window.signals),
     sessionId: window.sessionId ?? null,
     messageId: errorTurn?.messageId ?? null,
@@ -213,7 +213,7 @@ export function scoreCandidatePriority(candidate) {
  * Compute a content hash for deduplication.
  */
 function computeContentHash(candidate) {
-  const data = `${candidate.mistake}|${candidate.remediation}|${candidate.trigger ?? ''}`;
+  const data = `${candidate.problem}|${candidate.solution}|${candidate.trigger ?? ''}`;
   return 'sha256:' + createHash('sha256').update(data).digest('hex');
 }
 

@@ -55,8 +55,8 @@ node scripts/lessons.mjs add
 ```bash
 node scripts/lessons.mjs add --json '{
   "summary": "git stash silently drops untracked files without -u",
-  "mistake": "git stash only stashes tracked modified files — untracked files are silently left behind, risking data loss on branch switches",
-  "remediation": "Use git stash -u (--include-untracked) to include untracked files",
+  "problem": "git stash only stashes tracked modified files — untracked files are silently left behind, risking data loss on branch switches",
+  "solution": "Use git stash -u (--include-untracked) to include untracked files",
   "trigger": "git stash",
   "tags": ["tool:git", "severity:data-loss"],
   "priority": 9
@@ -75,11 +75,11 @@ node scripts/lessons.mjs build
 
 `lessons add` enforces these before writing. Direct edits should respect them too:
 
-- `summary`, `mistake`, `remediation` each ≥ 20 characters
+- `summary`, `problem`, `solution` each ≥ 20 characters
 - No unfilled template placeholders (`<what_went_wrong>` etc.)
 - `summary` must not end with `...`
 - `trigger` must not be a prose gerund (e.g. "running pytest")
-- Jaccard similarity of `mistake` vs all existing lessons < 0.5 (no near-duplicates)
+- Jaccard similarity of `problem` vs all existing lessons < 0.5 (no near-duplicates)
 
 ---
 

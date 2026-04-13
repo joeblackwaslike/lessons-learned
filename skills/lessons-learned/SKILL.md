@@ -46,7 +46,7 @@ candidate  →  reviewed  →  active  →  archived
 
 | Command           | What it does                                                                                 |
 | ----------------- | -------------------------------------------------------------------------------------------- |
-| `/lessons:add`    | Conversationally add a lesson — Claude asks for mistake, fix, trigger, then writes it        |
+| `/lessons:add`    | Conversationally add a lesson — Claude asks for problem, solution, trigger, then writes it   |
 | `/lessons:review` | Scan for new candidates, LLM-filter them, present a numbered list, approve/archive → promote |
 | `/lessons:manage` | Browse and manage all lessons by status — promote, archive, edit, restore                    |
 | `/lessons:config` | View and tune configuration with plain-language explanations of every setting                |

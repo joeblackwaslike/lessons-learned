@@ -33,10 +33,10 @@ Questions vary by type:
 
 Ask:
 
-> What went wrong? Describe the mistake — what happened and why it was a problem.
+> What went wrong? Describe the problem — what happened and why it was a problem.
 > (Be specific: the more concrete, the better the lesson will match future situations.)
 
-Wait for the answer. Store as `mistake`.
+Wait for the answer. Store as `problem`.
 
 Then ask:
 
@@ -44,7 +44,7 @@ Then ask:
 
 For `guard`, prompt: "Include a specific rerun command or corrective action if applicable."
 
-Wait for the answer. Store as `remediation`.
+Wait for the answer. Store as `solution`.
 
 **For `protocol`:**
 
@@ -52,7 +52,7 @@ Ask:
 
 > Describe the reasoning procedure or checklist. What should be done, and why does it matter?
 
-Wait for the answer. Use the response to populate both `mistake` (why it matters / what goes wrong without it) and `remediation` (the procedure itself). Ask a follow-up if the split isn't clear.
+Wait for the answer. Use the response to populate both `problem` (why it matters / what goes wrong without it) and `solution` (the procedure itself). Ask a follow-up if the split isn't clear.
 
 **For `directive`:**
 
@@ -63,7 +63,7 @@ Ask:
 > - **Problem**: What goes wrong without this principle?
 > - **Solution**: What should be done instead?
 
-Wait for the answer. Map Problem → `mistake`, Solution → `remediation`.
+Wait for the answer. Map Problem → `problem`, Solution → `solution`.
 
 ---
 
@@ -92,7 +92,7 @@ Wait for the answer. Map it:
 
 ## Step 4 — Summary
 
-Based on the mistake text, generate a concise one-line summary (≤ 80 chars, present tense, no trailing ellipsis).
+Based on the problem text, generate a concise one-line summary (≤ 80 chars, present tense, no trailing ellipsis).
 
 Present it:
 
@@ -126,8 +126,8 @@ Parse their answer:
 Before showing the confirmation, review the collected fields and surface any issues as suggestions:
 
 - Summary over 80 chars or under 20 chars
-- Vague or generic `mistake` text (e.g. "something went wrong")
-- `remediation` that doesn't give actionable guidance
+- Vague or generic `problem` text (e.g. "something went wrong")
+- `solution` that doesn't give actionable guidance
 - Type mismatch: session-start trigger with `hint`/`guard` type; blocking intent with `hint` type
 - Missing obvious tags (e.g. a `git` lesson with no `tool:git` tag; a Python lesson with no `lang:python` tag)
 - Tags that don't follow `category:value` convention
@@ -153,8 +153,8 @@ Show a compact confirmation:
 Ready to add:
   Type:        <type>
   Summary:     <summary>
-  Mistake:     <first line of mistake, truncated to ~80 chars>
-  Remediation: <first line of remediation, truncated to ~80 chars>
+  Problem:     <first line of problem, truncated to ~80 chars>
+  Solution:    <first line of solution, truncated to ~80 chars>
   Trigger:     <description of what was set, or "none (session-start)" for protocol/directive>
   Tags:        <tags or "none">
   Priority:    <priority>

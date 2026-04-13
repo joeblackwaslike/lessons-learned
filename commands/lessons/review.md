@@ -44,12 +44,12 @@ node scripts/lessons.mjs list
 For each candidate in the aggregate JSON, silently apply the following filter rules:
 
 1. **Exact duplicate** — if the candidate's `contentHash` appears in any active lesson → mark `archive:duplicate`.
-2. **Near-duplicate** — if Jaccard similarity of `mistake` text vs. an existing active lesson is ≥ 0.5 and the candidate adds nothing new → mark `archive:near-duplicate`.
-3. **Situational / not generalizable** — mistake only applies to the specific project or one-off context with no reusable rule → mark `archive:situational`.
+2. **Near-duplicate** — if Jaccard similarity of `problem` text vs. an existing active lesson is ≥ 0.5 and the candidate adds nothing new → mark `archive:near-duplicate`.
+3. **Situational / not generalizable** — problem only applies to the specific project or one-off context with no reusable rule → mark `archive:situational`.
 4. **Keep** — everything else. For kept candidates, generate or validate:
    - `summary` (≤ 80 chars, present-tense description)
-   - `mistake` (clear description of what goes wrong and why)
-   - `remediation` (concrete fix or avoidance strategy)
+   - `problem` (clear description of what goes wrong and why)
+   - `solution` (concrete fix or avoidance strategy)
    - `tags` (1–4 `category:value` tags)
    - `priority` (1–10, where 10 = highest severity)
    - `confidence` (0.0–1.0)
@@ -64,8 +64,8 @@ Show a numbered list of the candidates to the user. For each **kept** candidate:
 
 ```
 [N] <slug>  tool:<tool>  tags:<tag1,tag2>  priority:<p>  conf:<c>
-    Mistake:     <mistake>
-    Remediation: <remediation>
+    Problem:     <problem>
+    Solution:    <solution>
     Triggers:    <injectOn>  <toolNames/commandPatterns/pathPatterns if any>
 ```
 

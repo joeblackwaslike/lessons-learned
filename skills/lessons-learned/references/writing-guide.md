@@ -4,23 +4,23 @@ A lesson is only useful if it fires at the right moment and contains actionable 
 
 ## The three fields that matter most
 
-### mistake — root cause, not symptoms
+### problem — root cause, not symptoms
 
 Be specific about _why_ something goes wrong, not just _that_ it goes wrong.
 
 > ✗ "git stash doesn't always work"
 > ✓ "git stash only stashes tracked modified files — untracked files are silently left behind, risking data loss when the working tree looks clean but isn't"
 
-The mistake text drives deduplication (Jaccard similarity check) and is the primary signal for candidate ranking. Vague mistakes match nothing and teach nothing.
+The problem text drives deduplication (Jaccard similarity check) and is the primary signal for candidate ranking. Vague problems match nothing and teach nothing.
 
-### remediation — concrete and copy-pasteable
+### solution — concrete and copy-pasteable
 
 The fix should be specific enough to act on immediately.
 
 > ✗ "be careful with git stash"
 > ✓ "Use `git stash -u` (or `--include-untracked`) to include untracked files"
 
-### trigger — the command that precedes the mistake, not the mistake itself
+### trigger — the command that precedes the problem, not the problem itself
 
 Point the trigger at what Claude is _about to do_, not what went wrong:
 
@@ -39,8 +39,8 @@ Not `git stash pop` (that's after the damage is done).
 
 ## Validation rules enforced by `lessons add`
 
-- `summary`, `mistake`, `remediation` each ≥ 20 chars
+- `summary`, `problem`, `solution` each ≥ 20 chars
 - No unfilled template placeholders (`<what_went_wrong>` etc.)
 - Summary must not end with `...`
 - Trigger must not be a prose gerund (e.g. "running pytest")
-- Jaccard similarity of `mistake` vs all existing lessons < 0.5
+- Jaccard similarity of `problem` vs all existing lessons < 0.5

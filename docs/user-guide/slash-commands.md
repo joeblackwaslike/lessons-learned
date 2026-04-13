@@ -10,8 +10,8 @@ Add a new lesson through a short guided conversation. Takes about two minutes.
 
 ### What Claude asks
 
-1. **What went wrong?** — Describe the mistake and why it happens. This becomes the `mistake` field.
-2. **How do you fix it?** — The concrete remedy: commands, flags, code. This becomes `remediation`.
+1. **What went wrong?** — Describe the problem and why it happens. This becomes the `problem` field.
+2. **How do you fix it?** — The concrete remedy: commands, flags, code. This becomes `solution`.
 3. **What triggers this?** — A command string, file pattern, or tool name. Claude converts it to the right trigger type.
 4. **One-line summary?** — A short description (max 120 chars) for the manifest index.
 5. **Tags and priority?** _(optional)_ — Category tags and priority 1–10. Claude suggests defaults.
@@ -23,7 +23,7 @@ After answering, Claude writes the lesson to `data/lessons.db`, validates it, an
 ```
 You: /lessons:add
 
-Claude: What went wrong? Describe the mistake.
+Claude: What went wrong? Describe the problem.
 
 You: When I run git stash without -u, untracked files get left behind silently.
      I didn't notice until the branch was already cleaned up.
@@ -62,8 +62,8 @@ Or inline with JSON:
 ```bash
 node scripts/lessons.mjs add --json '{
   "summary": "git stash silently drops untracked files without -u",
-  "mistake": "git stash only stashes tracked modified files — untracked files are silently left behind",
-  "remediation": "Use git stash -u (--include-untracked) to include untracked files",
+  "problem": "git stash only stashes tracked modified files — untracked files are silently left behind",
+  "solution": "Use git stash -u (--include-untracked) to include untracked files",
   "trigger": "git stash",
   "tags": ["tool:git", "severity:data-loss"],
   "priority": 9
@@ -82,7 +82,7 @@ The scanner runs automatically on session startup and writes candidates to the d
 
 **Tier 1 (structured)** — Claude emitted a `#lesson` tag during a session. These are high-fidelity and pass validation automatically. Claude shows you the candidate and asks to confirm or skip.
 
-**Tier 2 (heuristic)** — The scanner detected an error→correction sequence but Claude didn't tag it. Noisier. Claude shows the raw context and asks you to confirm the mistake, fix, and trigger pattern before promoting.
+**Tier 2 (heuristic)** — The scanner detected an error→correction sequence but Claude didn't tag it. Noisier. Claude shows the raw context and asks you to confirm the problem, solution, and trigger pattern before promoting.
 
 ### Review workflow
 
@@ -92,8 +92,8 @@ You: /lessons:review
 Claude: Found 3 candidates.
 
 --- Candidate 1 (Tier 1) ---
-Mistake: npm link sets a symlink that breaks peer dependency resolution...
-Fix: Use npm pack + npm install ./path instead of npm link
+Problem: npm link sets a symlink that breaks peer dependency resolution...
+Solution: Use npm pack + npm install ./path instead of npm link
 Tags: tool:npm, severity:peer-deps
 Priority: 7 (suggested)
 
@@ -106,12 +106,12 @@ Session: jobsearch-tracker (2026-04-01)
 Error: Error: ECONNREFUSED 127.0.0.1:9222
 Next message: "Let me restart Chrome with --remote-debugging-port..."
 
-What was the root mistake? (or 'skip')
+What was the root problem? (or 'skip')
 
 You: The Chrome DevTools endpoint wasn't running because Chrome wasn't started
      with remote debugging enabled.
 
-Claude: Remediation?
+Claude: Solution?
 
 You: Start Chrome with --remote-debugging-port=9222 before connecting via CDP
 

@@ -28,13 +28,13 @@ All data lives in `data/` as JSON files. There is no database.
       "summary": "pytest hangs in non-interactive envs due to TTY detection",
 
       // Root cause (required, min 20 chars)
-      "mistake": "Running bare `pytest` in Claude Code causes the process to hang...",
+      "problem": "Running bare `pytest` in Claude Code causes the process to hang...",
 
       // Concrete fix (required, min 20 chars)
-      "remediation": "Use `python -m pytest --no-header -p no:faulthandler`",
+      "solution": "Use `python -m pytest --no-header -p no:faulthandler`",
 
       // Optional — overrides default injection text
-      // Default: "## Lesson: {summary}\n{mistake}\n**Fix**: {remediation}"
+      // Default: "## Lesson: {summary}\n{problem}\n**Fix**: {solution}"
       "injection": "## REQUIRED: pytest flags for Claude Code\n...",
 
       // Set true to deny the tool call instead of injecting context
@@ -100,8 +100,8 @@ All data lives in `data/` as JSON files. There is no database.
 | Field                      | Constraint                                                                          |
 | -------------------------- | ----------------------------------------------------------------------------------- |
 | `summary`                  | ≥ 20 chars, no `...` suffix, no template placeholders                               |
-| `mistake`                  | ≥ 20 chars, no template placeholders                                                |
-| `remediation`              | ≥ 20 chars, no template placeholders                                                |
+| `problem`                  | ≥ 20 chars, no template placeholders                                                |
+| `solution`                 | ≥ 20 chars, no template placeholders                                                |
 | `triggers.commandPatterns` | Valid regex — invalid patterns rejected at add time, silently dropped at build time |
 | `triggers.sessionStart`    | Use sparingly — fires on every session startup with no per-call dedup               |
 | `confidence`               | < 0.7 → `needsReview: true`, excluded from manifest                                 |
@@ -212,8 +212,8 @@ Written by `lessons scan`. Read by `lessons scan promote` and `lessons review`.
       // Distinct project directories
       "projectCount": 1,
       "projects": ["jobsearch-tracker"],
-      "mistake": "...",
-      "remediation": "...",
+      "problem": "...",
+      "solution": "...",
       "tags": [],
       // Raw trigger text from the session
       "trigger": "git stash",

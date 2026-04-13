@@ -23,7 +23,6 @@
 import {
   readFileSync,
   writeFileSync,
-  mkdirSync,
   createReadStream,
   readdirSync,
   statSync,
@@ -41,6 +40,7 @@ import {
   restoreToActive,
   updateRecord,
   getRecordsByIds,
+  insertReviewSession,
   computeContentHash as computeContentHashFromDb,
 } from './db.mjs';
 import { join, resolve, dirname } from 'node:path';
@@ -63,7 +63,6 @@ const PLUGIN_ROOT = join(__dirname, '..');
 const DATA_DIR = process.env.LESSONS_DATA_DIR ?? join(PLUGIN_ROOT, 'data');
 const MANIFEST_PATH = process.env.LESSONS_MANIFEST_PATH ?? join(DATA_DIR, 'lesson-manifest.json');
 const CONFIG_PATH = process.env.LESSONS_CONFIG_PATH ?? join(DATA_DIR, 'config.json');
-const REVIEW_SESSIONS_DIR = join(DATA_DIR, 'review-sessions');
 const DEFAULT_SCAN_PATH = join(homedir(), '.claude', 'projects');
 
 // ─── Help ────────────────────────────────────────────────────────────
@@ -91,7 +90,7 @@ Options:
 
 Examples:
   node scripts/lessons.mjs add --interactive
-  node scripts/lessons.mjs add --json '{"summary":"...","mistake":"...","remediation":"..."}'
+  node scripts/lessons.mjs add --json '{"summary":"...","problem":"...","solution":"..."}'
   node scripts/lessons.mjs build
   node scripts/lessons.mjs list
   node scripts/lessons.mjs review
@@ -112,8 +111,8 @@ Usage:
 
 Required fields (in JSON):
   summary       One-line description of the lesson
-  mistake       What went wrong and why
-  remediation   The correction that resolves it
+  problem       What went wrong and why
+  solution      The correction that resolves it
 
 Optional fields:
   tool            Tool name(s), comma-separated (e.g. "Bash,Edit")
@@ -164,7 +163,7 @@ Usage:
 
 Reads from data/cross-project-candidates.json (written by: lessons scan candidates).
 Shows each candidate with a PASS/FAIL status based on intake validation rules:
-  - Mistake and remediation meet minimum length
+  - Problem and solution meet minimum length
   - No unfilled template placeholders
   - Trigger is a shell command, not prose
   - Not a fuzzy duplicate of an existing lesson (Jaccard ≥ 0.5)
@@ -187,7 +186,7 @@ Notes:
   - Promoted IDs move to status='active' and are included in the next manifest build
   - Archived IDs move to status='archived' and are hidden from future reviews
   - Skipped IDs (not mentioned) remain as status='candidate' for the next session
-  - A review session audit log is written to data/review-sessions/<ulid>.json
+  - A review session audit log is written to the review_sessions table in lessons.db
   - The manifest is automatically rebuilt when any IDs are promoted
 `.trim(),
 
@@ -234,7 +233,7 @@ Options:
   --patch '<json>' JSON object of fields to update
 
 Patchable fields:
-  summary, mistake, remediation, type, injection,
+  summary, problem, solution, type, injection,
   commandPatterns, pathPatterns, priority, confidence, tags
 
 Notes:
@@ -304,15 +303,15 @@ function validateLesson(input) {
     errors.push('summary contains unfilled template placeholder');
   if (input.summary.length < MIN_FIELD_LENGTH)
     errors.push(`summary too short (${input.summary.length} chars, min ${MIN_FIELD_LENGTH})`);
-  if (TEMPLATE_PLACEHOLDER_RE.test(input.mistake))
-    errors.push('mistake contains unfilled template placeholder');
-  if (input.mistake.length < MIN_FIELD_LENGTH)
-    errors.push(`mistake too short (${input.mistake.length} chars, min ${MIN_FIELD_LENGTH})`);
-  if (TEMPLATE_PLACEHOLDER_RE.test(input.remediation))
-    errors.push('remediation contains unfilled template placeholder');
-  if (input.remediation.length < MIN_FIELD_LENGTH)
+  if (TEMPLATE_PLACEHOLDER_RE.test(input.problem))
+    errors.push('problem contains unfilled template placeholder');
+  if (input.problem.length < MIN_FIELD_LENGTH)
+    errors.push(`problem too short (${input.problem.length} chars, min ${MIN_FIELD_LENGTH})`);
+  if (TEMPLATE_PLACEHOLDER_RE.test(input.solution))
+    errors.push('solution contains unfilled template placeholder');
+  if (input.solution.length < MIN_FIELD_LENGTH)
     errors.push(
-      `remediation too short (${input.remediation.length} chars, min ${MIN_FIELD_LENGTH})`
+      `solution too short (${input.solution.length} chars, min ${MIN_FIELD_LENGTH})`
     );
   if (input.trigger && PROSE_TRIGGER_RE.test(input.trigger.trim()))
     errors.push(`trigger "${input.trigger}" looks like prose, not a shell command`);
@@ -342,7 +341,7 @@ function jaccardSimilarity(a, b) {
 // ─── Lesson building ─────────────────────────────────────────────────
 
 function buildInjection(lesson) {
-  return `## Lesson: ${lesson.summary}\n${lesson.mistake}\n**Fix**: ${lesson.remediation}`;
+  return `## Lesson: ${lesson.summary}\n${lesson.problem}\n**Fix**: ${lesson.solution}`;
 }
 
 function buildTriggers(input) {
@@ -558,8 +557,8 @@ function addLessonInternal(input) {
     status: confidence >= 0.7 ? 'active' : 'reviewed',
     type,
     summary: input.summary,
-    mistake: input.mistake,
-    remediation: input.remediation,
+    problem: input.problem,
+    solution: input.solution,
     toolNames: triggers.toolNames ?? [],
     commandPatterns,
     pathPatterns: triggers.pathPatterns ?? [],
@@ -572,8 +571,8 @@ function addLessonInternal(input) {
     sessionCount: 0,
     projectCount: 0,
     contentHash: computeContentHashFromDb({
-      mistake: input.mistake,
-      remediation: input.remediation,
+      problem: input.problem,
+      solution: input.solution,
       commandPatterns,
     }),
     createdAt: now,
@@ -612,8 +611,8 @@ async function cmdAdd(args) {
     const ask = q => new Promise(r => rl.question(q, r));
     console.error('Add a new lesson (Ctrl+C to cancel)\n');
     const summary = await ask('Summary (one line): ');
-    const mistake = await ask('Mistake: ');
-    const remediation = await ask('Remediation: ');
+    const problem = await ask('Problem: ');
+    const solution = await ask('Solution: ');
     const type = await ask('Type (directive/guard/hint/protocol) [hint]: ');
     const tool = await ask('Tool(s) comma-separated (e.g. Bash,Edit): ');
     const trigger = await ask('Trigger (command or path): ');
@@ -623,8 +622,8 @@ async function cmdAdd(args) {
     rl.close();
     input = {
       summary: summary.trim(),
-      mistake: mistake.trim(),
-      remediation: remediation.trim(),
+      problem: problem.trim(),
+      solution: solution.trim(),
       type: type.trim() || 'hint',
       tool: tool.trim() || null,
       trigger: trigger.trim() || null,
@@ -664,8 +663,8 @@ async function cmdAdd(args) {
     console.error(HELP.add);
     process.exit(1);
   }
-  if (!input.summary || !input.mistake || !input.remediation) {
-    console.error('Error: summary, mistake, and remediation are required');
+  if (!input.summary || !input.problem || !input.solution) {
+    console.error('Error: summary, problem, and solution are required');
     process.exit(1);
   }
 
@@ -679,8 +678,8 @@ async function cmdAdd(args) {
     input.source = 'manual';
   }
 
-  if (input.type === 'guard' && (!input.remediation || input.remediation.length < 20)) {
-    console.error('Error: guard lessons require actionable remediation (≥20 chars)');
+  if (input.type === 'guard' && (!input.solution || input.solution.length < 20)) {
+    console.error('Error: guard lessons require actionable solution (≥20 chars)');
     process.exit(1);
   }
 
@@ -748,7 +747,7 @@ function cmdReview(args) {
 
   const db = openDb();
   const candidates = getCandidateRecords(db);
-  const activeMistakeTexts = getActiveRecords(db).map(l => ({ slug: l.slug, mistake: l.mistake }));
+  const activeProblemTexts = getActiveRecords(db).map(l => ({ slug: l.slug, problem: l.problem }));
   closeDb(db);
 
   if (candidates.length === 0) {
@@ -760,18 +759,18 @@ function cmdReview(args) {
     fail = 0;
   for (const c of candidates) {
     const errors = [];
-    if (!c.mistake || c.mistake.length < MIN_FIELD_LENGTH) errors.push('mistake too short');
-    if (!c.remediation || c.remediation.length < MIN_FIELD_LENGTH)
-      errors.push('remediation too short');
-    if (TEMPLATE_PLACEHOLDER_RE.test(c.mistake)) errors.push('mistake has placeholder');
-    if (TEMPLATE_PLACEHOLDER_RE.test(c.remediation)) errors.push('remediation has placeholder');
+    if (!c.problem || c.problem.length < MIN_FIELD_LENGTH) errors.push('problem too short');
+    if (!c.solution || c.solution.length < MIN_FIELD_LENGTH)
+      errors.push('solution too short');
+    if (TEMPLATE_PLACEHOLDER_RE.test(c.problem)) errors.push('problem has placeholder');
+    if (TEMPLATE_PLACEHOLDER_RE.test(c.solution)) errors.push('solution has placeholder');
     const trigger = (c.commandPatterns ?? [])[0];
     if (trigger && PROSE_TRIGGER_RE.test(trigger.trim()))
       errors.push(`prose trigger: "${trigger}"`);
-    const dup = activeMistakeTexts.find(l => jaccardSimilarity(c.mistake, l.mistake) >= 0.5);
+    const dup = activeProblemTexts.find(l => jaccardSimilarity(c.problem, l.problem) >= 0.5);
     if (dup)
       errors.push(
-        `fuzzy duplicate of "${dup.slug}" (${jaccardSimilarity(c.mistake, dup.mistake).toFixed(2)})`
+        `fuzzy duplicate of "${dup.slug}" (${jaccardSimilarity(c.problem, dup.problem).toFixed(2)})`
       );
 
     const status = errors.length === 0 ? '✓ PASS' : '✗ FAIL';
@@ -781,8 +780,8 @@ function cmdReview(args) {
     const tool = c.toolNames?.[0] ?? 'unknown';
     console.log(`\n${status} | ${tool} | conf:${c.confidence} | sessions:${c.sessionCount}`);
     console.log(`  [${c.id}]`);
-    console.log(`  Mistake:  ${c.mistake.replace(/\n/g, ' ').slice(0, 100)}`);
-    console.log(`  Fix:      ${c.remediation.replace(/\n/g, ' ').slice(0, 100)}`);
+    console.log(`  Problem:  ${c.problem.replace(/\n/g, ' ').slice(0, 100)}`);
+    console.log(`  Solution: ${c.solution.replace(/\n/g, ' ').slice(0, 100)}`);
     if (errors.length > 0) console.log(`  Issues:   ${errors.join(', ')}`);
   }
 
@@ -848,12 +847,9 @@ async function cmdPromote(args) {
 
   const promoted = promoteIds.length > 0 ? promoteToActive(db, promoteIds, patches) : [];
   const archived = archiveItems.length > 0 ? archiveRecords(db, archiveItems) : [];
-  closeDb(db);
 
-  // Write review session audit log
   const sessionId = generateUlid();
-  mkdirSync(REVIEW_SESSIONS_DIR, { recursive: true });
-  const sessionRecord = {
+  insertReviewSession(db, {
     id: sessionId,
     createdAt: new Date().toISOString(),
     promoted: promoted.map(r => r.id),
@@ -862,12 +858,8 @@ async function cmdPromote(args) {
       reason: archiveItems.find(a => a.id === r.id)?.reason,
     })),
     ...(Object.keys(patches).length > 0 ? { patches } : {}),
-  };
-  writeFileSync(
-    join(REVIEW_SESSIONS_DIR, `${sessionId}.json`),
-    JSON.stringify(sessionRecord, null, 2) + '\n',
-    'utf8'
-  );
+  });
+  closeDb(db);
 
   if (promoted.length > 0) {
     console.log(`Promoted ${promoted.length} lesson(s):`);
@@ -878,7 +870,7 @@ async function cmdPromote(args) {
     console.log(`Archived ${archived.length} lesson(s):`);
     for (const r of archived) console.log(`  - ${r.slug} (${r.id})`);
   }
-  console.log(`Review session saved: data/review-sessions/${sessionId}.json`);
+  console.log(`Review session saved to DB: ${sessionId}`);
 }
 
 // ─── Edit subcommand ─────────────────────────────────────────────────
@@ -1073,8 +1065,8 @@ async function runScan(args) {
       log(
         `\n[${c.source}] ${c.tool ?? 'unknown'} | confidence: ${c.confidence.toFixed(2)} | priority: ${c.priority}`
       );
-      log(`  Mistake: ${truncate(c.mistake, 120)}`);
-      log(`  Fix: ${truncate(c.remediation, 120)}`);
+      log(`  Problem: ${truncate(c.problem, 120)}`);
+      log(`  Solution: ${truncate(c.solution, 120)}`);
       if (c.tags.length > 0) log(`  Tags: ${c.tags.join(', ')}`);
       if (c.occurrenceCount > 1)
         log(`  Seen ${c.occurrenceCount}x across ${c.sourceSessionIds.length} sessions`);
@@ -1114,8 +1106,8 @@ function mapCandidateToDbRecord(c) {
     status: 'candidate',
     type: 'hint',
     summary: autoSummary(c),
-    mistake: c.mistake,
-    remediation: c.remediation,
+    problem: c.problem,
+    solution: c.solution,
     toolNames: c.tool ? [c.tool] : [],
     commandPatterns,
     pathPatterns: [],
@@ -1128,8 +1120,8 @@ function mapCandidateToDbRecord(c) {
     sessionCount: (c.sourceSessionIds ?? []).length || 1,
     projectCount: 1,
     contentHash: computeContentHashFromDb({
-      mistake: c.mistake,
-      remediation: c.remediation,
+      problem: c.problem,
+      solution: c.solution,
       commandPatterns,
     }),
     createdAt: new Date().toISOString(),
@@ -1166,8 +1158,8 @@ function runScanAggregate() {
     occurrenceCount: r.occurrenceCount,
     sessionCount: r.sessionCount,
     projectCount: r.projectCount,
-    mistake: r.mistake,
-    remediation: r.remediation,
+    problem: r.problem,
+    solution: r.solution,
     tags: r.tags,
     sourceSessionIds: r.sourceSessionIds,
     createdAt: r.createdAt,
@@ -1259,7 +1251,7 @@ function deduplicateCandidates(candidates) {
 }
 
 function autoSummary(candidate) {
-  const text = candidate.mistake ?? '';
+  const text = candidate.problem ?? '';
   const firstLine = text.split('\n').find(l => l.trim().length > 10) ?? text;
   const clean = firstLine.replace(/\s+/g, ' ').trim();
   if (clean.length <= 120) return clean;

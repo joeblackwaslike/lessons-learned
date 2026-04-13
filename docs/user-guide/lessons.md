@@ -11,8 +11,8 @@ A lesson is a structured record of a mistake and its fix, annotated with trigger
   "id": "01JQSEED00000000000000001",
   "slug": "pytest-tty-hanging-k9m2",
   "summary": "pytest hangs in non-interactive envs due to TTY detection",
-  "mistake": "Running bare `pytest` in Claude Code causes the process to hang waiting for TTY input.",
-  "remediation": "Use `python -m pytest --no-header -p no:faulthandler`",
+  "problem": "Running bare `pytest` in Claude Code causes the process to hang waiting for TTY input.",
+  "solution": "Use `python -m pytest --no-header -p no:faulthandler`",
   "triggers": {
     "commandPatterns": ["\\bpytest\\b(?!.*(--no-header|-p no:faulthandler))"],
     "toolNames": ["Bash"]
@@ -28,8 +28,8 @@ A lesson is a structured record of a mistake and its fix, annotated with trigger
 | Field         | Required | Description                                                                                    |
 | ------------- | -------- | ---------------------------------------------------------------------------------------------- |
 | `summary`     | ✓        | One-line description. Used as fallback injection when full text exceeds budget. Max 120 chars. |
-| `mistake`     | ✓        | Root cause explanation. Describes _why_ something fails, not just that it does. Min 20 chars.  |
-| `remediation` | ✓        | Concrete fix. Actionable commands or code. Copy-pasteable. Min 20 chars.                       |
+| `problem`     | ✓        | Root cause explanation. Describes _why_ something fails, not just that it does. Min 20 chars.  |
+| `solution`    | ✓        | Concrete fix. Actionable commands or code. Copy-pasteable. Min 20 chars.                       |
 | `triggers`    | ✓        | What tool calls activate this lesson. See trigger types below.                                 |
 | `priority`    | ✓        | 1–10. Higher wins budget conflicts.                                                            |
 | `confidence`  | ✓        | 0.0–1.0. Below `minConfidence` (default 0.5), excluded from the manifest.                      |
@@ -97,7 +97,7 @@ Use guard sparingly — only for commands with known data-loss or irreversible c
     /lessons:add
     ```
 
-    Claude asks five questions conversationally: mistake, fix, trigger, summary, and optional tags/priority. Takes ~2 minutes.
+    Claude asks five questions conversationally: problem, solution, trigger, summary, and optional tags/priority. Takes ~2 minutes.
 
 === "CLI interactive"
 
@@ -110,8 +110,8 @@ Use guard sparingly — only for commands with known data-loss or irreversible c
     ```bash
     node scripts/lessons.mjs add --json '{
       "summary": "git stash drops untracked files silently",
-      "mistake": "git stash only stashes tracked modified files — untracked files are silently left behind",
-      "remediation": "Use git stash -u (--include-untracked) to include untracked files",
+      "problem": "git stash only stashes tracked modified files — untracked files are silently left behind",
+      "solution": "Use git stash -u (--include-untracked) to include untracked files",
       "trigger": "git stash",
       "tags": ["tool:git", "severity:data-loss"],
       "priority": 8
@@ -130,11 +130,11 @@ Use guard sparingly — only for commands with known data-loss or irreversible c
 
 The CLI enforces these before writing:
 
-- `summary`, `mistake`, `remediation` each ≥ 20 characters
+- `summary`, `problem`, `solution` each ≥ 20 characters
 - No unfilled template placeholders (`<what_went_wrong>` etc.)
 - `summary` must not end with `...`
 - Trigger must not be a prose gerund (e.g. "running pytest")
-- Jaccard similarity of `mistake` vs. all existing lessons < 0.5 (no near-duplicates)
+- Jaccard similarity of `problem` vs. all existing lessons < 0.5 (no near-duplicates)
 
 ---
 

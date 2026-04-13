@@ -250,7 +250,7 @@ node scripts/lessons.mjs list --json | \
     const lessons = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
     const top = lessons.filter(l => l.priority >= 7).slice(0, 15);
     console.log('## Lessons — required reading\n');
-    top.forEach(l => console.log('- **' + l.summary + '**\n  Fix: ' + l.remediation));
+    top.forEach(l => console.log('- **' + l.summary + '**\n  Solution: ' + l.solution));
   "
 ```
 
@@ -324,8 +324,8 @@ When Claude encounters and recovers from a mistake, it emits a structured tag:
 #lesson
 tool: Bash
 trigger: git stash
-mistake: git stash silently drops untracked files without -u flag
-fix: Use `git stash -u` (or --include-untracked) to include untracked files
+problem: git stash silently drops untracked files without -u flag
+solution: Use `git stash -u` (or --include-untracked) to include untracked files
 tags: tool:git, severity:data-loss
 #/lesson
 ```

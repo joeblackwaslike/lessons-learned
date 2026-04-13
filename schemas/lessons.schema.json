@@ -1,168 +1,163 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/joeblackwaslike/lessons-learned/schemas/lessons.schema.json",
-  "title": "Lessons Learned Store",
-  "description": "Source of truth for all lessons (seed + discovered)",
+  "title": "Lesson Record",
+  "description": "Canonical model for a deserialized SQLite lesson row. All fields match DB column names exactly.",
   "type": "object",
-  "required": ["type", "version", "lessons"],
+  "required": [
+    "id",
+    "slug",
+    "status",
+    "type",
+    "summary",
+    "problem",
+    "solution",
+    "toolNames",
+    "commandPatterns",
+    "pathPatterns",
+    "priority",
+    "confidence",
+    "tags",
+    "source",
+    "sourceSessionIds",
+    "occurrenceCount",
+    "sessionCount",
+    "projectCount",
+    "contentHash",
+    "createdAt",
+    "updatedAt"
+  ],
   "properties": {
-    "$schema": {
+    "id": {
       "type": "string",
-      "description": "JSON Schema reference for IDE validation"
+      "pattern": "^[0-9A-Z]{26}$",
+      "description": "ULID — collision-free, naturally sorted by creation time"
+    },
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*-[a-z0-9]{4}$",
+      "description": "Human-readable kebab-case slug + 4-char random suffix. Used in dedup claim filenames, log output, and CLI references."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["candidate", "reviewed", "active", "disabled", "archived"],
+      "description": "Lifecycle state. Only 'active' and 'disabled' lessons appear in the manifest."
     },
     "type": {
-      "const": "lessons-learned-store",
-      "description": "Discriminator field for file type identification"
+      "type": "string",
+      "enum": ["directive", "guard", "hint", "protocol"],
+      "description": "Authoritative injection behavior. hint: context injection at PreToolUse. guard: deny the tool call. protocol: session-start only. directive: session-start only (mandatory)."
     },
-    "version": {
-      "type": "integer",
-      "const": 1,
-      "description": "Schema version for migration support"
+    "summary": {
+      "type": "string",
+      "maxLength": 120,
+      "description": "One-line description. Used as fallback injection when full message exceeds budget."
     },
-    "lessons": {
+    "problem": {
+      "type": "string",
+      "description": "Root cause explanation. Describes the failure mode, not just the symptom."
+    },
+    "solution": {
+      "type": "string",
+      "description": "Concrete fix. Actionable commands or code changes. Should be copy-pasteable."
+    },
+    "toolNames": {
       "type": "array",
-      "items": { "$ref": "#/$defs/lesson" },
-      "description": "All lessons, ordered by creation time (ULID is naturally sorted)"
+      "items": { "type": "string" },
+      "default": [],
+      "description": "Tools this lesson applies to. First-pass filter at hook time. Empty for protocol/directive lessons (injected globally at session start)."
+    },
+    "commandPatterns": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": [],
+      "description": "Regex patterns tested against Bash tool_input.command."
+    },
+    "pathPatterns": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": [],
+      "description": "Glob or regex patterns tested against file_path for Read/Edit/Write/Glob tools."
+    },
+    "priority": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10,
+      "description": "1-3: Low (rare, heuristic-only). 4-6: Medium (validated, situational). 7-8: High (common recurring). 9-10: Critical (hangs, data loss)."
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "How sure we are this is a real, recurring pattern. >=0.9: manually curated. 0.7-0.9: strong heuristic. <0.7: needs review."
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z]+:[a-z0-9._-]+$"
+      },
+      "default": [],
+      "description": "Datadog-style labeled tags. Categories: lang:, tool:, topic:, env:, severity:, platform:"
+    },
+    "source": {
+      "type": "string",
+      "enum": ["structured", "heuristic", "manual"],
+      "description": "How this lesson was discovered. structured: parsed from #lesson tags. heuristic: sliding-window pattern detection. manual: hand-authored."
+    },
+    "sourceSessionIds": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": [],
+      "description": "Sessions where this pattern was observed. Empty for manually authored lessons."
+    },
+    "occurrenceCount": {
+      "type": "integer",
+      "default": 0,
+      "minimum": 0,
+      "description": "Times the scanner detected this pattern across all sessions."
+    },
+    "sessionCount": {
+      "type": "integer",
+      "default": 0,
+      "minimum": 0,
+      "description": "Number of distinct sessions this pattern was seen in."
+    },
+    "projectCount": {
+      "type": "integer",
+      "default": 0,
+      "minimum": 0,
+      "description": "Number of distinct projects this pattern was seen in."
+    },
+    "contentHash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$",
+      "description": "SHA-256 of (problem + solution + triggers). Used by scanner for dedup."
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 creation timestamp"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 last update timestamp"
+    },
+    "reviewedAt": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when lesson was reviewed. Null for unreviewed candidates."
+    },
+    "archivedAt": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when lesson was archived. Null if not archived."
+    },
+    "archiveReason": {
+      "type": ["string", "null"],
+      "description": "Optional explanation for why the lesson was archived."
     }
   },
-  "additionalProperties": false,
-  "$defs": {
-    "lesson": {
-      "type": "object",
-      "required": [
-        "id",
-        "slug",
-        "summary",
-        "mistake",
-        "remediation",
-        "injection",
-        "triggers",
-        "priority",
-        "confidence",
-        "tags",
-        "createdAt",
-        "updatedAt",
-        "contentHash"
-      ],
-      "properties": {
-        "id": {
-          "type": "string",
-          "pattern": "^[0-9A-Z]{26}$",
-          "description": "ULID — collision-free, naturally sorted by creation time"
-        },
-        "slug": {
-          "type": "string",
-          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*-[a-z0-9]{4}$",
-          "description": "Human-readable kebab-case slug + 4-char random suffix. Used in dedup claim filenames, log output, and CLI references."
-        },
-        "summary": {
-          "type": "string",
-          "maxLength": 120,
-          "description": "One-line description. Used as fallback injection when full text exceeds budget."
-        },
-        "mistake": {
-          "type": "string",
-          "description": "Root cause explanation. Describes the failure mode, not just the symptom."
-        },
-        "remediation": {
-          "type": "string",
-          "description": "Concrete fix. Actionable commands or code changes. Should be copy-pasteable."
-        },
-        "injection": {
-          "type": "string",
-          "description": "Pre-rendered markdown for hook injection. Only field read in the hot path. <200 bytes. Generated from summary + remediation at build time."
-        },
-        "triggers": {
-          "$ref": "#/$defs/triggers"
-        },
-        "priority": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 10,
-          "description": "1-3: Low (rare, heuristic-only). 4-6: Medium (validated, situational). 7-8: High (common recurring). 9-10: Critical (hangs, data loss)."
-        },
-        "confidence": {
-          "type": "number",
-          "minimum": 0.0,
-          "maximum": 1.0,
-          "description": "How sure we are this is a real, recurring pattern. >=0.9: manually curated. 0.7-0.9: strong heuristic. <0.7: needs review."
-        },
-        "needsReview": {
-          "type": "boolean",
-          "default": false,
-          "description": "True for auto-discovered lessons below confidence threshold. Stored but not injected until confirmed."
-        },
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "pattern": "^[a-z]+:[a-z0-9._-]+$"
-          },
-          "description": "Datadog-style labeled tags. Categories: lang:, tool:, topic:, env:, severity:, platform:"
-        },
-        "sourceSessionIds": {
-          "type": "array",
-          "items": { "type": "string" },
-          "default": [],
-          "description": "Sessions where this pattern was observed. Empty for seed lessons."
-        },
-        "occurrenceCount": {
-          "type": "integer",
-          "default": 0,
-          "minimum": 0,
-          "description": "Times scanner detected this pattern across sessions"
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "ISO 8601 creation timestamp"
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "ISO 8601 last update timestamp"
-        },
-        "contentHash": {
-          "type": "string",
-          "pattern": "^sha256:[a-f0-9]{64}$",
-          "description": "SHA-256 of (mistake + remediation + triggers). Scanner uses this for dedup."
-        }
-      },
-      "additionalProperties": false
-    },
-    "triggers": {
-      "type": "object",
-      "required": ["toolNames"],
-      "properties": {
-        "toolNames": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": ["Bash", "Read", "Edit", "Write", "Glob"]
-          },
-          "minItems": 1,
-          "description": "Tools this lesson applies to. First-pass filter: O(1) Set lookup."
-        },
-        "commandPatterns": {
-          "type": "array",
-          "items": { "type": "string" },
-          "default": [],
-          "description": "Regex patterns tested against Bash tool_input.command. Negative lookahead prevents injection when fix is already applied."
-        },
-        "pathPatterns": {
-          "type": "array",
-          "items": { "type": "string" },
-          "default": [],
-          "description": "Glob/regex patterns tested against file_path for Read/Edit/Write/Glob tools."
-        },
-        "contentPatterns": {
-          "type": "array",
-          "items": { "type": "string" },
-          "default": [],
-          "description": "Regex patterns for file content or output. TBD based on harvesting results."
-        }
-      },
-      "additionalProperties": false
-    }
-  }
+  "additionalProperties": false
 }

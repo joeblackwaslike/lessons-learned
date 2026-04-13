@@ -5,8 +5,8 @@ All fields available on a lesson record in the DB and manifest.
 | Field             | Description                                                                |
 | ----------------- | -------------------------------------------------------------------------- |
 | `summary`         | One-line description shown in manifests and listings                       |
-| `mistake`         | What goes wrong and why — the core of the lesson                           |
-| `remediation`     | The concrete fix or avoidance strategy                                     |
+| `problem`         | What goes wrong and why — the core of the lesson                           |
+| `solution`        | The concrete fix or avoidance strategy                                     |
 | `injection`       | Override text injected into context (auto-generated if absent)             |
 | `injectOn`        | `["PreToolUse"]`, `["SessionStart"]`, or both                              |
 | `toolNames`       | Exact tool names that trigger this lesson (e.g. `["Bash"]`)                |

@@ -13,6 +13,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash, randomBytes } from 'node:crypto';
+import { readdirSync, readFileSync } from 'node:fs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PLUGIN_ROOT = join(__dirname, '..');
@@ -36,8 +37,8 @@ CREATE TABLE IF NOT EXISTS lessons (
   type             TEXT NOT NULL DEFAULT 'hint'
                    CHECK(type IN ('directive','guard','hint','protocol')),
   summary          TEXT NOT NULL,
-  mistake          TEXT NOT NULL,
-  remediation      TEXT NOT NULL,
+  problem          TEXT NOT NULL,
+  solution         TEXT NOT NULL,
   toolNames        TEXT NOT NULL DEFAULT '[]',
   commandPatterns  TEXT NOT NULL DEFAULT '[]',
   pathPatterns     TEXT NOT NULL DEFAULT '[]',
@@ -62,6 +63,14 @@ CREATE INDEX IF NOT EXISTS idx_lessons_status          ON lessons(status);
 CREATE INDEX IF NOT EXISTS idx_lessons_priority        ON lessons(priority DESC);
 CREATE INDEX IF NOT EXISTS idx_lessons_status_priority ON lessons(status, priority DESC);
 CREATE INDEX IF NOT EXISTS idx_lessons_hash            ON lessons(contentHash);
+
+CREATE TABLE IF NOT EXISTS review_sessions (
+  id        TEXT PRIMARY KEY,
+  createdAt TEXT NOT NULL,
+  promoted  TEXT NOT NULL DEFAULT '[]',
+  archived  TEXT NOT NULL DEFAULT '[]',
+  patches   TEXT NOT NULL DEFAULT '{}'
+);
 `;
 
 // ─── Lifecycle ───────────────────────────────────────────────────────
@@ -125,8 +134,8 @@ function applyMigrations(db) {
         type             TEXT NOT NULL DEFAULT 'hint'
                          CHECK(type IN ('directive','guard','hint','protocol')),
         summary          TEXT NOT NULL,
-        mistake          TEXT NOT NULL,
-        remediation      TEXT NOT NULL,
+        problem          TEXT NOT NULL,
+        solution         TEXT NOT NULL,
         toolNames        TEXT NOT NULL DEFAULT '[]',
         commandPatterns  TEXT NOT NULL DEFAULT '[]',
         pathPatterns     TEXT NOT NULL DEFAULT '[]',
@@ -166,6 +175,40 @@ function applyMigrations(db) {
       'CREATE INDEX IF NOT EXISTS idx_lessons_status_priority ON lessons(status, priority DESC)'
     );
     db.exec('CREATE INDEX IF NOT EXISTS idx_lessons_hash            ON lessons(contentHash)');
+  }
+
+  // Migration: rename mistake→problem, remediation→solution
+  // Re-read cols to account for prior migrations that may have recreated the table.
+  const currentCols = db.prepare('PRAGMA table_info(lessons)').all().map(r => r.name);
+  if (currentCols.includes('mistake')) {
+    db.exec('ALTER TABLE lessons RENAME COLUMN mistake TO problem');
+    db.exec('ALTER TABLE lessons RENAME COLUMN remediation TO solution');
+  }
+
+  // Migration: import legacy review session JSON files into the review_sessions table
+  const reviewSessionsDir = join(DATA_DIR, 'review-sessions');
+  try {
+    const files = readdirSync(reviewSessionsDir).filter(f => f.endsWith('.json'));
+    const insert = db.prepare(
+      `INSERT OR IGNORE INTO review_sessions (id, createdAt, promoted, archived, patches)
+       VALUES (?, ?, ?, ?, ?)`
+    );
+    for (const file of files) {
+      try {
+        const session = JSON.parse(readFileSync(join(reviewSessionsDir, file), 'utf8'));
+        insert.run(
+          session.id,
+          session.createdAt,
+          JSON.stringify(session.promoted ?? []),
+          JSON.stringify(session.archived ?? []),
+          JSON.stringify(session.patches ?? {})
+        );
+      } catch {
+        // skip malformed files
+      }
+    }
+  } catch {
+    // review-sessions dir doesn't exist yet — nothing to import
   }
 }
 
@@ -216,14 +259,14 @@ export function findByContentHash(db, hash) {
 }
 
 /**
- * Get minimal { id, slug, mistake } for all active+reviewed records (for Jaccard dedup).
+ * Get minimal { id, slug, problem } for all active+reviewed records (for Jaccard dedup).
  * @param {DatabaseSync} db
- * @returns {{ id: string, slug: string, mistake: string }[]}
+ * @returns {{ id: string, slug: string, problem: string }[]}
  */
-export function getExistingMistakeTexts(db) {
-  return /** @type {{ id: string, slug: string, mistake: string }[]} */ (
+export function getExistingProblemTexts(db) {
+  return /** @type {{ id: string, slug: string, problem: string }[]} */ (
     db
-      .prepare("SELECT id, slug, mistake FROM lessons WHERE status IN ('active','reviewed')")
+      .prepare("SELECT id, slug, problem FROM lessons WHERE status IN ('active','reviewed')")
       .all()
       .map(r => Object.assign({}, r))
   );
@@ -266,9 +309,9 @@ export function insertCandidate(db, record) {
     return { ok: false, reason: 'duplicate_hash', existing };
   }
 
-  const mistakeTexts = getExistingMistakeTexts(db);
-  for (const row of mistakeTexts) {
-    if (jaccardSimilarity(record.mistake, row.mistake) >= 0.5) {
+  const problemTexts = getExistingProblemTexts(db);
+  for (const row of problemTexts) {
+    if (jaccardSimilarity(record.problem, row.problem) >= 0.5) {
       return { ok: false, reason: 'fuzzy_duplicate', existing: { id: row.id, slug: row.slug } };
     }
   }
@@ -281,8 +324,8 @@ export function insertCandidate(db, record) {
     status: record.status ?? 'candidate',
     type: record.type ?? 'hint',
     summary: record.summary,
-    mistake: record.mistake,
-    remediation: record.remediation,
+    problem: record.problem,
+    solution: record.solution,
     toolNames: record.toolNames ?? [],
     commandPatterns: record.commandPatterns ?? [],
     pathPatterns: record.pathPatterns ?? [],
@@ -305,13 +348,13 @@ export function insertCandidate(db, record) {
   db.prepare(
     `
     INSERT INTO lessons (
-      id, slug, status, type, summary, mistake, remediation,
+      id, slug, status, type, summary, problem, solution,
       toolNames, commandPatterns, pathPatterns,
       priority, confidence, tags, source,
       sourceSessionIds, occurrenceCount, sessionCount, projectCount,
       contentHash, createdAt, updatedAt, reviewedAt, archivedAt, archiveReason
     ) VALUES (
-      :id, :slug, :status, :type, :summary, :mistake, :remediation,
+      :id, :slug, :status, :type, :summary, :problem, :solution,
       :toolNames, :commandPatterns, :pathPatterns,
       :priority, :confidence, :tags, :source,
       :sourceSessionIds, :occurrenceCount, :sessionCount, :projectCount,
@@ -358,7 +401,7 @@ export function insertCandidateBatch(db, records) {
 /**
  * Promote records to status='active'. Applies optional per-id field patches first.
  *
- * Patchable fields: summary, mistake, remediation, type, injection,
+ * Patchable fields: summary, problem, solution, type,
  * commandPatterns, pathPatterns, priority, confidence, tags
  *
  * @param {DatabaseSync} db
@@ -378,10 +421,9 @@ export function promoteToActive(db, ids, patches = {}) {
       if (patch) {
         const PATCHABLE = [
           'summary',
-          'mistake',
-          'remediation',
+          'problem',
+          'solution',
           'type',
-          'injection',
           'commandPatterns',
           'pathPatterns',
           'priority',
@@ -427,8 +469,8 @@ export function promoteToActive(db, ids, patches = {}) {
 /**
  * Update fields on an existing record without changing its status.
  *
- * Patchable fields: summary, mistake, remediation, injection, injectOn,
- * commandPatterns, pathPatterns, priority, confidence, tags, block, blockReason
+ * Patchable fields: summary, problem, solution, type,
+ * commandPatterns, pathPatterns, priority, confidence, tags
  *
  * @param {DatabaseSync} db
  * @param {string} id
@@ -438,8 +480,8 @@ export function promoteToActive(db, ids, patches = {}) {
 export function updateRecord(db, id, patch) {
   const PATCHABLE = [
     'summary',
-    'mistake',
-    'remediation',
+    'problem',
+    'solution',
     'type',
     'commandPatterns',
     'pathPatterns',
@@ -607,11 +649,65 @@ export function generateUlid() {
 /**
  * Compute a content hash for a candidate record.
  * Mirrors the current computeContentHash() logic in lessons.mjs.
- * @param {{ mistake: string, remediation: string, commandPatterns?: string[] }} record
+ * @param {{ problem: string, solution: string, commandPatterns?: string[] }} record
  * @returns {string}
  */
 export function computeContentHash(record) {
   const patterns = record.commandPatterns ?? [];
-  const data = `${record.mistake}|${record.remediation}|${JSON.stringify(patterns)}`;
+  const data = `${record.problem}|${record.solution}|${JSON.stringify(patterns)}`;
   return 'sha256:' + createHash('sha256').update(data).digest('hex');
+}
+
+// ─── Review Sessions ─────────────────────────────────────────────────
+
+/**
+ * Persist a review session record to the DB.
+ * @param {DatabaseSync} db
+ * @param {{ id: string, createdAt: string, promoted: string[], archived: {id: string, reason: string}[], patches?: object }} session
+ */
+export function insertReviewSession(db, session) {
+  db.prepare(
+    `INSERT OR IGNORE INTO review_sessions (id, createdAt, promoted, archived, patches)
+     VALUES (?, ?, ?, ?, ?)`
+  ).run(
+    session.id,
+    session.createdAt,
+    JSON.stringify(session.promoted ?? []),
+    JSON.stringify(session.archived ?? []),
+    JSON.stringify(session.patches ?? {})
+  );
+}
+
+/**
+ * Fetch all review sessions, newest first.
+ * @param {DatabaseSync} db
+ * @returns {object[]}
+ */
+export function getReviewSessions(db) {
+  return db
+    .prepare('SELECT * FROM review_sessions ORDER BY createdAt DESC')
+    .all()
+    .map(r => ({
+      ...r,
+      promoted: JSON.parse(/** @type {string} */ (r.promoted)),
+      archived: JSON.parse(/** @type {string} */ (r.archived)),
+      patches: JSON.parse(/** @type {string} */ (r.patches)),
+    }));
+}
+
+/**
+ * Fetch a single review session by ID.
+ * @param {DatabaseSync} db
+ * @param {string} id
+ * @returns {object | null}
+ */
+export function getReviewSession(db, id) {
+  const r = db.prepare('SELECT * FROM review_sessions WHERE id = ?').get(id);
+  if (!r) return null;
+  return {
+    ...r,
+    promoted: JSON.parse(/** @type {string} */ (r.promoted)),
+    archived: JSON.parse(/** @type {string} */ (r.archived)),
+    patches: JSON.parse(/** @type {string} */ (r.patches)),
+  };
 }

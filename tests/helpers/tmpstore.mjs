@@ -26,7 +26,8 @@ CREATE TABLE IF NOT EXISTS lessons (
   id TEXT PRIMARY KEY, slug TEXT NOT NULL UNIQUE,
   status TEXT NOT NULL DEFAULT 'candidate'
          CHECK(status IN ('candidate','reviewed','active','archived')),
-  summary TEXT NOT NULL, mistake TEXT NOT NULL, remediation TEXT NOT NULL,
+  type TEXT NOT NULL DEFAULT 'hint',
+  summary TEXT NOT NULL, problem TEXT NOT NULL, solution TEXT NOT NULL,
   injection TEXT, injectOn TEXT NOT NULL DEFAULT '[]',
   toolNames TEXT NOT NULL DEFAULT '[]', commandPatterns TEXT NOT NULL DEFAULT '[]',
   pathPatterns TEXT NOT NULL DEFAULT '[]', block INTEGER NOT NULL DEFAULT 0,
@@ -58,13 +59,13 @@ function seedFixtureDb(dbPath) {
   db.exec(SCHEMA_SQL);
   const stmt = db.prepare(`
     INSERT OR IGNORE INTO lessons (
-      id, slug, status, summary, mistake, remediation, injection,
+      id, slug, status, summary, problem, solution, injection,
       injectOn, toolNames, commandPatterns, pathPatterns, block,
       priority, confidence, tags, source, sourceSessionIds,
       occurrenceCount, sessionCount, projectCount, contentHash,
       createdAt, updatedAt
     ) VALUES (
-      :id, :slug, :status, :summary, :mistake, :remediation, :injection,
+      :id, :slug, :status, :summary, :problem, :solution, :injection,
       :injectOn, :toolNames, :commandPatterns, :pathPatterns, :block,
       :priority, :confidence, :tags, :source, :sourceSessionIds,
       :occurrenceCount, :sessionCount, :projectCount, :contentHash,
@@ -77,8 +78,8 @@ function seedFixtureDb(dbPath) {
       slug: l.slug,
       status: l.needsReview ? 'reviewed' : 'active',
       summary: l.summary,
-      mistake: l.mistake,
-      remediation: l.remediation,
+      problem: l.problem,
+      solution: l.solution,
       injection: l.injection ?? null,
       injectOn: JSON.stringify(deriveInjectOn(l)),
       toolNames: JSON.stringify(l.triggers?.toolNames ?? []),

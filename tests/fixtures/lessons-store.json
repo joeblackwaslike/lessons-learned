@@ -4,8 +4,8 @@
       "id": "01JQFIXTURE000000000001A",
       "slug": "fixture-git-stash-untracked-0001",
       "summary": "git stash silently drops untracked files without -u flag",
-      "mistake": "Running `git stash` without the `-u` flag silently leaves untracked files behind, risking data loss when the stash is applied elsewhere.",
-      "remediation": "Use `git stash -u` or `git stash --include-untracked` to include untracked files in the stash.",
+      "problem": "Running `git stash` without the `-u` flag silently leaves untracked files behind, risking data loss when the stash is applied elsewhere.",
+      "solution": "Use `git stash -u` or `git stash --include-untracked` to include untracked files in the stash.",
       "injection": "## Lesson: git stash drops untracked files\nUse `git stash -u` to include untracked files. Plain `git stash` silently leaves them behind.\n**Fix**: `git stash -u` (or `--include-untracked`)",
       "triggers": {
         "toolNames": ["Bash"],

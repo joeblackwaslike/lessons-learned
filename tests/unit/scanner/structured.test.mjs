@@ -18,12 +18,12 @@ describe('parseLessonTags', () => {
     assert.deepEqual(parseLessonTags('just some regular text'), []);
   });
 
-  it('parses a minimal #lesson block (mistake + fix only)', () => {
-    const text = `#lesson\nmistake: something broke\nfix: do it differently\n#/lesson`;
+  it('parses a minimal #lesson block (problem + solution only)', () => {
+    const text = `#lesson\nproblem: something broke\nsolution: do it differently\n#/lesson`;
     const result = parseLessonTags(text);
     assert.equal(result.length, 1);
-    assert.equal(result[0].mistake, 'something broke');
-    assert.equal(result[0].fix, 'do it differently');
+    assert.equal(result[0].problem, 'something broke');
+    assert.equal(result[0].solution, 'do it differently');
   });
 
   it('parses a full #lesson block with all fields', () => {
@@ -31,8 +31,8 @@ describe('parseLessonTags', () => {
       '#lesson',
       'tool: Bash',
       'trigger: pytest tests/',
-      'mistake: pytest hangs due to TTY detection',
-      'fix: use python -m pytest --no-header',
+      'problem: pytest hangs due to TTY detection',
+      'solution: use python -m pytest --no-header',
       'tags: lang:python, tool:pytest, severity:hang',
       '#/lesson',
     ].join('\n');
@@ -40,61 +40,61 @@ describe('parseLessonTags', () => {
     const [result] = parseLessonTags(text);
     assert.equal(result.tool, 'Bash');
     assert.equal(result.trigger, 'pytest tests/');
-    assert.equal(result.mistake, 'pytest hangs due to TTY detection');
-    assert.equal(result.fix, 'use python -m pytest --no-header');
+    assert.equal(result.problem, 'pytest hangs due to TTY detection');
+    assert.equal(result.solution, 'use python -m pytest --no-header');
     assert.deepEqual(result.tags, ['lang:python', 'tool:pytest', 'severity:hang']);
   });
 
-  it('skips blocks missing both mistake and fix', () => {
+  it('skips blocks missing both problem and solution', () => {
     const text = '#lesson\ntool: Bash\ntrigger: ls\n#/lesson';
     assert.deepEqual(parseLessonTags(text), []);
   });
 
-  it('skips a block missing fix (mistake alone is not enough)', () => {
-    const text = '#lesson\nmistake: Something went wrong\n#/lesson';
+  it('skips a block missing solution (problem alone is not enough)', () => {
+    const text = '#lesson\nproblem: Something went wrong\n#/lesson';
     assert.deepEqual(parseLessonTags(text), []);
   });
 
   it('parses multiple #lesson blocks in one text', () => {
     const text = [
-      '#lesson\nmistake: error one\nfix: fix one\n#/lesson',
+      '#lesson\nproblem: error one\nsolution: fix one\n#/lesson',
       'Some prose in between.',
-      '#lesson\nmistake: error two\nfix: fix two\n#/lesson',
+      '#lesson\nproblem: error two\nsolution: fix two\n#/lesson',
     ].join('\n');
     const result = parseLessonTags(text);
     assert.equal(result.length, 2);
-    assert.equal(result[0].mistake, 'error one');
-    assert.equal(result[1].mistake, 'error two');
+    assert.equal(result[0].problem, 'error one');
+    assert.equal(result[1].problem, 'error two');
   });
 
   it('parses tags as trimmed array', () => {
-    const text = '#lesson\nmistake: m\nfix: f\ntags:  a , b , c \n#/lesson';
+    const text = '#lesson\nproblem: m\nsolution: f\ntags:  a , b , c \n#/lesson';
     const [result] = parseLessonTags(text);
     assert.deepEqual(result.tags, ['a', 'b', 'c']);
   });
 
   it('returns empty tags array when tags field is absent', () => {
-    const text = '#lesson\nmistake: m\nfix: f\n#/lesson';
+    const text = '#lesson\nproblem: m\nsolution: f\n#/lesson';
     const [result] = parseLessonTags(text);
     assert.deepEqual(result.tags, []);
   });
 
   it('handles blocks wrapped in code fences', () => {
-    const text = '```\n#lesson\nmistake: fenced\nfix: still works\n#/lesson\n```';
+    const text = '```\n#lesson\nproblem: fenced\nsolution: still works\n#/lesson\n```';
     const result = parseLessonTags(text);
     assert.equal(result.length, 1);
-    assert.equal(result[0].mistake, 'fenced');
+    assert.equal(result[0].problem, 'fenced');
   });
 
   it('includes raw match in result', () => {
-    const text = '#lesson\nmistake: m\nfix: f\n#/lesson';
+    const text = '#lesson\nproblem: m\nsolution: f\n#/lesson';
     const [result] = parseLessonTags(text);
     assert.ok(typeof result.raw === 'string');
     assert.ok(result.raw.includes('#lesson'));
   });
 
   it('nulls optional fields when missing', () => {
-    const text = '#lesson\nmistake: m\nfix: f\n#/lesson';
+    const text = '#lesson\nproblem: m\nsolution: f\n#/lesson';
     const [result] = parseLessonTags(text);
     assert.equal(result.tool, null);
     assert.equal(result.trigger, null);
@@ -117,14 +117,14 @@ describe('scanLineForLessons', () => {
   });
 
   it('returns empty array for non-assistant message type', () => {
-    const text = '#lesson\nmistake: m\nfix: f\n#/lesson';
+    const text = '#lesson\nproblem: m\nsolution: f\n#/lesson';
     const line = JSON.stringify({ type: 'user', message: { content: [{ type: 'text', text }] } });
     assert.deepEqual(scanLineForLessons(line), []);
   });
 
   it('extracts a lesson from a valid assistant JSONL line', () => {
     const text =
-      '#lesson\ntool: Bash\ntrigger: pytest\nmistake: TTY hang\nfix: use -m pytest\n#/lesson';
+      '#lesson\ntool: Bash\ntrigger: pytest\nproblem: TTY hang\nsolution: use -m pytest\n#/lesson';
     const line = JSON.stringify({
       type: 'assistant',
       sessionId: 'sess-abc',
@@ -136,7 +136,7 @@ describe('scanLineForLessons', () => {
     });
     const results = scanLineForLessons(line);
     assert.equal(results.length, 1);
-    assert.equal(results[0].mistake, 'TTY hang');
+    assert.equal(results[0].problem, 'TTY hang');
     assert.equal(results[0].sessionId, 'sess-abc');
     assert.equal(results[0].messageId, 'msg-001');
     assert.equal(results[0].timestamp, '2026-04-01T00:00:00Z');
@@ -148,7 +148,7 @@ describe('scanLineForLessons', () => {
       message: {
         content: [
           { type: 'tool_use', name: 'Bash' },
-          { type: 'text', text: '#lesson\nmistake: m\nfix: f\n#/lesson' },
+          { type: 'text', text: '#lesson\nproblem: m\nsolution: f\n#/lesson' },
         ],
       },
     });
@@ -157,7 +157,7 @@ describe('scanLineForLessons', () => {
   });
 
   it('extracts multiple lessons from multiple text blocks', () => {
-    const lesson = '#lesson\nmistake: m\nfix: f\n#/lesson';
+    const lesson = '#lesson\nproblem: m\nsolution: f\n#/lesson';
     const line = JSON.stringify({
       type: 'assistant',
       message: {
