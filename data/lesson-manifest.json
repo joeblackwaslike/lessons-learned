@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-04-14T12:59:10.315Z",
+  "generatedAt": "2026-04-14T13:10:59.692Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -15,7 +15,9 @@
       "slug": "parallel-agents-sharing-a-git-worktree-c-cad6",
       "type": "hint",
       "priority": 10,
-      "toolNames": [],
+      "toolNames": [
+        "Bash"
+      ],
       "commandRegexSources": [
         {
           "source": "\\bgit\\s+(add|commit)\\b",
@@ -37,7 +39,9 @@
       "slug": "eval-on-user-supplied-command-strings-en-702a",
       "type": "hint",
       "priority": 10,
-      "toolNames": [],
+      "toolNames": [
+        "Bash"
+      ],
       "commandRegexSources": [
         {
           "source": "\\beval\\s+",
@@ -95,7 +99,9 @@
       "slug": "awk-code-injection-via-unvalidated-shell-cf5a",
       "type": "hint",
       "priority": 9,
-      "toolNames": [],
+      "toolNames": [
+        "Bash"
+      ],
       "commandRegexSources": [
         {
           "source": "\\bawk\\b.*\\$",
@@ -116,7 +122,9 @@
       "slug": "jq-string-interpolation-of-shell-variabl-8803",
       "type": "hint",
       "priority": 9,
-      "toolNames": [],
+      "toolNames": [
+        "Bash"
+      ],
       "commandRegexSources": [
         {
           "source": "\\bjq\\b.*\\$",
@@ -138,7 +146,9 @@
       "slug": "sed-range-deletion-is-unbounded-when-the-64ac",
       "type": "hint",
       "priority": 9,
-      "toolNames": [],
+      "toolNames": [
+        "Bash"
+      ],
       "commandRegexSources": [
         {
           "source": "\\bsed\\b.*,.*d",
@@ -160,7 +170,9 @@
       "slug": "async-function-called-without-await-sile-3a80",
       "type": "hint",
       "priority": 9,
-      "toolNames": [],
+      "toolNames": [
+        "Bash"
+      ],
       "commandRegexSources": [
         {
           "source": "\\bpython\\b|\\bpython3\\b",
@@ -268,7 +280,9 @@
       "slug": "set-e-kills-bash-scripts-silently-on-any-bf06",
       "type": "hint",
       "priority": 8,
-      "toolNames": [],
+      "toolNames": [
+        "Bash"
+      ],
       "commandRegexSources": [
         {
           "source": "\\bset\\s+-[a-zA-Z]*e[a-zA-Z]*\\b",
@@ -290,7 +304,9 @@
       "slug": "scripts-hang-waiting-on-stdin-when-run-i-7195",
       "type": "hint",
       "priority": 8,
-      "toolNames": [],
+      "toolNames": [
+        "Bash"
+      ],
       "commandRegexSources": [
         {
           "source": "\\bbash\\b.*\\.sh\\b",
@@ -313,7 +329,9 @@
       "slug": "grep-exits-1-on-no-match-silently-aborti-d9ff",
       "type": "hint",
       "priority": 8,
-      "toolNames": [],
+      "toolNames": [
+        "Bash"
+      ],
       "commandRegexSources": [
         {
           "source": "\\bgrep\\b",
@@ -335,7 +353,9 @@
       "slug": "git-stderr-redirected-to-devnull-silentl-1ec9",
       "type": "hint",
       "priority": 8,
-      "toolNames": [],
+      "toolNames": [
+        "Bash"
+      ],
       "commandRegexSources": [
         {
           "source": "\\bgit\\b.*2>/dev/null",
@@ -357,7 +377,9 @@
       "slug": "missing-tool-dependency-check-silently-d-4a39",
       "type": "hint",
       "priority": 8,
-      "toolNames": [],
+      "toolNames": [
+        "Bash"
+      ],
       "commandRegexSources": [
         {
           "source": "\\bcommand\\s+-v\\b|\\bwhich\\b",
@@ -378,7 +400,9 @@
       "slug": "asynciocreatetask-without-donecallback-s-97d8",
       "type": "hint",
       "priority": 8,
-      "toolNames": [],
+      "toolNames": [
+        "Bash"
+      ],
       "commandRegexSources": [
         {
           "source": "\\bpython\\b|\\bpython3\\b",
@@ -400,7 +424,9 @@
       "slug": "iterating-over-mutable-async-collection-85a9",
       "type": "hint",
       "priority": 8,
-      "toolNames": [],
+      "toolNames": [
+        "Bash"
+      ],
       "commandRegexSources": [
         {
           "source": "\\bpython\\b|\\bpython3\\b",
@@ -591,7 +617,9 @@
       "slug": "mktemp-without-a-trap-leaks-temp-files-o-b7f2",
       "type": "hint",
       "priority": 7,
-      "toolNames": [],
+      "toolNames": [
+        "Bash"
+      ],
       "commandRegexSources": [
         {
           "source": "\\bmktemp\\b",
@@ -612,7 +640,9 @@
       "slug": "cd-inside-a-bash-function-leaks-the-dire-9b4c",
       "type": "hint",
       "priority": 7,
-      "toolNames": [],
+      "toolNames": [
+        "Bash"
+      ],
       "commandRegexSources": [
         {
           "source": "\\bcd\\s+",
@@ -633,7 +663,9 @@
       "slug": "xargs-word-splits-filenames-with-spaces-c0bd",
       "type": "hint",
       "priority": 7,
-      "toolNames": [],
+      "toolNames": [
+        "Bash"
+      ],
       "commandRegexSources": [
         {
           "source": "\\bxargs\\b",
@@ -655,7 +687,9 @@
       "slug": "bare-except-catches-everything-including-52b1",
       "type": "hint",
       "priority": 7,
-      "toolNames": [],
+      "toolNames": [
+        "Bash"
+      ],
       "commandRegexSources": [
         {
           "source": "\\bpython\\b|\\bpython3\\b",
@@ -676,7 +710,9 @@
       "slug": "decorator-registry-stays-empty-because-t-bb41",
       "type": "hint",
       "priority": 7,
-      "toolNames": [],
+      "toolNames": [
+        "Bash"
+      ],
       "commandRegexSources": [
         {
           "source": "\\bpython\\b|\\bpython3\\b",
@@ -947,7 +983,9 @@
       "slug": "jq-tonumber-crashes-on-non-numeric-input-0536",
       "type": "hint",
       "priority": 6,
-      "toolNames": [],
+      "toolNames": [
+        "Bash"
+      ],
       "commandRegexSources": [
         {
           "source": "\\bjq\\b.*tonumber|\\bjq\\b.*\\badd\\b",
@@ -968,7 +1006,9 @@
       "slug": "grep-c-with-echo-0-fallback-double-outpu-1aa4",
       "type": "hint",
       "priority": 6,
-      "toolNames": [],
+      "toolNames": [
+        "Bash"
+      ],
       "commandRegexSources": [
         {
           "source": "grep.*-c.*\\|\\|.*echo",
@@ -990,7 +1030,9 @@
       "slug": "unquoted-bash-variable-in-comparison-fai-05b4",
       "type": "hint",
       "priority": 6,
-      "toolNames": [],
+      "toolNames": [
+        "Bash"
+      ],
       "commandRegexSources": [
         {
           "source": "\\[\\[.*!=|\\[\\[.*==",
@@ -1011,7 +1053,9 @@
       "slug": "env-file-parser-using-cut-d-fails-to-str-2d06",
       "type": "hint",
       "priority": 6,
-      "toolNames": [],
+      "toolNames": [
+        "Bash"
+      ],
       "commandRegexSources": [
         {
           "source": "cut.*-d=|-d=.*cut",
@@ -1238,7 +1282,9 @@
       "slug": "local-keyword-used-outside-a-bash-functi-2b18",
       "type": "hint",
       "priority": 5,
-      "toolNames": [],
+      "toolNames": [
+        "Bash"
+      ],
       "commandRegexSources": [
         {
           "source": "\\blocal\\b",
