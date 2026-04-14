@@ -105,8 +105,8 @@ WHAT'S NEW  (last 21 days)
 
 QUICK RECIPES  (type #1–#5 to run)
 ──────────────────────────────────────────────────────────────────
-  #1  Weekly routine        /lessons:review
-  #2  After bulk edits      /lessons:doctor
+  #1  Weekly routine        /lessons:review  (doctor runs automatically after)
+  #2  QA audit only         /lessons:doctor
   #3  Retract a lesson      /lessons:cancel
   #4  First time setup      /lessons:config  then  /lessons:review
   #5  Scope cleanup         /lessons:scope

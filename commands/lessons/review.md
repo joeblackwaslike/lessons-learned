@@ -152,3 +152,11 @@ Print the output from `promote` verbatim, then add a one-line summary:
 ```
 Done — N promoted, M archived. Run `node scripts/lessons.mjs build` if the manifest needs refreshing (promote does this automatically).
 ```
+
+---
+
+## Phase 8: QA Audit
+
+Automatically continue into `/lessons:doctor` immediately after reporting. Do not ask — just run it.
+
+Say: "Running QA audit…" and proceed with the full doctor workflow (pre-check through final report and fix prompts).
