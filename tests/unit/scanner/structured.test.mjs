@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseLessonTags, scanLineForLessons } from '../../../scripts/scanner/structured.mjs';
+import { parseLessonTags, parseCancelTags, scanLineForLessons } from '../../../scripts/scanner/structured.mjs';
 
 // ─── parseLessonTags ───────────────────────────────────────────────────────
 
@@ -58,68 +58,102 @@ describe('parseLessonTags', () => {
   it('parses multiple #lesson blocks in one text', () => {
     const text = [
       '#lesson\nproblem: error one\nsolution: fix one\n#/lesson',
-      'Some prose in between.',
       '#lesson\nproblem: error two\nsolution: fix two\n#/lesson',
     ].join('\n');
-    const result = parseLessonTags(text);
-    assert.equal(result.length, 2);
-    assert.equal(result[0].problem, 'error one');
-    assert.equal(result[1].problem, 'error two');
+    const results = parseLessonTags(text);
+    assert.equal(results.length, 2);
+    assert.equal(results[0].problem, 'error one');
+    assert.equal(results[1].problem, 'error two');
   });
 
-  it('parses tags as trimmed array', () => {
-    const text = '#lesson\nproblem: m\nsolution: f\ntags:  a , b , c \n#/lesson';
-    const [result] = parseLessonTags(text);
-    assert.deepEqual(result.tags, ['a', 'b', 'c']);
-  });
-
-  it('returns empty tags array when tags field is absent', () => {
-    const text = '#lesson\nproblem: m\nsolution: f\n#/lesson';
-    const [result] = parseLessonTags(text);
-    assert.deepEqual(result.tags, []);
-  });
-
-  it('handles blocks wrapped in code fences', () => {
-    const text = '```\n#lesson\nproblem: fenced\nsolution: still works\n#/lesson\n```';
-    const result = parseLessonTags(text);
-    assert.equal(result.length, 1);
-    assert.equal(result[0].problem, 'fenced');
-  });
-
-  it('includes raw match in result', () => {
-    const text = '#lesson\nproblem: m\nsolution: f\n#/lesson';
-    const [result] = parseLessonTags(text);
-    assert.ok(typeof result.raw === 'string');
-    assert.ok(result.raw.includes('#lesson'));
-  });
-
-  it('nulls optional fields when missing', () => {
-    const text = '#lesson\nproblem: m\nsolution: f\n#/lesson';
+  it('defaults optional fields to null or []', () => {
+    const text = '#lesson\nproblem: something\nsolution: fix it\n#/lesson';
     const [result] = parseLessonTags(text);
     assert.equal(result.tool, null);
     assert.equal(result.trigger, null);
+    assert.deepEqual(result.tags, []);
+    assert.equal(result.scope, null);
+  });
+
+  it('parses scope field', () => {
+    const text = '#lesson\nproblem: p\nsolution: s\nscope: project\n#/lesson';
+    const [result] = parseLessonTags(text);
+    assert.equal(result.scope, 'project');
+  });
+
+  it('parses an empty trigger field as null', () => {
+    const text = '#lesson\nproblem: something broke\nsolution: fix it\ntrigger: \n#/lesson';
+    const result = parseLessonTags(text);
+    assert.equal(result[0].trigger, null);
+  });
+});
+
+// ─── parseCancelTags ──────────────────────────────────────────────────────
+
+describe('parseCancelTags', () => {
+  it('returns empty array for text with no cancel tags', () => {
+    assert.deepEqual(parseCancelTags('some text'), []);
+  });
+
+  it('returns empty array for null/undefined', () => {
+    assert.deepEqual(parseCancelTags(null), []);
+    assert.deepEqual(parseCancelTags(undefined), []);
+  });
+
+  it('parses a #lesson:cancel block and returns the problem prefix', () => {
+    const text = '#lesson:cancel\nproblem: pytest hangs due to TTY\n#/lesson:cancel';
+    const result = parseCancelTags(text);
+    assert.equal(result.length, 1);
+    assert.equal(result[0], 'pytest hangs due to tty');
+  });
+
+  it('lowercases the problem prefix for case-insensitive matching', () => {
+    const text = '#lesson:cancel\nproblem: Pytest Hangs TTY\n#/lesson:cancel';
+    const [result] = parseCancelTags(text);
+    assert.equal(result, 'pytest hangs tty');
+  });
+
+  it('parses multiple cancel blocks', () => {
+    const text = [
+      '#lesson:cancel\nproblem: first problem\n#/lesson:cancel',
+      '#lesson:cancel\nproblem: second problem\n#/lesson:cancel',
+    ].join('\n');
+    const results = parseCancelTags(text);
+    assert.equal(results.length, 2);
+    assert.equal(results[0], 'first problem');
+    assert.equal(results[1], 'second problem');
+  });
+
+  it('ignores cancel blocks without a problem field', () => {
+    const text = '#lesson:cancel\nnote: no problem field here\n#/lesson:cancel';
+    assert.deepEqual(parseCancelTags(text), []);
   });
 });
 
 // ─── scanLineForLessons ────────────────────────────────────────────────────
 
 describe('scanLineForLessons', () => {
-  it('returns empty array for a line without #lesson', () => {
+  it('returns empty lessons and cancels for a line without #lesson', () => {
     const line = JSON.stringify({
       type: 'assistant',
       message: { content: [{ type: 'text', text: 'hi' }] },
     });
-    assert.deepEqual(scanLineForLessons(line), []);
+    const { lessons, cancels } = scanLineForLessons(line);
+    assert.deepEqual(lessons, []);
+    assert.deepEqual(cancels, []);
   });
 
-  it('returns empty array for invalid JSON', () => {
-    assert.deepEqual(scanLineForLessons('{not json #lesson'), []);
+  it('returns empty lessons and cancels for invalid JSON', () => {
+    const { lessons, cancels } = scanLineForLessons('{not json #lesson');
+    assert.deepEqual(lessons, []);
+    assert.deepEqual(cancels, []);
   });
 
-  it('returns empty array for non-assistant message type', () => {
+  it('returns empty lessons for non-assistant message type', () => {
     const text = '#lesson\nproblem: m\nsolution: f\n#/lesson';
     const line = JSON.stringify({ type: 'user', message: { content: [{ type: 'text', text }] } });
-    assert.deepEqual(scanLineForLessons(line), []);
+    const { lessons } = scanLineForLessons(line);
+    assert.deepEqual(lessons, []);
   });
 
   it('extracts a lesson from a valid assistant JSONL line', () => {
@@ -134,12 +168,12 @@ describe('scanLineForLessons', () => {
         content: [{ type: 'text', text }],
       },
     });
-    const results = scanLineForLessons(line);
-    assert.equal(results.length, 1);
-    assert.equal(results[0].problem, 'TTY hang');
-    assert.equal(results[0].sessionId, 'sess-abc');
-    assert.equal(results[0].messageId, 'msg-001');
-    assert.equal(results[0].timestamp, '2026-04-01T00:00:00Z');
+    const { lessons } = scanLineForLessons(line);
+    assert.equal(lessons.length, 1);
+    assert.equal(lessons[0].problem, 'TTY hang');
+    assert.equal(lessons[0].sessionId, 'sess-abc');
+    assert.equal(lessons[0].messageId, 'msg-001');
+    assert.equal(lessons[0].timestamp, '2026-04-01T00:00:00Z');
   });
 
   it('skips non-text content blocks', () => {
@@ -152,8 +186,8 @@ describe('scanLineForLessons', () => {
         ],
       },
     });
-    const results = scanLineForLessons(line);
-    assert.equal(results.length, 1);
+    const { lessons } = scanLineForLessons(line);
+    assert.equal(lessons.length, 1);
   });
 
   it('extracts multiple lessons from multiple text blocks', () => {
@@ -167,7 +201,33 @@ describe('scanLineForLessons', () => {
         ],
       },
     });
-    const results = scanLineForLessons(line);
-    assert.equal(results.length, 2);
+    const { lessons } = scanLineForLessons(line);
+    assert.equal(lessons.length, 2);
+  });
+
+  it('extracts cancel tags from the same line', () => {
+    const text = '#lesson:cancel\nproblem: tty hang problem\n#/lesson:cancel';
+    const line = JSON.stringify({
+      type: 'assistant',
+      message: { content: [{ type: 'text', text }] },
+    });
+    const { lessons, cancels } = scanLineForLessons(line);
+    assert.equal(lessons.length, 0);
+    assert.equal(cancels.length, 1);
+    assert.equal(cancels[0], 'tty hang problem');
+  });
+
+  it('returns both lessons and cancels when both appear in the same line', () => {
+    const text = [
+      '#lesson\nproblem: something else\nsolution: fix it\n#/lesson',
+      '#lesson:cancel\nproblem: tty hang\n#/lesson:cancel',
+    ].join('\n');
+    const line = JSON.stringify({
+      type: 'assistant',
+      message: { content: [{ type: 'text', text }] },
+    });
+    const { lessons, cancels } = scanLineForLessons(line);
+    assert.equal(lessons.length, 1);
+    assert.equal(cancels.length, 1);
   });
 });

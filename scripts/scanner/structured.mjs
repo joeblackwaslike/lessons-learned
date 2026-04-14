@@ -16,9 +16,15 @@
  *   tags: lang:python, tool:pytest, severity:hang
  *   #/lesson
  *
+ * Cancellation tag format (emitted by /lessons:cancel to suppress a lesson):
+ *   #lesson:cancel
+ *   problem: first ~60 chars of the problem field to cancel
+ *   #/lesson:cancel
+ *
  * Exports:
  *   parseLessonTags(text) — extract all #lesson blocks from a text string
- *   scanLineForLessons(jsonLine) — parse a JSONL line and extract any lessons
+ *   parseCancelTags(text) — extract all #lesson:cancel blocks from a text string
+ *   scanLineForLessons(jsonLine) — parse a JSONL line and extract lessons + cancels
  */
 
 // ─── Tag parsing ────────────────────────────────────────────────────
@@ -30,6 +36,11 @@
  * Handles optional whitespace and code fences around the delimiters.
  */
 const LESSON_BLOCK_RE = /(?:```\s*\n)?#lesson\s*\n([\s\S]*?)#\/lesson\s*(?:\n```)?/g;
+
+/**
+ * Regex to match a #lesson:cancel ... #/lesson:cancel block.
+ */
+const CANCEL_BLOCK_RE = /(?:```\s*\n)?#lesson:cancel\s*\n([\s\S]*?)#\/lesson:cancel\s*(?:\n```)?/g;
 
 /**
  * Parse a single field line like "tool: Bash" → ["tool", "Bash"]
@@ -72,8 +83,8 @@ export function parseLessonTags(text) {
     if (!fields.problem || !fields.solution) continue;
 
     candidates.push({
-      tool: fields.tool ?? null,
-      trigger: fields.trigger ?? null,
+      tool: fields.tool?.trim() || null,
+      trigger: fields.trigger?.trim() || null,
       problem: fields.problem,
       solution: fields.solution,
       tags: fields.tags
@@ -82,7 +93,7 @@ export function parseLessonTags(text) {
             .map(t => t.trim())
             .filter(Boolean)
         : [],
-      scope: fields.scope ?? null,
+      scope: fields.scope?.trim() || null,
       raw: match[0],
     });
   }
@@ -90,50 +101,85 @@ export function parseLessonTags(text) {
   return candidates;
 }
 
+/**
+ * Parse all #lesson:cancel blocks from a text string.
+ *
+ * A cancel block identifies a lesson to suppress by the first ~60 chars of
+ * its problem text. The scanner uses these to skip matching candidates.
+ *
+ * @param {string} text — assistant response text
+ * @returns {Array<string>} — problem prefixes to cancel (lowercased, trimmed)
+ */
+export function parseCancelTags(text) {
+  if (!text || typeof text !== 'string') return [];
+
+  const cancels = [];
+  let match;
+
+  CANCEL_BLOCK_RE.lastIndex = 0;
+
+  while ((match = CANCEL_BLOCK_RE.exec(text)) !== null) {
+    const blockContent = match[1];
+    for (const line of blockContent.split('\n')) {
+      const parsed = parseFieldLine(line);
+      if (parsed && parsed[0] === 'problem') {
+        cancels.push(parsed[1].toLowerCase().trim());
+      }
+    }
+  }
+
+  return cancels;
+}
+
 // ─── JSONL line scanning ────────────────────────────────────────────
 
 /**
- * Scan a single JSONL line for #lesson tags.
+ * Scan a single JSONL line for #lesson and #lesson:cancel tags.
  *
  * Fast-path: rejects lines that don't contain "#lesson" before JSON.parse.
  * Only parses assistant messages with text content blocks.
  *
  * @param {string} line — raw JSONL line
- * @returns {Array<Object>} — lesson candidates with session context
- *   Each: { ...candidate, sessionId, messageId, timestamp }
+ * @returns {{ lessons: Array<Object>, cancels: Array<string> }}
+ *   lessons: candidates with session context — { ...candidate, sessionId, messageId, timestamp }
+ *   cancels: problem prefixes from any #lesson:cancel blocks in this line
  */
 export function scanLineForLessons(line) {
   // Fast rejection: skip lines without the tag marker
-  if (!line.includes('#lesson')) return [];
+  if (!line.includes('#lesson')) return { lessons: [], cancels: [] };
 
   let obj;
   try {
     obj = JSON.parse(line);
   } catch {
-    return [];
+    return { lessons: [], cancels: [] };
   }
 
   // Only assistant messages can contain #lesson tags
-  if (obj.type !== 'assistant') return [];
+  if (obj.type !== 'assistant') return { lessons: [], cancels: [] };
 
   const message = obj.message;
-  if (!message?.content || !Array.isArray(message.content)) return [];
+  if (!message?.content || !Array.isArray(message.content)) return { lessons: [], cancels: [] };
 
-  const results = [];
+  const lessons = [];
+  const cancels = [];
 
   for (const block of message.content) {
     if (block.type !== 'text' || !block.text) continue;
 
-    const candidates = parseLessonTags(block.text);
-    for (const candidate of candidates) {
-      results.push({
+    for (const candidate of parseLessonTags(block.text)) {
+      lessons.push({
         ...candidate,
         sessionId: obj.sessionId ?? null,
         messageId: message.id ?? obj.uuid ?? null,
         timestamp: obj.timestamp ?? null,
       });
     }
+
+    for (const cancelPrefix of parseCancelTags(block.text)) {
+      cancels.push(cancelPrefix);
+    }
   }
 
-  return results;
+  return { lessons, cancels };
 }

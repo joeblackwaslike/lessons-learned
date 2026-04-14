@@ -1,7 +1,7 @@
 ---
 name: lessons-learned
 version: 0.1.0
-description: 'Use when the user asks about the lessons-learned plugin or wants to work with it. Use when the user wants to add a lesson, capture a coding mistake for future prevention, scan session logs for new lesson candidates, promote or archive candidates from the scan output, browse active lessons, or tune injection settings. Use when the user types /lessons:add, /lessons:review, /lessons:manage, /lessons:config, or /lessons:doctor. Use when the user asks what lessons are currently active, how to get started, or how lesson injection works. Use when the user wants to audit or QA the lesson store for dead triggers, unreachable lessons, truncated summaries, or near-duplicates. Do not wait for the user to name this plugin explicitly — if they ask about capturing mistakes, lesson candidates, the scan-promote pipeline, or lesson injection into context, this skill applies.'
+description: 'Use when the user asks about the lessons-learned plugin or wants to work with it. Use when the user wants to add a lesson, capture a coding mistake for future prevention, scan session logs for new lesson candidates, promote or archive candidates from the scan output, browse active lessons, or tune injection settings. Use when the user types /lessons:add, /lessons:review, /lessons:manage, /lessons:config, /lessons:doctor, or /lessons:cancel. Use when the user asks what lessons are currently active, how to get started, or how lesson injection works. Use when the user wants to audit or QA the lesson store for dead triggers, unreachable lessons, truncated summaries, or near-duplicates. Use when the user wants to retract or cancel a lesson tag they just emitted. Do not wait for the user to name this plugin explicitly — if they ask about capturing mistakes, lesson candidates, the scan-promote pipeline, or lesson injection into context, this skill applies.'
 ---
 
 # lessons-learned
@@ -51,6 +51,7 @@ candidate  →  reviewed  →  active  →  archived
 | `/lessons:manage`  | Browse and manage all lessons by status — promote, archive, edit, restore                    |
 | `/lessons:config`  | View and tune configuration with plain-language explanations of every setting                |
 | `/lessons:doctor`  | QA audit — finds dead triggers, unreachable hints, guard false positives, truncated/long summaries, casing errors, near-duplicates. Offers automatic and interactive fixes. |
+| `/lessons:cancel`  | Retract a lesson tag after the fact — archives DB records (any status) and emits `#lesson:cancel` markers for lessons emitted this session but not yet scanned. |
 
 ---
 
@@ -73,6 +74,14 @@ Scans, filters noise, presents candidates for approval.
 Audits 8 quality dimensions — dead triggers, unreachable hints, guard false positives,
 truncated summaries, casing errors, near-duplicates. Applies mechanical fixes automatically,
 reviews judgment calls interactively.
+
+**Retract a lesson you just emitted**
+
+```
+/lessons:cancel
+```
+
+Shows recently emitted lessons (DB + unscanned this session), lets you pick which to retract. Emits `#lesson:cancel` markers for unscanned ones so the scanner skips them.
 
 **Quick manual capture**
 

@@ -1215,6 +1215,7 @@ function findJsonlFiles(dir, maxDepth = 5, depth = 0) {
 
 async function scanFile(filePath, startOffset, flags, projectId = null) {
   const candidates = [];
+  const cancelPrefixes = [];   // problem prefixes from #lesson:cancel blocks
   const detector = new HeuristicDetector();
   let bytesRead = startOffset;
 
@@ -1226,9 +1227,11 @@ async function scanFile(filePath, startOffset, flags, projectId = null) {
     if (!line.trim()) continue;
 
     if (!flags.tier2Only) {
-      for (const tag of scanLineForLessons(line)) {
+      const { lessons, cancels } = scanLineForLessons(line);
+      for (const tag of lessons) {
         candidates.push(extractFromStructured({ ...tag, projectId }));
       }
+      cancelPrefixes.push(...cancels);
     }
     if (!flags.tier1Only) detector.feedLine(line);
   }
@@ -1237,7 +1240,15 @@ async function scanFile(filePath, startOffset, flags, projectId = null) {
     for (const window of detector.flush()) candidates.push(extractFromHeuristic(window));
   }
 
-  return { candidates, bytesRead };
+  // Drop any lesson whose problem starts with a cancel prefix from this file.
+  // Cancel tags always appear after the lesson tags they target (chronological order),
+  // so filtering after the full pass correctly suppresses them.
+  const filtered = cancelPrefixes.length === 0 ? candidates : candidates.filter(c => {
+    const problemLower = (c.problem ?? '').toLowerCase();
+    return !cancelPrefixes.some(prefix => problemLower.startsWith(prefix));
+  });
+
+  return { candidates: filtered, bytesRead };
 }
 
 function deduplicateCandidates(candidates) {
