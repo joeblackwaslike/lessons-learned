@@ -483,6 +483,7 @@ export function updateRecord(db, id, patch) {
     'problem',
     'solution',
     'type',
+    'toolNames',
     'commandPatterns',
     'pathPatterns',
     'priority',

@@ -233,8 +233,8 @@ Options:
   --patch '<json>' JSON object of fields to update
 
 Patchable fields:
-  summary, problem, solution, type, injection,
-  commandPatterns, pathPatterns, priority, confidence, tags
+  summary, problem, solution, type,
+  toolNames, commandPatterns, pathPatterns, priority, confidence, tags
 
 Notes:
   - Status is not changed — active lessons stay active, candidates stay candidates.

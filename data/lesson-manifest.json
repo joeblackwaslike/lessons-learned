@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-04-13T11:56:19.625Z",
+  "generatedAt": "2026-04-14T12:00:27.792Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -381,8 +381,8 @@
         "topic:async",
         "severity:blocker"
       ],
-      "message": "## Lesson: Iterating over mutable async collection without snapshot raises RuntimeError on concurrent modification\n`for item in self.subscribers:` with async/await inside the loop allows concurrent modification, raising RuntimeError\n**Fix**: Snapshot the collection before iterating: `for item in list(self.subscribers):` to prevent modification conflicts",
-      "summary": "Iterating over mutable async collection without snapshot raises RuntimeError on concurrent modification"
+      "message": "## Lesson: Iterating a mutable async collection without snapshot raises RuntimeError on concurrent modification\n`for item in self.subscribers:` with async/await inside the loop allows concurrent modification, raising RuntimeError\n**Fix**: Snapshot the collection before iterating: `for item in list(self.subscribers):` to prevent modification conflicts",
+      "summary": "Iterating a mutable async collection without snapshot raises RuntimeError on concurrent modification"
     },
     "01JQSEED00000000000000001": {
       "slug": "pytest-tty-hanging-k9m2",
@@ -536,8 +536,8 @@
         "severity:error",
         "topic:stash"
       ],
-      "message": "## Lesson: git stash pop fails with already exists, no checkout when untracked files were stashed but now exist in the working tree\ngit stash pop fails with exit code 1 and lists files as already exists, no checkout when the stash was created with -u (untracked files included) but those files have since been created in the working tree. Git refuses to overwrite them.\n**Fix**: Before running git stash pop, remove or reset the conflicting files: git clean -f <files> to delete untracked ones, or git checkout -- <files> to reset tracked ones. Alternatively use git stash show --name-only to see what the stash contains before popping.",
-      "summary": "git stash pop fails with already exists, no checkout when untracked files were stashed but now exist in the working tree"
+      "message": "## Lesson: git stash pop fails when stashed untracked files now exist in the working tree\ngit stash pop fails with exit code 1 and lists files as already exists, no checkout when the stash was created with -u (untracked files included) but those files have since been created in the working tree. Git refuses to overwrite them.\n**Fix**: Before running git stash pop, remove or reset the conflicting files: git clean -f <files> to delete untracked ones, or git checkout -- <files> to reset tracked ones. Alternatively use git stash show --name-only to see what the stash contains before popping.",
+      "summary": "git stash pop fails when stashed untracked files now exist in the working tree"
     },
     "01KNH2GX7ND2YW3Z6DB046EK7M": {
       "slug": "mktemp-without-a-trap-leaks-temp-files-o-b7f2",
@@ -946,7 +946,9 @@
       "slug": "agents-expand-scope-during-execution-int-1274",
       "type": "hint",
       "priority": 6,
-      "toolNames": [],
+      "toolNames": [
+        "Agent"
+      ],
       "commandRegexSources": [],
       "pathRegexSources": [],
       "tags": [
@@ -961,7 +963,9 @@
       "slug": "agent-written-tests-validate-the-agents-2fdf",
       "type": "hint",
       "priority": 6,
-      "toolNames": [],
+      "toolNames": [
+        "Agent"
+      ],
       "commandRegexSources": [],
       "pathRegexSources": [],
       "tags": [
@@ -976,7 +980,9 @@
       "slug": "file-reads-at-batch-start-become-stale-a-d847",
       "type": "hint",
       "priority": 6,
-      "toolNames": [],
+      "toolNames": [
+        "Agent"
+      ],
       "commandRegexSources": [],
       "pathRegexSources": [],
       "tags": [
@@ -991,7 +997,9 @@
       "slug": "batches-ordered-top-down-fail-when-a-tas-6001",
       "type": "hint",
       "priority": 6,
-      "toolNames": [],
+      "toolNames": [
+        "Agent"
+      ],
       "commandRegexSources": [],
       "pathRegexSources": [],
       "tags": [
@@ -1006,7 +1014,9 @@
       "slug": "batch-executed-without-a-rollback-plan-l-19b8",
       "type": "hint",
       "priority": 6,
-      "toolNames": [],
+      "toolNames": [
+        "Agent"
+      ],
       "commandRegexSources": [],
       "pathRegexSources": [],
       "tags": [
@@ -1021,7 +1031,9 @@
       "slug": "tasks-without-a-verification-command-pas-fc8f",
       "type": "hint",
       "priority": 6,
-      "toolNames": [],
+      "toolNames": [
+        "Agent"
+      ],
       "commandRegexSources": [],
       "pathRegexSources": [],
       "tags": [
@@ -1113,8 +1125,8 @@
         "topic:validation",
         "severity:error"
       ],
-      "message": "## Lesson: Zod v4 zodResolver requires zod/v4/core to be importable — v3 and v4 resolvers are not interchangeable\nUsing zodResolver from @hookform/resolvers with Zod v4 schemas fails because the resolver expects zod/v4/core to be importable and the schema types differ between v3 and v4. Mixing versions produces runtime type mismatches.\n**Fix**: Ensure @hookform/resolvers is updated to a version that supports Zod v4, and import zodResolver from @hookform/resolvers/zod. Do not mix Zod v3 and v4 schemas in the same form.",
-      "summary": "Zod v4 zodResolver requires zod/v4/core to be importable — v3 and v4 resolvers are not interchangeable"
+      "message": "## Lesson: Zod v4 zodResolver requires zod/v4/core — v3 and v4 resolvers are not interchangeable\nUsing zodResolver from @hookform/resolvers with Zod v4 schemas fails because the resolver expects zod/v4/core to be importable and the schema types differ between v3 and v4. Mixing versions produces runtime type mismatches.\n**Fix**: Ensure @hookform/resolvers is updated to a version that supports Zod v4, and import zodResolver from @hookform/resolvers/zod. Do not mix Zod v3 and v4 schemas in the same form.",
+      "summary": "Zod v4 zodResolver requires zod/v4/core — v3 and v4 resolvers are not interchangeable"
     },
     "01KNH2K94RAG8TM94Y7HK9QYEH": {
       "slug": "local-keyword-used-outside-a-bash-functi-2b18",
@@ -1137,7 +1149,7 @@
     },
     "01KNH360TF0FAY2P7ZWAD009PK": {
       "slug": "acceptance-criteria-written-as-vague-beh-d941",
-      "type": "hint",
+      "type": "protocol",
       "priority": 5,
       "toolNames": [],
       "commandRegexSources": [],
@@ -1147,12 +1159,12 @@
         "topic:planning",
         "category:specification-drift"
       ],
-      "message": "## Lesson: Acceptance criteria written as vague behavior descriptions allow agents to pass trivially wrong implementations\nSpecifying criteria like 'authentication works' lets an agent implement any solution that satisfies the literal words, even a trivial one that misses the intent\n**Fix**: Write every acceptance criterion as a shell command with exact expected output: `curl -H 'Authorization: Bearer invalid' /api && echo FAIL || echo OK`",
-      "summary": "Acceptance criteria written as vague behavior descriptions allow agents to pass trivially wrong implementations"
+      "message": "## Lesson: Vague acceptance criteria let agents pass trivially wrong implementations\nSpecifying criteria like 'authentication works' lets an agent implement any solution that satisfies the literal words, even a trivial one that misses the intent\n**Fix**: Where possible, write acceptance criteria as executable checks (e.g. a shell command with expected output). When an executable check is not practical, write observable, falsifiable assertions instead — not vague behavior descriptions like \"authentication works\".",
+      "summary": "Vague acceptance criteria let agents pass trivially wrong implementations"
     },
     "01KNH36G1T1RNFHVTTANEKB2JX": {
       "slug": "single-example-in-a-spec-is-treated-as-t-0f87",
-      "type": "hint",
+      "type": "protocol",
       "priority": 5,
       "toolNames": [],
       "commandRegexSources": [],
@@ -1162,12 +1174,12 @@
         "topic:planning",
         "category:specification-drift"
       ],
-      "message": "## Lesson: Single example in a spec is treated as the complete contract — missing formats cause production failures\nSpec gave one example date '2024-01-15'; agent implemented ISO-only parsing; production had US format and null values\n**Fix**: Provide at least 3 examples per behavior: happy path, error case, boundary condition. Explicitly state what is NOT required.",
-      "summary": "Single example in a spec is treated as the complete contract — missing formats cause production failures"
+      "message": "## Lesson: Single example in a spec is treated as the complete contract; missing formats break production\nSpec gave one example date '2024-01-15'; agent implemented ISO-only parsing; production had US format and null values\n**Fix**: Provide at least 3 examples per behavior: happy path, error case, boundary condition. Explicitly state what is NOT required.",
+      "summary": "Single example in a spec is treated as the complete contract; missing formats break production"
     },
     "01KNH36TPQJN6DDCS62SBYG6QP": {
       "slug": "late-requirements-placed-mid-context-are-871d",
-      "type": "hint",
+      "type": "protocol",
       "priority": 5,
       "toolNames": [],
       "commandRegexSources": [],
@@ -1177,14 +1189,16 @@
         "topic:context-management",
         "category:context-retrieval"
       ],
-      "message": "## Lesson: Late requirements placed mid-context are silently missed — agent attention degrades past ~6000 chars\nRequirements placed after 7000 chars of context; a 500ms timeout requirement was missed because it fell in the low-attention middle region\n**Fix**: Place task description first, reference material in the middle, acceptance criteria last. Keep total context under 6000 chars per batch.",
-      "summary": "Late requirements placed mid-context are silently missed — agent attention degrades past ~6000 chars"
+      "message": "## Lesson: Late requirements placed mid-context are silently missed; attention degrades past ~6000 chars\nRequirements placed after 7000 chars of context; a 500ms timeout requirement was missed because it fell in the low-attention middle region\n**Fix**: Place task description first, reference material in the middle, acceptance criteria last. Keep total context under 6000 chars per batch. If requirements arrive late mid-context, explicitly restate them at the top of the next prompt or batch — do not trust they were retained.",
+      "summary": "Late requirements placed mid-context are silently missed; attention degrades past ~6000 chars"
     },
     "01KNH37A72SZMHJ4YS1V6PDZ2E": {
       "slug": "batches-over-5-tasks-or-250-lines-produc-2f49",
       "type": "hint",
       "priority": 5,
-      "toolNames": [],
+      "toolNames": [
+        "Agent"
+      ],
       "commandRegexSources": [],
       "pathRegexSources": [],
       "tags": [
@@ -1225,8 +1239,8 @@
         "severity:silent-failure",
         "category:reasoning"
       ],
-      "message": "## Lesson: Used `lessons-learned@local` as the plugin key, but \"local\" is not a registered marketplace in kn...\nUsed `lessons-learned@local` as the plugin key, but \"local\" is not a registered marketplace in known_marketplaces.json — Claude Code ignores entries whose marketplace isn't known, silently not loading the plugin\n**Fix**: For local dev plugins, add hooks directly to ~/.claude/settings.json with absolute paths instead of fighting the plugin registry. Only use the installed_plugins.json + enabledPlugins approach for plugins installed from a real registered marketplace",
-      "summary": "Used `lessons-learned@local` as the plugin key, but \"local\" is not a registered marketplace in kn..."
+      "message": "## Lesson: lessons-learned@local fails silently — \"local\" is not a registered marketplace; use absolute hook paths in settings.json\nUsed `lessons-learned@local` as the plugin key, but \"local\" is not a registered marketplace in known_marketplaces.json — Claude Code ignores entries whose marketplace isn't known, silently not loading the plugin\n**Fix**: For local dev plugins, add hooks directly to ~/.claude/settings.json with absolute paths instead of fighting the plugin registry. Only use the installed_plugins.json + enabledPlugins approach for plugins installed from a real registered marketplace",
+      "summary": "lessons-learned@local fails silently — \"local\" is not a registered marketplace; use absolute hook paths in settings.json"
     },
     "01KN38M1NYYV4Z92DZQPGTEWHK": {
       "slug": "used-decision-deny-reason-systemmessage-f9e4",
@@ -1241,8 +1255,8 @@
         "category:protocol",
         "category:reasoning"
       ],
-      "message": "## Lesson: used `{ decision: \"deny\", reason, systemMessage }` (PermissionRequest schema) instead of `{ hookS...\nused `{ decision: \"deny\", reason, systemMessage }` (PermissionRequest schema) instead of `{ hookSpecificOutput: { hookEventName: \"PreToolUse\", permissionDecision: \"deny\", permissionDecisionReason } }` — Claude Code silently ignored the unknown schema and executed anyway, giving no error signal\n**Fix**: always read the compiled source of a working plugin (safety-net) before implementing an underdocumented protocol; and write a schema assertion test so \"wrong contract\" fails loudly instead of silently",
-      "summary": "used `{ decision: \"deny\", reason, systemMessage }` (PermissionRequest schema) instead of `{ hookS..."
+      "message": "## Lesson: Used PermissionRequest schema instead of hookSpecificOutput — hook silently allows the call\nused `{ decision: \"deny\", reason, systemMessage }` (PermissionRequest schema) instead of `{ hookSpecificOutput: { hookEventName: \"PreToolUse\", permissionDecision: \"deny\", permissionDecisionReason } }` — Claude Code silently ignored the unknown schema and executed anyway, giving no error signal\n**Fix**: always read the compiled source of a working plugin (safety-net) before implementing an underdocumented protocol; and write a schema assertion test so \"wrong contract\" fails loudly instead of silently",
+      "summary": "Used PermissionRequest schema instead of hookSpecificOutput — hook silently allows the call"
     },
     "01KN38M1TECTA85XF00XY8NFMB": {
       "slug": "observed-that-read-tool-results-caused-f-29e8",
@@ -1256,14 +1270,16 @@
         "severity:silent-failure",
         "category:reasoning"
       ],
-      "message": "## Lesson: observed that Read tool results caused false positives, then jumped from \"exclude Read\" to \"only ...\nobserved that Read tool results caused false positives, then jumped from \"exclude Read\" to \"only allow Bash/TaskOutput\" — an allowlist that silently dropped MCP tools, Edit, Write, and all future tools not explicitly listed\n**Fix**: match the scope of the fix to the scope of the observation; if the problem is \"X is noisy,\" exclude X — don't redesign around the absence of X",
-      "summary": "observed that Read tool results caused false positives, then jumped from \"exclude Read\" to \"only ..."
+      "message": "## Lesson: Fixing one noisy tool by switching to an allowlist silently drops all tools not explicitly listed\nobserved that Read tool results caused false positives, then jumped from \"exclude Read\" to \"only allow Bash/TaskOutput\" — an allowlist that silently dropped MCP tools, Edit, Write, and all future tools not explicitly listed\n**Fix**: match the scope of the fix to the scope of the observation; if the problem is \"X is noisy,\" exclude X — don't redesign around the absence of X",
+      "summary": "Fixing one noisy tool by switching to an allowlist silently drops all tools not explicitly listed"
     },
     "01KNH3709KYRZVYC4ZZWY0359X": {
       "slug": "lesson-reminders-placed-at-batch-start-a-c7e1",
       "type": "hint",
       "priority": 4,
-      "toolNames": [],
+      "toolNames": [
+        "Agent"
+      ],
       "commandRegexSources": [],
       "pathRegexSources": [],
       "tags": [
@@ -1287,8 +1303,8 @@
         "severity:confusion",
         "category:reasoning"
       ],
-      "message": "## Lesson: Said \"run `pytest tests/`\" without specifying that the user should ask Claude to run it — ambiguo...\nSaid \"run `pytest tests/`\" without specifying that the user should ask Claude to run it — ambiguous whether they should type it in terminal or prompt Claude\n**Fix**: When describing PreToolUse hook tests, always frame it as \"ask Claude to run X\" to make clear the hook only fires when Claude invokes the tool, not when the user runs commands directly",
-      "summary": "Said \"run `pytest tests/`\" without specifying that the user should ask Claude to run it — ambiguo..."
+      "message": "## Lesson: Said to run the test command ambiguously — users ran it directly instead of via Claude, bypassing PreToolUse\nSaid \"run `pytest tests/`\" without specifying that the user should ask Claude to run it — ambiguous whether they should type it in terminal or prompt Claude\n**Fix**: When describing PreToolUse hook tests, always frame it as \"ask Claude to run X\" to make clear the hook only fires when Claude invokes the tool, not when the user runs commands directly",
+      "summary": "Said to run the test command ambiguously — users ran it directly instead of via Claude, bypassing PreToolUse"
     },
     "01KN38M1GD7BR75VC3DZS1ZZ3D": {
       "slug": "didnt-warn-that-plan-mode-suppresses-too-0aeb",
@@ -1303,8 +1319,8 @@
         "severity:confusion",
         "category:reasoning"
       ],
-      "message": "## Lesson: Didn't warn that plan mode suppresses tool calls — if Claude enters plan mode, PreToolUse never f...\nDidn't warn that plan mode suppresses tool calls — if Claude enters plan mode, PreToolUse never fires because Bash is never called, so the hook test produces a false negative\n**Fix**: When testing PreToolUse hooks, tell the user to disable plan mode or explicitly say \"don't plan, just run it\" so the hook actually fires",
-      "summary": "Didn't warn that plan mode suppresses tool calls — if Claude enters plan mode, PreToolUse never f..."
+      "message": "## Lesson: Plan mode suppresses tool calls — PreToolUse never fires, giving false negatives in hook tests\nDidn't warn that plan mode suppresses tool calls — if Claude enters plan mode, PreToolUse never fires because Bash is never called, so the hook test produces a false negative\n**Fix**: When testing PreToolUse hooks, tell the user to disable plan mode or explicitly say \"don't plan, just run it\" so the hook actually fires",
+      "summary": "Plan mode suppresses tool calls — PreToolUse never fires, giving false negatives in hook tests"
     },
     "01KN38M1R38W3BZFZNNFBGAWHE": {
       "slug": "interpreted-command-with-flags-got-block-42fb",
@@ -1319,8 +1335,8 @@
         "severity:wasted-effort",
         "category:reasoning"
       ],
-      "message": "## Lesson: interpreted \"command WITH flags got blocked\" when the output was actually showing the corrected r...\ninterpreted \"command WITH flags got blocked\" when the output was actually showing the corrected retry after the block — jumped to debugging a non-existent problem\n**Fix**: before diagnosing output as wrong, trace the expected flow (block → self-correct → retry) and verify it matches what's shown",
-      "summary": "interpreted \"command WITH flags got blocked\" when the output was actually showing the corrected r..."
+      "message": "## Lesson: Misread corrected retry output as proof the block failed — diagnosed a problem that did not exist\ninterpreted \"command WITH flags got blocked\" when the output was actually showing the corrected retry after the block — jumped to debugging a non-existent problem\n**Fix**: before diagnosing output as wrong, trace the expected flow (block → self-correct → retry) and verify it matches what's shown",
+      "summary": "Misread corrected retry output as proof the block failed — diagnosed a problem that did not exist"
     }
   }
 }
