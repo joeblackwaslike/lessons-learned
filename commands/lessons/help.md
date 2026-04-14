@@ -103,13 +103,13 @@ WHAT'S NEW  (last 21 days)
 ──────────────────────────────────────────────────────────────────
 
 
-QUICK RECIPES
+QUICK RECIPES  (type #1–#5 to run)
 ──────────────────────────────────────────────────────────────────
-  Weekly routine        /lessons:review
-  After bulk edits      /lessons:doctor
-  Retract a lesson      /lessons:cancel
-  First time setup      /lessons:config  then  /lessons:review
-  Scope cleanup         /lessons:scope   (or happens automatically in /lessons:review)
+  #1  Weekly routine        /lessons:review
+  #2  After bulk edits      /lessons:doctor
+  #3  Retract a lesson      /lessons:cancel
+  #4  First time setup      /lessons:config  then  /lessons:review
+  #5  Scope cleanup         /lessons:scope
 ──────────────────────────────────────────────────────────────────
 ```
 
@@ -125,3 +125,23 @@ Rules for ← NEW markers in the command list:
 - Do not add it to modified-only files
 
 Do not show this output in a code block — render it as plain preformatted text so it reads clearly.
+
+---
+
+## Step 3: Handle recipe shortcuts
+
+After rendering the output, stay active and watch for follow-up messages of the form `#N` (e.g. `#1`, `#3`).
+
+When the user sends a message that is just `#N` (optionally with surrounding whitespace), invoke the corresponding recipe:
+
+| Input | Action                                                           |
+| ----- | ---------------------------------------------------------------- |
+| `#1`  | Run `/lessons:review`                                            |
+| `#2`  | Run `/lessons:doctor`                                            |
+| `#3`  | Run `/lessons:cancel`                                            |
+| `#4`  | Run `/lessons:config`, then offer to run `/lessons:review` after |
+| `#5`  | Run `/lessons:scope`                                             |
+
+"Run" means invoke the slash command using the Skill tool exactly as if the user had typed it.
+
+If the user sends `#N` where N is out of range, say: "No recipe #N — valid shortcuts are #1–#5."
