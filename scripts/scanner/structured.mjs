@@ -82,6 +82,7 @@ export function parseLessonTags(text) {
             .map(t => t.trim())
             .filter(Boolean)
         : [],
+      scope: fields.scope ?? null,
       raw: match[0],
     });
   }

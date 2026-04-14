@@ -35,11 +35,14 @@ function stripQuotedStrings(command) {
     .replace(/'(?:[^'\\]|\\.)*'/g, "''");
 }
 
-export function matchLessons(lessons, toolName, command, filePath) {
+export function matchLessons(lessons, toolName, command, filePath, projectId = null) {
   const matches = [];
 
   for (const [id, lesson] of Object.entries(lessons)) {
     if (lesson.disabled) continue;
+
+    // Skip scoped lessons that don't match the current project
+    if (lesson.scope && lesson.scope !== projectId) continue;
 
     const toolNames = lesson.toolNames ?? [];
     if (!toolNames.includes(toolName)) continue;

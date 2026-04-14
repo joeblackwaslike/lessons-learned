@@ -44,6 +44,19 @@ tags: tool:git, severity:data-loss
 #/lesson
 \`\`\`
 
+Optional: add \`scope: project\` to restrict a lesson to the current project only (omit for global lessons that apply everywhere).
+
+\`\`\`
+#lesson
+tool: Bash
+trigger: just test
+problem: project-specific just recipe leaks env vars
+solution: Use \`just --set KEY val\` instead of export
+tags: tool:just
+scope: project
+#/lesson
+\`\`\`
+
 Emit this tag naturally as part of your response whenever you:
 - Discover why a tool call failed and apply a different approach
 - Catch yourself about to repeat a known problem

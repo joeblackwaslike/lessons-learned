@@ -31,7 +31,11 @@ if (!input) {
   process.exit(0);
 }
 
-const { toolName, toolInput, sessionId } = input;
+const { toolName, toolInput, sessionId, cwd } = input;
+
+// Derive project ID from cwd: matches the ~/.claude/projects/<folder> naming convention
+// where absolute path separators are replaced with dashes (e.g. /foo/bar → -foo-bar → foo-bar)
+const projectId = cwd ? cwd.replace(/\//g, '-').replace(/^-/, '') : null;
 
 // ─── Stage 2: Load Manifest ─────────────────────────────────────────
 
@@ -59,7 +63,7 @@ const budgetBytes =
 const command = toolName === 'Bash' ? (toolInput.command ?? '') : '';
 const filePath = toolName !== 'Bash' ? (toolInput.file_path ?? '') : '';
 
-const matches = matchLessons(manifest.lessons ?? {}, toolName, command, filePath);
+const matches = matchLessons(manifest.lessons ?? {}, toolName, command, filePath, projectId);
 
 if (matches.length === 0) {
   process.stdout.write(formatEmptyOutput());

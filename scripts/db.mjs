@@ -190,6 +190,11 @@ function applyMigrations(db) {
     db.exec(`ALTER TABLE lessons ADD COLUMN commandMatchTarget TEXT`);
   }
 
+  // Migration: add scope column (NULL = global; project ID string = scoped to that project)
+  if (!currentCols.includes('scope')) {
+    db.exec(`ALTER TABLE lessons ADD COLUMN scope TEXT`);
+  }
+
   // Migration: import legacy review session JSON files into the review_sessions table
   const reviewSessionsDir = join(DATA_DIR, 'review-sessions');
   try {
@@ -488,6 +493,7 @@ export function updateRecord(db, id, patch) {
     'problem',
     'solution',
     'type',
+    'scope',
     'toolNames',
     'commandPatterns',
     'commandMatchTarget',

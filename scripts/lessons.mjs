@@ -43,7 +43,7 @@ import {
   insertReviewSession,
   computeContentHash as computeContentHashFromDb,
 } from './db.mjs';
-import { join, resolve, dirname } from 'node:path';
+import { join, resolve, dirname, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { randomBytes } from 'node:crypto';
 import { createInterface } from 'node:readline';
@@ -500,6 +500,7 @@ function buildManifest() {
       commandMatchTarget,
       pathRegexSources,
       tags: lesson.tags ?? [],
+      scope: lesson.scope ?? null,
       message: buildInjection(lesson),
       summary: lesson.summary,
       ...(isDisabled ? { disabled: true } : {}),
@@ -1050,7 +1051,7 @@ async function runScan(args) {
     const newBytes = fileSize - offset;
     if (flags.verbose) log(`  Scanning: ${filePath} (${newBytes} new bytes)`);
 
-    const { candidates, bytesRead } = await scanFile(filePath, offset, flags);
+    const { candidates, bytesRead } = await scanFile(filePath, offset, flags, projectIdFromFilePath(filePath));
     allCandidates.push(...candidates);
     updateOffset(state, filePath, bytesRead);
     filesScanned++;
@@ -1119,6 +1120,7 @@ function mapCandidateToDbRecord(c) {
     priority: c.priority,
     confidence: c.confidence,
     tags: c.tags ?? [],
+    scope: c.scope === 'project' ? (c.projectId ?? null) : null,
     source: c.source ?? 'heuristic',
     sourceSessionIds: (c.sourceSessionIds ?? []).slice(0, 5),
     occurrenceCount: c.occurrenceCount ?? 1,
@@ -1181,6 +1183,16 @@ function runScanAggregate() {
 
 // ─── Scan helpers ────────────────────────────────────────────────────
 
+/**
+ * Derive project ID from a session JSONL file path.
+ * ~/.claude/projects/<project-dir>/<session>.jsonl → "<project-dir>"
+ */
+function projectIdFromFilePath(filePath) {
+  const projectsDir = join(homedir(), '.claude', 'projects');
+  const rel = relative(projectsDir, filePath);
+  return rel.split(sep)[0] ?? null;
+}
+
 function findJsonlFiles(dir, maxDepth = 5, depth = 0) {
   if (depth > maxDepth) return [];
   const files = [];
@@ -1201,7 +1213,7 @@ function findJsonlFiles(dir, maxDepth = 5, depth = 0) {
   return files;
 }
 
-async function scanFile(filePath, startOffset, flags) {
+async function scanFile(filePath, startOffset, flags, projectId = null) {
   const candidates = [];
   const detector = new HeuristicDetector();
   let bytesRead = startOffset;
@@ -1214,7 +1226,9 @@ async function scanFile(filePath, startOffset, flags) {
     if (!line.trim()) continue;
 
     if (!flags.tier2Only) {
-      for (const tag of scanLineForLessons(line)) candidates.push(extractFromStructured(tag));
+      for (const tag of scanLineForLessons(line)) {
+        candidates.push(extractFromStructured({ ...tag, projectId }));
+      }
     }
     if (!flags.tier1Only) detector.feedLine(line);
   }
