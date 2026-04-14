@@ -1,7 +1,7 @@
 ---
 name: lessons-learned
 version: 0.1.0
-description: 'Use when the user asks about the lessons-learned plugin or wants to work with it. Use when the user wants to add a lesson, capture a coding mistake for future prevention, scan session logs for new lesson candidates, promote or archive candidates from the scan output, browse active lessons, or tune injection settings. Use when the user types /lessons:add, /lessons:review, /lessons:manage, or /lessons:config. Use when the user asks what lessons are currently active, how to get started, or how lesson injection works. Do not wait for the user to name this plugin explicitly — if they ask about capturing mistakes, lesson candidates, the scan-promote pipeline, or lesson injection into context, this skill applies.'
+description: 'Use when the user asks about the lessons-learned plugin or wants to work with it. Use when the user wants to add a lesson, capture a coding mistake for future prevention, scan session logs for new lesson candidates, promote or archive candidates from the scan output, browse active lessons, or tune injection settings. Use when the user types /lessons:add, /lessons:review, /lessons:manage, /lessons:config, or /lessons:doctor. Use when the user asks what lessons are currently active, how to get started, or how lesson injection works. Use when the user wants to audit or QA the lesson store for dead triggers, unreachable lessons, truncated summaries, or near-duplicates. Do not wait for the user to name this plugin explicitly — if they ask about capturing mistakes, lesson candidates, the scan-promote pipeline, or lesson injection into context, this skill applies.'
 ---
 
 # lessons-learned
@@ -44,12 +44,13 @@ candidate  →  reviewed  →  active  →  archived
 
 ## Slash commands
 
-| Command           | What it does                                                                                 |
-| ----------------- | -------------------------------------------------------------------------------------------- |
-| `/lessons:add`    | Conversationally add a lesson — Claude asks for problem, solution, trigger, then writes it   |
-| `/lessons:review` | Scan for new candidates, LLM-filter them, present a numbered list, approve/archive → promote |
-| `/lessons:manage` | Browse and manage all lessons by status — promote, archive, edit, restore                    |
-| `/lessons:config` | View and tune configuration with plain-language explanations of every setting                |
+| Command            | What it does                                                                                 |
+| ------------------ | -------------------------------------------------------------------------------------------- |
+| `/lessons:add`     | Conversationally add a lesson — Claude asks for problem, solution, trigger, then writes it   |
+| `/lessons:review`  | Scan for new candidates, LLM-filter them, present a numbered list, approve/archive → promote |
+| `/lessons:manage`  | Browse and manage all lessons by status — promote, archive, edit, restore                    |
+| `/lessons:config`  | View and tune configuration with plain-language explanations of every setting                |
+| `/lessons:doctor`  | QA audit — finds dead triggers, unreachable hints, guard false positives, truncated/long summaries, casing errors, near-duplicates. Offers automatic and interactive fixes. |
 
 ---
 
@@ -62,6 +63,16 @@ candidate  →  reviewed  →  active  →  archived
 ```
 
 Scans, filters noise, presents candidates for approval.
+
+**Periodic QA (after bulk imports or edits)**
+
+```
+/lessons:doctor
+```
+
+Audits 8 quality dimensions — dead triggers, unreachable hints, guard false positives,
+truncated summaries, casing errors, near-duplicates. Applies mechanical fixes automatically,
+reviews judgment calls interactively.
 
 **Quick manual capture**
 
