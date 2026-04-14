@@ -184,3 +184,5 @@ Then ask:
 **Automatic fixes** (checks 1, 2, 4, 5, 7): apply with `node scripts/lessons.mjs edit --id <id> --patch '<json>'` for each, confirm count when done.
 
 **Interactive review** (checks 3, 6, 8): present each proposed change one at a time with the current value, proposed value, and reason. Ask "apply, skip, or edit?" for each.
+
+After completing the report, mention: "Run `/lessons:scope` to find lessons that should only inject in the current project."

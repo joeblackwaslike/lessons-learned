@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-04-14T13:10:59.692Z",
+  "generatedAt": "2026-04-14T14:18:11.780Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -1405,8 +1405,8 @@
         "category:reasoning"
       ],
       "scope": null,
-      "message": "## Lesson: lessons-learned@local fails silently — \"local\" is not a registered marketplace; use absolute hook paths in settings.json\nUsed `lessons-learned@local` as the plugin key, but \"local\" is not a registered marketplace in known_marketplaces.json — Claude Code ignores entries whose marketplace isn't known, silently not loading the plugin\n**Fix**: For local dev plugins, add hooks directly to ~/.claude/settings.json with absolute paths instead of fighting the plugin registry. Only use the installed_plugins.json + enabledPlugins approach for plugins installed from a real registered marketplace",
-      "summary": "lessons-learned@local fails silently — \"local\" is not a registered marketplace; use absolute hook paths in settings.json"
+      "message": "## Lesson: Local plugin with unregistered marketplace key silently fails to load in Claude Code\nUsing `<plugin-name>@local` (or any unregistered marketplace key) as the plugin identifier — Claude Code checks known_marketplaces.json and silently ignores plugin entries whose marketplace is not listed, so the plugin never loads with no error\n**Fix**: For local dev plugins, register hooks directly in ~/.claude/settings.json with absolute paths. Only use installed_plugins.json + enabledPlugins for plugins installed from a real registered marketplace.",
+      "summary": "Local plugin with unregistered marketplace key silently fails to load in Claude Code"
     },
     "01KN38M1NYYV4Z92DZQPGTEWHK": {
       "slug": "used-decision-deny-reason-systemmessage-f9e4",
@@ -1422,7 +1422,7 @@
         "category:protocol",
         "category:reasoning"
       ],
-      "scope": null,
+      "scope": "Users-joeblack-github-joeblackwaslike-lessons-learned",
       "message": "## Lesson: Used PermissionRequest schema instead of hookSpecificOutput — hook silently allows the call\nused `{ decision: \"deny\", reason, systemMessage }` (PermissionRequest schema) instead of `{ hookSpecificOutput: { hookEventName: \"PreToolUse\", permissionDecision: \"deny\", permissionDecisionReason } }` — Claude Code silently ignored the unknown schema and executed anyway, giving no error signal\n**Fix**: always read the compiled source of a working plugin (safety-net) before implementing an underdocumented protocol; and write a schema assertion test so \"wrong contract\" fails loudly instead of silently",
       "summary": "Used PermissionRequest schema instead of hookSpecificOutput — hook silently allows the call"
     },
@@ -1476,7 +1476,7 @@
         "severity:confusion",
         "category:reasoning"
       ],
-      "scope": null,
+      "scope": "Users-joeblack-github-joeblackwaslike-lessons-learned",
       "message": "## Lesson: Said to run the test command ambiguously — users ran it directly instead of via Claude, bypassing PreToolUse\nSaid \"run `pytest tests/`\" without specifying that the user should ask Claude to run it — ambiguous whether they should type it in terminal or prompt Claude\n**Fix**: When describing PreToolUse hook tests, always frame it as \"ask Claude to run X\" to make clear the hook only fires when Claude invokes the tool, not when the user runs commands directly",
       "summary": "Said to run the test command ambiguously — users ran it directly instead of via Claude, bypassing PreToolUse"
     },
@@ -1494,7 +1494,7 @@
         "severity:confusion",
         "category:reasoning"
       ],
-      "scope": null,
+      "scope": "Users-joeblack-github-joeblackwaslike-lessons-learned",
       "message": "## Lesson: Plan mode suppresses tool calls — PreToolUse never fires, giving false negatives in hook tests\nDidn't warn that plan mode suppresses tool calls — if Claude enters plan mode, PreToolUse never fires because Bash is never called, so the hook test produces a false negative\n**Fix**: When testing PreToolUse hooks, tell the user to disable plan mode or explicitly say \"don't plan, just run it\" so the hook actually fires",
       "summary": "Plan mode suppresses tool calls — PreToolUse never fires, giving false negatives in hook tests"
     },
@@ -1512,7 +1512,7 @@
         "severity:wasted-effort",
         "category:reasoning"
       ],
-      "scope": null,
+      "scope": "Users-joeblack-github-joeblackwaslike-lessons-learned",
       "message": "## Lesson: Misread corrected retry output as proof the block failed — diagnosed a problem that did not exist\ninterpreted \"command WITH flags got blocked\" when the output was actually showing the corrected retry after the block — jumped to debugging a non-existent problem\n**Fix**: before diagnosing output as wrong, trace the expected flow (block → self-correct → retry) and verify it matches what's shown",
       "summary": "Misread corrected retry output as proof the block failed — diagnosed a problem that did not exist"
     }
