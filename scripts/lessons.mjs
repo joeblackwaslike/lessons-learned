@@ -234,7 +234,7 @@ Options:
 
 Patchable fields:
   summary, problem, solution, type,
-  toolNames, commandPatterns, pathPatterns, priority, confidence, tags
+  toolNames, commandPatterns, commandMatchTarget, pathPatterns, priority, confidence, tags
 
 Notes:
   - Status is not changed — active lessons stay active, candidates stay candidates.
@@ -487,12 +487,17 @@ function buildManifest() {
       })
       .filter(Boolean);
 
+    const lessonType = lesson.type ?? 'hint';
+    const commandMatchTarget =
+      lesson.commandMatchTarget ?? (lessonType === 'guard' ? 'executable' : 'full');
+
     manifestLessons[lesson.id] = {
       slug: lesson.slug,
-      type: lesson.type ?? 'hint',
+      type: lessonType,
       priority: lesson.priority,
       toolNames: lesson.toolNames ?? [],
       commandRegexSources,
+      commandMatchTarget,
       pathRegexSources,
       tags: lesson.tags ?? [],
       message: buildInjection(lesson),

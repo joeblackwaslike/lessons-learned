@@ -185,6 +185,11 @@ function applyMigrations(db) {
     db.exec('ALTER TABLE lessons RENAME COLUMN remediation TO solution');
   }
 
+  // Migration: add commandMatchTarget column (defaults to NULL = use type-based default at build time)
+  if (!currentCols.includes('commandMatchTarget')) {
+    db.exec(`ALTER TABLE lessons ADD COLUMN commandMatchTarget TEXT`);
+  }
+
   // Migration: import legacy review session JSON files into the review_sessions table
   const reviewSessionsDir = join(DATA_DIR, 'review-sessions');
   try {
@@ -485,6 +490,7 @@ export function updateRecord(db, id, patch) {
     'type',
     'toolNames',
     'commandPatterns',
+    'commandMatchTarget',
     'pathPatterns',
     'priority',
     'confidence',

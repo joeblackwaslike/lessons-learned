@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-04-14T12:00:27.792Z",
+  "generatedAt": "2026-04-14T12:13:04.264Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -22,6 +22,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "tool:git",
@@ -42,6 +43,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "language:bash",
@@ -56,6 +58,7 @@
       "priority": 10,
       "toolNames": [],
       "commandRegexSources": [],
+      "commandMatchTarget": "full",
       "pathRegexSources": [
         {
           "source": ".*/[^/]*\\.py",
@@ -96,6 +99,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "language:bash",
@@ -115,6 +119,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "tool:jq",
@@ -135,6 +140,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "tool:sed",
@@ -155,6 +161,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "lang:python",
@@ -180,6 +187,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [
         {
           "source": "test.*\\.py$",
@@ -207,6 +215,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "lang:javascript",
@@ -234,6 +243,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "tool:git",
@@ -255,6 +265,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "language:bash",
@@ -275,6 +286,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "language:bash",
@@ -296,6 +308,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "tool:grep",
@@ -316,6 +329,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "tool:git",
@@ -336,6 +350,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "language:bash",
@@ -355,6 +370,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "lang:python",
@@ -375,6 +391,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "lang:python",
@@ -397,6 +414,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "executable",
       "pathRegexSources": [],
       "tags": [
         "lang:python",
@@ -419,6 +437,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "tool:git",
@@ -440,6 +459,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "lang:python",
@@ -462,6 +482,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "tool:git",
@@ -484,6 +505,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "tool:git",
@@ -507,6 +529,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "lang:javascript",
@@ -530,6 +553,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "tool:git",
@@ -550,6 +574,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "language:bash",
@@ -569,6 +594,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "language:bash",
@@ -588,6 +614,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "language:bash",
@@ -608,6 +635,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "lang:python",
@@ -627,6 +655,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "lang:python",
@@ -641,6 +670,7 @@
       "priority": 7,
       "toolNames": [],
       "commandRegexSources": [],
+      "commandMatchTarget": "full",
       "pathRegexSources": [
         {
           "source": "[^/]*\\.service",
@@ -672,6 +702,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "lang:javascript",
@@ -694,6 +725,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "tool:chrome",
@@ -716,6 +748,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "lang:javascript",
@@ -738,6 +771,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "tool:curl",
@@ -760,6 +794,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "lang:javascript",
@@ -783,6 +818,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "lang:python",
@@ -806,6 +842,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "tool:supabase",
@@ -832,6 +869,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "lang:javascript",
@@ -855,6 +893,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "lang:javascript",
@@ -876,6 +915,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "tool:jq",
@@ -895,6 +935,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "tool:grep",
@@ -915,6 +956,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "language:bash",
@@ -934,6 +976,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "language:bash",
@@ -950,6 +993,7 @@
         "Agent"
       ],
       "commandRegexSources": [],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "env:claude-code",
@@ -967,6 +1011,7 @@
         "Agent"
       ],
       "commandRegexSources": [],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "env:claude-code",
@@ -984,6 +1029,7 @@
         "Agent"
       ],
       "commandRegexSources": [],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "env:claude-code",
@@ -1001,6 +1047,7 @@
         "Agent"
       ],
       "commandRegexSources": [],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "env:claude-code",
@@ -1018,6 +1065,7 @@
         "Agent"
       ],
       "commandRegexSources": [],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "env:claude-code",
@@ -1035,6 +1083,7 @@
         "Agent"
       ],
       "commandRegexSources": [],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "env:claude-code",
@@ -1057,6 +1106,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "tool:zsh",
@@ -1079,6 +1129,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "lang:javascript",
@@ -1095,6 +1146,7 @@
       "priority": 5,
       "toolNames": [],
       "commandRegexSources": [],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "env:claude-code",
@@ -1118,6 +1170,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "lang:javascript",
@@ -1139,6 +1192,7 @@
           "flags": ""
         }
       ],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "language:bash",
@@ -1153,6 +1207,7 @@
       "priority": 5,
       "toolNames": [],
       "commandRegexSources": [],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "env:claude-code",
@@ -1168,6 +1223,7 @@
       "priority": 5,
       "toolNames": [],
       "commandRegexSources": [],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "env:claude-code",
@@ -1183,13 +1239,14 @@
       "priority": 5,
       "toolNames": [],
       "commandRegexSources": [],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "env:claude-code",
         "topic:context-management",
         "category:context-retrieval"
       ],
-      "message": "## Lesson: Late requirements placed mid-context are silently missed; attention degrades past ~6000 chars\nRequirements placed after 7000 chars of context; a 500ms timeout requirement was missed because it fell in the low-attention middle region\n**Fix**: Place task description first, reference material in the middle, acceptance criteria last. Keep total context under 6000 chars per batch. If requirements arrive late mid-context, explicitly restate them at the top of the next prompt or batch — do not trust they were retained.",
+      "message": "## Lesson: Late requirements placed mid-context are silently missed; attention degrades past ~6000 chars\nRequirements placed after 7000 chars of context; a 500ms timeout requirement was missed because it fell in the low-attention middle region\n**Fix**: Place context in this order: task description first, then requirements, then reference material, then acceptance criteria last. Keep total context under 6000 chars per batch.",
       "summary": "Late requirements placed mid-context are silently missed; attention degrades past ~6000 chars"
     },
     "01KNH37A72SZMHJ4YS1V6PDZ2E": {
@@ -1200,6 +1257,7 @@
         "Agent"
       ],
       "commandRegexSources": [],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "env:claude-code",
@@ -1215,6 +1273,7 @@
       "priority": 4,
       "toolNames": [],
       "commandRegexSources": [],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "tool:node",
@@ -1232,6 +1291,7 @@
       "priority": 4,
       "toolNames": [],
       "commandRegexSources": [],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "category:claude-code",
@@ -1248,6 +1308,7 @@
       "priority": 4,
       "toolNames": [],
       "commandRegexSources": [],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "tool:hooks",
@@ -1264,6 +1325,7 @@
       "priority": 4,
       "toolNames": [],
       "commandRegexSources": [],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "category:scope-creep",
@@ -1281,6 +1343,7 @@
         "Agent"
       ],
       "commandRegexSources": [],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "env:claude-code",
@@ -1296,6 +1359,7 @@
       "priority": 3,
       "toolNames": [],
       "commandRegexSources": [],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "category:communication",
@@ -1312,6 +1376,7 @@
       "priority": 3,
       "toolNames": [],
       "commandRegexSources": [],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "category:hooks",
@@ -1328,6 +1393,7 @@
       "priority": 3,
       "toolNames": [],
       "commandRegexSources": [],
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
         "tool:hooks",

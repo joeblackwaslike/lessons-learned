@@ -20,6 +20,21 @@
  * @param {string} filePath - File path (for Read/Edit/Write-type tools)
  * @returns {Match[]} Matches sorted by priority descending
  */
+/**
+ * Strip single- and double-quoted string contents from a shell command,
+ * leaving only the executable tokens (command name, flags, unquoted args).
+ * Used for `commandMatchTarget: "executable"` to prevent guards from firing
+ * on quoted argument values that happen to contain a trigger keyword.
+ *
+ * @param {string} command
+ * @returns {string}
+ */
+function stripQuotedStrings(command) {
+  return command
+    .replace(/"(?:[^"\\]|\\.)*"/g, '""')
+    .replace(/'(?:[^'\\]|\\.)*'/g, "''");
+}
+
 export function matchLessons(lessons, toolName, command, filePath) {
   const matches = [];
 
@@ -32,10 +47,15 @@ export function matchLessons(lessons, toolName, command, filePath) {
     let matched = false;
 
     if (command && Array.isArray(lesson.commandRegexSources)) {
+      const matchTarget =
+        lesson.commandMatchTarget === 'executable'
+          ? stripQuotedStrings(command)
+          : command;
+
       for (const regexDef of lesson.commandRegexSources) {
         try {
           const re = new RegExp(regexDef.source, regexDef.flags ?? '');
-          if (re.test(command)) {
+          if (re.test(matchTarget)) {
             matched = true;
             break;
           }
