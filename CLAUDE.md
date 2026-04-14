@@ -43,9 +43,8 @@ scripts/
   scanner/                      # Lesson scanning library (structured + heuristic)
 
 data/
-  lessons.json                  # Source of truth — all lessons with full metadata
+  lessons.db                    # SQLite source of truth — all lessons and candidates
   lesson-manifest.json          # Pre-compiled runtime manifest (generated, don't edit)
-  cross-project-candidates.json # T2 scan candidates awaiting review
   config.json                   # Injection and scanning configuration
   scan-state.json               # Byte offsets for incremental scanning (generated)
 ```
@@ -61,7 +60,7 @@ node scripts/lessons.mjs <subcommand> [options]
 | Subcommand         | Purpose                                                      |
 | ------------------ | ------------------------------------------------------------ |
 | `add`              | Add a new lesson (interactive, `--json`, `--file`, or stdin) |
-| `build`            | Rebuild `lesson-manifest.json` from `lessons.json`           |
+| `build`            | Rebuild `lesson-manifest.json` from the DB (`lessons.db`)    |
 | `list`             | List all lessons with patterns and metadata                  |
 | `review`           | Review T2 candidates against validation rules                |
 | `scan`             | Incrementally scan session logs for new candidates           |
@@ -72,20 +71,25 @@ Run any subcommand with `--help` for full options.
 
 ## Lesson store
 
-~Edit `data/lessons.json` directly for bulk changes. After any edit run:~
-FIXME: Update this to use sqlite database
+All lessons are stored in `data/lessons.db` (SQLite). Use the CLI to make changes — never edit the DB directly. After any structural change run:
 
 ```bash
 node scripts/lessons.mjs build
 ```
 
+To edit a lesson field:
+
+```bash
+node scripts/lessons.mjs edit --id <id> --patch '{"fieldName": "value"}'
+```
+
 Key lesson fields:
 
-- `triggers.commandPatterns` — regex array matched against Bash tool commands
-- `triggers.pathPatterns` — glob array matched against Read/Edit/Write paths
-- `triggers.toolNames` — exact tool name match (e.g. `["Bash"]`)
-- `triggers.sessionStart: true` — inject at session start instead of PreToolUse
-- `block: true` + `blockReason` — deny the tool call entirely instead of injecting
+- `commandPatterns` — regex array matched against Bash tool commands
+- `pathPatterns` — glob array matched against Read/Edit/Write paths
+- `toolNames` — exact tool name match (e.g. `["Bash"]`)
+- `type: "protocol"` — inject at session start instead of PreToolUse
+- `type: "guard"` — deny the tool call and inject a warning
 
 ## Intake validation rules
 
