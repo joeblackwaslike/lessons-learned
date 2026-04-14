@@ -1,8 +1,10 @@
 ---
 name: lessons:scope
-description: Scan active global lessons for ones that appear project-specific — mentions project files, tools, or workflows unique to the current codebase — and offer to scope them to the current project only.
+description: Scan active global lessons for ones that appear project-specific — mentions project files, tools, or workflows unique to the current codebase — and offer to scope them to the current project only. Primarily useful for manually-added lessons (via /lessons:add or edit) since /lessons:review now performs scope detection at promotion time for scanned candidates.
 allowed-tools: ['Bash']
 ---
+
+# lessons:scope
 
 You are running `/lessons:scope` — a scan to find global lessons that should be scoped to the current project.
 
@@ -15,6 +17,7 @@ A scoped lesson (`scope: "<project-id>"`) only injects when the hook's `cwd` mat
 **The test**: would this lesson be confusing or irrelevant in an unrelated project (a Python API, a React app, a data pipeline)? If yes — it's a project-scope candidate.
 
 **Project ID** is derived from `cwd` at inject time:
+
 ```js
 cwd.replace(/\//g, '-').replace(/^-/, '')
 // /Users/joe/github/foo/bar → Users-joe-github-foo-bar
@@ -57,9 +60,9 @@ For each lesson, score it against these signals. A lesson is a candidate if it h
 
 ### Medium signals (two needed)
 
-4. **Protocol with no triggers + highly specific content** — `type: "protocol"` + no `toolNames`/`commandPatterns`/`pathPatterns` + describes a very specific procedure (not a general principle)
-5. **Narrow tool combination** — tags reference a very specific tool combination (e.g. `tool:hooks + category:plugins`) that only applies to plugin development projects
-6. **"Only applies here" framing** — problem description uses phrases like "this plugin", "this hook", "this project", "our manifest"
+1. **Protocol with no triggers + highly specific content** — `type: "protocol"` + no `toolNames`/`commandPatterns`/`pathPatterns` + describes a very specific procedure (not a general principle)
+2. **Narrow tool combination** — tags reference a very specific tool combination (e.g. `tool:hooks + category:plugins`) that only applies to plugin development projects
+3. **"Only applies here" framing** — problem description uses phrases like "this plugin", "this hook", "this project", "our manifest"
 
 ### Not a candidate (keep global)
 
@@ -76,7 +79,6 @@ For each lesson, score it against these signals. A lesson is a candidate if it h
 For each candidate with suspected file references, check whether the referenced file exists:
 
 ```bash
-# Example: check if "session-start-scan.mjs" exists in the project
 ls hooks/ scripts/ core/ 2>/dev/null | grep -i "<filename>"
 ```
 
@@ -84,9 +86,9 @@ ls hooks/ scripts/ core/ 2>/dev/null | grep -i "<filename>"
 
 ## Step 5: Present candidates for approval
 
-For each candidate found, present:
+For each candidate found, present one at a time:
 
-```
+```text
 ─── Candidate N ──────────────────────────────────────────────────────
 Slug:    <slug>
 Type:    <type>
@@ -102,9 +104,7 @@ Apply? [y/n/edit]
 ─────────────────────────────────────────────────────────────────────
 ```
 
-Present candidates **one at a time**. After the user responds to each, move to the next.
-
-For **n (skip)**: note the reason (e.g. "user confirmed globally useful") and continue.
+For **n (skip)**: note the reason and continue.
 For **y (apply)**: apply immediately before moving to the next candidate.
 For **edit**: ask what they'd like to change (the lesson text, tags, or decision).
 
@@ -126,13 +126,11 @@ The `edit` command auto-rebuilds the manifest after each patch.
 
 After all candidates are reviewed:
 
-```
+```text
 Scope scan complete.
   Scoped:   N lessons → <project-id>
   Skipped:  N lessons (kept global)
   No change needed: N lessons
-
-Run `node scripts/lessons.mjs list --json | node -e "..."` to verify.
 ```
 
 If any lessons were scoped, confirm the manifest was rebuilt (the `edit` command does this automatically).

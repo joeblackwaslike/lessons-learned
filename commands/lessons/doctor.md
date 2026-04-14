@@ -9,6 +9,31 @@ Work through all 8 checks below in order. Do not ask questions before completing
 
 ---
 
+## Pre-check: Pending candidates
+
+Before auditing, count unreviewed candidates:
+
+```bash
+node scripts/lessons.mjs list --json | node -e "
+const l = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
+const c = l.filter(x => x.status === 'candidate');
+console.log(c.length + ' candidate(s)');
+c.slice(0,5).forEach(x => console.log('  - ' + x.slug));
+if (c.length > 5) console.log('  ... and ' + (c.length - 5) + ' more');
+" 2>/dev/null
+```
+
+If any candidates are found, show this banner prominently **before the audit table**:
+
+> ⚠ **N candidate lesson(s) are waiting for review.**
+> These lessons have been scanned but not yet promoted — they are not currently injecting.
+> Run `/lessons:review` to filter, scope, and promote them.
+> Continuing audit of active lessons only.
+
+Then proceed with the 8 checks regardless.
+
+---
+
 ## Check 1: Dead lessons — commandPatterns with no toolNames
 
 `matchLessons()` checks `toolNames` first and short-circuits. A lesson with `commandPatterns` but empty `toolNames` can never fire.
@@ -59,6 +84,7 @@ console.log(JSON.stringify(dead.map(x=>({id:x.id,slug:x.slug,tags:x.tags,summary
 ```
 
 For each, apply this classification heuristic:
+
 - Tags contain `env:claude-code` AND (`topic:planning`, `category:specification-drift`, `category:context-retrieval`, or `category:planning-control-flow`) → recommend `toolNames: ["Agent"]`
 - Tags contain `tool:X` for a shell tool → recommend `toolNames: ["Bash"]`
 - Lesson is a general reasoning/meta principle with no clear trigger context → recommend reclassify to `type: "protocol"` (session-start injection)
@@ -168,7 +194,7 @@ For each pair: review both summaries. Recommend merging (archive one, enrich the
 After all 8 checks, present this summary table:
 
 | Check | Issue | Found | Severity |
-|-------|-------|-------|----------|
+| ----- | ----- | ----- | -------- |
 | 1 | commandPatterns, no toolNames | N | critical |
 | 2 | pathPatterns, no toolNames | N | critical |
 | 3 | Unreachable hints | N | critical |
