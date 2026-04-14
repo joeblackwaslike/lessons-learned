@@ -85,11 +85,26 @@ node scripts/lessons.mjs edit --id <id> --patch '{"fieldName": "value"}'
 
 Key lesson fields:
 
-- `commandPatterns` — regex array matched against Bash tool commands
-- `pathPatterns` — glob array matched against Read/Edit/Write paths
-- `toolNames` — exact tool name match (e.g. `["Bash"]`)
-- `type: "protocol"` — inject at session start instead of PreToolUse
-- `type: "guard"` — deny the tool call and inject a warning
+| Field | Description |
+| ----- | ----------- |
+| `summary` | One-line description shown in injection output (≤80 chars) |
+| `problem` | What went wrong and why |
+| `solution` | The correction |
+| `type` | `hint` (inject as context), `guard` (block + warn), `protocol` (session-start), `directive` (always-on protocol) |
+| `toolNames` | **Required.** Exact tool name match — lesson never fires without this |
+| `commandPatterns` | Regex array matched against Bash commands |
+| `pathPatterns` | Glob array matched against Read/Edit/Write file paths |
+| `commandMatchTarget` | `"full"` (default) or `"executable"` — executable strips quoted strings before matching, preventing guards from triggering on `--patch '...'` values |
+| `scope` | `null` = global (default), `"<project-id>"` = this project only |
+| `priority` | Integer, higher = injected first (default 5) |
+| `confidence` | Float 0–1, controls review threshold (default 0.8) |
+| `tags` | Array of `category:value` tags for classification |
+
+**Patchable fields** (usable with `edit --patch`):
+`summary`, `problem`, `solution`, `type`, `scope`, `toolNames`, `commandPatterns`, `commandMatchTarget`, `pathPatterns`, `priority`, `confidence`, `tags`
+
+**Valid canonical toolNames** (exact casing required — mismatched casing silently never fires):
+`Bash`, `Read`, `Edit`, `Write`, `Glob`, `Grep`, `Agent`, `TodoWrite`, `WebFetch`, `WebSearch`
 
 ## Intake validation rules
 
@@ -101,12 +116,83 @@ Key lesson fields:
 - Trigger must not be a prose gerund (e.g. "running pytest")
 - Jaccard similarity of `problem` vs all existing lessons must be < 0.5
 
+## Injection mechanics
+
+`matchLessons()` in `core/match.mjs` runs at every PreToolUse. The matching order is:
+
+1. **`toolNames` check first** — if the lesson's `toolNames` array doesn't include the current tool name, the lesson is skipped entirely. **A lesson with `commandPatterns` or `pathPatterns` but no `toolNames` can never fire.**
+2. `commandPatterns` tested against the command string (or the executable-only portion if `commandMatchTarget: "executable"`)
+3. `pathPatterns` tested against the file path argument
+4. `scope` filter — scoped lessons only match when `cwd`-derived project ID matches
+
+`protocol` and `directive` lessons bypass step 1–4 entirely — they inject at session start regardless of tool calls.
+
+## Lesson type behavior
+
+| Type | When injected | Effect |
+| --------- | ------------- | ------ |
+| `hint` | PreToolUse — on trigger match | Prepends warning to Claude's context |
+| `guard` | PreToolUse — on trigger match | Blocks the tool call + injects reason |
+| `protocol` | SessionStart | Injected once at session start |
+| `directive` | SessionStart | Always-on, higher priority than `protocol` |
+
+Guards should always set `commandMatchTarget: "executable"` to avoid matching trigger words inside `--patch '...'` JSON arguments or other quoted strings.
+
+## `#lesson` tag format
+
+Emit this in any response when you discover a problem→solution sequence:
+
+```text
+#lesson
+tool: Bash
+trigger: git stash
+problem: git stash silently omits untracked files, risking data loss
+solution: Use `git stash -u` to include untracked files
+tags: tool:git, severity:data-loss
+#/lesson
+```
+
+Optional `scope: project` field restricts the lesson to the current project (omit for global):
+
+```text
+#lesson
+tool: Bash
+trigger: just test
+problem: just recipe leaks env vars into sub-shells
+solution: Use `just --set KEY val` instead of export
+tags: tool:just
+scope: project
+#/lesson
+```
+
+To retroactively cancel a lesson tag emitted earlier in the same session:
+
+```text
+#lesson:cancel
+problem: first ~60 chars of the problem field to cancel
+#/lesson:cancel
+```
+
+Use `/lessons:cancel` for an interactive cancel workflow (also handles DB records).
+
+## Project scope
+
+Project ID is derived from `~/.claude/projects/<folder>` — the folder name is the absolute project path with `/` replaced by `-` and the leading `-` stripped. The hook derives it from `cwd` at inject time; the scanner derives it from the session file path.
+
+```js
+// How projectId is computed from cwd:
+cwd.replace(/\//g, '-').replace(/^-/, '')
+// e.g. /Users/joe/github/foo → Users-joe-github-foo
+```
+
 ## Two-tier scanning
 
-- **Tier 1 (structured)**: greps for `#lesson … #/lesson` tags emitted by Claude during sessions
-- **Tier 2 (heuristic)**: sliding-window pattern detection for error→correction sequences
+- **Tier 1 (structured)**: extracts `#lesson … #/lesson` tags emitted by Claude during sessions → stored as `candidate`
+- **Tier 2 (heuristic)**: sliding-window pattern detection for error→correction sequences → stored as `candidate`
 
-Tier 1 candidates auto-promote on interactive scan. Tier 2 candidates require `scan promote` review.
+**Scan timing**: the background scan fires at **session start** (not end). JSONL files from previous sessions are processed; the **current session's JSONL is not scanned until the next session starts**. Lessons emitted this session are invisible to the DB until then — use `/lessons:cancel` with `#lesson:cancel` markers to suppress them before they land.
+
+Both tiers write to `candidate` status. Use `/lessons:review` to promote candidates to `active`.
 
 ## Do not edit
 
