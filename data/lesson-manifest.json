@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-04-14T14:18:11.780Z",
+  "generatedAt": "2026-04-16T09:06:36.021Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -94,6 +94,25 @@
       "scope": null,
       "message": "## Lesson: secrets hardcoded in source files are permanently exposed after any git commit\nAPI keys, passwords, or tokens written directly into .py/.js files and committed to git are irreversibly exposed in history\n**Fix**: Use environment variables, .env files (in .gitignore), or a secrets manager; rotate any credential that was committed",
       "summary": "secrets hardcoded in source files are permanently exposed after any git commit"
+    },
+    "01KP9WGC4J90RZ4H5GMHGAZJYS": {
+      "slug": "search-for-community-solutions-before-debugging-fr-p3sy",
+      "type": "directive",
+      "priority": 10,
+      "toolNames": [],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "tags": [
+        "topic:debugging",
+        "topic:infrastructure",
+        "topic:ops",
+        "severity:critical",
+        "topic:research-first"
+      ],
+      "scope": null,
+      "message": "## Lesson: Search for existing community solutions before debugging infrastructure problems from first principles\nWhen debugging non-trivial infrastructure setups (PXE boot, NFS root, k3s, network services), spending hours executing variations of a failing strategy without ever searching for known working reference configurations. Treating solved community problems as novel first-principles engineering problems. Real cost: 5 days, 75% of weekly API quota, and 20+ hours to find a fix (remove proto=tcp from nfsroot) already documented on the official Raspberry Pi forums.\n**Fix**: Before running a single command on any infrastructure problem: (1) Search '<technology> working setup' or '<technology> example config'. (2) Find community-validated configs — Pi forums, GitHub gists, blog posts with confirmed working setups. (3) Implement the reference config exactly, verify it works, then customize. (4) If something fails, search the exact error or behavior before inventing a fix. The answer is almost always findable in under 5 minutes.",
+      "summary": "Search for existing community solutions before debugging infrastructure problems from first principles"
     },
     "01KNH2G0RB0SYRNZ560XN030GF": {
       "slug": "awk-code-injection-via-unvalidated-shell-cf5a",
@@ -190,6 +209,24 @@
       "scope": null,
       "message": "## Lesson: Async function called without await silently returns a coroutine that never executes\nCalling `async_func()` without await returns a coroutine object that is immediately discarded; the function body never runs\n**Fix**: Always await async calls: `await func()` or schedule explicitly: `asyncio.create_task(func())` with a done_callback",
       "summary": "Async function called without await silently returns a coroutine that never executes"
+    },
+    "01KP9WGC4PZ2E9S7SAMARR0JDC": {
+      "slug": "time-box-debugging-theories-30-minutes-then-search-b1zn",
+      "type": "directive",
+      "priority": 9,
+      "toolNames": [],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "tags": [
+        "topic:debugging",
+        "topic:time-management",
+        "topic:ops",
+        "severity:high"
+      ],
+      "scope": null,
+      "message": "## Lesson: Time-box any single debugging theory to 30 minutes; pivot to web search if no measurable progress\nContinuing to execute variations of a failing debugging approach without stepping back to search for existing solutions. Activity is not progress. Generating new commands is not debugging. A theory with no new observable facts after 30 minutes is a dead end, not a problem requiring more commands.\n**Fix**: If a debugging approach doesn't yield measurable progress (a new fact that changes understanding of root cause) within 30 minutes: (1) Stop executing. (2) Search the exact symptom or error message. (3) Find someone who solved the same problem. (4) Compare their working config against yours line by line. Measurable progress means new understanding, not new commands tried.",
+      "summary": "Time-box any single debugging theory to 30 minutes; pivot to web search if no measurable progress"
     },
     "01JQSEED00000000000000002": {
       "slug": "mock-patch-namespace-v3x8",
@@ -443,6 +480,23 @@
       "scope": null,
       "message": "## Lesson: Iterating a mutable async collection without snapshot raises RuntimeError on concurrent modification\n`for item in self.subscribers:` with async/await inside the loop allows concurrent modification, raising RuntimeError\n**Fix**: Snapshot the collection before iterating: `for item in list(self.subscribers):` to prevent modification conflicts",
       "summary": "Iterating a mutable async collection without snapshot raises RuntimeError on concurrent modification"
+    },
+    "01KPARN4FAWR4ZD3VHB2D9JFZM": {
+      "slug": "verify-all-steps-before-presenting-a-mul-a8ab",
+      "type": "directive",
+      "priority": 8,
+      "toolNames": [],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "tags": [
+        "planning:hardware",
+        "behavior:discipline",
+        "severity:wasted-time"
+      ],
+      "scope": null,
+      "message": "## Lesson: Verify all steps before presenting a multi-step hardware or infra plan\nClaude outputs confident-sounding plans without verifying individual steps first; footguns discovered mid-paragraph after already proposing erroneous steps, wasting time and eroding trust\n**Fix**: Search first, fully read all results, identify failure modes, then present ONE confirmed plan. Never pivot mid-paragraph — if a footgun is found after proposing, explicitly say that plan is wrong, here is why, here is the corrected plan",
+      "summary": "Verify all steps before presenting a multi-step hardware or infra plan"
     },
     "01JQSEED00000000000000001": {
       "slug": "pytest-tty-hanging-k9m2",
@@ -754,6 +808,59 @@
       "scope": null,
       "message": "## Lesson: systemd EnvironmentFile silently ignores lines with export prefix, leaving variables unset\nsystemd EnvironmentFile expects KEY=value only; `export KEY=value` lines are silently ignored, so the service starts with empty environment\n**Fix**: Either strip export from the env file, or use a bash wrapper: `ExecStart=/bin/bash -c '. ~/.env && exec /usr/bin/myapp'`",
       "summary": "systemd EnvironmentFile silently ignores lines with export prefix, leaving variables unset"
+    },
+    "01KP9WGC4PS017G743VY0NM8FH": {
+      "slug": "raspberry-pi-pxe-nfs-root-boot-working-config-8zzo",
+      "type": "hint",
+      "priority": 7,
+      "toolNames": [],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "tags": [
+        "topic:raspberry-pi",
+        "topic:pxe",
+        "topic:nfs",
+        "topic:infrastructure",
+        "platform:linux",
+        "topic:k3s"
+      ],
+      "scope": null,
+      "message": "## Lesson: Working Raspberry Pi 5 PXE + NFS root boot configuration and common failure modes\nRaspberry Pi 5 PXE boot with NFS root failing silently — SSH refused, NFS root mounted read-only, or NFS mount not happening at all. Common causes: (1) proto=tcp in nfsroot kernel parameter is incompatible with Pi OS Trixie / kernel 6.12. (2) PXE server's own filesystem accidentally bind-mounted over the NFS root's /boot/firmware via a spurious systemd unit. (3) First-boot Pi OS services (sshswitch, regenerate_ssh_host_keys, userconfig) blocking SSH because they can't find /boot/firmware. (4) pi user account locked in shadow (pi:! means locked). (5) Missing /run/sshd directory — sshd fails silently.\n**Fix**: Working cmdline.txt for Pi 5 NFS root boot:\nconsole=serial0,115200 console=tty1 root=/dev/nfs nfsroot=<SERVER_IP>:/path/to/root,vers=3 rw ip=dhcp rootwait\n\nKey: vers=3 only — no proto=tcp, no nolock, no rootfstype=nfs.\n\nRequired NFS root fixes for Pi OS Trixie:\n- fstab: proc entry only, no NFS root entry (kernel handles the root mount)\n- Mask: sshswitch.service, regenerate_ssh_host_keys.service, userconfig.service\n- Remove: /etc/ssh/sshd_config.d/rename_user.conf (contains SSH banner that blocks sshd)\n- Pre-generate SSH host keys: ssh-keygen -A -f <nfs_root>\n- Unlock pi user: replace pi:! with real password hash in /etc/shadow\n- Pre-create /home/pi/.ssh/authorized_keys with your public key (chown 1000:1000, chmod 600)\n- Add to /etc/tmpfiles.d/sshd.conf: d /run/sshd 0755 root root -\n- Bind mount TFTP dir to <nfs_root>/boot/firmware so Pi OS first-boot services work\n- ALWAYS run: mount | grep <nfs_root_path> to verify no spurious mounts before booting\n- NFS export must have no_root_squash\n\nDiagnosis: if lastlog mtime never updates after boot, the NFS root is read-only. Check for proto=tcp first.",
+      "summary": "Working Raspberry Pi 5 PXE + NFS root boot configuration and common failure modes"
+    },
+    "01KPARNDEM2DB77AQ4K4VFXBYS": {
+      "slug": "start-a-new-conversation-per-major-task-7b67",
+      "type": "protocol",
+      "priority": 7,
+      "toolNames": [],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "tags": [
+        "workflow:sessions",
+        "behavior:discipline"
+      ],
+      "scope": null,
+      "message": "## Lesson: Start a new conversation per major task — long sessions degrade inference quality\nEach tool call result accumulates in context; by the time the session is long, inference quality visibly degrades and error rate increases because attention is spread across too much history\n**Fix**: Start a new conversation for each major task. Pass a concise handoff document as context rather than letting session history grow unbounded. CLI scripts and skill files reduce per-session tool call volume.",
+      "summary": "Start a new conversation per major task — long sessions degrade inference quality"
+    },
+    "01KPARNMAH5CES414KT3CT5FVZ": {
+      "slug": "read-the-pi-cluster-skill-file-before-an-2d79",
+      "type": "protocol",
+      "priority": 7,
+      "toolNames": [],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "tags": [
+        "workflow:cluster",
+        "domain:raspberry-pi",
+        "severity:repeated-mistakes"
+      ],
+      "scope": null,
+      "message": "## Lesson: Read the pi-cluster skill file before any cluster task — never re-derive from scratch\nPi 5 EEPROM behavior, PXE boot quirks, and cluster-specific constraints (bind mount persistence, /tmp size, HAOS limitations) are re-derived each session, causing the same mistakes repeatedly\n**Fix**: Read ~/.claude/skills/pi-cluster.md at the start of any Pi cluster task. Use pi-* CLI scripts instead of exploratory SSH one-liners. Update the skill file immediately when new constraints are discovered.",
+      "summary": "Read the pi-cluster skill file before any cluster task — never re-derive from scratch"
     },
     "01JQSEED00000000000000005": {
       "slug": "npm-link-peer-deps-r2f7",
