@@ -1,0 +1,3 @@
+{"type":"server-started","port":63175,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:63175","screen_dir":"/Users/joeblack/github/joeblackwaslike/lessons-learned/.superpowers/brainstorm/67289-1775954633/content","state_dir":"/Users/joeblack/github/joeblackwaslike/lessons-learned/.superpowers/brainstorm/67289-1775954633/state"}
+{"type":"screen-added","file":"/Users/joeblack/github/joeblackwaslike/lessons-learned/.superpowers/brainstorm/67289-1775954633/content/eval-scope.html"}
+{"type":"server-stopped","reason":"idle timeout"}

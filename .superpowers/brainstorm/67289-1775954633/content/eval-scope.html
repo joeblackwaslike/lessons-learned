@@ -1,0 +1,40 @@
+<h2>What scope are you targeting for this eval system?</h2>
+<p class="subtitle">This shapes everything — how much to build, how automated it needs to be, and whether it lives in CI or stays a dev tool.</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Minimal viable signal</h3>
+      <p>A rubric document + hand-crafted test transcripts. You run them manually, judge by eye. No code infrastructure. Fast to create — meant to validate directive quality before automating anything.</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul><li>Ship in an hour</li><li>Zero maintenance burden</li><li>Forces careful thinking about what "pass" means</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Tedious to re-run</li><li>Hard to compare across directive versions</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Semi-automated</h3>
+      <p>A script calls the Claude API with each scenario, collects responses, formats them for human review. Scoring is still manual but transcript generation is automated. Results written to <code>evals/results/</code>.</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul><li>Reproducible runs</li><li>Easy to add new scenarios</li><li>Cheap to iterate on directive wording</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Manual scoring is still a bottleneck</li><li>~1–2 days to build runner</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Fully automated pipeline</h3>
+      <p>Automated transcript generation + LLM-as-judge scoring + structured results stored as JSON. Can run in CI or on demand. Comparable to eval infra in a production AI system.</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul><li>Regressions caught automatically</li><li>Quantified scores over time</li><li>Scales to many directives</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>3–5 days to build correctly</li><li>LLM-judge reliability needs calibration</li><li>Higher API cost per run</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>
