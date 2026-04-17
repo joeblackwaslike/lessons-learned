@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-04-17T13:32:25.767Z",
+  "generatedAt": "2026-04-17T13:46:30.440Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -1477,6 +1477,24 @@
       "scope": null,
       "message": "## Lesson: Batches over 5 tasks or 250 lines produce subtle bugs in later tasks due to degraded context attention\n8-task batch had subtle bugs in tasks 7-8: missed validation, off-by-one pagination, missing assertion — all in the context-depleted region\n**Fix**: Split batches at natural module boundaries when exceeding 5 tasks or ~250 estimated lines of output",
       "summary": "Batches over 5 tasks or 250 lines produce subtle bugs in later tasks due to degraded context attention"
+    },
+    "01KPDV2W4VB3JV43P81EQECP3Y": {
+      "slug": "always-quote-file-paths-with-spaces-in-s-ba0a",
+      "type": "hint",
+      "priority": 5,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "tags": [
+        "tool:bash",
+        "category:shell"
+      ],
+      "scope": null,
+      "message": "## Lesson: Always quote file paths with spaces in shell scripts\nUnquoted paths with spaces are split by the shell into multiple arguments, causing unexpected failures\n**Fix**: Wrap all file path variables in double quotes: \"$FILE\" instead of $FILE",
+      "summary": "Always quote file paths with spaces in shell scripts"
     },
     "01KN38M1AD6NC4W6RBJPCX71NY": {
       "slug": "forgot-childunref-parent-process-stays-a-9121",

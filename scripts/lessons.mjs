@@ -79,6 +79,7 @@ Subcommands:
   build             Rebuild the lesson manifest from the DB
   edit              Edit fields on an existing lesson in place
   list              List all active lessons with their trigger patterns
+  onboard           Batch-import lessons from a JSON array
   promote           Promote candidates to active, archive, or patch fields
   restore           Restore archived lessons back to active
   review            Review candidates from the DB against validation rules
@@ -254,6 +255,27 @@ Notes:
   - Only lessons with status='archived' can be restored.
   - archivedAt and archiveReason are cleared on restore.
   - The manifest is automatically rebuilt after restore.
+`.trim(),
+
+  onboard: `
+lessons onboard — Batch-import lessons from a JSON array.
+
+Usage:
+  node scripts/lessons.mjs onboard --file <path>
+  node scripts/lessons.mjs onboard --json '<json-array>'
+
+Options:
+  --file <path>   Path to a JSON file containing an array of lesson objects
+  --json <str>    Inline JSON array string
+
+Each array element uses the same fields as \`lessons add\`.
+Required per element: summary, problem, solution.
+
+Notes:
+  - Each lesson is validated independently; failures are reported and skipped.
+  - Duplicate detection (hash + fuzzy Jaccard) applies per lesson.
+  - The manifest is rebuilt once after all lessons are processed.
+  - Use /lessons:onboard for the interactive per-lesson approval workflow.
 `.trim(),
 };
 
@@ -703,6 +725,61 @@ async function cmdAdd(args) {
   console.log(`  Tags:       ${lesson.tags.join(', ') || '(none)'}`);
   console.log('\nRebuilding manifest...');
   buildManifest();
+}
+
+async function cmdOnboard(args) {
+  if (args.includes('--help') || args.includes('-h')) {
+    console.log(HELP.onboard);
+    return;
+  }
+
+  let lessons;
+
+  if (args.includes('--file')) {
+    const idx = args.indexOf('--file');
+    if (!args[idx + 1]) {
+      console.error('Error: --file requires a file path');
+      process.exit(1);
+    }
+    lessons = JSON.parse(readFileSync(args[idx + 1], 'utf8'));
+  } else if (args.includes('--json')) {
+    const idx = args.indexOf('--json');
+    if (!args[idx + 1]) {
+      console.error('Error: --json requires a JSON array string');
+      process.exit(1);
+    }
+    lessons = JSON.parse(args[idx + 1]);
+  } else {
+    console.error(HELP.onboard);
+    process.exit(1);
+  }
+
+  if (!Array.isArray(lessons)) {
+    console.error('Error: input must be a JSON array of lesson objects');
+    process.exit(1);
+  }
+
+  let accepted = 0;
+  let failed = 0;
+
+  for (let i = 0; i < lessons.length; i++) {
+    const item = lessons[i];
+    const label = item.summary ? `"${item.summary.slice(0, 60)}"` : `#${i + 1}`;
+    const result = addLessonInternal(item);
+    if (result.ok) {
+      console.log(`[${i + 1}/${lessons.length}] ✓  ${label}`);
+      accepted++;
+    } else {
+      console.log(`[${i + 1}/${lessons.length}] ✗  ${label} — ${result.error}`);
+      failed++;
+    }
+  }
+
+  console.log(`\nDone: ${accepted} added, ${failed} failed`);
+  if (accepted > 0) {
+    console.log('Rebuilding manifest...');
+    buildManifest();
+  }
 }
 
 function cmdBuild(args) {
@@ -1316,6 +1393,9 @@ async function main() {
   switch (subcommand) {
     case 'add':
       await cmdAdd(rest);
+      break;
+    case 'onboard':
+      await cmdOnboard(rest);
       break;
     case 'build':
       cmdBuild(rest);
