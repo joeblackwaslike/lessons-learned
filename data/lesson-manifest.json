@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-04-17T14:12:19.057Z",
+  "generatedAt": "2026-04-17T15:21:38.227Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -507,13 +507,13 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
-        "planning:hardware",
+        "topic:planning",
         "behavior:discipline",
         "severity:wasted-time"
       ],
       "scope": null,
-      "message": "## Lesson: Verify all steps before presenting a multi-step hardware or infra plan\nClaude outputs confident-sounding plans without verifying individual steps first; footguns discovered mid-paragraph after already proposing erroneous steps, wasting time and eroding trust\n**Fix**: Search first, fully read all results, identify failure modes, then present ONE confirmed plan. Never pivot mid-paragraph — if a footgun is found after proposing, explicitly say that plan is wrong, here is why, here is the corrected plan",
-      "summary": "Verify all steps before presenting a multi-step hardware or infra plan"
+      "message": "## Lesson: Verify all steps before presenting any multi-step plan — never propose and pivot\nPresenting a confident-sounding plan without verifying individual steps first; blockers or footguns discovered mid-paragraph after already committing to an approach, wasting the user's time and eroding trust. Applies to any sequential plan: architecture, infrastructure, migrations, refactors, deployments.\n**Fix**: Search first, fully read all results, identify failure modes, then present ONE confirmed plan. Never pivot mid-paragraph — if a footgun is found after proposing, explicitly say that plan is wrong, here is why, here is the corrected plan",
+      "summary": "Verify all steps before presenting any multi-step plan — never propose and pivot"
     },
     "01KPDWGYTT7KD6AZS1MMNN9AED": {
       "slug": "multiple-choice-questions-buried-in-pros-9d59",
@@ -1563,6 +1563,31 @@
       "scope": null,
       "message": "## Lesson: Always quote file paths with spaces in shell scripts\nUnquoted paths with spaces are split by the shell into multiple arguments, causing unexpected failures\n**Fix**: Wrap all file path variables in double quotes: \"$FILE\" instead of $FILE",
       "summary": "Always quote file paths with spaces in shell scripts"
+    },
+    "01KPE0H2523V8NJCP37J4EJFRJ": {
+      "slug": "bd-commands-fail-when-dolt-sql-server-ho-198e",
+      "type": "hint",
+      "priority": 5,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "bd\\s+(list|create|show|update|close|ready|stats|blocked)",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "tags": [
+        "tool:beads",
+        "tool:dolt",
+        "severity:outage",
+        "category:database"
+      ],
+      "scope": null,
+      "message": "## Lesson: bd commands fail when dolt sql-server holds exclusive lock on embeddeddolt\nAfter upgrading beads CLI or after a server restart, a dolt sql-server process (manually started or idle-monitor managed) holds an exclusive lock on .beads/embeddeddolt. bd CLI in embedded mode requires exclusive file access — the running server causes every bd command to fail with an exclusive lock error\n**Fix**: Kill any dolt sql-server processes holding the lock (ps aux | grep dolt), kill the idle-monitor (bd dolt idle-monitor) if running, then verify bd list works. Also fix .beads/dolt/config.yaml to use absolute data_dir path so idle-monitor restarts use the correct DB directory",
+      "summary": "bd commands fail when dolt sql-server holds exclusive lock on embeddeddolt"
     },
     "01KN38M1AD6NC4W6RBJPCX71NY": {
       "slug": "forgot-childunref-parent-process-stays-a-9121",
