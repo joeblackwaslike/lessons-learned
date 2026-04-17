@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-04-17T15:21:38.227Z",
+  "generatedAt": "2026-04-17T18:37:30.265Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -110,8 +110,8 @@
         "topic:quality"
       ],
       "scope": null,
-      "message": "## Lesson: Skipping pre-work research hits documented pitfalls that a 5-minute search would have surfaced\nProceeding directly to planning or implementation without searching for known footguns, version caveats, and community-reported failure modes produces plans that look correct but fail on documented edge cases. This applies to any domain: infrastructure, libraries, frameworks, CLI tools, APIs. The cost is encountering cold what was already diagnosed and documented by the community.\n**Fix**: Before committing to any plan or starting any non-trivial implementation: (1) Search '<technology> gotchas', '<technology> common mistakes', '<technology> known issues <version>'. (2) Check GitHub issues and community forums for failure patterns at your specific version or config. (3) Incorporate findings into the plan before writing code. This applies to debugging, planning, and implementation equally — not only infrastructure.",
-      "summary": "Skipping pre-work research hits documented pitfalls that a 5-minute search would have surfaced"
+      "message": "## Lesson: Before starting any work: search for known pitfalls, gotchas, and failure modes — skipping this wastes tokens, compounds failed attempts, and burns time re-discovering what the community already documented and solved\nProceeding directly to planning or implementation without searching for known footguns, version caveats, and community-reported failure modes produces plans that look correct but fail on documented edge cases. This applies to any domain: infrastructure, libraries, frameworks, CLI tools, APIs. The cost is encountering cold what was already diagnosed and documented by the community.\n**Fix**: Before committing to any plan or starting any non-trivial implementation: (1) Search '<technology> gotchas', '<technology> common mistakes', '<technology> known issues <version>'. (2) Check GitHub issues and community forums for failure patterns at your specific version or config. (3) Incorporate findings into the plan before writing code. This applies to debugging, planning, and implementation equally — not only infrastructure.",
+      "summary": "Before starting any work: search for known pitfalls, gotchas, and failure modes — skipping this wastes tokens, compounds failed attempts, and burns time re-discovering what the community already documented and solved"
     },
     "01KNH2G0RB0SYRNZ560XN030GF": {
       "slug": "awk-code-injection-via-unvalidated-shell-cf5a",
@@ -242,8 +242,8 @@
         "severity:correctness"
       ],
       "scope": null,
-      "message": "## Lesson: Planning from training-data knowledge alone risks stale API signatures and deprecated options\nLibrary APIs, CLI flags, and framework config schemas change between versions. Proceeding directly from memory without checking current documentation produces plans and code that fail on version-specific details — wrong method names, removed options, new required config keys. Training data has a knowledge cutoff and is routinely months or years behind.\n**Fix**: Before creating any implementation plan or writing code that involves a library, framework, CLI tool, or external API: use context7, Ref, or a web search to fetch current documentation. Verify actual API signatures, CLI flags, and config schemas match your assumptions before committing to a design. If documentation contradicts memory, trust the docs.",
-      "summary": "Planning from training-data knowledge alone risks stale API signatures and deprecated options"
+      "message": "## Lesson: Before implementing with any library, CLI, or API: fetch docs for the exact version installed (check package.json, pyproject.toml, or requirements files) — training-data signatures are stale\nLibrary APIs, CLI flags, and framework config schemas change between versions. Proceeding directly from memory without checking current documentation produces plans and code that fail on version-specific details — wrong method names, removed options, new required config keys. Training data has a knowledge cutoff and is routinely months or years behind.\n**Fix**: Before creating any implementation plan or writing code that involves a library, framework, CLI tool, or external API: use context7, Ref, or a web search to fetch current documentation. Verify actual API signatures, CLI flags, and config schemas match your assumptions before committing to a design. If documentation contradicts memory, trust the docs.",
+      "summary": "Before implementing with any library, CLI, or API: fetch docs for the exact version installed (check package.json, pyproject.toml, or requirements files) — training-data signatures are stale"
     },
     "01JQSEED00000000000000002": {
       "slug": "mock-patch-namespace-v3x8",
@@ -512,8 +512,8 @@
         "severity:wasted-time"
       ],
       "scope": null,
-      "message": "## Lesson: Verify all steps before presenting any multi-step plan — never propose and pivot\nPresenting a confident-sounding plan without verifying individual steps first; blockers or footguns discovered mid-paragraph after already committing to an approach, wasting the user's time and eroding trust. Applies to any sequential plan: architecture, infrastructure, migrations, refactors, deployments.\n**Fix**: Search first, fully read all results, identify failure modes, then present ONE confirmed plan. Never pivot mid-paragraph — if a footgun is found after proposing, explicitly say that plan is wrong, here is why, here is the corrected plan",
-      "summary": "Verify all steps before presenting any multi-step plan — never propose and pivot"
+      "message": "## Lesson: Before presenting any multi-step plan: verify every individual step is executable — never propose speculatively and pivot mid-paragraph when a step fails\nPresenting a confident-sounding plan without verifying individual steps first; blockers discovered mid-paragraph after committing to an approach force pivots that waste the user's time. When this happens 2-3 times in a row it erodes trust — the session starts feeling unreliable. It also burns the user's finite cognitive budget: that budget doesn't reset instantly, and spending it on re-planning leaves less capacity for everything that follows. Applies to any sequential plan: architecture, infrastructure, migrations, refactors, deployments.\n**Fix**: Search first, fully read all results, identify failure modes, then present ONE confirmed plan. Never pivot mid-paragraph — if a footgun is found after proposing, explicitly say that plan is wrong, here is why, here is the corrected plan",
+      "summary": "Before presenting any multi-step plan: verify every individual step is executable — never propose speculatively and pivot mid-paragraph when a step fails"
     },
     "01KPDWGYTT7KD6AZS1MMNN9AED": {
       "slug": "multiple-choice-questions-buried-in-pros-9d59",
@@ -909,7 +909,7 @@
         "domain:raspberry-pi",
         "severity:repeated-mistakes"
       ],
-      "scope": null,
+      "scope": "Users-joeblack-github-joeblackwaslike-rpi-cluster-bootstrap",
       "message": "## Lesson: Read the pi-cluster skill file before any cluster task — never re-derive from scratch\nPi 5 EEPROM behavior, PXE boot quirks, and cluster-specific constraints (bind mount persistence, /tmp size, HAOS limitations) are re-derived each session, causing the same mistakes repeatedly\n**Fix**: Read ~/.claude/skills/pi-cluster.md at the start of any Pi cluster task. Use pi-* CLI scripts instead of exploratory SSH one-liners. Update the skill file immediately when new constraints are discovered.",
       "summary": "Read the pi-cluster skill file before any cluster task — never re-derive from scratch"
     },
@@ -1249,7 +1249,7 @@
     },
     "01KNH365KM7YW7KRB1HMT2TQCE": {
       "slug": "agents-expand-scope-during-execution-int-1274",
-      "type": "directive",
+      "type": "hint",
       "priority": 6,
       "toolNames": [
         "Agent"
@@ -1268,7 +1268,7 @@
     },
     "01KNH36AV9856BTMYA6N3AXE06": {
       "slug": "agent-written-tests-validate-the-agents-2fdf",
-      "type": "directive",
+      "type": "hint",
       "priority": 6,
       "toolNames": [
         "Agent"
@@ -1287,7 +1287,7 @@
     },
     "01KNH36NCH76JR86ET2A8TANG4": {
       "slug": "file-reads-at-batch-start-become-stale-a-d847",
-      "type": "directive",
+      "type": "hint",
       "priority": 6,
       "toolNames": [
         "Agent"
@@ -1306,7 +1306,7 @@
     },
     "01KNH3751QHZB33981K2NFZAAR": {
       "slug": "batches-ordered-top-down-fail-when-a-tas-6001",
-      "type": "directive",
+      "type": "hint",
       "priority": 6,
       "toolNames": [
         "Agent"
@@ -1325,7 +1325,7 @@
     },
     "01KNH37RSV0QY5A5XGJWASPMVR": {
       "slug": "batch-executed-without-a-rollback-plan-l-19b8",
-      "type": "directive",
+      "type": "hint",
       "priority": 6,
       "toolNames": [
         "Agent"
@@ -1344,7 +1344,7 @@
     },
     "01KNH37YW5BS58WXXTA45S2RZR": {
       "slug": "tasks-without-a-verification-command-pas-fc8f",
-      "type": "directive",
+      "type": "hint",
       "priority": 6,
       "toolNames": [
         "Agent"
@@ -1529,7 +1529,7 @@
     },
     "01KNH37A72SZMHJ4YS1V6PDZ2E": {
       "slug": "batches-over-5-tasks-or-250-lines-produc-2f49",
-      "type": "directive",
+      "type": "hint",
       "priority": 5,
       "toolNames": [
         "Agent"
@@ -1589,43 +1589,6 @@
       "message": "## Lesson: bd commands fail when dolt sql-server holds exclusive lock on embeddeddolt\nAfter upgrading beads CLI or after a server restart, a dolt sql-server process (manually started or idle-monitor managed) holds an exclusive lock on .beads/embeddeddolt. bd CLI in embedded mode requires exclusive file access — the running server causes every bd command to fail with an exclusive lock error\n**Fix**: Kill any dolt sql-server processes holding the lock (ps aux | grep dolt), kill the idle-monitor (bd dolt idle-monitor) if running, then verify bd list works. Also fix .beads/dolt/config.yaml to use absolute data_dir path so idle-monitor restarts use the correct DB directory",
       "summary": "bd commands fail when dolt sql-server holds exclusive lock on embeddeddolt"
     },
-    "01KN38M1AD6NC4W6RBJPCX71NY": {
-      "slug": "forgot-childunref-parent-process-stays-a-9121",
-      "type": "protocol",
-      "priority": 4,
-      "toolNames": [],
-      "commandRegexSources": [],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
-      "tags": [
-        "tool:node",
-        "severity:hang",
-        "category:async",
-        "candidate:node-gotchas-skill",
-        "category:reasoning"
-      ],
-      "scope": null,
-      "message": "## Lesson: Forgot child.unref() — parent process stays alive until the child finishes, blocking the session-start hook\nForgot child.unref() — parent process stays alive until the child finishes, blocking the session-start hook\n**Fix**: Always call child.unref() after detached spawn to let the parent exit immediately",
-      "summary": "Forgot child.unref() — parent process stays alive until the child finishes, blocking the session-start hook"
-    },
-    "01KN38M1JVP0MVNQGD3HKKM7DA": {
-      "slug": "used-lessons-learnedlocal-as-the-plugin-60d8",
-      "type": "protocol",
-      "priority": 4,
-      "toolNames": [],
-      "commandRegexSources": [],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
-      "tags": [
-        "category:claude-code",
-        "category:plugins",
-        "severity:silent-failure",
-        "category:reasoning"
-      ],
-      "scope": null,
-      "message": "## Lesson: Local plugin with unregistered marketplace key silently fails to load in Claude Code\nUsing `<plugin-name>@local` (or any unregistered marketplace key) as the plugin identifier — Claude Code checks known_marketplaces.json and silently ignores plugin entries whose marketplace is not listed, so the plugin never loads with no error\n**Fix**: For local dev plugins, register hooks directly in ~/.claude/settings.json with absolute paths. Only use installed_plugins.json + enabledPlugins for plugins installed from a real registered marketplace.",
-      "summary": "Local plugin with unregistered marketplace key silently fails to load in Claude Code"
-    },
     "01KN38M1NYYV4Z92DZQPGTEWHK": {
       "slug": "used-decision-deny-reason-systemmessage-f9e4",
       "type": "protocol",
@@ -1663,7 +1626,7 @@
     },
     "01KNH3709KYRZVYC4ZZWY0359X": {
       "slug": "lesson-reminders-placed-at-batch-start-a-c7e1",
-      "type": "directive",
+      "type": "hint",
       "priority": 4,
       "toolNames": [
         "Agent"
@@ -1695,7 +1658,7 @@
         "category:reasoning"
       ],
       "scope": "Users-joeblack-github-joeblackwaslike-lessons-learned",
-      "message": "## Lesson: Said to run the test command ambiguously — users ran it directly instead of via Claude, bypassing PreToolUse\nSaid \"run `pytest tests/`\" without specifying that the user should ask Claude to run it — ambiguous whether they should type it in terminal or prompt Claude\n**Fix**: When describing PreToolUse hook tests, always frame it as \"ask Claude to run X\" to make clear the hook only fires when Claude invokes the tool, not when the user runs commands directly",
+      "message": "## Lesson: Said to run the test command ambiguously — users ran it directly instead of via Claude, bypassing PreToolUse\nWhen testing PreToolUse hook behavior, instructions like \"run node --test\" are ambiguous — the user may paste the command directly into their terminal. PreToolUse only fires when Claude invokes a tool; user-initiated terminal commands bypass the hook entirely, producing false negatives that make the hook look broken when it is working correctly.\n**Fix**: Always frame test instructions as \"ask Claude to run X\" (e.g., \"tell Claude to run the tests\"). This ensures the command goes through Claude's tool call, which is the only execution path that triggers PreToolUse.",
       "summary": "Said to run the test command ambiguously — users ran it directly instead of via Claude, bypassing PreToolUse"
     },
     "01KN38M1GD7BR75VC3DZS1ZZ3D": {
@@ -1731,7 +1694,7 @@
         "category:reasoning"
       ],
       "scope": "Users-joeblack-github-joeblackwaslike-lessons-learned",
-      "message": "## Lesson: Misread corrected retry output as proof the block failed — diagnosed a problem that did not exist\ninterpreted \"command WITH flags got blocked\" when the output was actually showing the corrected retry after the block — jumped to debugging a non-existent problem\n**Fix**: before diagnosing output as wrong, trace the expected flow (block → self-correct → retry) and verify it matches what's shown",
+      "message": "## Lesson: Misread corrected retry output as proof the block failed — diagnosed a problem that did not exist\nWhen a guard lesson blocks a Bash command and Claude self-corrects by retrying without the flagged argument, the output log shows both the blocked attempt and the successful retry. Misreading the retry as a new failure causes false diagnosis — the system actually worked correctly through its full block → self-correct → retry cycle.\n**Fix**: Before diagnosing unexpected output as a guard failure, trace the expected flow: guard fires → Claude sees the block reason → Claude retries with corrected command → retry succeeds. Verify whether the observed output matches that flow before concluding anything is broken.",
       "summary": "Misread corrected retry output as proof the block failed — diagnosed a problem that did not exist"
     }
   }
