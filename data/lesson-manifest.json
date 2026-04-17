@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-04-17T13:46:30.440Z",
+  "generatedAt": "2026-04-17T14:12:19.057Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -104,15 +104,14 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [
-        "topic:debugging",
-        "topic:infrastructure",
-        "topic:ops",
-        "severity:critical",
-        "topic:research-first"
+        "topic:research",
+        "topic:planning",
+        "topic:risk",
+        "topic:quality"
       ],
       "scope": null,
-      "message": "## Lesson: Search for existing community solutions before debugging infrastructure problems from first principles\nWhen debugging non-trivial infrastructure setups (PXE boot, NFS root, k3s, network services), spending hours executing variations of a failing strategy without ever searching for known working reference configurations. Treating solved community problems as novel first-principles engineering problems. Real cost: 5 days, 75% of weekly API quota, and 20+ hours to find a fix (remove proto=tcp from nfsroot) already documented on the official Raspberry Pi forums.\n**Fix**: Before running a single command on any infrastructure problem: (1) Search '<technology> working setup' or '<technology> example config'. (2) Find community-validated configs — Pi forums, GitHub gists, blog posts with confirmed working setups. (3) Implement the reference config exactly, verify it works, then customize. (4) If something fails, search the exact error or behavior before inventing a fix. The answer is almost always findable in under 5 minutes.",
-      "summary": "Search for existing community solutions before debugging infrastructure problems from first principles"
+      "message": "## Lesson: Skipping pre-work research hits documented pitfalls that a 5-minute search would have surfaced\nProceeding directly to planning or implementation without searching for known footguns, version caveats, and community-reported failure modes produces plans that look correct but fail on documented edge cases. This applies to any domain: infrastructure, libraries, frameworks, CLI tools, APIs. The cost is encountering cold what was already diagnosed and documented by the community.\n**Fix**: Before committing to any plan or starting any non-trivial implementation: (1) Search '<technology> gotchas', '<technology> common mistakes', '<technology> known issues <version>'. (2) Check GitHub issues and community forums for failure patterns at your specific version or config. (3) Incorporate findings into the plan before writing code. This applies to debugging, planning, and implementation equally — not only infrastructure.",
+      "summary": "Skipping pre-work research hits documented pitfalls that a 5-minute search would have surfaced"
     },
     "01KNH2G0RB0SYRNZ560XN030GF": {
       "slug": "awk-code-injection-via-unvalidated-shell-cf5a",
@@ -227,6 +226,24 @@
       "scope": null,
       "message": "## Lesson: Time-box any single debugging theory to 30 minutes; pivot to web search if no measurable progress\nContinuing to execute variations of a failing debugging approach without stepping back to search for existing solutions. Activity is not progress. Generating new commands is not debugging. A theory with no new observable facts after 30 minutes is a dead end, not a problem requiring more commands.\n**Fix**: If a debugging approach doesn't yield measurable progress (a new fact that changes understanding of root cause) within 30 minutes: (1) Stop executing. (2) Search the exact symptom or error message. (3) Find someone who solved the same problem. (4) Compare their working config against yours line by line. Measurable progress means new understanding, not new commands tried.",
       "summary": "Time-box any single debugging theory to 30 minutes; pivot to web search if no measurable progress"
+    },
+    "01KPDWHHARJPSMP39QG3HDCTQM": {
+      "slug": "planning-from-training-data-knowledge-al-df8f",
+      "type": "directive",
+      "priority": 9,
+      "toolNames": [],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "tags": [
+        "topic:research",
+        "topic:planning",
+        "topic:documentation",
+        "severity:correctness"
+      ],
+      "scope": null,
+      "message": "## Lesson: Planning from training-data knowledge alone risks stale API signatures and deprecated options\nLibrary APIs, CLI flags, and framework config schemas change between versions. Proceeding directly from memory without checking current documentation produces plans and code that fail on version-specific details — wrong method names, removed options, new required config keys. Training data has a knowledge cutoff and is routinely months or years behind.\n**Fix**: Before creating any implementation plan or writing code that involves a library, framework, CLI tool, or external API: use context7, Ref, or a web search to fetch current documentation. Verify actual API signatures, CLI flags, and config schemas match your assumptions before committing to a design. If documentation contradicts memory, trust the docs.",
+      "summary": "Planning from training-data knowledge alone risks stale API signatures and deprecated options"
     },
     "01JQSEED00000000000000002": {
       "slug": "mock-patch-namespace-v3x8",
@@ -497,6 +514,40 @@
       "scope": null,
       "message": "## Lesson: Verify all steps before presenting a multi-step hardware or infra plan\nClaude outputs confident-sounding plans without verifying individual steps first; footguns discovered mid-paragraph after already proposing erroneous steps, wasting time and eroding trust\n**Fix**: Search first, fully read all results, identify failure modes, then present ONE confirmed plan. Never pivot mid-paragraph — if a footgun is found after proposing, explicitly say that plan is wrong, here is why, here is the corrected plan",
       "summary": "Verify all steps before presenting a multi-step hardware or infra plan"
+    },
+    "01KPDWGYTT7KD6AZS1MMNN9AED": {
+      "slug": "multiple-choice-questions-buried-in-pros-9d59",
+      "type": "directive",
+      "priority": 8,
+      "toolNames": [],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "tags": [
+        "topic:ux",
+        "topic:interaction",
+        "topic:tooluse"
+      ],
+      "scope": null,
+      "message": "## Lesson: Multiple-choice questions buried in prose force the user to parse before responding\nPresenting multiple-choice questions as prose paragraphs buries the options, makes them easy to miss, and requires the user to parse text before answering. The AskUserQuestion tool exists precisely for this and renders choices as a structured, scannable format the user can respond to directly.\n**Fix**: Always invoke the AskUserQuestion tool for any question that has discrete options or choices. Never present multiple-choice options as inline prose, numbered lists in regular text, or as part of a sentence — use the tool every time without exception.",
+      "summary": "Multiple-choice questions buried in prose force the user to parse before responding"
+    },
+    "01KPDWJ4EDZ7ERJPYPR37H8RB1": {
+      "slug": "asking-should-i-proceed-on-routine-rever-29f4",
+      "type": "directive",
+      "priority": 8,
+      "toolNames": [],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "tags": [
+        "topic:autonomy",
+        "topic:ux",
+        "topic:workflow"
+      ],
+      "scope": null,
+      "message": "## Lesson: Asking 'should I proceed?' on routine reversible actions creates unnecessary friction\nPausing to ask 'Should I proceed?', 'Want me to implement this?', or 'Ready to start?' on routine, low-risk, reversible actions (editing files, running tests, rebuilding manifests) interrupts flow without adding value. When the user assigns a task, authorization to complete it is implicit in the request.\n**Fix**: Execute routine, reversible actions proactively without asking permission. Reserve confirmation only for: irreversible operations, large blast radius (deleting data, force-pushing), actions affecting shared systems, or actions clearly not implied by the original request. When in doubt, state what you are about to do in one sentence — then do it.",
+      "summary": "Asking 'should I proceed?' on routine reversible actions creates unnecessary friction"
     },
     "01JQSEED00000000000000001": {
       "slug": "pytest-tty-hanging-k9m2",
@@ -861,6 +912,23 @@
       "scope": null,
       "message": "## Lesson: Read the pi-cluster skill file before any cluster task — never re-derive from scratch\nPi 5 EEPROM behavior, PXE boot quirks, and cluster-specific constraints (bind mount persistence, /tmp size, HAOS limitations) are re-derived each session, causing the same mistakes repeatedly\n**Fix**: Read ~/.claude/skills/pi-cluster.md at the start of any Pi cluster task. Use pi-* CLI scripts instead of exploratory SSH one-liners. Update the skill file immediately when new constraints are discovered.",
       "summary": "Read the pi-cluster skill file before any cluster task — never re-derive from scratch"
+    },
+    "01KPDWH7JQQ1RS300B7QMFY96J": {
+      "slug": "plan-approval-without-a-refine-then-exec-5b24",
+      "type": "directive",
+      "priority": 7,
+      "toolNames": [],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "tags": [
+        "topic:planning",
+        "topic:ux",
+        "topic:workflow"
+      ],
+      "scope": null,
+      "message": "## Lesson: Plan approval without a refine-then-execute option forces unnecessary round trips\nWhen presenting a plan for approval and offering only approve-or-reject, users who want one small tweak must either accept the plan as-is or restart the planning cycle. This wastes a full turn and breaks flow. ExitPlanMode and AskUserQuestion both support custom option text.\n**Fix**: Whenever presenting a plan for user approval, always include an explicit option worded as 'Incorporate feedback and begin executing' (or equivalent). This allows users to correct one thing and proceed without a full planning restart. List it alongside 'Approve as-is' and 'Go back and revise'.",
+      "summary": "Plan approval without a refine-then-execute option forces unnecessary round trips"
     },
     "01JQSEED00000000000000005": {
       "slug": "npm-link-peer-deps-r2f7",
