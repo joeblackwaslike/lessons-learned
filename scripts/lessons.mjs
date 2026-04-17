@@ -261,12 +261,14 @@ Notes:
 lessons onboard — Batch-import lessons from a JSON array.
 
 Usage:
-  node scripts/lessons.mjs onboard --file <path>
-  node scripts/lessons.mjs onboard --json '<json-array>'
+  node scripts/lessons.mjs onboard --file <path> [--from N] [--count M]
+  node scripts/lessons.mjs onboard --json '<json-array>' [--from N] [--count M]
 
 Options:
   --file <path>   Path to a JSON file containing an array of lesson objects
   --json <str>    Inline JSON array string
+  --from N        Skip the first N items (0-indexed); for resume and batching
+  --count M       Process at most M items; for batching
 
 Each array element uses the same fields as \`lessons add\`.
 Required per element: summary, problem, solution.
@@ -759,18 +761,24 @@ async function cmdOnboard(args) {
     process.exit(1);
   }
 
+  const fromIdx = args.includes('--from') ? parseInt(args[args.indexOf('--from') + 1], 10) : 0;
+  const maxCount = args.includes('--count') ? parseInt(args[args.indexOf('--count') + 1], 10) : Infinity;
+  const slice = lessons.slice(fromIdx, fromIdx + maxCount);
+  const total = lessons.length;
+
   let accepted = 0;
   let failed = 0;
 
-  for (let i = 0; i < lessons.length; i++) {
-    const item = lessons[i];
-    const label = item.summary ? `"${item.summary.slice(0, 60)}"` : `#${i + 1}`;
+  for (let i = 0; i < slice.length; i++) {
+    const absoluteIdx = fromIdx + i;
+    const item = slice[i];
+    const label = item.summary ? `"${item.summary.slice(0, 60)}"` : `#${absoluteIdx + 1}`;
     const result = addLessonInternal(item);
     if (result.ok) {
-      console.log(`[${i + 1}/${lessons.length}] ✓  ${label}`);
+      console.log(`[${absoluteIdx + 1}/${total}] ✓  ${label}`);
       accepted++;
     } else {
-      console.log(`[${i + 1}/${lessons.length}] ✗  ${label} — ${result.error}`);
+      console.log(`[${absoluteIdx + 1}/${total}] ✗  ${label} — ${result.error}`);
       failed++;
     }
   }
