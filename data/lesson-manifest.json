@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-04-16T09:06:36.021Z",
+  "generatedAt": "2026-04-17T13:32:25.767Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -1181,7 +1181,7 @@
     },
     "01KNH365KM7YW7KRB1HMT2TQCE": {
       "slug": "agents-expand-scope-during-execution-int-1274",
-      "type": "hint",
+      "type": "directive",
       "priority": 6,
       "toolNames": [
         "Agent"
@@ -1200,7 +1200,7 @@
     },
     "01KNH36AV9856BTMYA6N3AXE06": {
       "slug": "agent-written-tests-validate-the-agents-2fdf",
-      "type": "hint",
+      "type": "directive",
       "priority": 6,
       "toolNames": [
         "Agent"
@@ -1219,7 +1219,7 @@
     },
     "01KNH36NCH76JR86ET2A8TANG4": {
       "slug": "file-reads-at-batch-start-become-stale-a-d847",
-      "type": "hint",
+      "type": "directive",
       "priority": 6,
       "toolNames": [
         "Agent"
@@ -1238,7 +1238,7 @@
     },
     "01KNH3751QHZB33981K2NFZAAR": {
       "slug": "batches-ordered-top-down-fail-when-a-tas-6001",
-      "type": "hint",
+      "type": "directive",
       "priority": 6,
       "toolNames": [
         "Agent"
@@ -1257,7 +1257,7 @@
     },
     "01KNH37RSV0QY5A5XGJWASPMVR": {
       "slug": "batch-executed-without-a-rollback-plan-l-19b8",
-      "type": "hint",
+      "type": "directive",
       "priority": 6,
       "toolNames": [
         "Agent"
@@ -1276,7 +1276,7 @@
     },
     "01KNH37YW5BS58WXXTA45S2RZR": {
       "slug": "tasks-without-a-verification-command-pas-fc8f",
-      "type": "hint",
+      "type": "directive",
       "priority": 6,
       "toolNames": [
         "Agent"
@@ -1461,7 +1461,7 @@
     },
     "01KNH37A72SZMHJ4YS1V6PDZ2E": {
       "slug": "batches-over-5-tasks-or-250-lines-produc-2f49",
-      "type": "hint",
+      "type": "directive",
       "priority": 5,
       "toolNames": [
         "Agent"
@@ -1552,7 +1552,7 @@
     },
     "01KNH3709KYRZVYC4ZZWY0359X": {
       "slug": "lesson-reminders-placed-at-batch-start-a-c7e1",
-      "type": "hint",
+      "type": "directive",
       "priority": 4,
       "toolNames": [
         "Agent"
