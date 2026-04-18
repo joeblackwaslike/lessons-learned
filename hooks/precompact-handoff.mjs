@@ -24,8 +24,9 @@ import {
 const ENABLED = Boolean(process.env.LESSONS_PRECOMPACT_HANDOFF);
 const HANDOFF_ONLY = Boolean(process.env.LESSONS_HANDOFF_ONLY);
 
-// Resolve claude binary: prefer PATH, fall back to common nvm location.
+// Resolve claude binary: prefer LESSONS_CLAUDE_BIN (test seam), then PATH, then nvm fallback.
 function findClaudeBin() {
+  if (process.env.LESSONS_CLAUDE_BIN) return process.env.LESSONS_CLAUDE_BIN;
   try {
     return execFileSync('which', ['claude'], { encoding: 'utf8' }).trim();
   } catch {}

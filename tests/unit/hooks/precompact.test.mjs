@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { writeFileSync, mkdtempSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { parseTranscript, estimateTokens, buildBanner } from '../../../hooks/lib/precompact.mjs';
+import { parseTranscript, estimateTokens, buildBanner, buildFallbackHandoff } from '../../../hooks/lib/precompact.mjs';
 
 // ─── parseTranscript ─────────────────────────────────────────────────────────
 
@@ -224,5 +224,46 @@ describe('buildBanner', () => {
   it('returns a non-empty string', () => {
     const banner = buildBanner(100, 125);
     assert.ok(typeof banner === 'string' && banner.length > 100);
+  });
+});
+
+// ─── buildFallbackHandoff ─────────────────────────────────────────────────────
+
+describe('buildFallbackHandoff', () => {
+  it('returns a string starting with the handoff header', () => {
+    const result = buildFallbackHandoff([]);
+    assert.ok(result.startsWith('Session handoff'));
+  });
+
+  it('returns a non-empty string even when bd and git are unavailable', () => {
+    // Relies on the internal try/catch — if commands fail, output is still non-empty.
+    const result = buildFallbackHandoff([]);
+    assert.ok(typeof result === 'string' && result.length > 0);
+  });
+
+  it('includes a Conversation section when entries are provided', () => {
+    const entries = [
+      { role: 'user', text: 'implement the feature' },
+      { role: 'assistant', text: 'I will implement it now' },
+    ];
+    const result = buildFallbackHandoff(entries);
+    assert.ok(result.includes('## Conversation'));
+  });
+
+  it('formats user entries as **User**: ...', () => {
+    const entries = [{ role: 'user', text: 'build the thing' }];
+    const result = buildFallbackHandoff(entries);
+    assert.ok(result.includes('**User**: build the thing'));
+  });
+
+  it('formats assistant entries as **Claude**: ...', () => {
+    const entries = [{ role: 'assistant', text: 'building it now' }];
+    const result = buildFallbackHandoff(entries);
+    assert.ok(result.includes('**Claude**: building it now'));
+  });
+
+  it('omits the Conversation section when entries array is empty', () => {
+    const result = buildFallbackHandoff([]);
+    assert.ok(!result.includes('## Conversation'));
   });
 });

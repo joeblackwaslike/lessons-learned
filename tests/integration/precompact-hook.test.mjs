@@ -17,6 +17,7 @@ import { fixturePath } from '../helpers/fixtures.mjs';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const HOOK = join(__dirname, '..', '..', 'hooks', 'precompact-handoff.mjs');
 const TRANSCRIPT = fixturePath('session-precompact.jsonl');
+const FAKE_CLAUDE = join(__dirname, '..', 'helpers', 'fake-claude.mjs');
 
 function payload(overrides = {}) {
   return JSON.stringify({
@@ -111,22 +112,18 @@ describe('precompact hook: disabled path', () => {
 // ─── Enabled path ─────────────────────────────────────────────────────────────
 
 describe('precompact hook: enabled path', () => {
-  it('exits 2 to block compaction when LESSONS_PRECOMPACT_HANDOFF=1', { timeout: 60000 }, async () => {
-    // We expect exit code 2. The hook will attempt claude -p but we do not
-    // require it to succeed — fallback output is also acceptable.
-    // Timeout set high enough for the 45s kill timer + a little buffer,
-    // but in CI the claude binary likely won't respond, so fallback fires fast.
+  it('exits 2 to block compaction when LESSONS_PRECOMPACT_HANDOFF=1', { timeout: 15000 }, async () => {
     const { exitCode } = await run(HOOK, {
       stdin: payload(),
-      env: { LESSONS_PRECOMPACT_HANDOFF: '1' },
+      env: { LESSONS_PRECOMPACT_HANDOFF: '1', LESSONS_CLAUDE_BIN: FAKE_CLAUDE },
     });
     assert.equal(exitCode, 2, 'expected exit 2 to block compaction');
   });
 
-  it('stdout contains the handoff heading', { timeout: 60000 }, async () => {
+  it('stdout contains the handoff heading', { timeout: 15000 }, async () => {
     const { stdout } = await run(HOOK, {
       stdin: payload(),
-      env: { LESSONS_PRECOMPACT_HANDOFF: '1' },
+      env: { LESSONS_PRECOMPACT_HANDOFF: '1', LESSONS_CLAUDE_BIN: FAKE_CLAUDE },
     });
     assert.ok(
       stdout.includes('Pre-Compact Handoff') || stdout.includes('handoff'),
@@ -138,18 +135,18 @@ describe('precompact hook: enabled path', () => {
 // ─── HANDOFF_ONLY path ────────────────────────────────────────────────────────
 
 describe('precompact hook: HANDOFF_ONLY path', () => {
-  it('exits 0 (no block) when LESSONS_HANDOFF_ONLY=1', { timeout: 60000 }, async () => {
+  it('exits 0 (no block) when LESSONS_HANDOFF_ONLY=1', { timeout: 15000 }, async () => {
     const { exitCode } = await run(HOOK, {
       stdin: payload(),
-      env: { LESSONS_HANDOFF_ONLY: '1' },
+      env: { LESSONS_HANDOFF_ONLY: '1', LESSONS_CLAUDE_BIN: FAKE_CLAUDE },
     });
     assert.equal(exitCode, 0, 'HANDOFF_ONLY must not block compaction');
   });
 
-  it('stdout contains handoff content', { timeout: 60000 }, async () => {
+  it('stdout contains handoff content', { timeout: 15000 }, async () => {
     const { stdout } = await run(HOOK, {
       stdin: payload(),
-      env: { LESSONS_HANDOFF_ONLY: '1' },
+      env: { LESSONS_HANDOFF_ONLY: '1', LESSONS_CLAUDE_BIN: FAKE_CLAUDE },
     });
     assert.ok(stdout.length > 0, 'expected handoff output');
   });
