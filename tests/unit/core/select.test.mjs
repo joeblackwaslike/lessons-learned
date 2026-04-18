@@ -11,6 +11,8 @@ function makeMatch(overrides = {}) {
     priority: 5,
     message: 'A short lesson text.',
     summary: 'A brief summary.',
+    problem: '',
+    solution: '',
     ...overrides,
   };
 }
@@ -93,17 +95,26 @@ describe('selectCandidates', () => {
     assert.deepEqual(dropped, ['s2']);
   });
 
-  it('falls back to summary when full injection exceeds remaining budget', () => {
+  it('falls back to summary+problem+solution when full injection exceeds remaining budget', () => {
     const matches = [
       makeMatch({ slug: 's1', message: 'Short lesson one' }),
-      makeMatch({ slug: 's2', message: 'x'.repeat(500), summary: 'Brief summary' }),
+      makeMatch({
+        slug: 's2',
+        message: 'x'.repeat(500),
+        summary: 'Brief summary',
+        problem: 'The thing that went wrong.',
+        solution: 'The fix to apply.',
+      }),
     ];
     const { injected } = selectCandidates(matches, new Set(), {
       budgetBytes: 200,
       claimFn: alwaysClaim,
     });
     assert.equal(injected.length, 2);
-    assert.equal(injected[1].text, '**Lesson**: Brief summary');
+    assert.equal(
+      injected[1].text,
+      '**Lesson**: Brief summary\n**Problem**: The thing that went wrong.\n**Solution**: The fix to apply.'
+    );
   });
 
   it('adds injected slugs to the returned seen set', () => {

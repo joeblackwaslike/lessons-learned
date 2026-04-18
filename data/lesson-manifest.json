@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-04-17T18:37:30.265Z",
+  "generatedAt": "2026-04-18T11:32:39.108Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -33,7 +33,9 @@
       ],
       "scope": null,
       "message": "## Lesson: Parallel agents sharing a git worktree corrupt the staging area and lose commits\nMultiple concurrent git processes writing to the same worktree corrupt the index and lose commits silently\n**Fix**: Each parallel agent must use an isolated git worktree via `git worktree add`; never share a worktree between concurrent agents",
-      "summary": "Parallel agents sharing a git worktree corrupt the staging area and lose commits"
+      "summary": "Parallel agents sharing a git worktree corrupt the staging area and lose commits",
+      "problem": "Multiple concurrent git processes writing to the same worktree corrupt the index and lose commits silently",
+      "solution": "Each parallel agent must use an isolated git worktree via `git worktree add`; never share a worktree between concurrent agents"
     },
     "01KNH2FRACBQMQWX29GPYE47D8": {
       "slug": "eval-on-user-supplied-command-strings-en-702a",
@@ -56,7 +58,9 @@
       ],
       "scope": null,
       "message": "## Lesson: eval on user-supplied command strings enables shell injection\neval \"$cmd\" interprets shell metacharacters from untrusted input; an attacker-controlled value can execute arbitrary commands\n**Fix**: Replace eval with `bash -c` for subprocess isolation or use array-based command invocation: cmd_arr=(...); \"${cmd_arr[@]}\"",
-      "summary": "eval on user-supplied command strings enables shell injection"
+      "summary": "eval on user-supplied command strings enables shell injection",
+      "problem": "eval \"$cmd\" interprets shell metacharacters from untrusted input; an attacker-controlled value can execute arbitrary commands",
+      "solution": "Replace eval with `bash -c` for subprocess isolation or use array-based command invocation: cmd_arr=(...); \"${cmd_arr[@]}\""
     },
     "01KNH2KPDXH8S4RYNR1S7F0B8Y": {
       "slug": "secrets-hardcoded-in-source-files-are-pe-00f3",
@@ -93,7 +97,9 @@
       ],
       "scope": null,
       "message": "## Lesson: secrets hardcoded in source files are permanently exposed after any git commit\nAPI keys, passwords, or tokens written directly into .py/.js files and committed to git are irreversibly exposed in history\n**Fix**: Use environment variables, .env files (in .gitignore), or a secrets manager; rotate any credential that was committed",
-      "summary": "secrets hardcoded in source files are permanently exposed after any git commit"
+      "summary": "secrets hardcoded in source files are permanently exposed after any git commit",
+      "problem": "API keys, passwords, or tokens written directly into .py/.js files and committed to git are irreversibly exposed in history",
+      "solution": "Use environment variables, .env files (in .gitignore), or a secrets manager; rotate any credential that was committed"
     },
     "01KP9WGC4J90RZ4H5GMHGAZJYS": {
       "slug": "search-for-community-solutions-before-debugging-fr-p3sy",
@@ -111,7 +117,9 @@
       ],
       "scope": null,
       "message": "## Lesson: Before starting any work: search for known pitfalls, gotchas, and failure modes — skipping this wastes tokens, compounds failed attempts, and burns time re-discovering what the community already documented and solved\nProceeding directly to planning or implementation without searching for known footguns, version caveats, and community-reported failure modes produces plans that look correct but fail on documented edge cases. This applies to any domain: infrastructure, libraries, frameworks, CLI tools, APIs. The cost is encountering cold what was already diagnosed and documented by the community.\n**Fix**: Before committing to any plan or starting any non-trivial implementation: (1) Search '<technology> gotchas', '<technology> common mistakes', '<technology> known issues <version>'. (2) Check GitHub issues and community forums for failure patterns at your specific version or config. (3) Incorporate findings into the plan before writing code. This applies to debugging, planning, and implementation equally — not only infrastructure.",
-      "summary": "Before starting any work: search for known pitfalls, gotchas, and failure modes — skipping this wastes tokens, compounds failed attempts, and burns time re-discovering what the community already documented and solved"
+      "summary": "Before starting any work: search for known pitfalls, gotchas, and failure modes — skipping this wastes tokens, compounds failed attempts, and burns time re-discovering what the community already documented and solved",
+      "problem": "Proceeding directly to planning or implementation without searching for known footguns, version caveats, and community-reported failure modes produces plans that look correct but fail on documented edge cases. This applies to any domain: infrastructure, libraries, frameworks, CLI tools, APIs. The cost is encountering cold what was already diagnosed and documented by the community.",
+      "solution": "Before committing to any plan or starting any non-trivial implementation: (1) Search '<technology> gotchas', '<technology> common mistakes', '<technology> known issues <version>'. (2) Check GitHub issues and community forums for failure patterns at your specific version or config. (3) Incorporate findings into the plan before writing code. This applies to debugging, planning, and implementation equally — not only infrastructure."
     },
     "01KNH2G0RB0SYRNZ560XN030GF": {
       "slug": "awk-code-injection-via-unvalidated-shell-cf5a",
@@ -134,7 +142,9 @@
       ],
       "scope": null,
       "message": "## Lesson: awk code injection via unvalidated shell variable interpolation in BEGIN block\nawk \"BEGIN {exit !($var > $max)}\" with unvalidated $var enables code injection through shell variable expansion\n**Fix**: Use awk -v to pass values as data: `awk -v val=\"$val\" -v max=\"$max\" 'BEGIN {exit !(val > max)}'`; validate numeric inputs first",
-      "summary": "awk code injection via unvalidated shell variable interpolation in BEGIN block"
+      "summary": "awk code injection via unvalidated shell variable interpolation in BEGIN block",
+      "problem": "awk \"BEGIN {exit !($var > $max)}\" with unvalidated $var enables code injection through shell variable expansion",
+      "solution": "Use awk -v to pass values as data: `awk -v val=\"$val\" -v max=\"$max\" 'BEGIN {exit !(val > max)}'`; validate numeric inputs first"
     },
     "01KNH2G6A4BCZMQKT5441HAJH2": {
       "slug": "jq-string-interpolation-of-shell-variabl-8803",
@@ -158,7 +168,9 @@
       ],
       "scope": null,
       "message": "## Lesson: jq string interpolation of shell variables injects JSON when variable contains quotes\njq -cn \"{\\\"id\\\": \\\"$session_id\\\"}\" injects arbitrary JSON if $session_id contains quote characters\n**Fix**: Use jq --arg to pass values safely: `jq -cn --arg id \"$session_id\" '{id: $id}'`",
-      "summary": "jq string interpolation of shell variables injects JSON when variable contains quotes"
+      "summary": "jq string interpolation of shell variables injects JSON when variable contains quotes",
+      "problem": "jq -cn \"{\\\"id\\\": \\\"$session_id\\\"}\" injects arbitrary JSON if $session_id contains quote characters",
+      "solution": "Use jq --arg to pass values safely: `jq -cn --arg id \"$session_id\" '{id: $id}'`"
     },
     "01KNH2GJG6DE29V8JSBZW34ZG2": {
       "slug": "sed-range-deletion-is-unbounded-when-the-64ac",
@@ -182,7 +194,9 @@
       ],
       "scope": null,
       "message": "## Lesson: sed range deletion is unbounded when the closing pattern is absent, deleting to EOF\nsed '/start/,/end/d' silently deletes everything from the start pattern to EOF when the closing pattern is missing\n**Fix**: Use awk with explicit state tracking for range deletion; never rely on sed range patterns on files without a guaranteed closing delimiter",
-      "summary": "sed range deletion is unbounded when the closing pattern is absent, deleting to EOF"
+      "summary": "sed range deletion is unbounded when the closing pattern is absent, deleting to EOF",
+      "problem": "sed '/start/,/end/d' silently deletes everything from the start pattern to EOF when the closing pattern is missing",
+      "solution": "Use awk with explicit state tracking for range deletion; never rely on sed range patterns on files without a guaranteed closing delimiter"
     },
     "01KNH2JJCKZP1HXFX85X5QV496": {
       "slug": "async-function-called-without-await-sile-3a80",
@@ -207,7 +221,9 @@
       ],
       "scope": null,
       "message": "## Lesson: Async function called without await silently returns a coroutine that never executes\nCalling `async_func()` without await returns a coroutine object that is immediately discarded; the function body never runs\n**Fix**: Always await async calls: `await func()` or schedule explicitly: `asyncio.create_task(func())` with a done_callback",
-      "summary": "Async function called without await silently returns a coroutine that never executes"
+      "summary": "Async function called without await silently returns a coroutine that never executes",
+      "problem": "Calling `async_func()` without await returns a coroutine object that is immediately discarded; the function body never runs",
+      "solution": "Always await async calls: `await func()` or schedule explicitly: `asyncio.create_task(func())` with a done_callback"
     },
     "01KP9WGC4PZ2E9S7SAMARR0JDC": {
       "slug": "time-box-debugging-theories-30-minutes-then-search-b1zn",
@@ -225,7 +241,9 @@
       ],
       "scope": null,
       "message": "## Lesson: Time-box any single debugging theory to 30 minutes; pivot to web search if no measurable progress\nContinuing to execute variations of a failing debugging approach without stepping back to search for existing solutions. Activity is not progress. Generating new commands is not debugging. A theory with no new observable facts after 30 minutes is a dead end, not a problem requiring more commands.\n**Fix**: If a debugging approach doesn't yield measurable progress (a new fact that changes understanding of root cause) within 30 minutes: (1) Stop executing. (2) Search the exact symptom or error message. (3) Find someone who solved the same problem. (4) Compare their working config against yours line by line. Measurable progress means new understanding, not new commands tried.",
-      "summary": "Time-box any single debugging theory to 30 minutes; pivot to web search if no measurable progress"
+      "summary": "Time-box any single debugging theory to 30 minutes; pivot to web search if no measurable progress",
+      "problem": "Continuing to execute variations of a failing debugging approach without stepping back to search for existing solutions. Activity is not progress. Generating new commands is not debugging. A theory with no new observable facts after 30 minutes is a dead end, not a problem requiring more commands.",
+      "solution": "If a debugging approach doesn't yield measurable progress (a new fact that changes understanding of root cause) within 30 minutes: (1) Stop executing. (2) Search the exact symptom or error message. (3) Find someone who solved the same problem. (4) Compare their working config against yours line by line. Measurable progress means new understanding, not new commands tried."
     },
     "01KPDWHHARJPSMP39QG3HDCTQM": {
       "slug": "planning-from-training-data-knowledge-al-df8f",
@@ -243,7 +261,9 @@
       ],
       "scope": null,
       "message": "## Lesson: Before implementing with any library, CLI, or API: fetch docs for the exact version installed (check package.json, pyproject.toml, or requirements files) — training-data signatures are stale\nLibrary APIs, CLI flags, and framework config schemas change between versions. Proceeding directly from memory without checking current documentation produces plans and code that fail on version-specific details — wrong method names, removed options, new required config keys. Training data has a knowledge cutoff and is routinely months or years behind.\n**Fix**: Before creating any implementation plan or writing code that involves a library, framework, CLI tool, or external API: use context7, Ref, or a web search to fetch current documentation. Verify actual API signatures, CLI flags, and config schemas match your assumptions before committing to a design. If documentation contradicts memory, trust the docs.",
-      "summary": "Before implementing with any library, CLI, or API: fetch docs for the exact version installed (check package.json, pyproject.toml, or requirements files) — training-data signatures are stale"
+      "summary": "Before implementing with any library, CLI, or API: fetch docs for the exact version installed (check package.json, pyproject.toml, or requirements files) — training-data signatures are stale",
+      "problem": "Library APIs, CLI flags, and framework config schemas change between versions. Proceeding directly from memory without checking current documentation produces plans and code that fail on version-specific details — wrong method names, removed options, new required config keys. Training data has a knowledge cutoff and is routinely months or years behind.",
+      "solution": "Before creating any implementation plan or writing code that involves a library, framework, CLI tool, or external API: use context7, Ref, or a web search to fetch current documentation. Verify actual API signatures, CLI flags, and config schemas match your assumptions before committing to a design. If documentation contradicts memory, trust the docs."
     },
     "01JQSEED00000000000000002": {
       "slug": "mock-patch-namespace-v3x8",
@@ -274,7 +294,9 @@
       ],
       "scope": null,
       "message": "## Lesson: mock.patch must target the importing module's namespace, not the source\nPython `mock.patch('requests.get')` patches the source module but the importing module still sees the original. The test passes but the mock has no effect.\n**Fix**: Patch where the name is looked up: `@patch('myapp.views.requests.get')` not `@patch('requests.get')`.",
-      "summary": "mock.patch must target the importing module's namespace, not the source"
+      "summary": "mock.patch must target the importing module's namespace, not the source",
+      "problem": "Python `mock.patch('requests.get')` patches the source module but the importing module still sees the original. The test passes but the mock has no effect.",
+      "solution": "Patch where the name is looked up: `@patch('myapp.views.requests.get')` not `@patch('requests.get')`."
     },
     "01KMZ3BJKZHP5D15BD1CYPT54F": {
       "slug": "vitest-hangs-in-non-interactive-terminal-0c00",
@@ -299,7 +321,9 @@
       ],
       "scope": null,
       "message": "## Lesson: vitest hangs in non-interactive terminal without pool config\nRunning `vitest run` in Claude Code may hang or timeout because vitest defaults to parallel workers across all CPU cores. Large test suites with heavy DOM fixtures cause memory pressure, and the non-interactive terminal lacks proper signal handling for worker cleanup.\n**Fix**: Configure vitest with `pool: \"forks\"` and set `testTimeout: 30000`. For large fixture-heavy tests, use `singleFork: true` or reduce `maxWorkers`. Add `--reporter=verbose` to see progress in non-interactive terminals.",
-      "summary": "vitest hangs in non-interactive terminal without pool config"
+      "summary": "vitest hangs in non-interactive terminal without pool config",
+      "problem": "Running `vitest run` in Claude Code may hang or timeout because vitest defaults to parallel workers across all CPU cores. Large test suites with heavy DOM fixtures cause memory pressure, and the non-interactive terminal lacks proper signal handling for worker cleanup.",
+      "solution": "Configure vitest with `pool: \"forks\"` and set `testTimeout: 30000`. For large fixture-heavy tests, use `singleFork: true` or reduce `maxWorkers`. Add `--reporter=verbose` to see progress in non-interactive terminals."
     },
     "01KN35C6RJTVB1K632KXQ54KTY": {
       "slug": "vscode-gitenablecommitsigning-overrides-77d2",
@@ -328,7 +352,9 @@
       ],
       "scope": null,
       "message": "## Lesson: VSCode git.enableCommitSigning overrides gitconfig commit.gpgsign causing commit to hang\nVSCode user setting git.enableCommitSigning: true passes -S to git directly, bypassing commit.gpgsign=false in gitconfig, causing commits to hang waiting for GPG passphrase\n**Fix**: Disable git.enableCommitSigning in VSCode user settings, or ensure GPG agent is running and key is available for signing",
-      "summary": "VSCode git.enableCommitSigning overrides gitconfig commit.gpgsign causing commit to hang"
+      "summary": "VSCode git.enableCommitSigning overrides gitconfig commit.gpgsign causing commit to hang",
+      "problem": "VSCode user setting git.enableCommitSigning: true passes -S to git directly, bypassing commit.gpgsign=false in gitconfig, causing commits to hang waiting for GPG passphrase",
+      "solution": "Disable git.enableCommitSigning in VSCode user settings, or ensure GPG agent is running and key is available for signing"
     },
     "01KNH2ER5SEDXPKCNENHH4WYZJ": {
       "slug": "set-e-kills-bash-scripts-silently-on-any-bf06",
@@ -352,7 +378,9 @@
       ],
       "scope": null,
       "message": "## Lesson: set -e kills bash scripts silently on any non-critical command failure without an EXIT trap\nset -euo pipefail with no EXIT trap makes any unguarded command failure silently abort the script with no output\n**Fix**: Add `trap '_log_exit $?' EXIT` and wrap non-critical operations in `{ ... } || warn` blocks to handle errors explicitly",
-      "summary": "set -e kills bash scripts silently on any non-critical command failure without an EXIT trap"
+      "summary": "set -e kills bash scripts silently on any non-critical command failure without an EXIT trap",
+      "problem": "set -euo pipefail with no EXIT trap makes any unguarded command failure silently abort the script with no output",
+      "solution": "Add `trap '_log_exit $?' EXIT` and wrap non-critical operations in `{ ... } || warn` blocks to handle errors explicitly"
     },
     "01KNH2EZQ2BRAGYC9QNKTJCGBQ": {
       "slug": "scripts-hang-waiting-on-stdin-when-run-i-7195",
@@ -377,7 +405,9 @@
       ],
       "scope": null,
       "message": "## Lesson: Scripts hang waiting on stdin when run in non-interactive shells (CI, Claude Code, pipes)\nScript reads stdin implicitly without redirect; hangs indefinitely in CI, Claude Code, or non-interactive shells\n**Fix**: Redirect stdin explicitly from /dev/null: `bash script.sh </dev/null` or add `</dev/null` to commands that do not expect interactive input",
-      "summary": "Scripts hang waiting on stdin when run in non-interactive shells (CI, Claude Code, pipes)"
+      "summary": "Scripts hang waiting on stdin when run in non-interactive shells (CI, Claude Code, pipes)",
+      "problem": "Script reads stdin implicitly without redirect; hangs indefinitely in CI, Claude Code, or non-interactive shells",
+      "solution": "Redirect stdin explicitly from /dev/null: `bash script.sh </dev/null` or add `</dev/null` to commands that do not expect interactive input"
     },
     "01KNH2F7KVA2RPB6KPKMHDMDV3": {
       "slug": "grep-exits-1-on-no-match-silently-aborti-d9ff",
@@ -401,7 +431,9 @@
       ],
       "scope": null,
       "message": "## Lesson: grep exits 1 on no-match, silently aborting parent script under set -e\ngrep returns exit code 1 when no lines match; under set -e this kills the parent process silently\n**Fix**: Use `grep ... || true` for lookups where an empty result is valid; use exit code 2+ to detect real errors",
-      "summary": "grep exits 1 on no-match, silently aborting parent script under set -e"
+      "summary": "grep exits 1 on no-match, silently aborting parent script under set -e",
+      "problem": "grep returns exit code 1 when no lines match; under set -e this kills the parent process silently",
+      "solution": "Use `grep ... || true` for lookups where an empty result is valid; use exit code 2+ to detect real errors"
     },
     "01KNH2GQWE0E2693PZVJDBGB23": {
       "slug": "git-stderr-redirected-to-devnull-silentl-1ec9",
@@ -425,7 +457,9 @@
       ],
       "scope": null,
       "message": "## Lesson: git stderr redirected to /dev/null silently caches wrong content on failure\ngit branch 2>/dev/null on failure writes empty or wrong output to cache; the error is swallowed and bad state persists\n**Fix**: Do not suppress git stderr for operations with side effects; validate output before writing to cache",
-      "summary": "git stderr redirected to /dev/null silently caches wrong content on failure"
+      "summary": "git stderr redirected to /dev/null silently caches wrong content on failure",
+      "problem": "git branch 2>/dev/null on failure writes empty or wrong output to cache; the error is swallowed and bad state persists",
+      "solution": "Do not suppress git stderr for operations with side effects; validate output before writing to cache"
     },
     "01KNH2HXM0M2H29F2T108XQ2ES": {
       "slug": "missing-tool-dependency-check-silently-d-4a39",
@@ -448,7 +482,9 @@
       ],
       "scope": null,
       "message": "## Lesson: Missing tool dependency check silently disables safety-critical features\nbc not installed; numeric fallback returns 0; budget enforcement silently becomes a no-op with no error\n**Fix**: Check required tools at function entry: `command -v bc >/dev/null || { echo 'bc required' >&2; return 1; }` — fail closed on absence",
-      "summary": "Missing tool dependency check silently disables safety-critical features"
+      "summary": "Missing tool dependency check silently disables safety-critical features",
+      "problem": "bc not installed; numeric fallback returns 0; budget enforcement silently becomes a no-op with no error",
+      "solution": "Check required tools at function entry: `command -v bc >/dev/null || { echo 'bc required' >&2; return 1; }` — fail closed on absence"
     },
     "01KNH2JDX2B935CGQJV8C3RH5P": {
       "slug": "asynciocreatetask-without-donecallback-s-97d8",
@@ -472,7 +508,9 @@
       ],
       "scope": null,
       "message": "## Lesson: asyncio.create_task without done_callback silently swallows task exceptions\ncreate_task() without add_done_callback leaves exceptions unhandled until garbage collection, often never visible\n**Fix**: Always attach a callback: `task.add_done_callback(lambda t: t.exception() and logger.error(\"Task failed\", exc_info=t.exception()))`",
-      "summary": "asyncio.create_task without done_callback silently swallows task exceptions"
+      "summary": "asyncio.create_task without done_callback silently swallows task exceptions",
+      "problem": "create_task() without add_done_callback leaves exceptions unhandled until garbage collection, often never visible",
+      "solution": "Always attach a callback: `task.add_done_callback(lambda t: t.exception() and logger.error(\"Task failed\", exc_info=t.exception()))`"
     },
     "01KNH2JPXHRSB98YPNWWZME71Q": {
       "slug": "iterating-over-mutable-async-collection-85a9",
@@ -496,7 +534,9 @@
       ],
       "scope": null,
       "message": "## Lesson: Iterating a mutable async collection without snapshot raises RuntimeError on concurrent modification\n`for item in self.subscribers:` with async/await inside the loop allows concurrent modification, raising RuntimeError\n**Fix**: Snapshot the collection before iterating: `for item in list(self.subscribers):` to prevent modification conflicts",
-      "summary": "Iterating a mutable async collection without snapshot raises RuntimeError on concurrent modification"
+      "summary": "Iterating a mutable async collection without snapshot raises RuntimeError on concurrent modification",
+      "problem": "`for item in self.subscribers:` with async/await inside the loop allows concurrent modification, raising RuntimeError",
+      "solution": "Snapshot the collection before iterating: `for item in list(self.subscribers):` to prevent modification conflicts"
     },
     "01KPARN4FAWR4ZD3VHB2D9JFZM": {
       "slug": "verify-all-steps-before-presenting-a-mul-a8ab",
@@ -513,7 +553,9 @@
       ],
       "scope": null,
       "message": "## Lesson: Before presenting any multi-step plan: verify every individual step is executable — never propose speculatively and pivot mid-paragraph when a step fails\nPresenting a confident-sounding plan without verifying individual steps first; blockers discovered mid-paragraph after committing to an approach force pivots that waste the user's time. When this happens 2-3 times in a row it erodes trust — the session starts feeling unreliable. It also burns the user's finite cognitive budget: that budget doesn't reset instantly, and spending it on re-planning leaves less capacity for everything that follows. Applies to any sequential plan: architecture, infrastructure, migrations, refactors, deployments.\n**Fix**: Search first, fully read all results, identify failure modes, then present ONE confirmed plan. Never pivot mid-paragraph — if a footgun is found after proposing, explicitly say that plan is wrong, here is why, here is the corrected plan",
-      "summary": "Before presenting any multi-step plan: verify every individual step is executable — never propose speculatively and pivot mid-paragraph when a step fails"
+      "summary": "Before presenting any multi-step plan: verify every individual step is executable — never propose speculatively and pivot mid-paragraph when a step fails",
+      "problem": "Presenting a confident-sounding plan without verifying individual steps first; blockers discovered mid-paragraph after committing to an approach force pivots that waste the user's time. When this happens 2-3 times in a row it erodes trust — the session starts feeling unreliable. It also burns the user's finite cognitive budget: that budget doesn't reset instantly, and spending it on re-planning leaves less capacity for everything that follows. Applies to any sequential plan: architecture, infrastructure, migrations, refactors, deployments.",
+      "solution": "Search first, fully read all results, identify failure modes, then present ONE confirmed plan. Never pivot mid-paragraph — if a footgun is found after proposing, explicitly say that plan is wrong, here is why, here is the corrected plan"
     },
     "01KPDWGYTT7KD6AZS1MMNN9AED": {
       "slug": "multiple-choice-questions-buried-in-pros-9d59",
@@ -530,7 +572,9 @@
       ],
       "scope": null,
       "message": "## Lesson: Multiple-choice questions buried in prose force the user to parse before responding\nPresenting multiple-choice questions as prose paragraphs buries the options, makes them easy to miss, and requires the user to parse text before answering. The AskUserQuestion tool exists precisely for this and renders choices as a structured, scannable format the user can respond to directly.\n**Fix**: Always invoke the AskUserQuestion tool for any question that has discrete options or choices. Never present multiple-choice options as inline prose, numbered lists in regular text, or as part of a sentence — use the tool every time without exception.",
-      "summary": "Multiple-choice questions buried in prose force the user to parse before responding"
+      "summary": "Multiple-choice questions buried in prose force the user to parse before responding",
+      "problem": "Presenting multiple-choice questions as prose paragraphs buries the options, makes them easy to miss, and requires the user to parse text before answering. The AskUserQuestion tool exists precisely for this and renders choices as a structured, scannable format the user can respond to directly.",
+      "solution": "Always invoke the AskUserQuestion tool for any question that has discrete options or choices. Never present multiple-choice options as inline prose, numbered lists in regular text, or as part of a sentence — use the tool every time without exception."
     },
     "01KPDWJ4EDZ7ERJPYPR37H8RB1": {
       "slug": "asking-should-i-proceed-on-routine-rever-29f4",
@@ -547,7 +591,9 @@
       ],
       "scope": null,
       "message": "## Lesson: Asking 'should I proceed?' on routine reversible actions creates unnecessary friction\nPausing to ask 'Should I proceed?', 'Want me to implement this?', or 'Ready to start?' on routine, low-risk, reversible actions (editing files, running tests, rebuilding manifests) interrupts flow without adding value. When the user assigns a task, authorization to complete it is implicit in the request.\n**Fix**: Execute routine, reversible actions proactively without asking permission. Reserve confirmation only for: irreversible operations, large blast radius (deleting data, force-pushing), actions affecting shared systems, or actions clearly not implied by the original request. When in doubt, state what you are about to do in one sentence — then do it.",
-      "summary": "Asking 'should I proceed?' on routine reversible actions creates unnecessary friction"
+      "summary": "Asking 'should I proceed?' on routine reversible actions creates unnecessary friction",
+      "problem": "Pausing to ask 'Should I proceed?', 'Want me to implement this?', or 'Ready to start?' on routine, low-risk, reversible actions (editing files, running tests, rebuilding manifests) interrupts flow without adding value. When the user assigns a task, authorization to complete it is implicit in the request.",
+      "solution": "Execute routine, reversible actions proactively without asking permission. Reserve confirmation only for: irreversible operations, large blast radius (deleting data, force-pushing), actions affecting shared systems, or actions clearly not implied by the original request. When in doubt, state what you are about to do in one sentence — then do it."
     },
     "01JQSEED00000000000000001": {
       "slug": "pytest-tty-hanging-k9m2",
@@ -571,7 +617,9 @@
       ],
       "scope": null,
       "message": "## Lesson: pytest hangs in non-interactive envs due to TTY detection\nRunning bare `pytest` or `pytest -v` in Claude Code causes the process to hang indefinitely because pytest's rich output module detects a non-interactive terminal and stalls.\n**Fix**: Use `python -m pytest --no-header -rN -p no:faulthandler` or prepend `TERM=dumb`. Pipe through `cat` if rich output is still suspected.\nRerun as: pytest -p no:faulthandler --no-header",
-      "summary": "pytest hangs in non-interactive envs due to TTY detection"
+      "summary": "pytest hangs in non-interactive envs due to TTY detection",
+      "problem": "Running bare `pytest` or `pytest -v` in Claude Code causes the process to hang indefinitely because pytest's rich output module detects a non-interactive terminal and stalls.",
+      "solution": "Use `python -m pytest --no-header -rN -p no:faulthandler` or prepend `TERM=dumb`. Pipe through `cat` if rich output is still suspected.\nRerun as: pytest -p no:faulthandler --no-header"
     },
     "01JQSEED00000000000000003": {
       "slug": "git-stash-untracked-p4w1",
@@ -594,7 +642,9 @@
       ],
       "scope": null,
       "message": "## Lesson: git stash silently drops untracked files without -u flag\n`git stash` only stashes tracked, modified files. Untracked files (new files not yet `git add`ed) are silently left behind, leading to data loss if the user expects them to be stashed.\n**Fix**: Use `git stash -u` (or `--include-untracked`) to include untracked files.",
-      "summary": "git stash silently drops untracked files without -u flag"
+      "summary": "git stash silently drops untracked files without -u flag",
+      "problem": "`git stash` only stashes tracked, modified files. Untracked files (new files not yet `git add`ed) are silently left behind, leading to data loss if the user expects them to be stashed.",
+      "solution": "Use `git stash -u` (or `--include-untracked`) to include untracked files."
     },
     "01JQSEED00000000000000004": {
       "slug": "pip-install-wrong-venv-j6n3",
@@ -618,7 +668,9 @@
       ],
       "scope": null,
       "message": "## Lesson: pip install may target wrong virtualenv — use python -m pip install\n`pip install` uses whichever `pip` is first on PATH, which may not be the project's virtualenv. This silently installs packages into the wrong environment.\n**Fix**: Use `python -m pip install` to ensure you're installing into the active Python's environment, or verify with `which pip` first.",
-      "summary": "pip install may target wrong virtualenv — use python -m pip install"
+      "summary": "pip install may target wrong virtualenv — use python -m pip install",
+      "problem": "`pip install` uses whichever `pip` is first on PATH, which may not be the project's virtualenv. This silently installs packages into the wrong environment.",
+      "solution": "Use `python -m pip install` to ensure you're installing into the active Python's environment, or verify with `which pip` first."
     },
     "01KMZ3BSN01D9VQR8DDGT2Q9TR": {
       "slug": "git-commit-with-heredoc-fails-due-to-she-599e",
@@ -642,7 +694,9 @@
       ],
       "scope": null,
       "message": "## Lesson: git commit with HEREDOC fails due to shell quoting issues\nUsing HEREDOC syntax in `git commit -m` with nested quotes, backticks, or special characters causes shell parsing failures. The HEREDOC delimiter can conflict with the shell's parsing of the commit message content.\n**Fix**: Use the pattern: git commit -m \"$(cat <<'EOF'\nCommit message here.\nEOF\n)\" — the single-quoted EOF delimiter prevents variable expansion and special character interpretation inside the message.",
-      "summary": "git commit with HEREDOC fails due to shell quoting issues"
+      "summary": "git commit with HEREDOC fails due to shell quoting issues",
+      "problem": "Using HEREDOC syntax in `git commit -m` with nested quotes, backticks, or special characters causes shell parsing failures. The HEREDOC delimiter can conflict with the shell's parsing of the commit message content.",
+      "solution": "Use the pattern: git commit -m \"$(cat <<'EOF'\nCommit message here.\nEOF\n)\" — the single-quoted EOF delimiter prevents variable expansion and special character interpretation inside the message."
     },
     "01KMZ3CSX8QR8EN5W6DYM6TEA4": {
       "slug": "pre-commit-hooks-lefthookhusky-fail-on-l-adf8",
@@ -667,7 +721,9 @@
       ],
       "scope": null,
       "message": "## Lesson: Pre-commit hooks (lefthook/husky) fail on lint errors in unstaged files\nGit commit fails because pre-commit hooks (lefthook, husky, pre-commit) run linters against the entire working tree, not just staged files. Lint errors in unstaged or pre-existing files block the commit even though those files are not being committed.\n**Fix**: Fix only the lint errors in files you are committing, or use `git stash --keep-index` before committing to temporarily hide unstaged changes. For persistent pre-existing lint issues, consider `--no-verify` only as a last resort and document why.",
-      "summary": "Pre-commit hooks (lefthook/husky) fail on lint errors in unstaged files"
+      "summary": "Pre-commit hooks (lefthook/husky) fail on lint errors in unstaged files",
+      "problem": "Git commit fails because pre-commit hooks (lefthook, husky, pre-commit) run linters against the entire working tree, not just staged files. Lint errors in unstaged or pre-existing files block the commit even though those files are not being committed.",
+      "solution": "Fix only the lint errors in files you are committing, or use `git stash --keep-index` before committing to temporarily hide unstaged changes. For persistent pre-existing lint issues, consider `--no-verify` only as a last resort and document why."
     },
     "01KMZ3D31T2N5807D60Y60GAPA": {
       "slug": "vitest-parallel-tests-fail-due-to-shared-a9cc",
@@ -692,7 +748,9 @@
       ],
       "scope": null,
       "message": "## Lesson: Vitest parallel tests fail due to shared state or resource contention\nTests that pass individually fail when run together because vitest runs tests in parallel by default. Tests sharing database connections, DOM state, global variables, or file system resources cause intermittent failures due to race conditions.\n**Fix**: Use `--sequence.concurrent=false` or `pool: \"forks\"` with `poolOptions.forks.singleFork: true` in vitest config. Isolate shared resources with `beforeEach`/`afterEach` cleanup. For tests that truly cannot be parallelized, use `describe.sequential`.",
-      "summary": "Vitest parallel tests fail due to shared state or resource contention"
+      "summary": "Vitest parallel tests fail due to shared state or resource contention",
+      "problem": "Tests that pass individually fail when run together because vitest runs tests in parallel by default. Tests sharing database connections, DOM state, global variables, or file system resources cause intermittent failures due to race conditions.",
+      "solution": "Use `--sequence.concurrent=false` or `pool: \"forks\"` with `poolOptions.forks.singleFork: true` in vitest config. Isolate shared resources with `beforeEach`/`afterEach` cleanup. For tests that truly cannot be parallelized, use `describe.sequential`."
     },
     "01KN3P9QZCFBC04F12DFKVF3MV": {
       "slug": "git-stash-pop-fails-with-already-exists-808b",
@@ -716,7 +774,9 @@
       ],
       "scope": null,
       "message": "## Lesson: git stash pop fails when stashed untracked files now exist in the working tree\ngit stash pop fails with exit code 1 and lists files as already exists, no checkout when the stash was created with -u (untracked files included) but those files have since been created in the working tree. Git refuses to overwrite them.\n**Fix**: Before running git stash pop, remove or reset the conflicting files: git clean -f <files> to delete untracked ones, or git checkout -- <files> to reset tracked ones. Alternatively use git stash show --name-only to see what the stash contains before popping.",
-      "summary": "git stash pop fails when stashed untracked files now exist in the working tree"
+      "summary": "git stash pop fails when stashed untracked files now exist in the working tree",
+      "problem": "git stash pop fails with exit code 1 and lists files as already exists, no checkout when the stash was created with -u (untracked files included) but those files have since been created in the working tree. Git refuses to overwrite them.",
+      "solution": "Before running git stash pop, remove or reset the conflicting files: git clean -f <files> to delete untracked ones, or git checkout -- <files> to reset tracked ones. Alternatively use git stash show --name-only to see what the stash contains before popping."
     },
     "01KNH2GX7ND2YW3Z6DB046EK7M": {
       "slug": "mktemp-without-a-trap-leaks-temp-files-o-b7f2",
@@ -739,7 +799,9 @@
       ],
       "scope": null,
       "message": "## Lesson: mktemp without a trap leaks temp files on early exit under set -e\nset -e aborts before reaching inline cleanup; temp files accumulate indefinitely when any subsequent command fails\n**Fix**: Register cleanup immediately after mktemp: `trap 'rm -f \"$tmp\"' EXIT` — EXIT fires even on set -e abort",
-      "summary": "mktemp without a trap leaks temp files on early exit under set -e"
+      "summary": "mktemp without a trap leaks temp files on early exit under set -e",
+      "problem": "set -e aborts before reaching inline cleanup; temp files accumulate indefinitely when any subsequent command fails",
+      "solution": "Register cleanup immediately after mktemp: `trap 'rm -f \"$tmp\"' EXIT` — EXIT fires even on set -e abort"
     },
     "01KNH2H2APTDSVZBD88S6J49MK": {
       "slug": "cd-inside-a-bash-function-leaks-the-dire-9b4c",
@@ -762,7 +824,9 @@
       ],
       "scope": null,
       "message": "## Lesson: cd inside a bash function leaks the directory change to all subsequent code\ncd in a function without restore changes the shell global cwd; the new directory persists after the function returns\n**Fix**: Use a subshell to isolate: `( cd \"$dir\" && ... )` or use pushd/popd pair within the function",
-      "summary": "cd inside a bash function leaks the directory change to all subsequent code"
+      "summary": "cd inside a bash function leaks the directory change to all subsequent code",
+      "problem": "cd in a function without restore changes the shell global cwd; the new directory persists after the function returns",
+      "solution": "Use a subshell to isolate: `( cd \"$dir\" && ... )` or use pushd/popd pair within the function"
     },
     "01KNH2H8ZXY0JT1Z1BDEGF6K9Z": {
       "slug": "xargs-word-splits-filenames-with-spaces-c0bd",
@@ -786,7 +850,9 @@
       ],
       "scope": null,
       "message": "## Lesson: xargs word-splits filenames with spaces, breaking them into separate arguments\necho \"$file\" | xargs or unquoted $var piped to xargs splits 'my file.sh' into two separate arguments\n**Fix**: Use bash arrays `\"${arr[@]}\"`, or pipe with `xargs -d '\n'` (newline delimiter), or pair find -print0 with xargs -0",
-      "summary": "xargs word-splits filenames with spaces, breaking them into separate arguments"
+      "summary": "xargs word-splits filenames with spaces, breaking them into separate arguments",
+      "problem": "echo \"$file\" | xargs or unquoted $var piped to xargs splits 'my file.sh' into two separate arguments",
+      "solution": "Use bash arrays `\"${arr[@]}\"`, or pipe with `xargs -d '\n'` (newline delimiter), or pair find -print0 with xargs -0"
     },
     "01KNH2J9586HRGEYQBG9MJ233Z": {
       "slug": "bare-except-catches-everything-including-52b1",
@@ -809,7 +875,9 @@
       ],
       "scope": null,
       "message": "## Lesson: Bare except: catches everything including KeyboardInterrupt and SystemExit, hiding all failures\nexcept: without a specific exception type catches signals and system exits, making all failures invisible and preventing proper shutdown\n**Fix**: Always catch specific exception classes: `except Exception as e:` with `logger.error(..., exc_info=True)`; never use bare `except:`",
-      "summary": "Bare except: catches everything including KeyboardInterrupt and SystemExit, hiding all failures"
+      "summary": "Bare except: catches everything including KeyboardInterrupt and SystemExit, hiding all failures",
+      "problem": "except: without a specific exception type catches signals and system exits, making all failures invisible and preventing proper shutdown",
+      "solution": "Always catch specific exception classes: `except Exception as e:` with `logger.error(..., exc_info=True)`; never use bare `except:`"
     },
     "01KNH2JW5VC844DQPGDWQN0H64": {
       "slug": "decorator-registry-stays-empty-because-t-bb41",
@@ -832,7 +900,9 @@
       ],
       "scope": null,
       "message": "## Lesson: Decorator registry stays empty because the module containing registrations is never imported\nDecorator-based registration requires import-time side effects; if the decorated module is never imported, the registry is empty at runtime\n**Fix**: Explicitly import all modules with registrations in __init__.py or a loader module before using the registry",
-      "summary": "Decorator registry stays empty because the module containing registrations is never imported"
+      "summary": "Decorator registry stays empty because the module containing registrations is never imported",
+      "problem": "Decorator-based registration requires import-time side effects; if the decorated module is never imported, the registry is empty at runtime",
+      "solution": "Explicitly import all modules with registrations in __init__.py or a loader module before using the registry"
     },
     "01KNH2K1K99GGHQF08FGYPFE1H": {
       "slug": "systemd-environmentfile-silently-ignores-7408",
@@ -858,7 +928,9 @@
       ],
       "scope": null,
       "message": "## Lesson: systemd EnvironmentFile silently ignores lines with export prefix, leaving variables unset\nsystemd EnvironmentFile expects KEY=value only; `export KEY=value` lines are silently ignored, so the service starts with empty environment\n**Fix**: Either strip export from the env file, or use a bash wrapper: `ExecStart=/bin/bash -c '. ~/.env && exec /usr/bin/myapp'`",
-      "summary": "systemd EnvironmentFile silently ignores lines with export prefix, leaving variables unset"
+      "summary": "systemd EnvironmentFile silently ignores lines with export prefix, leaving variables unset",
+      "problem": "systemd EnvironmentFile expects KEY=value only; `export KEY=value` lines are silently ignored, so the service starts with empty environment",
+      "solution": "Either strip export from the env file, or use a bash wrapper: `ExecStart=/bin/bash -c '. ~/.env && exec /usr/bin/myapp'`"
     },
     "01KP9WGC4PS017G743VY0NM8FH": {
       "slug": "raspberry-pi-pxe-nfs-root-boot-working-config-8zzo",
@@ -878,7 +950,9 @@
       ],
       "scope": null,
       "message": "## Lesson: Working Raspberry Pi 5 PXE + NFS root boot configuration and common failure modes\nRaspberry Pi 5 PXE boot with NFS root failing silently — SSH refused, NFS root mounted read-only, or NFS mount not happening at all. Common causes: (1) proto=tcp in nfsroot kernel parameter is incompatible with Pi OS Trixie / kernel 6.12. (2) PXE server's own filesystem accidentally bind-mounted over the NFS root's /boot/firmware via a spurious systemd unit. (3) First-boot Pi OS services (sshswitch, regenerate_ssh_host_keys, userconfig) blocking SSH because they can't find /boot/firmware. (4) pi user account locked in shadow (pi:! means locked). (5) Missing /run/sshd directory — sshd fails silently.\n**Fix**: Working cmdline.txt for Pi 5 NFS root boot:\nconsole=serial0,115200 console=tty1 root=/dev/nfs nfsroot=<SERVER_IP>:/path/to/root,vers=3 rw ip=dhcp rootwait\n\nKey: vers=3 only — no proto=tcp, no nolock, no rootfstype=nfs.\n\nRequired NFS root fixes for Pi OS Trixie:\n- fstab: proc entry only, no NFS root entry (kernel handles the root mount)\n- Mask: sshswitch.service, regenerate_ssh_host_keys.service, userconfig.service\n- Remove: /etc/ssh/sshd_config.d/rename_user.conf (contains SSH banner that blocks sshd)\n- Pre-generate SSH host keys: ssh-keygen -A -f <nfs_root>\n- Unlock pi user: replace pi:! with real password hash in /etc/shadow\n- Pre-create /home/pi/.ssh/authorized_keys with your public key (chown 1000:1000, chmod 600)\n- Add to /etc/tmpfiles.d/sshd.conf: d /run/sshd 0755 root root -\n- Bind mount TFTP dir to <nfs_root>/boot/firmware so Pi OS first-boot services work\n- ALWAYS run: mount | grep <nfs_root_path> to verify no spurious mounts before booting\n- NFS export must have no_root_squash\n\nDiagnosis: if lastlog mtime never updates after boot, the NFS root is read-only. Check for proto=tcp first.",
-      "summary": "Working Raspberry Pi 5 PXE + NFS root boot configuration and common failure modes"
+      "summary": "Working Raspberry Pi 5 PXE + NFS root boot configuration and common failure modes",
+      "problem": "Raspberry Pi 5 PXE boot with NFS root failing silently — SSH refused, NFS root mounted read-only, or NFS mount not happening at all. Common causes: (1) proto=tcp in nfsroot kernel parameter is incompatible with Pi OS Trixie / kernel 6.12. (2) PXE server's own filesystem accidentally bind-mounted over the NFS root's /boot/firmware via a spurious systemd unit. (3) First-boot Pi OS services (sshswitch, regenerate_ssh_host_keys, userconfig) blocking SSH because they can't find /boot/firmware. (4) pi user account locked in shadow (pi:! means locked). (5) Missing /run/sshd directory — sshd fails silently.",
+      "solution": "Working cmdline.txt for Pi 5 NFS root boot:\nconsole=serial0,115200 console=tty1 root=/dev/nfs nfsroot=<SERVER_IP>:/path/to/root,vers=3 rw ip=dhcp rootwait\n\nKey: vers=3 only — no proto=tcp, no nolock, no rootfstype=nfs.\n\nRequired NFS root fixes for Pi OS Trixie:\n- fstab: proc entry only, no NFS root entry (kernel handles the root mount)\n- Mask: sshswitch.service, regenerate_ssh_host_keys.service, userconfig.service\n- Remove: /etc/ssh/sshd_config.d/rename_user.conf (contains SSH banner that blocks sshd)\n- Pre-generate SSH host keys: ssh-keygen -A -f <nfs_root>\n- Unlock pi user: replace pi:! with real password hash in /etc/shadow\n- Pre-create /home/pi/.ssh/authorized_keys with your public key (chown 1000:1000, chmod 600)\n- Add to /etc/tmpfiles.d/sshd.conf: d /run/sshd 0755 root root -\n- Bind mount TFTP dir to <nfs_root>/boot/firmware so Pi OS first-boot services work\n- ALWAYS run: mount | grep <nfs_root_path> to verify no spurious mounts before booting\n- NFS export must have no_root_squash\n\nDiagnosis: if lastlog mtime never updates after boot, the NFS root is read-only. Check for proto=tcp first."
     },
     "01KPARNDEM2DB77AQ4K4VFXBYS": {
       "slug": "start-a-new-conversation-per-major-task-7b67",
@@ -894,7 +968,9 @@
       ],
       "scope": null,
       "message": "## Lesson: Start a new conversation per major task — long sessions degrade inference quality\nEach tool call result accumulates in context; by the time the session is long, inference quality visibly degrades and error rate increases because attention is spread across too much history\n**Fix**: Start a new conversation for each major task. Pass a concise handoff document as context rather than letting session history grow unbounded. CLI scripts and skill files reduce per-session tool call volume.",
-      "summary": "Start a new conversation per major task — long sessions degrade inference quality"
+      "summary": "Start a new conversation per major task — long sessions degrade inference quality",
+      "problem": "Each tool call result accumulates in context; by the time the session is long, inference quality visibly degrades and error rate increases because attention is spread across too much history",
+      "solution": "Start a new conversation for each major task. Pass a concise handoff document as context rather than letting session history grow unbounded. CLI scripts and skill files reduce per-session tool call volume."
     },
     "01KPARNMAH5CES414KT3CT5FVZ": {
       "slug": "read-the-pi-cluster-skill-file-before-an-2d79",
@@ -911,7 +987,9 @@
       ],
       "scope": "Users-joeblack-github-joeblackwaslike-rpi-cluster-bootstrap",
       "message": "## Lesson: Read the pi-cluster skill file before any cluster task — never re-derive from scratch\nPi 5 EEPROM behavior, PXE boot quirks, and cluster-specific constraints (bind mount persistence, /tmp size, HAOS limitations) are re-derived each session, causing the same mistakes repeatedly\n**Fix**: Read ~/.claude/skills/pi-cluster.md at the start of any Pi cluster task. Use pi-* CLI scripts instead of exploratory SSH one-liners. Update the skill file immediately when new constraints are discovered.",
-      "summary": "Read the pi-cluster skill file before any cluster task — never re-derive from scratch"
+      "summary": "Read the pi-cluster skill file before any cluster task — never re-derive from scratch",
+      "problem": "Pi 5 EEPROM behavior, PXE boot quirks, and cluster-specific constraints (bind mount persistence, /tmp size, HAOS limitations) are re-derived each session, causing the same mistakes repeatedly",
+      "solution": "Read ~/.claude/skills/pi-cluster.md at the start of any Pi cluster task. Use pi-* CLI scripts instead of exploratory SSH one-liners. Update the skill file immediately when new constraints are discovered."
     },
     "01KPDWH7JQQ1RS300B7QMFY96J": {
       "slug": "plan-approval-without-a-refine-then-exec-5b24",
@@ -928,7 +1006,9 @@
       ],
       "scope": null,
       "message": "## Lesson: Plan approval without a refine-then-execute option forces unnecessary round trips\nWhen presenting a plan for approval and offering only approve-or-reject, users who want one small tweak must either accept the plan as-is or restart the planning cycle. This wastes a full turn and breaks flow. ExitPlanMode and AskUserQuestion both support custom option text.\n**Fix**: Whenever presenting a plan for user approval, always include an explicit option worded as 'Incorporate feedback and begin executing' (or equivalent). This allows users to correct one thing and proceed without a full planning restart. List it alongside 'Approve as-is' and 'Go back and revise'.",
-      "summary": "Plan approval without a refine-then-execute option forces unnecessary round trips"
+      "summary": "Plan approval without a refine-then-execute option forces unnecessary round trips",
+      "problem": "When presenting a plan for approval and offering only approve-or-reject, users who want one small tweak must either accept the plan as-is or restart the planning cycle. This wastes a full turn and breaks flow. ExitPlanMode and AskUserQuestion both support custom option text.",
+      "solution": "Whenever presenting a plan for user approval, always include an explicit option worded as 'Incorporate feedback and begin executing' (or equivalent). This allows users to correct one thing and proceed without a full planning restart. List it alongside 'Approve as-is' and 'Go back and revise'."
     },
     "01JQSEED00000000000000005": {
       "slug": "npm-link-peer-deps-r2f7",
@@ -952,7 +1032,9 @@
       ],
       "scope": null,
       "message": "## Lesson: npm link doesn't resolve peer dependencies of the linked package\n`npm link` creates a symlink but does NOT install peer dependencies of the linked package. This causes subtle runtime errors when peer deps are missing.\n**Fix**: After `npm link <pkg>`, manually install any peer deps, or use `npm install <path>` instead for a proper install.",
-      "summary": "npm link doesn't resolve peer dependencies of the linked package"
+      "summary": "npm link doesn't resolve peer dependencies of the linked package",
+      "problem": "`npm link` creates a symlink but does NOT install peer dependencies of the linked package. This causes subtle runtime errors when peer deps are missing.",
+      "solution": "After `npm link <pkg>`, manually install any peer deps, or use `npm install <path>` instead for a proper install."
     },
     "01KMZ3C0KEE5ZCSQWZZXQZZH67": {
       "slug": "chrome-devtools-econnrefused-when-chrome-5079",
@@ -976,7 +1058,9 @@
       ],
       "scope": null,
       "message": "## Lesson: Chrome DevTools ECONNREFUSED when Chrome not running or port 9222 not open\nMCP browser tools fail with `ECONNREFUSED 127.0.0.1:9222` because Chrome is not running with remote debugging enabled, or the debugging port is blocked by another Chrome instance.\n**Fix**: Ensure Chrome is launched with `--remote-debugging-port=9222`. If Chrome is already running, close it first — only one instance can bind port 9222. Check with `lsof -i :9222` to see what holds the port.",
-      "summary": "Chrome DevTools ECONNREFUSED when Chrome not running or port 9222 not open"
+      "summary": "Chrome DevTools ECONNREFUSED when Chrome not running or port 9222 not open",
+      "problem": "MCP browser tools fail with `ECONNREFUSED 127.0.0.1:9222` because Chrome is not running with remote debugging enabled, or the debugging port is blocked by another Chrome instance.",
+      "solution": "Ensure Chrome is launched with `--remote-debugging-port=9222`. If Chrome is already running, close it first — only one instance can bind port 9222. Check with `lsof -i :9222` to see what holds the port."
     },
     "01KMZ3C8X94TV1BGK36KAVZE3R": {
       "slug": "browser-eval-returns-undefined-for-async-9cf3",
@@ -1000,7 +1084,9 @@
       ],
       "scope": null,
       "message": "## Lesson: Browser eval returns undefined for async/Promise code\nUsing `eval` or `evaluate` in browser automation tools with async code (fetch, await, Promises) returns `undefined` because the eval context does not await the Promise. The expression completes synchronously, returning the unresolved Promise object.\n**Fix**: Wrap async eval code in an IIFE: `(async () => { const res = await fetch(...); return res.json(); })()`. Or use the browser tool's built-in async evaluation if available (e.g., Playwright's `page.evaluate` auto-awaits returned Promises).",
-      "summary": "Browser eval returns undefined for async/Promise code"
+      "summary": "Browser eval returns undefined for async/Promise code",
+      "problem": "Using `eval` or `evaluate` in browser automation tools with async code (fetch, await, Promises) returns `undefined` because the eval context does not await the Promise. The expression completes synchronously, returning the unresolved Promise object.",
+      "solution": "Wrap async eval code in an IIFE: `(async () => { const res = await fetch(...); return res.json(); })()`. Or use the browser tool's built-in async evaluation if available (e.g., Playwright's `page.evaluate` auto-awaits returned Promises)."
     },
     "01KMZ3DMJ9ZZVSM5TQYK70A4MB": {
       "slug": "webfetch-and-curl-fail-on-urls-that-requ-e368",
@@ -1024,7 +1110,9 @@
       ],
       "scope": null,
       "message": "## Lesson: WebFetch and curl fail on URLs that require browser JavaScript rendering\nUsing `WebFetch` or `curl` to fetch content from SPAs, job boards, or modern web apps returns 404, empty HTML, or redirect pages because the content is rendered client-side via JavaScript. The server returns a shell HTML page that requires JS execution.\n**Fix**: Use a headless browser tool (Playwright, Chrome DevTools MCP) instead of WebFetch/curl for JS-rendered content. If you only need structured data, check if the site has a public API or structured data in the initial HTML (JSON-LD, meta tags).",
-      "summary": "WebFetch and curl fail on URLs that require browser JavaScript rendering"
+      "summary": "WebFetch and curl fail on URLs that require browser JavaScript rendering",
+      "problem": "Using `WebFetch` or `curl` to fetch content from SPAs, job boards, or modern web apps returns 404, empty HTML, or redirect pages because the content is rendered client-side via JavaScript. The server returns a shell HTML page that requires JS execution.",
+      "solution": "Use a headless browser tool (Playwright, Chrome DevTools MCP) instead of WebFetch/curl for JS-rendered content. If you only need structured data, check if the site has a public API or structured data in the initial HTML (JSON-LD, meta tags)."
     },
     "01KMZ3E0905VZCSMBPSXZM2HRV": {
       "slug": "biome-2x-config-schema-is-incompatible-w-3369",
@@ -1049,7 +1137,9 @@
       ],
       "scope": null,
       "message": "## Lesson: Biome 2.x config schema is incompatible with Biome 1.x\nBiome 2.x changed its config schema significantly — `formatter`, `linter`, and `organizeImports` sections moved or renamed. Biome 1.x configs cause cryptic validation errors or silently ignore rules when used with Biome 2.x, and vice versa.\n**Fix**: Check biome version with `npx biome --version`. For Biome 2.x, use `npx biome migrate` to auto-upgrade the config. The `$schema` field in `biome.json` should match the installed version.",
-      "summary": "Biome 2.x config schema is incompatible with Biome 1.x"
+      "summary": "Biome 2.x config schema is incompatible with Biome 1.x",
+      "problem": "Biome 2.x changed its config schema significantly — `formatter`, `linter`, and `organizeImports` sections moved or renamed. Biome 1.x configs cause cryptic validation errors or silently ignore rules when used with Biome 2.x, and vice versa.",
+      "solution": "Check biome version with `npx biome --version`. For Biome 2.x, use `npx biome migrate` to auto-upgrade the config. The `$schema` field in `biome.json` should match the installed version."
     },
     "01KMZ3E7SCGVVWHAF2EG9R5D79": {
       "slug": "virtualenv-env-var-points-to-wrong-venv-8def",
@@ -1074,7 +1164,9 @@
       ],
       "scope": null,
       "message": "## Lesson: VIRTUAL_ENV env var points to wrong venv when using uv or switching projects\nThe `VIRTUAL_ENV` environment variable persists from a previous shell session or project, causing `uv`, `poetry`, or `pip` to warn about mismatched environments. Commands may silently operate on the wrong venv, installing packages in the wrong place.\n**Fix**: Run `source .venv/bin/activate` in the project directory to reset VIRTUAL_ENV, or use `uv run` which manages the venv automatically. Verify with `which python` before installing.",
-      "summary": "VIRTUAL_ENV env var points to wrong venv when using uv or switching projects"
+      "summary": "VIRTUAL_ENV env var points to wrong venv when using uv or switching projects",
+      "problem": "The `VIRTUAL_ENV` environment variable persists from a previous shell session or project, causing `uv`, `poetry`, or `pip` to warn about mismatched environments. Commands may silently operate on the wrong venv, installing packages in the wrong place.",
+      "solution": "Run `source .venv/bin/activate` in the project directory to reset VIRTUAL_ENV, or use `uv run` which manages the venv automatically. Verify with `which python` before installing."
     },
     "01KMZ3EGAAJKHA5ECVMCXME0TC": {
       "slug": "supabase-auth-returns-500-database-error-d1e9",
@@ -1098,7 +1190,9 @@
       ],
       "scope": null,
       "message": "## Lesson: Supabase auth returns 500 Database error when schema migrations are pending\nSupabase auth endpoints return `500 Database error querying schema` when the auth schema is out of sync — usually after running `supabase db reset` without restarting the auth service, or when migrations modify auth-related tables. The error looks like an application bug but is infrastructure state.\n**Fix**: Run `supabase stop && supabase start` to fully restart all services. If using local dev, `supabase db reset` followed by `supabase start` ensures clean state. Check `supabase status` to verify all services are healthy.",
-      "summary": "Supabase auth returns 500 Database error when schema migrations are pending"
+      "summary": "Supabase auth returns 500 Database error when schema migrations are pending",
+      "problem": "Supabase auth endpoints return `500 Database error querying schema` when the auth schema is out of sync — usually after running `supabase db reset` without restarting the auth service, or when migrations modify auth-related tables. The error looks like an application bug but is infrastructure state.",
+      "solution": "Run `supabase stop && supabase start` to fully restart all services. If using local dev, `supabase db reset` followed by `supabase start` ensures clean state. Check `supabase status` to verify all services are healthy."
     },
     "01KN3KYY211W4G5C9E08K7GYQT": {
       "slug": "typescript-file-using-jsx-must-have-tsx-ce55",
@@ -1127,7 +1221,9 @@
       ],
       "scope": null,
       "message": "## Lesson: TypeScript file using JSX must have .tsx extension, not .ts\nA .ts file containing JSX syntax produces TypeScript errors like TS1005 (expected >) because TypeScript does not parse JSX in .ts files — only in .tsx files.\n**Fix**: Rename the file from .ts to .tsx. If using a bundler, update any imports referencing the old filename.",
-      "summary": "TypeScript file using JSX must have .tsx extension, not .ts"
+      "summary": "TypeScript file using JSX must have .tsx extension, not .ts",
+      "problem": "A .ts file containing JSX syntax produces TypeScript errors like TS1005 (expected >) because TypeScript does not parse JSX in .ts files — only in .tsx files.",
+      "solution": "Rename the file from .ts to .tsx. If using a bundler, update any imports referencing the old filename."
     },
     "01KN3KZ58VB8NHDTZVQZMAGMZE": {
       "slug": "vitest-run-run-double-argument-treats-se-983e",
@@ -1152,7 +1248,9 @@
       ],
       "scope": null,
       "message": "## Lesson: vitest run run double-argument treats second run as a test filter pattern\nRunning vitest with run run (e.g. npx pnpm test -- run run) causes the second run to be interpreted as a filter pattern, silently running only tests matching the string run instead of all tests.\n**Fix**: Use vitest run exactly once: npx vitest run or pnpm test -- run. Do not pass run twice.",
-      "summary": "vitest run run double-argument treats second run as a test filter pattern"
+      "summary": "vitest run run double-argument treats second run as a test filter pattern",
+      "problem": "Running vitest with run run (e.g. npx pnpm test -- run run) causes the second run to be interpreted as a filter pattern, silently running only tests matching the string run instead of all tests.",
+      "solution": "Use vitest run exactly once: npx vitest run or pnpm test -- run. Do not pass run twice."
     },
     "01KNH2HGYNGNR68W7133V206C1": {
       "slug": "jq-tonumber-crashes-on-non-numeric-input-0536",
@@ -1175,7 +1273,9 @@
       ],
       "scope": null,
       "message": "## Lesson: jq tonumber crashes on non-numeric input; add on empty array returns null not 0\n`sort_by(.key | tonumber)` crashes on non-numeric keys; `[...] | add` on an empty array returns null instead of 0\n**Fix**: Guard tonumber: `select(.key | test(\"^[0-9]+$\")) | tonumber`; handle empty: `([...] | add) // 0`",
-      "summary": "jq tonumber crashes on non-numeric input; add on empty array returns null not 0"
+      "summary": "jq tonumber crashes on non-numeric input; add on empty array returns null not 0",
+      "problem": "`sort_by(.key | tonumber)` crashes on non-numeric keys; `[...] | add` on an empty array returns null instead of 0",
+      "solution": "Guard tonumber: `select(.key | test(\"^[0-9]+$\")) | tonumber`; handle empty: `([...] | add) // 0`"
     },
     "01KNH2HPGYYRJDJMZH1BXS4W3J": {
       "slug": "grep-c-with-echo-0-fallback-double-outpu-1aa4",
@@ -1199,7 +1299,9 @@
       ],
       "scope": null,
       "message": "## Lesson: grep -c with || echo 0 fallback double-outputs '0\\n0' when count is zero\ngrep -c exits 1 on zero matches; `|| echo 0` fallback executes and produces both the empty count and the echoed 0\n**Fix**: Use `grep -c ... || true` then `count=${count:-0}` to capture properly; or `(grep -c ... || true)` in a subshell",
-      "summary": "grep -c with || echo 0 fallback double-outputs '0\\n0' when count is zero"
+      "summary": "grep -c with || echo 0 fallback double-outputs '0\\n0' when count is zero",
+      "problem": "grep -c exits 1 on zero matches; `|| echo 0` fallback executes and produces both the empty count and the echoed 0",
+      "solution": "Use `grep -c ... || true` then `count=${count:-0}` to capture properly; or `(grep -c ... || true)` in a subshell"
     },
     "01KNH2J2PRGGZJ9GZ4KK0AATZQ": {
       "slug": "unquoted-bash-variable-in-comparison-fai-05b4",
@@ -1222,7 +1324,9 @@
       ],
       "scope": null,
       "message": "## Lesson: Unquoted bash variable in [[ ]] comparison fails under set -u on unset variables\n`[[ $var != true ]]` with $var unset triggers unbound variable error under set -u; quotes are not optional\n**Fix**: Always quote variables in comparisons: `[[ \"$var\" != \"true\" ]]` or use default expansion: `[[ \"${VAR:-}\" != \"true\" ]]`",
-      "summary": "Unquoted bash variable in [[ ]] comparison fails under set -u on unset variables"
+      "summary": "Unquoted bash variable in [[ ]] comparison fails under set -u on unset variables",
+      "problem": "`[[ $var != true ]]` with $var unset triggers unbound variable error under set -u; quotes are not optional",
+      "solution": "Always quote variables in comparisons: `[[ \"$var\" != \"true\" ]]` or use default expansion: `[[ \"${VAR:-}\" != \"true\" ]]`"
     },
     "01KNH2KGNNFMNZ3Z1Z9EPYMV8Y": {
       "slug": "env-file-parser-using-cut-d-fails-to-str-2d06",
@@ -1245,7 +1349,9 @@
       ],
       "scope": null,
       "message": "## Lesson: env file parser using cut -d= fails to strip export prefix from export KEY=value lines\nParser using `grep KEY= file | cut -d= -f2` silently skips or mispares `export KEY=value` lines, returning empty\n**Fix**: Normalize lines before parsing: `grep KEY= file | sed 's/^export //' | cut -d= -f2`",
-      "summary": "env file parser using cut -d= fails to strip export prefix from export KEY=value lines"
+      "summary": "env file parser using cut -d= fails to strip export prefix from export KEY=value lines",
+      "problem": "Parser using `grep KEY= file | cut -d= -f2` silently skips or mispares `export KEY=value` lines, returning empty",
+      "solution": "Normalize lines before parsing: `grep KEY= file | sed 's/^export //' | cut -d= -f2`"
     },
     "01KNH365KM7YW7KRB1HMT2TQCE": {
       "slug": "agents-expand-scope-during-execution-int-1274",
@@ -1264,7 +1370,9 @@
       ],
       "scope": null,
       "message": "## Lesson: Agents expand scope during execution, introducing unreviewed changes that add bugs\nBatch plan said 'add rate limiting' but agent also refactored auth middleware and added logging — unreviewed changes introduced bugs\n**Fix**: Add explicit prohibition to batch instructions: 'Do not implement anything not listed here. Note improvements in a progress file for future batches.'",
-      "summary": "Agents expand scope during execution, introducing unreviewed changes that add bugs"
+      "summary": "Agents expand scope during execution, introducing unreviewed changes that add bugs",
+      "problem": "Batch plan said 'add rate limiting' but agent also refactored auth middleware and added logging — unreviewed changes introduced bugs",
+      "solution": "Add explicit prohibition to batch instructions: 'Do not implement anything not listed here. Note improvements in a progress file for future batches.'"
     },
     "01KNH36AV9856BTMYA6N3AXE06": {
       "slug": "agent-written-tests-validate-the-agents-2fdf",
@@ -1283,7 +1391,9 @@
       ],
       "scope": null,
       "message": "## Lesson: Agent-written tests validate the agent's own misunderstanding instead of the spec (closed-loop self-grading)\nAgent wrote implementation and tests together; misunderstood 'cache results' as per-request instead of persistent; tests confirmed the misunderstanding\n**Fix**: Write tests from the spec before implementation, quoting spec text literally. Tests must be anchored to an external requirement, not derived from the implementation.",
-      "summary": "Agent-written tests validate the agent's own misunderstanding instead of the spec (closed-loop self-grading)"
+      "summary": "Agent-written tests validate the agent's own misunderstanding instead of the spec (closed-loop self-grading)",
+      "problem": "Agent wrote implementation and tests together; misunderstood 'cache results' as per-request instead of persistent; tests confirmed the misunderstanding",
+      "solution": "Write tests from the spec before implementation, quoting spec text literally. Tests must be anchored to an external requirement, not derived from the implementation."
     },
     "01KNH36NCH76JR86ET2A8TANG4": {
       "slug": "file-reads-at-batch-start-become-stale-a-d847",
@@ -1302,7 +1412,9 @@
       ],
       "scope": null,
       "message": "## Lesson: File reads at batch start become stale — agent consumes old snapshot and misses changes from earlier tasks\nTask 1 added a new API endpoint; Task 2 used the batch-start file snapshot, missing the new endpoint; frontend integration broke\n**Fix**: Instruct agent to re-read files immediately before consuming them: 'Before Task 2, re-read src/api.py to see current state.' Or split into separate batches.",
-      "summary": "File reads at batch start become stale — agent consumes old snapshot and misses changes from earlier tasks"
+      "summary": "File reads at batch start become stale — agent consumes old snapshot and misses changes from earlier tasks",
+      "problem": "Task 1 added a new API endpoint; Task 2 used the batch-start file snapshot, missing the new endpoint; frontend integration broke",
+      "solution": "Instruct agent to re-read files immediately before consuming them: 'Before Task 2, re-read src/api.py to see current state.' Or split into separate batches."
     },
     "01KNH3751QHZB33981K2NFZAAR": {
       "slug": "batches-ordered-top-down-fail-when-a-tas-6001",
@@ -1321,7 +1433,9 @@
       ],
       "scope": null,
       "message": "## Lesson: Batches ordered top-down fail when a task imports code that a later task produces\nBatch 1 (CLI) imported from Batch 3 (pipeline) which did not exist yet; ModuleNotFoundError on execution\n**Fix**: Draw the dependency graph before ordering. For each batch, list what it produces and what it consumes. Producers must always come before consumers.",
-      "summary": "Batches ordered top-down fail when a task imports code that a later task produces"
+      "summary": "Batches ordered top-down fail when a task imports code that a later task produces",
+      "problem": "Batch 1 (CLI) imported from Batch 3 (pipeline) which did not exist yet; ModuleNotFoundError on execution",
+      "solution": "Draw the dependency graph before ordering. For each batch, list what it produces and what it consumes. Producers must always come before consumers."
     },
     "01KNH37RSV0QY5A5XGJWASPMVR": {
       "slug": "batch-executed-without-a-rollback-plan-l-19b8",
@@ -1340,7 +1454,9 @@
       ],
       "scope": null,
       "message": "## Lesson: Batch executed without a rollback plan leaves partial state that is harder to debug than a clean revert\nBatch failed after migration applied but ORM models were incomplete; retrying hit already-applied migration; partial state failed differently each time\n**Fix**: Commit all prior work before executing. On failure: use git stash to preserve and revert to clean state. Define the recovery path in the plan before executing.",
-      "summary": "Batch executed without a rollback plan leaves partial state that is harder to debug than a clean revert"
+      "summary": "Batch executed without a rollback plan leaves partial state that is harder to debug than a clean revert",
+      "problem": "Batch failed after migration applied but ORM models were incomplete; retrying hit already-applied migration; partial state failed differently each time",
+      "solution": "Commit all prior work before executing. On failure: use git stash to preserve and revert to clean state. Define the recovery path in the plan before executing."
     },
     "01KNH37YW5BS58WXXTA45S2RZR": {
       "slug": "tasks-without-a-verification-command-pas-fc8f",
@@ -1359,7 +1475,9 @@
       ],
       "scope": null,
       "message": "## Lesson: Tasks without a verification command pass quality gates despite incorrect output\nTask 'improve error messages' had no verification command; quality gate passed but messages were unchanged; agent improvised a different change\n**Fix**: Write the verification command before the task description: 'This task is done when: <shell command> exits 0 with output <expected>'",
-      "summary": "Tasks without a verification command pass quality gates despite incorrect output"
+      "summary": "Tasks without a verification command pass quality gates despite incorrect output",
+      "problem": "Task 'improve error messages' had no verification command; quality gate passed but messages were unchanged; agent improvised a different change",
+      "solution": "Write the verification command before the task description: 'This task is done when: <shell command> exits 0 with output <expected>'"
     },
     "01KMZ3CHGQMTYQA0AFPQRGCSEG": {
       "slug": "oh-my-zsh-nvm-plugin-outputs-warnings-in-df6f",
@@ -1383,7 +1501,9 @@
       ],
       "scope": null,
       "message": "## Lesson: oh-my-zsh nvm plugin outputs warnings in non-interactive shells\nShell commands in Claude Code produce spurious `command not found: _omz_nvm_setup_completion` and `_omz_nvm_setup_autoload` warnings because oh-my-zsh nvm plugin initialization runs in non-interactive shells spawned by the Bash tool. These warnings pollute stdout/stderr and can confuse error detection.\n**Fix**: Prepend `SHELL=/bin/sh` or use `env -i PATH=$PATH command` to avoid loading zsh plugins. Alternatively, guard oh-my-zsh initialization in .zshrc with `[[ -o interactive ]] || return` at the top.",
-      "summary": "oh-my-zsh nvm plugin outputs warnings in non-interactive shells"
+      "summary": "oh-my-zsh nvm plugin outputs warnings in non-interactive shells",
+      "problem": "Shell commands in Claude Code produce spurious `command not found: _omz_nvm_setup_completion` and `_omz_nvm_setup_autoload` warnings because oh-my-zsh nvm plugin initialization runs in non-interactive shells spawned by the Bash tool. These warnings pollute stdout/stderr and can confuse error detection.",
+      "solution": "Prepend `SHELL=/bin/sh` or use `env -i PATH=$PATH command` to avoid loading zsh plugins. Alternatively, guard oh-my-zsh initialization in .zshrc with `[[ -o interactive ]] || return` at the top."
     },
     "01KMZ3DB3W7VMWBVSXT4G0MTNF": {
       "slug": "nodejs-deprecationwarnings-pollute-cli-o-112c",
@@ -1408,7 +1528,9 @@
       ],
       "scope": null,
       "message": "## Lesson: Node.js DeprecationWarnings pollute CLI output in non-interactive terminals\nNode.js emits `DeprecationWarning` messages to stderr (e.g., `--locale` flag, `punycode` module, `fs.Stats` constructor) that clutter tool output in Claude Code. These warnings are harmless but can be mistaken for errors and obscure actual error messages.\n**Fix**: Suppress with `NODE_NO_WARNINGS=1` or `--no-deprecation` flag. For specific warnings, use `--disable-warning=DEP0XXX`. Do not suppress all warnings in production — only in non-interactive agent contexts.",
-      "summary": "Node.js DeprecationWarnings pollute CLI output in non-interactive terminals"
+      "summary": "Node.js DeprecationWarnings pollute CLI output in non-interactive terminals",
+      "problem": "Node.js emits `DeprecationWarning` messages to stderr (e.g., `--locale` flag, `punycode` module, `fs.Stats` constructor) that clutter tool output in Claude Code. These warnings are harmless but can be mistaken for errors and obscure actual error messages.",
+      "solution": "Suppress with `NODE_NO_WARNINGS=1` or `--no-deprecation` flag. For specific warnings, use `--disable-warning=DEP0XXX`. Do not suppress all warnings in production — only in non-interactive agent contexts."
     },
     "01KMZ3ERT3Q1Q1CKMDSMZTY9DP": {
       "slug": "subagents-may-not-have-access-to-bash-to-6a73",
@@ -1426,7 +1548,9 @@
       ],
       "scope": null,
       "message": "## Lesson: Subagents may not have access to Bash tool — check available tools first\nSubagents spawned via the Agent tool may have a restricted tool set. Attempting to use `Bash` when it is not available produces `Error: No such tool available: Bash`. This wastes a turn and breaks the agent workflow.\n**Fix**: Before assuming Bash is available, check the agent context. Use Read/Grep/Glob for file operations, and only fall back to Bash for commands that truly require shell execution. In restricted contexts, use available MCP tools or ask the parent agent to execute shell commands.",
-      "summary": "Subagents may not have access to Bash tool — check available tools first"
+      "summary": "Subagents may not have access to Bash tool — check available tools first",
+      "problem": "Subagents spawned via the Agent tool may have a restricted tool set. Attempting to use `Bash` when it is not available produces `Error: No such tool available: Bash`. This wastes a turn and breaks the agent workflow.",
+      "solution": "Before assuming Bash is available, check the agent context. Use Read/Grep/Glob for file operations, and only fall back to Bash for commands that truly require shell execution. In restricted contexts, use available MCP tools or ask the parent agent to execute shell commands."
     },
     "01KN3KZC98WFJYYJ3HCQBDRX3K": {
       "slug": "zod-v4-zodresolver-requires-zodv4core-to-ac16",
@@ -1451,7 +1575,9 @@
       ],
       "scope": null,
       "message": "## Lesson: Zod v4 zodResolver requires zod/v4/core — v3 and v4 resolvers are not interchangeable\nUsing zodResolver from @hookform/resolvers with Zod v4 schemas fails because the resolver expects zod/v4/core to be importable and the schema types differ between v3 and v4. Mixing versions produces runtime type mismatches.\n**Fix**: Ensure @hookform/resolvers is updated to a version that supports Zod v4, and import zodResolver from @hookform/resolvers/zod. Do not mix Zod v3 and v4 schemas in the same form.",
-      "summary": "Zod v4 zodResolver requires zod/v4/core — v3 and v4 resolvers are not interchangeable"
+      "summary": "Zod v4 zodResolver requires zod/v4/core — v3 and v4 resolvers are not interchangeable",
+      "problem": "Using zodResolver from @hookform/resolvers with Zod v4 schemas fails because the resolver expects zod/v4/core to be importable and the schema types differ between v3 and v4. Mixing versions produces runtime type mismatches.",
+      "solution": "Ensure @hookform/resolvers is updated to a version that supports Zod v4, and import zodResolver from @hookform/resolvers/zod. Do not mix Zod v3 and v4 schemas in the same form."
     },
     "01KNH2K94RAG8TM94Y7HK9QYEH": {
       "slug": "local-keyword-used-outside-a-bash-functi-2b18",
@@ -1474,7 +1600,9 @@
       ],
       "scope": null,
       "message": "## Lesson: local keyword used outside a bash function is undefined behavior and fails in dash/sh\nbash tolerates `local var` at script top-level but it is undefined behavior; fails with `local: can only be used in a function` in dash/sh\n**Fix**: Reserve `local` for function bodies only; use plain assignment at script top-level",
-      "summary": "local keyword used outside a bash function is undefined behavior and fails in dash/sh"
+      "summary": "local keyword used outside a bash function is undefined behavior and fails in dash/sh",
+      "problem": "bash tolerates `local var` at script top-level but it is undefined behavior; fails with `local: can only be used in a function` in dash/sh",
+      "solution": "Reserve `local` for function bodies only; use plain assignment at script top-level"
     },
     "01KNH360TF0FAY2P7ZWAD009PK": {
       "slug": "acceptance-criteria-written-as-vague-beh-d941",
@@ -1491,7 +1619,9 @@
       ],
       "scope": null,
       "message": "## Lesson: Vague acceptance criteria let agents pass trivially wrong implementations\nSpecifying criteria like 'authentication works' lets an agent implement any solution that satisfies the literal words, even a trivial one that misses the intent\n**Fix**: Where possible, write acceptance criteria as executable checks (e.g. a shell command with expected output). When an executable check is not practical, write observable, falsifiable assertions instead — not vague behavior descriptions like \"authentication works\".",
-      "summary": "Vague acceptance criteria let agents pass trivially wrong implementations"
+      "summary": "Vague acceptance criteria let agents pass trivially wrong implementations",
+      "problem": "Specifying criteria like 'authentication works' lets an agent implement any solution that satisfies the literal words, even a trivial one that misses the intent",
+      "solution": "Where possible, write acceptance criteria as executable checks (e.g. a shell command with expected output). When an executable check is not practical, write observable, falsifiable assertions instead — not vague behavior descriptions like \"authentication works\"."
     },
     "01KNH36G1T1RNFHVTTANEKB2JX": {
       "slug": "single-example-in-a-spec-is-treated-as-t-0f87",
@@ -1508,7 +1638,9 @@
       ],
       "scope": null,
       "message": "## Lesson: Single example in a spec is treated as the complete contract; missing formats break production\nSpec gave one example date '2024-01-15'; agent implemented ISO-only parsing; production had US format and null values\n**Fix**: Provide at least 3 examples per behavior: happy path, error case, boundary condition. Explicitly state what is NOT required.",
-      "summary": "Single example in a spec is treated as the complete contract; missing formats break production"
+      "summary": "Single example in a spec is treated as the complete contract; missing formats break production",
+      "problem": "Spec gave one example date '2024-01-15'; agent implemented ISO-only parsing; production had US format and null values",
+      "solution": "Provide at least 3 examples per behavior: happy path, error case, boundary condition. Explicitly state what is NOT required."
     },
     "01KNH36TPQJN6DDCS62SBYG6QP": {
       "slug": "late-requirements-placed-mid-context-are-871d",
@@ -1525,7 +1657,9 @@
       ],
       "scope": null,
       "message": "## Lesson: Late requirements placed mid-context are silently missed; attention degrades past ~6000 chars\nRequirements placed after 7000 chars of context; a 500ms timeout requirement was missed because it fell in the low-attention middle region\n**Fix**: Place context in this order: task description first, then requirements, then reference material, then acceptance criteria last. Keep total context under 6000 chars per batch.",
-      "summary": "Late requirements placed mid-context are silently missed; attention degrades past ~6000 chars"
+      "summary": "Late requirements placed mid-context are silently missed; attention degrades past ~6000 chars",
+      "problem": "Requirements placed after 7000 chars of context; a 500ms timeout requirement was missed because it fell in the low-attention middle region",
+      "solution": "Place context in this order: task description first, then requirements, then reference material, then acceptance criteria last. Keep total context under 6000 chars per batch."
     },
     "01KNH37A72SZMHJ4YS1V6PDZ2E": {
       "slug": "batches-over-5-tasks-or-250-lines-produc-2f49",
@@ -1544,7 +1678,9 @@
       ],
       "scope": null,
       "message": "## Lesson: Batches over 5 tasks or 250 lines produce subtle bugs in later tasks due to degraded context attention\n8-task batch had subtle bugs in tasks 7-8: missed validation, off-by-one pagination, missing assertion — all in the context-depleted region\n**Fix**: Split batches at natural module boundaries when exceeding 5 tasks or ~250 estimated lines of output",
-      "summary": "Batches over 5 tasks or 250 lines produce subtle bugs in later tasks due to degraded context attention"
+      "summary": "Batches over 5 tasks or 250 lines produce subtle bugs in later tasks due to degraded context attention",
+      "problem": "8-task batch had subtle bugs in tasks 7-8: missed validation, off-by-one pagination, missing assertion — all in the context-depleted region",
+      "solution": "Split batches at natural module boundaries when exceeding 5 tasks or ~250 estimated lines of output"
     },
     "01KPDV2W4VB3JV43P81EQECP3Y": {
       "slug": "always-quote-file-paths-with-spaces-in-s-ba0a",
@@ -1562,7 +1698,9 @@
       ],
       "scope": null,
       "message": "## Lesson: Always quote file paths with spaces in shell scripts\nUnquoted paths with spaces are split by the shell into multiple arguments, causing unexpected failures\n**Fix**: Wrap all file path variables in double quotes: \"$FILE\" instead of $FILE",
-      "summary": "Always quote file paths with spaces in shell scripts"
+      "summary": "Always quote file paths with spaces in shell scripts",
+      "problem": "Unquoted paths with spaces are split by the shell into multiple arguments, causing unexpected failures",
+      "solution": "Wrap all file path variables in double quotes: \"$FILE\" instead of $FILE"
     },
     "01KPE0H2523V8NJCP37J4EJFRJ": {
       "slug": "bd-commands-fail-when-dolt-sql-server-ho-198e",
@@ -1587,7 +1725,9 @@
       ],
       "scope": null,
       "message": "## Lesson: bd commands fail when dolt sql-server holds exclusive lock on embeddeddolt\nAfter upgrading beads CLI or after a server restart, a dolt sql-server process (manually started or idle-monitor managed) holds an exclusive lock on .beads/embeddeddolt. bd CLI in embedded mode requires exclusive file access — the running server causes every bd command to fail with an exclusive lock error\n**Fix**: Kill any dolt sql-server processes holding the lock (ps aux | grep dolt), kill the idle-monitor (bd dolt idle-monitor) if running, then verify bd list works. Also fix .beads/dolt/config.yaml to use absolute data_dir path so idle-monitor restarts use the correct DB directory",
-      "summary": "bd commands fail when dolt sql-server holds exclusive lock on embeddeddolt"
+      "summary": "bd commands fail when dolt sql-server holds exclusive lock on embeddeddolt",
+      "problem": "After upgrading beads CLI or after a server restart, a dolt sql-server process (manually started or idle-monitor managed) holds an exclusive lock on .beads/embeddeddolt. bd CLI in embedded mode requires exclusive file access — the running server causes every bd command to fail with an exclusive lock error",
+      "solution": "Kill any dolt sql-server processes holding the lock (ps aux | grep dolt), kill the idle-monitor (bd dolt idle-monitor) if running, then verify bd list works. Also fix .beads/dolt/config.yaml to use absolute data_dir path so idle-monitor restarts use the correct DB directory"
     },
     "01KN38M1NYYV4Z92DZQPGTEWHK": {
       "slug": "used-decision-deny-reason-systemmessage-f9e4",
@@ -1605,7 +1745,9 @@
       ],
       "scope": "Users-joeblack-github-joeblackwaslike-lessons-learned",
       "message": "## Lesson: Used PermissionRequest schema instead of hookSpecificOutput — hook silently allows the call\nused `{ decision: \"deny\", reason, systemMessage }` (PermissionRequest schema) instead of `{ hookSpecificOutput: { hookEventName: \"PreToolUse\", permissionDecision: \"deny\", permissionDecisionReason } }` — Claude Code silently ignored the unknown schema and executed anyway, giving no error signal\n**Fix**: always read the compiled source of a working plugin (safety-net) before implementing an underdocumented protocol; and write a schema assertion test so \"wrong contract\" fails loudly instead of silently",
-      "summary": "Used PermissionRequest schema instead of hookSpecificOutput — hook silently allows the call"
+      "summary": "Used PermissionRequest schema instead of hookSpecificOutput — hook silently allows the call",
+      "problem": "used `{ decision: \"deny\", reason, systemMessage }` (PermissionRequest schema) instead of `{ hookSpecificOutput: { hookEventName: \"PreToolUse\", permissionDecision: \"deny\", permissionDecisionReason } }` — Claude Code silently ignored the unknown schema and executed anyway, giving no error signal",
+      "solution": "always read the compiled source of a working plugin (safety-net) before implementing an underdocumented protocol; and write a schema assertion test so \"wrong contract\" fails loudly instead of silently"
     },
     "01KN38M1TECTA85XF00XY8NFMB": {
       "slug": "observed-that-read-tool-results-caused-f-29e8",
@@ -1622,7 +1764,9 @@
       ],
       "scope": null,
       "message": "## Lesson: Fixing one noisy tool by switching to an allowlist silently drops all tools not explicitly listed\nobserved that Read tool results caused false positives, then jumped from \"exclude Read\" to \"only allow Bash/TaskOutput\" — an allowlist that silently dropped MCP tools, Edit, Write, and all future tools not explicitly listed\n**Fix**: match the scope of the fix to the scope of the observation; if the problem is \"X is noisy,\" exclude X — don't redesign around the absence of X",
-      "summary": "Fixing one noisy tool by switching to an allowlist silently drops all tools not explicitly listed"
+      "summary": "Fixing one noisy tool by switching to an allowlist silently drops all tools not explicitly listed",
+      "problem": "observed that Read tool results caused false positives, then jumped from \"exclude Read\" to \"only allow Bash/TaskOutput\" — an allowlist that silently dropped MCP tools, Edit, Write, and all future tools not explicitly listed",
+      "solution": "match the scope of the fix to the scope of the observation; if the problem is \"X is noisy,\" exclude X — don't redesign around the absence of X"
     },
     "01KNH3709KYRZVYC4ZZWY0359X": {
       "slug": "lesson-reminders-placed-at-batch-start-a-c7e1",
@@ -1641,7 +1785,9 @@
       ],
       "scope": null,
       "message": "## Lesson: Lesson reminders placed at batch start are forgotten by the time the guarded task executes\nAll lesson summaries injected at batch start (2000 chars); by Task 4, agent forgot the bare-except lesson and wrote `except: pass`\n**Fix**: Co-locate each lesson reminder immediately before the task it guards: [Task N] → [one-line lesson reminder] → [acceptance criteria]",
-      "summary": "Lesson reminders placed at batch start are forgotten by the time the guarded task executes"
+      "summary": "Lesson reminders placed at batch start are forgotten by the time the guarded task executes",
+      "problem": "All lesson summaries injected at batch start (2000 chars); by Task 4, agent forgot the bare-except lesson and wrote `except: pass`",
+      "solution": "Co-locate each lesson reminder immediately before the task it guards: [Task N] → [one-line lesson reminder] → [acceptance criteria]"
     },
     "01KN38M1DX1EC9G9Y7MBMZDHN8": {
       "slug": "said-run-pytest-tests-without-specifying-20c5",
@@ -1659,7 +1805,9 @@
       ],
       "scope": "Users-joeblack-github-joeblackwaslike-lessons-learned",
       "message": "## Lesson: Said to run the test command ambiguously — users ran it directly instead of via Claude, bypassing PreToolUse\nWhen testing PreToolUse hook behavior, instructions like \"run node --test\" are ambiguous — the user may paste the command directly into their terminal. PreToolUse only fires when Claude invokes a tool; user-initiated terminal commands bypass the hook entirely, producing false negatives that make the hook look broken when it is working correctly.\n**Fix**: Always frame test instructions as \"ask Claude to run X\" (e.g., \"tell Claude to run the tests\"). This ensures the command goes through Claude's tool call, which is the only execution path that triggers PreToolUse.",
-      "summary": "Said to run the test command ambiguously — users ran it directly instead of via Claude, bypassing PreToolUse"
+      "summary": "Said to run the test command ambiguously — users ran it directly instead of via Claude, bypassing PreToolUse",
+      "problem": "When testing PreToolUse hook behavior, instructions like \"run node --test\" are ambiguous — the user may paste the command directly into their terminal. PreToolUse only fires when Claude invokes a tool; user-initiated terminal commands bypass the hook entirely, producing false negatives that make the hook look broken when it is working correctly.",
+      "solution": "Always frame test instructions as \"ask Claude to run X\" (e.g., \"tell Claude to run the tests\"). This ensures the command goes through Claude's tool call, which is the only execution path that triggers PreToolUse."
     },
     "01KN38M1GD7BR75VC3DZS1ZZ3D": {
       "slug": "didnt-warn-that-plan-mode-suppresses-too-0aeb",
@@ -1677,7 +1825,9 @@
       ],
       "scope": "Users-joeblack-github-joeblackwaslike-lessons-learned",
       "message": "## Lesson: Plan mode suppresses tool calls — PreToolUse never fires, giving false negatives in hook tests\nDidn't warn that plan mode suppresses tool calls — if Claude enters plan mode, PreToolUse never fires because Bash is never called, so the hook test produces a false negative\n**Fix**: When testing PreToolUse hooks, tell the user to disable plan mode or explicitly say \"don't plan, just run it\" so the hook actually fires",
-      "summary": "Plan mode suppresses tool calls — PreToolUse never fires, giving false negatives in hook tests"
+      "summary": "Plan mode suppresses tool calls — PreToolUse never fires, giving false negatives in hook tests",
+      "problem": "Didn't warn that plan mode suppresses tool calls — if Claude enters plan mode, PreToolUse never fires because Bash is never called, so the hook test produces a false negative",
+      "solution": "When testing PreToolUse hooks, tell the user to disable plan mode or explicitly say \"don't plan, just run it\" so the hook actually fires"
     },
     "01KN38M1R38W3BZFZNNFBGAWHE": {
       "slug": "interpreted-command-with-flags-got-block-42fb",
@@ -1695,7 +1845,9 @@
       ],
       "scope": "Users-joeblack-github-joeblackwaslike-lessons-learned",
       "message": "## Lesson: Misread corrected retry output as proof the block failed — diagnosed a problem that did not exist\nWhen a guard lesson blocks a Bash command and Claude self-corrects by retrying without the flagged argument, the output log shows both the blocked attempt and the successful retry. Misreading the retry as a new failure causes false diagnosis — the system actually worked correctly through its full block → self-correct → retry cycle.\n**Fix**: Before diagnosing unexpected output as a guard failure, trace the expected flow: guard fires → Claude sees the block reason → Claude retries with corrected command → retry succeeds. Verify whether the observed output matches that flow before concluding anything is broken.",
-      "summary": "Misread corrected retry output as proof the block failed — diagnosed a problem that did not exist"
+      "summary": "Misread corrected retry output as proof the block failed — diagnosed a problem that did not exist",
+      "problem": "When a guard lesson blocks a Bash command and Claude self-corrects by retrying without the flagged argument, the output log shows both the blocked attempt and the successful retry. Misreading the retry as a new failure causes false diagnosis — the system actually worked correctly through its full block → self-correct → retry cycle.",
+      "solution": "Before diagnosing unexpected output as a guard failure, trace the expected flow: guard fires → Claude sees the block reason → Claude retries with corrected command → retry succeeds. Verify whether the observed output matches that flow before concluding anything is broken."
     }
   }
 }

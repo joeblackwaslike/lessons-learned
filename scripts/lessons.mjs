@@ -527,6 +527,8 @@ function buildManifest() {
       scope: lesson.scope ?? null,
       message: buildInjection(lesson),
       summary: lesson.summary,
+      problem: lesson.problem ?? '',
+      solution: lesson.solution ?? '',
       ...(isDisabled ? { disabled: true } : {}),
     };
     included++;

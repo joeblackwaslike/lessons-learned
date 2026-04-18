@@ -8,7 +8,7 @@
  */
 
 /**
- * @typedef {{ id?: string, slug: string, type: string, priority: number, message: string, summary: string }} Match
+ * @typedef {{ id?: string, slug: string, type: string, priority: number, message: string, summary: string, problem: string, solution: string }} Match
  */
 
 /**
@@ -90,6 +90,8 @@ export function matchLessons(lessons, toolName, command, filePath, projectId = n
         priority: lesson.priority ?? 5,
         message: lesson.message ?? '',
         summary: lesson.summary ?? '',
+        problem: lesson.problem ?? '',
+        solution: lesson.solution ?? '',
       });
     }
   }

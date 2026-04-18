@@ -58,7 +58,10 @@ export function selectCandidates(
       remainingBudget -= textBytes;
       seen.add(lesson.slug);
     } else {
-      const summaryText = `**Lesson**: ${lesson.summary}`;
+      const citationParts = [`**Lesson**: ${lesson.summary}`];
+      if (lesson.problem) citationParts.push(`**Problem**: ${lesson.problem.split('\n')[0].slice(0, 200)}`);
+      if (lesson.solution) citationParts.push(`**Solution**: ${lesson.solution.split('\n')[0].slice(0, 200)}`);
+      const summaryText = citationParts.join('\n');
       const summaryBytes = Buffer.byteLength(summaryText, 'utf8');
       if (lesson.summary && summaryBytes <= remainingBudget) {
         injected.push({ slug: lesson.slug, text: summaryText });
