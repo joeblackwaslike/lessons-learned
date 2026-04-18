@@ -35,6 +35,7 @@ hooks/                          # Claude Code hook handlers
   session-start-lesson-protocol.mjs  # Injects #lesson protocol + session-start lessons
   session-start-reset.mjs       # Clears per-session dedup state on reset
   session-start-scan.mjs        # Fires background scan on startup
+  precompact-handoff.mjs        # PreCompact hook: context banner or handoff generation
   subagent-start-lesson-protocol.mjs
   lib/                          # Hook shared utilities (dedup, output, matching)
 
@@ -61,11 +62,13 @@ node scripts/lessons.mjs <subcommand> [options]
 | ------------------ | ------------------------------------------------------------ |
 | `add`              | Add a new lesson (interactive, `--json`, `--file`, or stdin) |
 | `build`            | Rebuild `lesson-manifest.json` from the DB (`lessons.db`)    |
+| `edit`             | Edit a lesson field in-place (`--id <id> --patch '{"field":"value"}'}`) |
 | `list`             | List all lessons with patterns and metadata                  |
-| `review`           | Review T2 candidates against validation rules                |
+| `onboard`          | Interactive onboarding for the lesson system                 |
+| `promote`          | Promote candidates to active, archive, or patch fields (`--ids`) |
+| `review`           | Review candidates against validation rules, grouped by tag   |
 | `scan`             | Incrementally scan session logs for new candidates           |
-| `scan candidates`  | Full scan filtered to recurring cross-project patterns       |
-| `scan promote [N]` | Promote candidate N into the lesson store                    |
+| `scan aggregate`   | List ranked candidates from the DB (JSON output)             |
 
 Run any subcommand with `--help` for full options.
 
@@ -137,6 +140,24 @@ Key lesson fields:
 | `directive` | SessionStart | Always-on, higher priority than `protocol` |
 
 Guards should always set `commandMatchTarget: "executable"` to avoid matching trigger words inside `--patch '...'` JSON arguments or other quoted strings.
+
+## Injection behaviors
+
+**Citation fallback**: When a lesson's full body exceeds the remaining byte budget, injection falls back to a compact citation format instead of dropping the lesson entirely:
+```
+**Lesson**: <summary>
+**Problem**: <problem, first line, capped 200 chars>
+**Solution**: <solution, first line, capped 200 chars>
+```
+
+**Session-start clustering**: `directive` and `protocol` lessons are grouped by their first tag before injection. When multiple tag groups exist, a `### <tag>` header precedes each group. Alphabetical order, with untagged lessons last. Single-group outputs have no headers.
+
+**Review grouping**: `lessons review` groups candidates by first tag with `── <tag> (<count>) ─────` headers, sorted alphabetically with `(untagged)` last.
+
+**PreCompact handoff** (`/lessons:handoff`): Intercepts `/compact` to generate a session handoff summary. Three modes:
+- No env var set: emits a context-capacity warning banner, allows compaction
+- `LESSONS_PRECOMPACT_HANDOFF=1`: generates handoff, blocks compaction (exit 2)
+- On-demand via `/lessons:handoff` command: generates handoff, allows compaction
 
 ## `#lesson` tag format
 

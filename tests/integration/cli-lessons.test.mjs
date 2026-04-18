@@ -9,6 +9,7 @@ import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { DatabaseSync } from 'node:sqlite';
 import { run } from '../helpers/subprocess.mjs';
 import { createTmpStore } from '../helpers/tmpstore.mjs';
 
@@ -200,5 +201,91 @@ describe('lessons list', () => {
     const lessons = JSON.parse(stdout);
     // Fixture has 1 lesson (git stash), so list should have 1
     assert.equal(lessons.length, 1);
+  });
+});
+
+// ─── lessons review ───────────────────────────────────────────────────────
+
+function insertCandidate(dbPath, overrides = {}) {
+  const db = new DatabaseSync(dbPath);
+  const id = `test-cand-${Math.random().toString(36).slice(2)}`;
+  const now = new Date().toISOString();
+  db.prepare(`
+    INSERT INTO lessons (
+      id, slug, status, type, summary, problem, solution,
+      injectOn, toolNames, commandPatterns, pathPatterns, block,
+      priority, confidence, tags, source, sourceSessionIds,
+      occurrenceCount, sessionCount, projectCount, contentHash,
+      createdAt, updatedAt
+    ) VALUES (
+      :id, :slug, 'candidate', 'hint',
+      :summary, :problem, :solution,
+      '["PreToolUse"]', '["Bash"]', '[]', '[]', 0,
+      5, 0.8, :tags, 'heuristic', '[]',
+      1, 1, 1, :contentHash, :createdAt, :updatedAt
+    )
+  `).run({
+    id,
+    slug: `slug-${id}`,
+    summary: overrides.summary ?? 'A candidate lesson summary for testing purposes here',
+    problem: overrides.problem ?? 'The problem that happened in the candidate session context',
+    solution: overrides.solution ?? 'The solution that resolved the candidate problem correctly',
+    tags: JSON.stringify(overrides.tags ?? []),
+    contentHash: id,
+    createdAt: now,
+    updatedAt: now,
+  });
+  db.close();
+  return id;
+}
+
+describe('lessons review', () => {
+  it('reports no candidates when store is empty', async () => {
+    const { stdout, exitCode } = await run(LESSONS_CLI, {
+      args: ['review'],
+      env: env(),
+    });
+    assert.equal(exitCode, 0, `unexpected failure`);
+    assert.ok(stdout.includes('No candidates'), `expected "No candidates" in: ${stdout}`);
+  });
+
+  it('shows group headers when candidates have different tags', async () => {
+    insertCandidate(store.dbPath, { tags: ['tool:git'] });
+    insertCandidate(store.dbPath, { tags: ['tool:npm'] });
+    const { stdout, exitCode } = await run(LESSONS_CLI, {
+      args: ['review'],
+      env: env(),
+    });
+    assert.equal(exitCode, 0);
+    assert.ok(stdout.includes('── tool:git'), `expected tool:git header in:\n${stdout}`);
+    assert.ok(stdout.includes('── tool:npm'), `expected tool:npm header in:\n${stdout}`);
+  });
+
+  it('sorts groups alphabetically with (untagged) last', async () => {
+    insertCandidate(store.dbPath, { tags: [] });
+    insertCandidate(store.dbPath, { tags: ['tool:z'] });
+    insertCandidate(store.dbPath, { tags: ['tool:a'] });
+    const { stdout } = await run(LESSONS_CLI, {
+      args: ['review'],
+      env: env(),
+    });
+    const aPos = stdout.indexOf('── tool:a');
+    const zPos = stdout.indexOf('── tool:z');
+    const untaggedPos = stdout.indexOf('── (untagged)');
+    assert.ok(aPos !== -1, 'tool:a header missing');
+    assert.ok(zPos !== -1, 'tool:z header missing');
+    assert.ok(untaggedPos !== -1, '(untagged) header missing');
+    assert.ok(aPos < zPos, 'tool:a should come before tool:z');
+    assert.ok(zPos < untaggedPos, 'tool:z should come before (untagged)');
+  });
+
+  it('shows group header even when all candidates share the same tag', async () => {
+    insertCandidate(store.dbPath, { tags: ['tool:git'] });
+    insertCandidate(store.dbPath, { tags: ['tool:git'] });
+    const { stdout } = await run(LESSONS_CLI, {
+      args: ['review'],
+      env: env(),
+    });
+    assert.ok(stdout.includes('── tool:git'), 'tool:git header should be present');
   });
 });

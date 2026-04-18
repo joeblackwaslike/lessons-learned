@@ -13,9 +13,11 @@
 import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { groupByTag } from './lib/session-start.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const MANIFEST_PATH = join(__dirname, '..', 'data', 'lesson-manifest.json');
+const MANIFEST_PATH =
+  process.env.LESSONS_MANIFEST_PATH ?? join(__dirname, '..', 'data', 'lesson-manifest.json');
 
 const LESSON_PROTOCOL = `# [lessons-learned] Lesson Reporting Protocol
 
@@ -65,19 +67,6 @@ Emit this tag naturally as part of your response whenever you:
 
 Do NOT force lesson tags where none apply. Only tag genuine problem→solution sequences.`;
 
-function groupByTag(lessons) {
-  const groups = new Map();
-  for (const l of lessons) {
-    const key = l.tags?.[0] ?? '(untagged)';
-    if (!groups.has(key)) groups.set(key, []);
-    groups.get(key).push(l);
-  }
-  return [...groups.entries()].sort(([a], [b]) => {
-    if (a === '(untagged)') return 1;
-    if (b === '(untagged)') return -1;
-    return a.localeCompare(b);
-  });
-}
 
 function main() {
   try {
