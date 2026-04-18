@@ -23,6 +23,7 @@ data/review-sessions/
 .beads/dolt/
 .beads/embeddeddolt/
 .beads/interactions.jsonl
+.beads/backup/*.darc
 
 # OS artifacts
 .DS_Store
