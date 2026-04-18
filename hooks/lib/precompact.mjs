@@ -41,7 +41,10 @@ export function parseTranscript(filePath) {
           typeof c === 'string'
             ? c
             : Array.isArray(c)
-              ? c.filter(x => x.type === 'text').map(x => x.text).join('\n')
+              ? c
+                  .filter(x => x.type === 'text')
+                  .map(x => x.text)
+                  .join('\n')
               : '';
         // Strip injected system context — keep only the human-authored message.
         const clean = text.split('<system-reminder>')[0].split('<ide_opened_file>')[0].trim();
@@ -50,14 +53,20 @@ export function parseTranscript(filePath) {
       } else if (d.type === 'assistant') {
         const c = d.message?.content;
         if (Array.isArray(c)) {
-          const text = c.filter(x => x.type === 'text').map(x => x.text).join('\n').trim();
+          const text = c
+            .filter(x => x.type === 'text')
+            .map(x => x.text)
+            .join('\n')
+            .trim();
           if (text.length > 100) entries.push({ role: 'assistant', text });
           msgChars += text.length;
         }
       } else if (d.type === 'attachment') {
         attachChars += JSON.stringify(d.attachment ?? {}).length;
       }
-    } catch {}
+    } catch {
+      /* malformed JSONL line */
+    }
   }
 
   return { entries, msgChars, attachChars };
@@ -127,19 +136,27 @@ export function buildFallbackHandoff(entries) {
   let out = 'Session handoff (fallback — claude -p unavailable)\n\n';
 
   try {
-    const active = execFileSync('bd', ['list', '--status=in_progress'], { encoding: 'utf8' }).trim();
+    const active = execFileSync('bd', ['list', '--status=in_progress'], {
+      encoding: 'utf8',
+    }).trim();
     if (active) out += `## Active Issues\n${active}\n\n`;
-  } catch {}
+  } catch {
+    /* bd not available */
+  }
 
   try {
     const ready = execFileSync('bd', ['ready'], { encoding: 'utf8' }).trim();
     if (ready) out += `## Ready Work\n${ready}\n\n`;
-  } catch {}
+  } catch {
+    /* bd not available */
+  }
 
   try {
     const commits = execFileSync('git', ['log', '--oneline', '-10'], { encoding: 'utf8' }).trim();
     if (commits) out += `## Recent Commits\n${commits}\n\n`;
-  } catch {}
+  } catch {
+    /* git not available */
+  }
 
   if (entries.length > 0) {
     out += '## Conversation\n\n';

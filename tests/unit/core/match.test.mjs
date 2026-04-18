@@ -11,6 +11,8 @@ function makeLesson(overrides = {}) {
     priority: 5,
     message: '## Test lesson',
     summary: 'A test lesson',
+    problem: '',
+    solution: '',
     toolNames: ['Bash'],
     commandRegexSources: [{ source: 'pytest', flags: '' }],
     ...overrides,

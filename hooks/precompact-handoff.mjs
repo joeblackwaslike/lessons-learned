@@ -29,7 +29,9 @@ function findClaudeBin() {
   if (process.env.LESSONS_CLAUDE_BIN) return process.env.LESSONS_CLAUDE_BIN;
   try {
     return execFileSync('which', ['claude'], { encoding: 'utf8' }).trim();
-  } catch {}
+  } catch {
+    /* which not available or claude not on PATH */
+  }
   const fallback = `${process.env.HOME}/.nvm/versions/node/v24.10.0/bin/claude`;
   return existsSync(fallback) ? fallback : 'claude';
 }
@@ -90,7 +92,9 @@ async function main() {
     const stdin = readFileSync(0, 'utf8');
     const data = JSON.parse(stdin);
     transcriptPath = data.transcript_path ?? null;
-  } catch {}
+  } catch {
+    /* malformed or missing stdin */
+  }
 
   const { entries, msgChars, attachChars } = transcriptPath
     ? parseTranscript(transcriptPath)
