@@ -16,6 +16,8 @@ data/cross-project-candidates.txt
 # Review session logs (runtime state)
 data/review-sessions/
 
+site/
+
 # Beads / Dolt files (added by bd init)
 .dolt/
 *.db
