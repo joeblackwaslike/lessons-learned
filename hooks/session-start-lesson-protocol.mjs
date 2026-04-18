@@ -65,6 +65,20 @@ Emit this tag naturally as part of your response whenever you:
 
 Do NOT force lesson tags where none apply. Only tag genuine problem→solution sequences.`;
 
+function groupByTag(lessons) {
+  const groups = new Map();
+  for (const l of lessons) {
+    const key = l.tags?.[0] ?? '(untagged)';
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(l);
+  }
+  return [...groups.entries()].sort(([a], [b]) => {
+    if (a === '(untagged)') return 1;
+    if (b === '(untagged)') return -1;
+    return a.localeCompare(b);
+  });
+}
+
 function main() {
   try {
     readFileSync(0, 'utf8'); // consume stdin
@@ -97,14 +111,24 @@ function main() {
       output += 'Applying them is not optional — each one prevented a real incident. ';
       output += 'Skipping a rule to save time has caused real incidents.\n';
       output += '</IMPORTANT>\n';
-      for (const l of directives) output += `\n${l.message}\n`;
+      const dGroups = groupByTag(directives);
+      const useHeaders = dGroups.length > 1;
+      for (const [tag, group] of dGroups) {
+        if (useHeaders) output += `\n### ${tag}\n`;
+        for (const l of group) output += `\n${l.message}\n`;
+      }
     }
 
     if (protocols.length > 0) {
       output += '\n\n---\n\n## Active Protocols\n\n';
       output += 'The following protocols capture hard-won coordination patterns. ';
       output += 'Apply before starting work in the relevant context — they save time, tokens, and turmoil.\n';
-      for (const l of protocols) output += `\n${l.message}\n`;
+      const pGroups = groupByTag(protocols);
+      const useHeaders = pGroups.length > 1;
+      for (const [tag, group] of pGroups) {
+        if (useHeaders) output += `\n### ${tag}\n`;
+        for (const l of group) output += `\n${l.message}\n`;
+      }
     }
   } catch {
     // Manifest missing or unreadable — skip reasoning lessons silently
