@@ -1,0 +1,2714 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A Claude Code plugin that automatically captures coding mistakes and injects relevant lessons before tool calls — preventing the same mistakes from happening twice.">
+      
+      
+        <meta name="author" content="Joe Black">
+      
+      
+        <link rel="canonical" href="https://joeblackwaslike.github.io/lessons-learned/architecture/testing-plan/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Testing Plan - lessons-learned</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#testing-plan" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="lessons-learned" class="md-header__button md-logo" aria-label="lessons-learned" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            lessons-learned
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Testing Plan
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9zM20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12zm-9.15 3.96h2.3L12 9z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/joeblackwaslike/lessons-learned" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    joeblackwaslike/lessons-learned
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../installation/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Installation
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../user-guide/" class="md-tabs__link">
+          
+  
+  
+  User Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../developer-guide/" class="md-tabs__link">
+          
+  
+  
+  Developer Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../research/real-world-demand/" class="md-tabs__link">
+          
+  
+  
+  Research
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../prds/001-lessons-learned-plugin/" class="md-tabs__link">
+          
+  
+  
+  PRDs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../reference/cli/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="lessons-learned" class="md-nav__button md-logo" aria-label="lessons-learned" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    lessons-learned
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/joeblackwaslike/lessons-learned" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    joeblackwaslike/lessons-learned
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/how-it-works/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How It Works
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/lessons/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Working with Lessons
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/slash-commands/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Slash Commands
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/scanning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scanning & Discovery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/emitting-lessons/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Emitting Lessons
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/anti-compact/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Context Anti-Compact (beta)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Developer Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer-guide/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer-guide/data-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer-guide/adapters/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cross-Agent Adapters
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer-guide/testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer-guide/contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Research
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/real-world-demand/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Real-World Demand
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PRDs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    PRDs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../prds/001-lessons-learned-plugin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PRD-001
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../prds/002-lessons-review-command/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PRD-002
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../prds/003-mcp-server/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PRD-003
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/schemas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Schemas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/tags/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tag Taxonomy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/hooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hook Events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#philosophy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Philosophy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#test-framework" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test Framework
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#unit-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unit Tests
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Unit Tests">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#corematchmjs-matchlessons-findblocker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        core/match.mjs — matchLessons + findBlocker
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#coreselectmjs-selectcandidates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        core/select.mjs — selectCandidates
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hooksliboutputmjs-formathookoutput-formatemptyoutput" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        hooks/lib/output.mjs — formatHookOutput + formatEmptyOutput
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hookslibstdinmjs-parsehookinput" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        hooks/lib/stdin.mjs — parseHookInput
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hookslibdedupmjs-loadseenset-claimlesson-persistseenstate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        hooks/lib/dedup.mjs — loadSeenSet, claimLesson, persistSeenState
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scriptsscannerstructuredmjs-parselessontags-scanlineforlessons" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        scripts/scanner/structured.mjs — parseLessonTags + scanLineForLessons
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scriptsscannerextractormjs-extractfromstructured-extractfromheuristic-scoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        scripts/scanner/extractor.mjs — extractFromStructured, extractFromHeuristic, scoring
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#integration-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integration Tests
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Integration Tests">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hook-pipeline-stdin-stdout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hook pipeline: stdin → stdout
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cli-lessons-add-lessons-build" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CLI: lessons add + lessons build
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scanner-incremental-scan-against-fixture-jsonl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scanner: incremental scan against fixture JSONL
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e2e-cross-agent-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        E2E / Cross-Agent Tests
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="E2E / Cross-Agent Tests">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#claude-code-baseline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Claude Code (baseline)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#codex" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Codex
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gemini-cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gemini CLI
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#protocol-schema-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Protocol schema validation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#coverage-map" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Coverage Map
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#test-file-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test File Structure
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="testing-plan">Testing Plan<a class="headerlink" href="#testing-plan" title="Permanent link">&para;</a></h1>
+<p><strong>Last updated:</strong> 2026-04-01</p>
+<hr />
+<h2 id="philosophy">Philosophy<a class="headerlink" href="#philosophy" title="Permanent link">&para;</a></h2>
+<p>Tests are organized in three tiers matching how failure propagates:</p>
+<ol>
+<li><strong>Unit</strong> — pure functions and isolated modules; fast, no I/O, run on every save</li>
+<li><strong>Integration</strong> — pipeline stages wired together; require real files, real manifests, subprocess invocations</li>
+<li><strong>E2E / cross-agent</strong> — full hook invocation from stdin to stdout across different agent protocols</li>
+</ol>
+<p>Coverage target: <strong>≥ 85% line coverage</strong> across <code>core/</code> and <code>hooks/lib/</code>. Scanner modules target <strong>≥ 80%</strong> given their I/O-heavy nature.</p>
+<hr />
+<h2 id="test-framework">Test Framework<a class="headerlink" href="#test-framework" title="Permanent link">&para;</a></h2>
+<p><strong>Node.js built-in <code>node:test</code></strong> with <code>node:assert/strict</code>. No additional runtime dependencies.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>node<span class="w"> </span>--test<span class="w">                         </span><span class="c1"># run all tests</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>node<span class="w"> </span>--test<span class="w"> </span>--test-coverage<span class="w">         </span><span class="c1"># with coverage report</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>node<span class="w"> </span>--test<span class="w"> </span>tests/unit/<span class="w">             </span><span class="c1"># unit only</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>node<span class="w"> </span>--test<span class="w"> </span>tests/integration/<span class="w">      </span><span class="c1"># integration only</span>
+</span></code></pre></div>
+<p>Fixtures live in <code>tests/fixtures/</code>. Helpers in <code>tests/helpers/</code>.</p>
+<hr />
+<h2 id="unit-tests">Unit Tests<a class="headerlink" href="#unit-tests" title="Permanent link">&para;</a></h2>
+<h3 id="corematchmjs-matchlessons-findblocker"><code>core/match.mjs</code> — <code>matchLessons</code> + <code>findBlocker</code><a class="headerlink" href="#corematchmjs-matchlessons-findblocker" title="Permanent link">&para;</a></h3>
+<p><strong>Coverage target: 100%</strong> (pure functions, fully deterministic)</p>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>What it verifies</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>commandPattern match</code></td>
+<td>A lesson with a matching <code>commandRegexSources</code> is returned</td>
+</tr>
+<tr>
+<td><code>commandPattern no match</code></td>
+<td>Non-matching command returns empty array</td>
+</tr>
+<tr>
+<td><code>pathPattern match</code></td>
+<td>A lesson with matching <code>pathRegexSources</code> on filePath is returned</td>
+</tr>
+<tr>
+<td><code>pathPattern no match</code></td>
+<td>Non-matching path returns empty</td>
+</tr>
+<tr>
+<td><code>toolName filter</code></td>
+<td>Lesson with wrong <code>toolNames</code> is excluded even if pattern matches</td>
+</tr>
+<tr>
+<td><code>priority sort</code></td>
+<td>Multiple matches returned sorted priority descending</td>
+</tr>
+<tr>
+<td><code>invalid regex skipped</code></td>
+<td>Lesson with unparseable regex is silently skipped, no throw</td>
+</tr>
+<tr>
+<td><code>findBlocker returns first blocking</code></td>
+<td>First <code>block: true</code> lesson returned, <code>{command}</code> substituted</td>
+</tr>
+<tr>
+<td><code>findBlocker skips non-blocking</code></td>
+<td>No blocker if no lesson has <code>block: true</code></td>
+</tr>
+<tr>
+<td><code>findBlocker command truncated at 120</code></td>
+<td><code>{command}</code> capped at 120 chars in blockReason</td>
+</tr>
+<tr>
+<td><code>empty lessons object</code></td>
+<td>Returns <code>[]</code> gracefully</td>
+</tr>
+<tr>
+<td><code>missing fields on lesson</code></td>
+<td>Defaults applied correctly (<code>block: false</code>, <code>priority: 5</code>)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="coreselectmjs-selectcandidates"><code>core/select.mjs</code> — <code>selectCandidates</code><a class="headerlink" href="#coreselectmjs-selectcandidates" title="Permanent link">&para;</a></h3>
+<p><strong>Coverage target: 100%</strong></p>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>What it verifies</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>basic injection</code></td>
+<td>1 match → 1 injected, claimFn called, seen set updated</td>
+</tr>
+<tr>
+<td><code>dedup: already seen slug excluded</code></td>
+<td>Slug in seenSet → not injected</td>
+</tr>
+<tr>
+<td><code>maxLessons cap</code></td>
+<td>4 matches, maxLessons=3 → first 3 injected</td>
+</tr>
+<tr>
+<td><code>budget: second lesson fits</code></td>
+<td>Two lessons within budget → both injected</td>
+</tr>
+<tr>
+<td><code>budget: second lesson too large → summary fallback</code></td>
+<td>Lesson text exceeds remaining bytes → falls back to <code>**Lesson**: {summary}</code></td>
+</tr>
+<tr>
+<td><code>budget: summary also too large → dropped</code></td>
+<td>Neither text nor summary fits → slug in dropped</td>
+</tr>
+<tr>
+<td><code>first lesson always injected regardless of budget</code></td>
+<td>Even if text &gt; budgetBytes, first lesson is injected</td>
+</tr>
+<tr>
+<td><code>claimFn returns false → dropped</code></td>
+<td>Concurrent claim lost → slug in dropped</td>
+</tr>
+<tr>
+<td><code>claimFn called once per candidate</code></td>
+<td>claimFn invocation count matches candidates attempted</td>
+</tr>
+<tr>
+<td><code>empty matches → empty injected</code></td>
+<td>Returns <code>{ injected: [], dropped: [], seen: original }</code></td>
+</tr>
+<tr>
+<td><code>seen set is a new Set (not mutated input)</code></td>
+<td>Input seenSet is not mutated</td>
+</tr>
+</tbody>
+</table>
+<h3 id="hooksliboutputmjs-formathookoutput-formatemptyoutput"><code>hooks/lib/output.mjs</code> — <code>formatHookOutput</code> + <code>formatEmptyOutput</code><a class="headerlink" href="#hooksliboutputmjs-formathookoutput-formatemptyoutput" title="Permanent link">&para;</a></h3>
+<p><strong>Coverage target: 100%</strong></p>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>What it verifies</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>formatEmptyOutput</code></td>
+<td>Returns <code>'{}'</code> string</td>
+</tr>
+<tr>
+<td><code>with context and lessonsSeen</code></td>
+<td>Output has <code>hookSpecificOutput.additionalContext</code> and <code>env.LESSONS_SEEN</code></td>
+</tr>
+<tr>
+<td><code>with context only (no seen)</code></td>
+<td>No <code>env</code> key if lessonsSeen is empty/null</td>
+</tr>
+<tr>
+<td><code>no context (empty string)</code></td>
+<td>No <code>hookSpecificOutput</code> key</td>
+</tr>
+<tr>
+<td><code>metadata comment present</code></td>
+<td><code>&lt;!-- lessonInjection: {...} --&gt;</code> appended to additionalContext</td>
+</tr>
+<tr>
+<td><code>output is valid JSON</code></td>
+<td>JSON.parse succeeds on all variants</td>
+</tr>
+</tbody>
+</table>
+<h3 id="hookslibstdinmjs-parsehookinput"><code>hooks/lib/stdin.mjs</code> — <code>parseHookInput</code><a class="headerlink" href="#hookslibstdinmjs-parsehookinput" title="Permanent link">&para;</a></h3>
+<p><strong>Coverage target: 95%</strong> (fd 0 read is mocked via stdin fixture injection)</p>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>What it verifies</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>valid Bash payload</code></td>
+<td>Returns <code>{ toolName: 'Bash', toolInput, sessionId, agentId, cwd }</code></td>
+</tr>
+<tr>
+<td><code>valid Read payload</code></td>
+<td>Returns with <code>toolName: 'Read'</code></td>
+</tr>
+<tr>
+<td><code>unsupported tool (Task)</code></td>
+<td>Returns <code>null</code></td>
+</tr>
+<tr>
+<td><code>malformed JSON</code></td>
+<td>Returns <code>null</code></td>
+</tr>
+<tr>
+<td><code>empty stdin</code></td>
+<td>Returns <code>null</code></td>
+</tr>
+<tr>
+<td><code>missing tool_name</code></td>
+<td>Returns <code>null</code></td>
+</tr>
+<tr>
+<td><code>missing session_id → empty string default</code></td>
+<td><code>sessionId</code> defaults to <code>''</code></td>
+</tr>
+<tr>
+<td><code>missing cwd → empty string default</code></td>
+<td><code>cwd</code> defaults to <code>''</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="hookslibdedupmjs-loadseenset-claimlesson-persistseenstate"><code>hooks/lib/dedup.mjs</code> — <code>loadSeenSet</code>, <code>claimLesson</code>, <code>persistSeenState</code><a class="headerlink" href="#hookslibdedupmjs-loadseenset-claimlesson-persistseenstate" title="Permanent link">&para;</a></h3>
+<p><strong>Coverage target: 85%</strong> (uses real tmpdir, no mocking needed)</p>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>What it verifies</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>loadSeenSet: empty (no env, no files)</code></td>
+<td>Returns empty Set</td>
+</tr>
+<tr>
+<td><code>loadSeenSet: reads env var LESSONS_SEEN</code></td>
+<td>Set contains slugs from env</td>
+</tr>
+<tr>
+<td><code>loadSeenSet: reads seen file</code></td>
+<td>Set contains slugs from temp file</td>
+</tr>
+<tr>
+<td><code>loadSeenSet: reads claim directory</code></td>
+<td>Set contains entries from claim dir</td>
+</tr>
+<tr>
+<td><code>loadSeenSet: merges all three layers</code></td>
+<td>Union of all three sources</td>
+</tr>
+<tr>
+<td><code>claimLesson: first claim succeeds</code></td>
+<td>Returns <code>true</code>, file created in claim dir</td>
+</tr>
+<tr>
+<td><code>claimLesson: second claim same slug → false</code></td>
+<td>O_EXCL prevents double-claim</td>
+</tr>
+<tr>
+<td><code>claimLesson: different slug same session</code></td>
+<td>Returns <code>true</code> (different file)</td>
+</tr>
+<tr>
+<td><code>persistSeenState: writes slugs to file</code></td>
+<td>File contents match <code>[...seenSet].join(',')</code></td>
+</tr>
+<tr>
+<td><code>persistSeenState: returns slug string</code></td>
+<td>Return value matches file contents</td>
+</tr>
+<tr>
+<td><code>loadSeenSet uses unique path per sessionId</code></td>
+<td>Two sessions don't share state</td>
+</tr>
+</tbody>
+</table>
+<h3 id="scriptsscannerstructuredmjs-parselessontags-scanlineforlessons"><code>scripts/scanner/structured.mjs</code> — <code>parseLessonTags</code> + <code>scanLineForLessons</code><a class="headerlink" href="#scriptsscannerstructuredmjs-parselessontags-scanlineforlessons" title="Permanent link">&para;</a></h3>
+<p><strong>Coverage target: 95%</strong></p>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>What it verifies</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>parseLessonTags: basic tag</code></td>
+<td>Returns candidate with tool, trigger, mistake, fix, tags</td>
+</tr>
+<tr>
+<td><code>parseLessonTags: multiple tags in one block</code></td>
+<td>Both candidates returned</td>
+</tr>
+<tr>
+<td><code>parseLessonTags: inside code fence</code></td>
+<td>Code fence delimiters stripped, block parsed correctly</td>
+</tr>
+<tr>
+<td><code>parseLessonTags: missing mistake → skipped</code></td>
+<td>Incomplete block not returned</td>
+</tr>
+<tr>
+<td><code>parseLessonTags: missing fix → skipped</code></td>
+<td>Incomplete block not returned</td>
+</tr>
+<tr>
+<td><code>parseLessonTags: tags parsed as array</code></td>
+<td>Comma-separated tags become string[]</td>
+</tr>
+<tr>
+<td><code>parseLessonTags: no tags field → empty array</code></td>
+<td>Defaults to <code>[]</code></td>
+</tr>
+<tr>
+<td><code>parseLessonTags: non-string input → empty</code></td>
+<td>null, undefined, number return <code>[]</code></td>
+</tr>
+<tr>
+<td><code>scanLineForLessons: non-assistant line → empty</code></td>
+<td>User message line returns <code>[]</code></td>
+</tr>
+<tr>
+<td><code>scanLineForLessons: no #lesson marker → empty</code></td>
+<td>Fast-path rejection</td>
+</tr>
+<tr>
+<td><code>scanLineForLessons: malformed JSON → empty</code></td>
+<td>No throw</td>
+</tr>
+<tr>
+<td><code>scanLineForLessons: assistant with text block</code></td>
+<td>Delegates to parseLessonTags</td>
+</tr>
+<tr>
+<td><code>scanLineForLessons: attaches sessionId/messageId</code></td>
+<td>Context attached from JSONL envelope</td>
+</tr>
+</tbody>
+</table>
+<h3 id="scriptsscannerextractormjs-extractfromstructured-extractfromheuristic-scoring"><code>scripts/scanner/extractor.mjs</code> — <code>extractFromStructured</code>, <code>extractFromHeuristic</code>, scoring<a class="headerlink" href="#scriptsscannerextractormjs-extractfromstructured-extractfromheuristic-scoring" title="Permanent link">&para;</a></h3>
+<p><strong>Coverage target: 90%</strong></p>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>What it verifies</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>extractFromStructured: full tag</code></td>
+<td>All fields normalized, contentHash computed</td>
+</tr>
+<tr>
+<td><code>extractFromStructured: confidence high with tool+trigger+tags</code></td>
+<td>≥ 0.75</td>
+</tr>
+<tr>
+<td><code>extractFromStructured: confidence lower without optional fields</code></td>
+<td>0.6 baseline</td>
+</tr>
+<tr>
+<td><code>extractFromHeuristic: basic window</code></td>
+<td>mistake, remediation, tool, trigger extracted</td>
+</tr>
+<tr>
+<td><code>extractFromHeuristic: needsReview always true</code></td>
+<td>Heuristic candidates always flagged</td>
+</tr>
+<tr>
+<td><code>extractFromHeuristic: tool from errorTurn</code></td>
+<td>tool pulled from error turn toolName</td>
+</tr>
+<tr>
+<td><code>extractFromHeuristic: trigger from preceding tool_call</code></td>
+<td>command/file_path extracted</td>
+</tr>
+<tr>
+<td><code>scoreCandidateConfidence: user correction bonus</code></td>
+<td>+0.15 for userCorrection signal</td>
+</tr>
+<tr>
+<td><code>scoreCandidateConfidence: multiple error signals bonus</code></td>
+<td>+0.1 for ≥2 error signals</td>
+</tr>
+<tr>
+<td><code>scoreCandidatePriority: severity tags boost priority</code></td>
+<td>hang/data-loss adds +1 each</td>
+</tr>
+<tr>
+<td><code>inferTags: python tool detected</code></td>
+<td>lang:python added from trigger</td>
+</tr>
+<tr>
+<td><code>contentHash deterministic</code></td>
+<td>Same inputs → same hash</td>
+</tr>
+<tr>
+<td><code>contentHash differs for different content</code></td>
+<td>Different mistake → different hash</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="integration-tests">Integration Tests<a class="headerlink" href="#integration-tests" title="Permanent link">&para;</a></h2>
+<p>Integration tests invoke real code against real files (fixtures, temp dirs). They test pipeline stages wired together.</p>
+<h3 id="hook-pipeline-stdin-stdout">Hook pipeline: stdin → stdout<a class="headerlink" href="#hook-pipeline-stdin-stdout" title="Permanent link">&para;</a></h3>
+<p>Tests pipe JSON to <code>pretooluse-lesson-inject.mjs</code> as a subprocess and assert on stdout.</p>
+<p>Fixture: a minimal <code>lesson-manifest.json</code> with 2 lessons — one matching, one blocking.</p>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>What it verifies</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>matching command → injects lesson</code></td>
+<td>stdout contains <code>hookSpecificOutput.additionalContext</code></td>
+</tr>
+<tr>
+<td><code>non-matching command → {}</code></td>
+<td>stdout is exactly <code>{}</code></td>
+</tr>
+<tr>
+<td><code>blocking lesson → deny decision</code></td>
+<td>stdout contains <code>permissionDecision: "deny"</code></td>
+</tr>
+<tr>
+<td><code>already-seen slug (env var set) → {}</code></td>
+<td>With <code>LESSONS_SEEN=&lt;slug&gt;</code> in env, returns <code>{}</code></td>
+</tr>
+<tr>
+<td><code>malformed stdin → {}</code></td>
+<td>Bad JSON on stdin returns <code>{}</code>, exit 0</td>
+</tr>
+<tr>
+<td><code>missing manifest → {}</code></td>
+<td>Pointing hook at non-existent manifest returns <code>{}</code>, exit 0</td>
+</tr>
+<tr>
+<td><code>Read tool with matching path</code></td>
+<td>filePath match triggers injection</td>
+</tr>
+<tr>
+<td><code>multi-lesson match respects maxLessons</code></td>
+<td>Only top N returned</td>
+</tr>
+<tr>
+<td><code>additionalContext contains lessonInjection comment</code></td>
+<td>Metadata comment present</td>
+</tr>
+<tr>
+<td><code>env.LESSONS_SEEN set in output</code></td>
+<td><code>env.LESSONS_SEEN</code> contains injected slug</td>
+</tr>
+</tbody>
+</table>
+<h3 id="cli-lessons-add-lessons-build">CLI: <code>lessons add</code> + <code>lessons build</code><a class="headerlink" href="#cli-lessons-add-lessons-build" title="Permanent link">&para;</a></h3>
+<p>Tests use a temp copy of <code>lessons.json</code> to avoid polluting the real store.</p>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>What it verifies</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>add via --json</code></td>
+<td>Lesson appears in store after add</td>
+</tr>
+<tr>
+<td><code>add triggers manifest rebuild</code></td>
+<td><code>lesson-manifest.json</code> updated after add</td>
+</tr>
+<tr>
+<td><code>add: duplicate content hash rejected</code></td>
+<td>Exit non-zero, lesson not duplicated</td>
+</tr>
+<tr>
+<td><code>add: fuzzy duplicate rejected</code></td>
+<td>Jaccard ≥ 0.5 exits non-zero</td>
+</tr>
+<tr>
+<td><code>add: validation failure rejects</code></td>
+<td>Short mistake exits non-zero with message</td>
+</tr>
+<tr>
+<td><code>build: excluded lessons not in manifest</code></td>
+<td><code>needsReview: true</code> lesson absent from manifest</td>
+</tr>
+<tr>
+<td><code>build: included lessons have correct shape</code></td>
+<td>commandRegexSources, slug, injection all present</td>
+</tr>
+<tr>
+<td><code>list: outputs all lessons</code></td>
+<td>Count matches lessons.json</td>
+</tr>
+<tr>
+<td><code>list --json: valid JSON array</code></td>
+<td>JSON.parse succeeds</td>
+</tr>
+</tbody>
+</table>
+<h3 id="scanner-incremental-scan-against-fixture-jsonl">Scanner: incremental scan against fixture JSONL<a class="headerlink" href="#scanner-incremental-scan-against-fixture-jsonl" title="Permanent link">&para;</a></h3>
+<p>Fixture: two JSONL files — one with a <code>#lesson</code> tag, one without.</p>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>What it verifies</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>scan --tier1-only --dry-run</code></td>
+<td>Candidate extracted from tagged file</td>
+</tr>
+<tr>
+<td><code>scan incremental: second scan skips processed bytes</code></td>
+<td>Offset advanced, no duplicate candidates</td>
+</tr>
+<tr>
+<td><code>scan --full resets offsets</code></td>
+<td>Both files re-scanned</td>
+</tr>
+<tr>
+<td><code>scan on empty directory</code></td>
+<td>Exits 0, no candidates</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="e2e-cross-agent-tests">E2E / Cross-Agent Tests<a class="headerlink" href="#e2e-cross-agent-tests" title="Permanent link">&para;</a></h2>
+<p>These tests validate that the hook protocol is correctly interpreted by each agent runtime. They confirm the JSON schema contract, not the business logic.</p>
+<p>Each test pipes a well-formed hook payload through the injection hook and asserts on the output schema.</p>
+<h3 id="claude-code-baseline">Claude Code (baseline)<a class="headerlink" href="#claude-code-baseline" title="Permanent link">&para;</a></h3>
+<p>The production protocol. All integration tests implicitly validate this.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Expected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Input <code>tool_name</code></td>
+<td><code>"Bash"</code>, <code>"Read"</code>, <code>"Edit"</code>, <code>"Write"</code>, <code>"Glob"</code></td>
+</tr>
+<tr>
+<td>Input <code>tool_input.command</code></td>
+<td>Bash command string</td>
+</tr>
+<tr>
+<td>Input <code>tool_input.file_path</code></td>
+<td>Absolute path for file tools</td>
+</tr>
+<tr>
+<td>Input <code>session_id</code></td>
+<td>UUID string</td>
+</tr>
+<tr>
+<td>Output (inject)</td>
+<td><code>{ hookSpecificOutput: { additionalContext: "..." }, env: { LESSONS_SEEN: "..." } }</code></td>
+</tr>
+<tr>
+<td>Output (block)</td>
+<td><code>{ hookSpecificOutput: { hookEventName: "PreToolUse", permissionDecision: "deny", permissionDecisionReason: "..." } }</code></td>
+</tr>
+<tr>
+<td>Output (no match)</td>
+<td><code>{}</code></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>What it verifies</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Bash inject</code></td>
+<td>Full round-trip, output schema valid</td>
+</tr>
+<tr>
+<td><code>Read inject</code></td>
+<td>File path match, output schema valid</td>
+</tr>
+<tr>
+<td><code>block decision</code></td>
+<td>Deny schema, reason contains corrected command</td>
+</tr>
+<tr>
+<td><code>no match</code></td>
+<td>Exact <code>{}</code> output</td>
+</tr>
+</tbody>
+</table>
+<h3 id="codex">Codex<a class="headerlink" href="#codex" title="Permanent link">&para;</a></h3>
+<p>Codex uses different tool names for equivalent operations.</p>
+<table>
+<thead>
+<tr>
+<th>Codex tool</th>
+<th>Mapped to</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>shell</code></td>
+<td>Bash</td>
+</tr>
+<tr>
+<td><code>apply_patch</code></td>
+<td>Edit</td>
+</tr>
+<tr>
+<td><code>read_file</code></td>
+<td>Read</td>
+</tr>
+</tbody>
+</table>
+<p>The adapter layer (or a normalization step) must map Codex tool names to the canonical set before matching. Tests verify the mapping works correctly.</p>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>What it verifies</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>shell tool → Bash matching</code></td>
+<td><code>tool_name: "shell"</code> triggers command pattern match</td>
+</tr>
+<tr>
+<td><code>read_file tool → Read matching</code></td>
+<td><code>tool_name: "read_file"</code> triggers path pattern match</td>
+</tr>
+<tr>
+<td><code>apply_patch tool → Edit matching</code></td>
+<td><code>tool_name: "apply_patch"</code> triggers path pattern match</td>
+</tr>
+<tr>
+<td><code>unknown Codex tool → {}</code></td>
+<td>Unsupported tool returns <code>{}</code>, no error</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Current status:</strong> Not yet implemented. Requires tool-name normalization in <code>stdin.mjs</code> or a Codex-specific adapter.</p>
+<h3 id="gemini-cli">Gemini CLI<a class="headerlink" href="#gemini-cli" title="Permanent link">&para;</a></h3>
+<p>Gemini CLI uses its own hook protocol. Tool names may differ from Claude Code.</p>
+<table>
+<thead>
+<tr>
+<th>Gemini tool</th>
+<th>Mapped to</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>run_shell_command</code></td>
+<td>Bash</td>
+</tr>
+<tr>
+<td><code>read_file</code></td>
+<td>Read</td>
+</tr>
+<tr>
+<td><code>write_file</code></td>
+<td>Write</td>
+</tr>
+<tr>
+<td><code>replace_in_file</code></td>
+<td>Edit</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>What it verifies</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>run_shell_command → Bash matching</code></td>
+<td>Command pattern fires</td>
+</tr>
+<tr>
+<td><code>read_file → Read matching</code></td>
+<td>Path pattern fires</td>
+</tr>
+<tr>
+<td><code>write_file → Write matching</code></td>
+<td>Path pattern fires</td>
+</tr>
+<tr>
+<td><code>replace_in_file → Edit matching</code></td>
+<td>Path pattern fires</td>
+</tr>
+<tr>
+<td><code>unknown Gemini tool → {}</code></td>
+<td>Returns <code>{}</code>, no error</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Current status:</strong> Not yet implemented. Requires a Gemini-specific stdin parser or adapter config.</p>
+<h3 id="protocol-schema-validation">Protocol schema validation<a class="headerlink" href="#protocol-schema-validation" title="Permanent link">&para;</a></h3>
+<p>Cross-agent tests also validate the output schema is well-formed regardless of which agent produced the input.</p>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>What it verifies</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>inject output is valid JSON</code></td>
+<td>JSON.parse succeeds</td>
+</tr>
+<tr>
+<td><code>inject output: only known keys present</code></td>
+<td>No extra keys outside schema</td>
+</tr>
+<tr>
+<td><code>block output: permissionDecision is "deny"</code></td>
+<td>Exact string, not "block" or "reject"</td>
+</tr>
+<tr>
+<td><code>block output: reason is non-empty string</code></td>
+<td>No null or empty blockReason</td>
+</tr>
+<tr>
+<td><code>empty output is exactly "{}"</code></td>
+<td>Not <code>null</code>, not <code>""</code>, not <code>"{ }"</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="coverage-map">Coverage Map<a class="headerlink" href="#coverage-map" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Target</th>
+<th>Unit</th>
+<th>Integration</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>core/match.mjs</code></td>
+<td>100%</td>
+<td>✓</td>
+<td>via hook pipeline</td>
+</tr>
+<tr>
+<td><code>core/select.mjs</code></td>
+<td>100%</td>
+<td>✓</td>
+<td>via hook pipeline</td>
+</tr>
+<tr>
+<td><code>hooks/lib/output.mjs</code></td>
+<td>100%</td>
+<td>✓</td>
+<td>via hook pipeline</td>
+</tr>
+<tr>
+<td><code>hooks/lib/stdin.mjs</code></td>
+<td>95%</td>
+<td>✓</td>
+<td>via hook pipeline</td>
+</tr>
+<tr>
+<td><code>hooks/lib/dedup.mjs</code></td>
+<td>85%</td>
+<td>✓</td>
+<td>via hook pipeline</td>
+</tr>
+<tr>
+<td><code>hooks/pretooluse-lesson-inject.mjs</code></td>
+<td>90%</td>
+<td>—</td>
+<td>✓</td>
+</tr>
+<tr>
+<td><code>scripts/scanner/structured.mjs</code></td>
+<td>95%</td>
+<td>✓</td>
+<td>via scan integration</td>
+</tr>
+<tr>
+<td><code>scripts/scanner/extractor.mjs</code></td>
+<td>90%</td>
+<td>✓</td>
+<td>via scan integration</td>
+</tr>
+<tr>
+<td><code>scripts/scanner/detector.mjs</code></td>
+<td>80%</td>
+<td>✓</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>scripts/scanner/incremental.mjs</code></td>
+<td>85%</td>
+<td>—</td>
+<td>✓</td>
+</tr>
+<tr>
+<td><code>scripts/lessons.mjs</code></td>
+<td>70%</td>
+<td>—</td>
+<td>✓ (CLI subprocess)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Explicit exclusions from coverage:</strong></p>
+<ul>
+<li><code>hooks/session-start-*.mjs</code> — thin glue scripts, tested manually during deployment validation</li>
+<li><code>data/*.json</code> — not code</li>
+<li><code>schemas/</code> — not code</li>
+</ul>
+<hr />
+<h2 id="test-file-structure">Test File Structure<a class="headerlink" href="#test-file-structure" title="Permanent link">&para;</a></h2>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>tests/
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>  unit/
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    core/
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>      match.test.mjs
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>      select.test.mjs
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    hooks/
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>      output.test.mjs
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>      stdin.test.mjs
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>      dedup.test.mjs
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    scanner/
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>      structured.test.mjs
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>      extractor.test.mjs
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>      detector.test.mjs
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>  integration/
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>    hook-pipeline.test.mjs    # stdin→stdout subprocess tests
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>    cli-lessons.test.mjs      # lessons add/build/list subprocess tests
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>    scan-incremental.test.mjs # scanner against fixture JSONL
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>  e2e/
+</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>    claude-code.test.mjs      # CC protocol round-trips
+</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>    codex.test.mjs            # Codex tool name mapping
+</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>    gemini.test.mjs           # Gemini CLI tool name mapping
+</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>    schema.test.mjs           # Output schema validation across agents
+</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>  fixtures/
+</span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>    minimal-manifest.json     # 2 lessons: 1 matching, 1 blocking
+</span><span id="__span-1-25"><a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>    session-with-lesson.jsonl # JSONL with embedded #lesson tag
+</span><span id="__span-1-26"><a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>    session-no-lesson.jsonl   # JSONL without any lesson tags
+</span><span id="__span-1-27"><a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a>    lessons-store.json        # Minimal lessons.json for CLI tests
+</span><span id="__span-1-28"><a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a>  helpers/
+</span><span id="__span-1-29"><a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a>    subprocess.mjs            # spawn + collect stdout/stderr
+</span><span id="__span-1-30"><a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a>    tmpstore.mjs              # creates an isolated temp lessons store
+</span><span id="__span-1-31"><a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a>    fixtures.mjs              # loads fixture files by name
+</span></code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Maintained by <a href="https://github.com/joeblackwaslike">Joe Black</a>. MIT License.
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/joeblackwaslike/lessons-learned" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.top", "navigation.footer", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

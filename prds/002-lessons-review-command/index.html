@@ -1,0 +1,2870 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A Claude Code plugin that automatically captures coding mistakes and injects relevant lessons before tool calls — preventing the same mistakes from happening twice.">
+      
+      
+        <meta name="author" content="Joe Black">
+      
+      
+        <link rel="canonical" href="https://joeblackwaslike.github.io/lessons-learned/prds/002-lessons-review-command/">
+      
+      
+        <link rel="prev" href="../001-lessons-learned-plugin/">
+      
+      
+        <link rel="next" href="../003-mcp-server/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>PRD-002 - lessons-learned</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#prd-002-lessonsreview-unified-lesson-review-command" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="lessons-learned" class="md-header__button md-logo" aria-label="lessons-learned" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            lessons-learned
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              PRD-002
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9zM20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12zm-9.15 3.96h2.3L12 9z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/joeblackwaslike/lessons-learned" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    joeblackwaslike/lessons-learned
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../installation/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Installation
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../user-guide/" class="md-tabs__link">
+          
+  
+  
+  User Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../developer-guide/" class="md-tabs__link">
+          
+  
+  
+  Developer Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../research/real-world-demand/" class="md-tabs__link">
+          
+  
+  
+  Research
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../001-lessons-learned-plugin/" class="md-tabs__link">
+          
+  
+  
+  PRDs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../reference/cli/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="lessons-learned" class="md-nav__button md-logo" aria-label="lessons-learned" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    lessons-learned
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/joeblackwaslike/lessons-learned" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    joeblackwaslike/lessons-learned
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/how-it-works/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How It Works
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/lessons/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Working with Lessons
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/slash-commands/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Slash Commands
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/scanning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Scanning & Discovery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/emitting-lessons/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Emitting Lessons
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/anti-compact/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Context Anti-Compact (beta)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Developer Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer-guide/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer-guide/data-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer-guide/adapters/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cross-Agent Adapters
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer-guide/testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer-guide/contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Research
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/real-world-demand/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Real-World Demand
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PRDs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    PRDs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../001-lessons-learned-plugin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PRD-001
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PRD-002
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PRD-002
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-problem-statement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Problem Statement
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Non-Goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-architecture-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Architecture Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-data-layer-unified-sqlite-db" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Data Layer — Unified SQLite DB
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Data Layer — Unified SQLite DB">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-why-sqlite" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Why SQLite
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-schema-typescript" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Schema (TypeScript)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-indexes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 Indexes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-deduplication-minhash" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4 Deduplication — MinHash
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#55-status-state-machine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.5 Status state machine
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#56-migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.6 Migration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#57-lesson-cachejson-kept-as-generated-cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.7 lesson-cache.json — kept as generated cache
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-phase-1-terminology-cleanup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Phase 1 — Terminology Cleanup
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-phase-2-scan-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Phase 2 — Scan Pipeline
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-phase-3-lessonsreview-slash-command" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Phase 3 — /lessons:review Slash Command
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Phase 3 — /lessons:review Slash Command">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-end-to-end-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 End-to-end flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-llm-noise-filter-logic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2 LLM noise filter logic
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83-review-session-file-audit-log" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.3 Review session file (audit log)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-phase-4-conversational-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Phase 4 — Conversational Review
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Phase 4 — Conversational Review">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#91-candidate-presentation-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.1 Candidate presentation format
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#92-user-response-grammar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.2 User response grammar
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#93-promotion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.3 Promotion
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-no-external-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. No External Dependencies
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-files-to-create-modify" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Files to Create / Modify
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Verification
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../003-mcp-server/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PRD-003
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/schemas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Schemas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/tags/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tag Taxonomy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/hooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hook Events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-problem-statement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Problem Statement
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Non-Goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-architecture-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Architecture Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-data-layer-unified-sqlite-db" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Data Layer — Unified SQLite DB
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Data Layer — Unified SQLite DB">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-why-sqlite" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Why SQLite
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-schema-typescript" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Schema (TypeScript)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-indexes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 Indexes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-deduplication-minhash" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4 Deduplication — MinHash
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#55-status-state-machine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.5 Status state machine
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#56-migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.6 Migration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#57-lesson-cachejson-kept-as-generated-cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.7 lesson-cache.json — kept as generated cache
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-phase-1-terminology-cleanup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Phase 1 — Terminology Cleanup
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-phase-2-scan-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Phase 2 — Scan Pipeline
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-phase-3-lessonsreview-slash-command" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Phase 3 — /lessons:review Slash Command
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Phase 3 — /lessons:review Slash Command">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-end-to-end-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 End-to-end flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-llm-noise-filter-logic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2 LLM noise filter logic
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83-review-session-file-audit-log" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.3 Review session file (audit log)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-phase-4-conversational-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Phase 4 — Conversational Review
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Phase 4 — Conversational Review">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#91-candidate-presentation-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.1 Candidate presentation format
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#92-user-response-grammar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.2 User response grammar
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#93-promotion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.3 Promotion
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-no-external-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. No External Dependencies
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-files-to-create-modify" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Files to Create / Modify
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Verification
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="prd-002-lessonsreview-unified-lesson-review-command">PRD-002: <code>/lessons:review</code> — Unified Lesson Review Command<a class="headerlink" href="#prd-002-lessonsreview-unified-lesson-review-command" title="Permanent link">&para;</a></h1>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Status</strong></td>
+<td>Draft</td>
+</tr>
+<tr>
+<td><strong>Author</strong></td>
+<td>Joe Black</td>
+</tr>
+<tr>
+<td><strong>Created</strong></td>
+<td>2026-04-02</td>
+</tr>
+<tr>
+<td><strong>Last Updated</strong></td>
+<td>2026-04-02</td>
+</tr>
+<tr>
+<td><strong>Stakeholders</strong></td>
+<td>Individual developers using AI coding agents</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="1-problem-statement">1. Problem Statement<a class="headerlink" href="#1-problem-statement" title="Permanent link">&para;</a></h2>
+<p>The current lesson promotion pipeline requires multiple manual CLI invocations, each operating on separate JSON files with incompatible schemas:</p>
+<pre class="mermaid"><code>flowchart LR
+    classDef normal fill:#2c3e50,color:#fff,stroke:#1a252f
+    classDef fragmented fill:#e67e22,color:#fff,stroke:#d35400
+    classDef friction fill:#c0392b,color:#fff,stroke:#922b21
+
+    scan --&gt; candidates[filtered-candidates.json]
+    candidates --&gt; aggregate[scan aggregate]
+    aggregate --&gt; promote["scan promote N"]
+    promote --&gt; lessons[lessons.json]
+    lessons --&gt; build[build]
+    build --&gt; manifest[lesson-cache.json]
+
+    class scan,aggregate,build normal
+    class candidates,manifest fragmented
+    class promote friction</code></pre>
+<p><code>scan promote N</code> is the primary bottleneck — one interactive call per candidate, no LLM assistance. The orange files represent the same object at different lifecycle stages, each with its own schema.</p>
+<p><strong>Current state:</strong> Promoting 10 candidates requires 10 sequential <code>scan promote</code> calls, manual field editing, and a final <code>build</code>. The LLM — already present in the session — is not used.</p>
+<p><strong>Desired state:</strong> One command, <code>/lessons:review</code>, that uses the LLM to scan, aggregate, filter noise, and generate clean lesson fields, then hands off to an interactive terminal TUI for batch selection, inline editing, and promotion.</p>
+<hr />
+<h2 id="2-goals">2. Goals<a class="headerlink" href="#2-goals" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Reduce lesson promotion from N calls to 1 command regardless of candidate count</li>
+<li>Use the LLM to filter noise and generate complete, well-formed lesson fields</li>
+<li>Give the user full control via an interactive TUI: batch select, inline edit, then confirm</li>
+<li>Unify the fragmented data files into a single SQLite DB with a proper state machine</li>
+<li>Preserve a permanent audit log of every review session</li>
+</ul>
+<hr />
+<h2 id="3-non-goals">3. Non-Goals<a class="headerlink" href="#3-non-goals" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Editing existing active lessons (separate workflow)</li>
+<li>Surfacing archived lessons interactively (available via <code>--show-archived</code>, not default)</li>
+<li>Cross-agent sync or remote storage</li>
+<li>ML-based lesson ranking (priority remains human+LLM assigned)</li>
+</ul>
+<hr />
+<h2 id="4-architecture-overview">4. Architecture Overview<a class="headerlink" href="#4-architecture-overview" title="Permanent link">&para;</a></h2>
+<p>The slash command is the entire interface — Claude's conversation context replaces a terminal TUI. No separate process, no stdin handoff, no terminal UI library required.</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>/lessons:review (slash command — entirely within Claude&#39;s context)
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>  Phase 1: Scan          → node scripts/lessons.mjs scan
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>  Phase 2: Aggregate     → node scripts/lessons.mjs scan aggregate
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>  Phase 3: LLM review    → Claude reads candidates, filters, generates fields
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>  Phase 4: Present       → Claude displays numbered candidate list in conversation
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>  Phase 5: User responds → natural language (&quot;approve 1 3, edit 2 summary to X, skip 4&quot;)
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>  Phase 6: Claude acts   → runs node scripts/lessons.mjs promote --ids ... to write DB
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>  Phase 7: Report        → Claude summarises what was promoted/archived/skipped
+</span></code></pre></div>
+<hr />
+<h2 id="5-data-layer-unified-sqlite-db">5. Data Layer — Unified SQLite DB<a class="headerlink" href="#5-data-layer-unified-sqlite-db" title="Permanent link">&para;</a></h2>
+<h3 id="51-why-sqlite">5.1 Why SQLite<a class="headerlink" href="#51-why-sqlite" title="Permanent link">&para;</a></h3>
+<p>Node 22.5+ ships <code>node:sqlite</code> as a <strong>built-in module</strong> — no npm dependency, no install step. The engine requirement moves from <code>&gt;=18</code> to <code>&gt;=22.5</code>. Hook scripts already shell out to Node, so they get the same runtime automatically.</p>
+<p>SQLite provides:</p>
+<ul>
+<li>WAL mode for safe concurrent writes (eliminates lockfile hacks)</li>
+<li><code>CREATE INDEX</code> for fast trigger-pattern lookups</li>
+<li>Full-text search via FTS5 virtual tables (future: semantic search over mistake/remediation)</li>
+<li>Embeddings via <code>sqlite-vec</code> extension (optional, for vector similarity dedup — see §5.4)</li>
+</ul>
+<h3 id="52-schema-typescript">5.2 Schema (TypeScript)<a class="headerlink" href="#52-schema-typescript" title="Permanent link">&para;</a></h3>
+<div class="language-typescript highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1">// Canonical record — stored in SQLite, same shape used everywhere</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kd">interface</span><span class="w"> </span><span class="nx">LessonRecord</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="c1">// Identity</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span><span class="nx">id</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span><span class="w"> </span><span class="c1">// ULID — lexicographically sortable by creation time</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">  </span><span class="nx">slug</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span><span class="w"> </span><span class="c1">// kebab-case, human-readable key</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">  </span><span class="c1">// State machine</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">  </span><span class="nx">status</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;candidate&#39;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s1">&#39;reviewed&#39;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s1">&#39;active&#39;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s1">&#39;archived&#39;</span><span class="p">;</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">  </span><span class="c1">// Content</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">  </span><span class="nx">summary</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span><span class="w"> </span><span class="c1">// ≤80 chars, present tense, specific</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">  </span><span class="nx">mistake</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span><span class="w"> </span><span class="c1">// what goes wrong and why</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">  </span><span class="nx">remediation</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span><span class="w"> </span><span class="c1">// concrete fix</span>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="w">  </span><span class="c1">// Trigger spec</span>
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="w">  </span><span class="c1">// injectOn replaces the old sessionStart boolean — records which hook events fire this lesson.</span>
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="w">  </span><span class="c1">// Lessons with no natural trigger use [&quot;SessionStart&quot;] for awareness-only injection.</span>
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="w">  </span><span class="nx">injectOn</span><span class="o">:</span><span class="w"> </span><span class="kt">Array</span><span class="o">&lt;</span><span class="s1">&#39;PreToolUse&#39;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s1">&#39;SessionStart&#39;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s1">&#39;SubagentStart&#39;</span><span class="o">&gt;</span><span class="p">;</span>
+</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="w">  </span><span class="nx">toolNames</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">[];</span><span class="w"> </span><span class="c1">// exact tool name match</span>
+</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="w">  </span><span class="nx">commandPatterns</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">[];</span><span class="w"> </span><span class="c1">// regex strings matched against Bash commands</span>
+</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="w">  </span><span class="nx">pathPatterns</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">[];</span><span class="w"> </span><span class="c1">// glob strings matched against file paths</span>
+</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>
+</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a><span class="w">  </span><span class="c1">// Scoring</span>
+</span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a><span class="w">  </span><span class="nx">priority</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">;</span><span class="w"> </span><span class="c1">// 1–10; see rubric below</span>
+</span><span id="__span-1-25"><a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a><span class="w">  </span><span class="nx">confidence</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">;</span><span class="w"> </span><span class="c1">// 0.0–1.0; see rubric below</span>
+</span><span id="__span-1-26"><a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>
+</span><span id="__span-1-27"><a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a><span class="w">  </span><span class="c1">// Metadata</span>
+</span><span id="__span-1-28"><a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a><span class="w">  </span><span class="nx">tags</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">[];</span><span class="w"> </span><span class="c1">// namespaces: tool:X, lang:X, severity:X, topic:X</span>
+</span><span id="__span-1-29"><a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a><span class="w">  </span><span class="c1">// used for TUI filtering and injection context hints</span>
+</span><span id="__span-1-30"><a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a>
+</span><span id="__span-1-31"><a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a><span class="w">  </span><span class="c1">// Provenance</span>
+</span><span id="__span-1-32"><a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a><span class="w">  </span><span class="nx">source</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;structured&#39;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s1">&#39;heuristic&#39;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s1">&#39;manual&#39;</span><span class="p">;</span>
+</span><span id="__span-1-33"><a id="__codelineno-1-33" name="__codelineno-1-33" href="#__codelineno-1-33"></a><span class="w">  </span><span class="nx">sourceSessionIds</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">[];</span>
+</span><span id="__span-1-34"><a id="__codelineno-1-34" name="__codelineno-1-34" href="#__codelineno-1-34"></a><span class="w">  </span><span class="nx">occurrenceCount</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">;</span>
+</span><span id="__span-1-35"><a id="__codelineno-1-35" name="__codelineno-1-35" href="#__codelineno-1-35"></a><span class="w">  </span><span class="nx">sessionCount</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">;</span>
+</span><span id="__span-1-36"><a id="__codelineno-1-36" name="__codelineno-1-36" href="#__codelineno-1-36"></a><span class="w">  </span><span class="nx">projectCount</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">;</span>
+</span><span id="__span-1-37"><a id="__codelineno-1-37" name="__codelineno-1-37" href="#__codelineno-1-37"></a>
+</span><span id="__span-1-38"><a id="__codelineno-1-38" name="__codelineno-1-38" href="#__codelineno-1-38"></a><span class="w">  </span><span class="c1">// Audit trail</span>
+</span><span id="__span-1-39"><a id="__codelineno-1-39" name="__codelineno-1-39" href="#__codelineno-1-39"></a><span class="w">  </span><span class="nx">createdAt</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span><span class="w"> </span><span class="c1">// ISO 8601</span>
+</span><span id="__span-1-40"><a id="__codelineno-1-40" name="__codelineno-1-40" href="#__codelineno-1-40"></a><span class="w">  </span><span class="nx">updatedAt</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span>
+</span><span id="__span-1-41"><a id="__codelineno-1-41" name="__codelineno-1-41" href="#__codelineno-1-41"></a><span class="w">  </span><span class="nx">reviewedAt</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span><span class="w"> </span><span class="c1">// set when status → &quot;reviewed&quot; or &quot;active&quot;</span>
+</span><span id="__span-1-42"><a id="__codelineno-1-42" name="__codelineno-1-42" href="#__codelineno-1-42"></a><span class="w">  </span><span class="nx">archivedAt</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span><span class="w"> </span><span class="c1">// set when status → &quot;archived&quot;</span>
+</span><span id="__span-1-43"><a id="__codelineno-1-43" name="__codelineno-1-43" href="#__codelineno-1-43"></a><span class="w">  </span><span class="nx">archiveReason</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span>
+</span><span id="__span-1-44"><a id="__codelineno-1-44" name="__codelineno-1-44" href="#__codelineno-1-44"></a>
+</span><span id="__span-1-45"><a id="__codelineno-1-45" name="__codelineno-1-45" href="#__codelineno-1-45"></a><span class="w">  </span><span class="c1">// Dedup</span>
+</span><span id="__span-1-46"><a id="__codelineno-1-46" name="__codelineno-1-46" href="#__codelineno-1-46"></a><span class="w">  </span><span class="nx">contentHash</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span><span class="w"> </span><span class="c1">// SHA-256 of mistake+remediation+commandPatterns</span>
+</span><span id="__span-1-47"><a id="__codelineno-1-47" name="__codelineno-1-47" href="#__codelineno-1-47"></a><span class="p">}</span>
+</span></code></pre></div>
+<p><strong>Priority rubric:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Priority</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>9–10</td>
+<td>Blocks execution — data loss, hard hang, irreversible action</td>
+</tr>
+<tr>
+<td>7–8</td>
+<td>Silent failure or confusing behavior with no error signal</td>
+</tr>
+<tr>
+<td>5–6</td>
+<td>Notable mistake, clear fix</td>
+</tr>
+<tr>
+<td>3–4</td>
+<td>Minor friction, easy to notice and recover</td>
+</tr>
+<tr>
+<td>1–2</td>
+<td>Cosmetic / style</td>
+</tr>
+</tbody>
+</table>
+<p>Frequency may nudge priority ±1 but is not the primary signal.</p>
+<p><strong>Confidence rubric:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Confidence</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0.9–1.0</td>
+<td>Explicit <code>#lesson</code> tag emitted by Claude in a session (T1 structured)</td>
+</tr>
+<tr>
+<td>0.7–0.89</td>
+<td>T1 tag + confirmed by user correction or multi-project recurrence</td>
+</tr>
+<tr>
+<td>0.5–0.69</td>
+<td>Heuristic detection (T2), multi-session</td>
+</tr>
+<tr>
+<td>0.3–0.49</td>
+<td>Heuristic, single-session or low signal</td>
+</tr>
+<tr>
+<td>&lt; 0.3</td>
+<td>Do not promote</td>
+</tr>
+</tbody>
+</table>
+<h3 id="53-indexes">5.3 Indexes<a class="headerlink" href="#53-indexes" title="Permanent link">&para;</a></h3>
+<div class="language-sql highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">idx_lessons_status</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">lessons</span><span class="p">(</span><span class="n">status</span><span class="p">);</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">idx_lessons_priority</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">lessons</span><span class="p">(</span><span class="n">priority</span><span class="w"> </span><span class="k">DESC</span><span class="p">);</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">idx_lessons_confidence</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">lessons</span><span class="p">(</span><span class="n">confidence</span><span class="w"> </span><span class="k">DESC</span><span class="p">);</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">idx_lessons_status_priority</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">lessons</span><span class="p">(</span><span class="n">status</span><span class="p">,</span><span class="w"> </span><span class="n">priority</span><span class="w"> </span><span class="k">DESC</span><span class="p">);</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="k">CREATE</span><span class="w"> </span><span class="n">VIRTUAL</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">lessons_fts</span><span class="w"> </span><span class="k">USING</span><span class="w"> </span><span class="n">fts5</span><span class="p">(</span><span class="n">summary</span><span class="p">,</span><span class="w"> </span><span class="n">mistake</span><span class="p">,</span><span class="w"> </span><span class="n">remediation</span><span class="p">,</span><span class="w"> </span><span class="n">content</span><span class="o">=</span><span class="n">lessons</span><span class="p">);</span>
+</span></code></pre></div>
+<h3 id="54-deduplication-minhash">5.4 Deduplication — MinHash<a class="headerlink" href="#54-deduplication-minhash" title="Permanent link">&para;</a></h3>
+<p>The current Jaccard tokenization approach produces false positives as the lesson store grows because it operates over the full token set rather than locality-sensitive buckets. MinHash generates a compact signature per lesson and enables accurate set-similarity estimation with sub-linear lookup — improving correctness, not just performance.</p>
+<p>This is worth evaluating as a replacement for the current <code>computeContentHash</code> + full-scan approach at ~200+ lessons.</p>
+<p>For SQLite, the <code>sqlite-vec</code> extension supports vector storage and can hold MinHash signatures. This is optional and deferred, but the schema is designed to accommodate it (nullable embeddings column).</p>
+<h3 id="55-status-state-machine">5.5 Status state machine<a class="headerlink" href="#55-status-state-machine" title="Permanent link">&para;</a></h3>
+<pre class="mermaid"><code>stateDiagram-v2
+    [*] --&gt; candidate: scanner discovers
+
+    candidate --&gt; reviewed: LLM review pass completes
+    reviewed --&gt; active: user selects in TUI
+    reviewed --&gt; archived: user explicitly deselects
+    candidate --&gt; archived: LLM marks as noise
+
+    active --&gt; archived: future - manual deprecation
+    archived --&gt; candidate: future - lessons restore command
+
+    note right of candidate
+        Fields may be sparse.
+        Not injected into sessions.
+    end note
+
+    note right of active
+        Fields complete.
+        Injected into sessions.
+        Manifest rebuilt on transition.
+    end note
+
+    note right of archived
+        archivedAt recorded.
+        Retained forever in DB.
+        Hidden unless --show-archived.
+        Restorable via lessons restore command.
+    end note</code></pre>
+<p><code>needsReview: bool</code> is removed — <code>status: "reviewed"</code> replaces it.</p>
+<p>Key transitions:</p>
+<ul>
+<li><code>candidate → reviewed</code> — LLM review pass completes (fields generated, not yet user-confirmed)</li>
+<li><code>reviewed → active</code> — user selects in TUI and confirms</li>
+<li><code>reviewed → archived</code> — user explicitly deselects (deliberate action, never automatic)</li>
+<li><code>candidate → archived</code> — LLM marks as noise (duplicate, situational, etc.)</li>
+<li><code>archived → candidate</code> — future <code>/lessons:restore</code> command</li>
+</ul>
+<p><strong>Important:</strong> Only records the user explicitly interacts with are written on any given session. Untouched candidates remain as <code>candidate</code> and reappear in the next review.</p>
+<h3 id="56-migration">5.6 Migration<a class="headerlink" href="#56-migration" title="Permanent link">&para;</a></h3>
+<p><code>scripts/migrate-db.mjs</code> (one-time):</p>
+<ol>
+<li>Read <code>data/lessons.json</code> → insert as <code>status: "active"</code></li>
+<li>Read <code>data/filtered-candidates.json</code> → insert as <code>status: "candidate"</code></li>
+<li>Verify counts match source files</li>
+<li>Rename originals to <code>.bak</code></li>
+</ol>
+<h3 id="57-lesson-cachejson-kept-as-generated-cache">5.7 lesson-cache.json — kept as generated cache<a class="headerlink" href="#57-lesson-cachejson-kept-as-generated-cache" title="Permanent link">&para;</a></h3>
+<p>With SQLite, hook scripts <em>could</em> query the DB directly. However, hooks run on every Claude tool call and must be fast. The manifest is a pre-compiled cache: regexes already compiled, records filtered to <code>status: "active"</code>, injection budget config embedded. It is <strong>regenerated</strong> by <code>lessons.mjs build</code> whenever active records change.</p>
+<p>Users never edit or read it directly — it is an implementation detail of the hook layer.</p>
+<hr />
+<h2 id="6-phase-1-terminology-cleanup">6. Phase 1 — Terminology Cleanup<a class="headerlink" href="#6-phase-1-terminology-cleanup" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Old</th>
+<th>New</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cross-project-candidates.json</code></td>
+<td><code>filtered-candidates.json</code></td>
+<td>Already in-flight rename</td>
+</tr>
+<tr>
+<td><code>scan candidates</code></td>
+<td><code>scan aggregate</code></td>
+<td>It aggregates heuristic windows across sessions</td>
+</tr>
+<tr>
+<td><code>scan promote</code></td>
+<td>removed</td>
+<td>Replaced by <code>/lessons:review</code></td>
+</tr>
+<tr>
+<td><code>intake</code> (all occurrences)</td>
+<td><code>review</code></td>
+<td>Matches command name; "intake" was internal jargon</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="7-phase-2-scan-pipeline">7. Phase 2 — Scan Pipeline<a class="headerlink" href="#7-phase-2-scan-pipeline" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>flowchart TD
+    classDef store fill:#1a5276,color:#fff,stroke:#154360
+    classDef process fill:#2c3e50,color:#fff,stroke:#1a252f
+    classDef output fill:#27ae60,color:#fff,stroke:#1e8449
+    classDef deferred fill:#e67e22,color:#fff,stroke:#d35400
+
+    files["JSONL session files&lt;br/&gt;~/.claude/projects/"]
+    scan["scan&lt;br/&gt;incremental — new bytes only"]
+    t1["T1: structured tags&lt;br/&gt;source: structured · conf: 0.9+"]
+    t2["T2: heuristic sliding window&lt;br/&gt;source: heuristic · conf: 0.4–0.7"]
+    db["lessons.db&lt;br/&gt;status: candidate"]
+    aggregate["scan aggregate&lt;br/&gt;groups by tool + error keyword cluster&lt;br/&gt;boosts conf/priority for multi-session hits"]
+    ranked["ranked candidates&lt;br/&gt;ready for /lessons:review"]
+    single["single-session hits&lt;br/&gt;kept as candidates · conf: 0.3–0.49&lt;br/&gt;not archived — may recur"]
+
+    files --&gt; scan
+    scan --&gt;|finds #lesson tags| t1
+    scan --&gt;|error → correction pattern| t2
+    t1 --&gt; db
+    t2 --&gt; db
+    db --&gt; aggregate
+    aggregate --&gt;|multi-session recurrences| ranked
+    aggregate --&gt;|not yet recurring| single
+
+    class files,scan process
+    class t1,t2 process
+    class db store
+    class aggregate process
+    class ranked output
+    class single deferred</code></pre>
+<hr />
+<h2 id="8-phase-3-lessonsreview-slash-command">8. Phase 3 — <code>/lessons:review</code> Slash Command<a class="headerlink" href="#8-phase-3-lessonsreview-slash-command" title="Permanent link">&para;</a></h2>
+<p><strong>Location:</strong> <code>.claude/commands/lessons/review.md</code></p>
+<h3 id="81-end-to-end-flow">8.1 End-to-end flow<a class="headerlink" href="#81-end-to-end-flow" title="Permanent link">&para;</a></h3>
+<pre class="mermaid"><code>sequenceDiagram
+    actor User
+    participant Claude as Claude LLM
+    participant CLI as lessons.mjs CLI
+    participant DB as lessons.db
+
+    User-&gt;&gt;Claude: /lessons:review
+
+    Claude-&gt;&gt;CLI: scan
+    CLI-&gt;&gt;DB: save T1/T2 candidates
+    CLI--&gt;&gt;Claude: bytes scanned, candidates saved
+
+    Claude-&gt;&gt;CLI: scan aggregate
+    CLI--&gt;&gt;Claude: ranked candidate list
+
+    Note over Claude: LLM review pass:&lt;br/&gt;filter noise, generate fields
+
+    Claude-&gt;&gt;DB: read all status=candidate
+    Claude-&gt;&gt;Claude: run noise filter
+    Claude-&gt;&gt;Claude: generate fields for keepers
+
+    Claude--&gt;&gt;User: numbered candidate list in conversation
+
+    User-&gt;&gt;Claude: natural language response
+    Note over User,Claude: e.g. "approve 1 3, edit 2 summary to X, skip 4"
+
+    Claude-&gt;&gt;CLI: promote --ids ... (with edited fields as JSON)
+    CLI-&gt;&gt;DB: write status transitions (WAL)
+    CLI-&gt;&gt;CLI: rebuild lesson-cache.json
+    Claude--&gt;&gt;User: promotion report</code></pre>
+<h3 id="82-llm-noise-filter-logic">8.2 LLM noise filter logic<a class="headerlink" href="#82-llm-noise-filter-logic" title="Permanent link">&para;</a></h3>
+<pre class="mermaid"><code>flowchart TD
+    classDef decision fill:#2980b9,color:#fff,stroke:#1a5276
+    classDef archive fill:#c0392b,color:#fff,stroke:#922b21
+    classDef keep fill:#27ae60,color:#fff,stroke:#1e8449
+    classDef generate fill:#6c3483,color:#fff,stroke:#4a235a
+
+    A(["candidate"]) --&gt; B{"exact contentHash&lt;br/&gt;match in DB?"}
+    B --&gt;|yes| Z1["archive: duplicate"]
+    B --&gt;|no| C{"Jaccard similarity&lt;br/&gt;≥ 0.5 vs active?"}
+    C --&gt;|yes| D{"expands existing&lt;br/&gt;lesson?"}
+    D --&gt;|yes| E["flag: expand_existing&lt;br/&gt;shown in TUI"]
+    D --&gt;|no| Z2["archive: near-duplicate"]
+    C --&gt;|no| F{"purely situational&lt;br/&gt;mistake?"}
+    F --&gt;|yes| G{"generalizable rule&lt;br/&gt;underneath?"}
+    G --&gt;|yes| H["keep: extract&lt;br/&gt;generalizable form"]
+    G --&gt;|no| Z3["archive: situational"]
+    F --&gt;|no| I{"concrete remediation&lt;br/&gt;possible?"}
+    I --&gt;|yes| J["keep: generate fields"]
+    I --&gt;|no| K["keep: injectOn SessionStart&lt;br/&gt;flag needsHumanFix"]
+    H --&gt; L["generate: summary, mistake,&lt;br/&gt;remediation, triggers,&lt;br/&gt;tags, priority, confidence"]
+    J --&gt; L
+    K --&gt; L
+    L --&gt; M(["status: reviewed"])
+
+    class B,C,D,F,G,I decision
+    class Z1,Z2,Z3 archive
+    class E,H,J,K keep
+    class L,M generate</code></pre>
+<p>Rules:</p>
+<ul>
+<li>Never discard solely because no trigger pattern can be written — use <code>injectOn: ["SessionStart"]</code></li>
+<li>For near-duplicates: compare both; if candidate adds a new sub-case, flag <code>expand_existing</code></li>
+<li>For vague error output: attempt to identify a generalizable rule before archiving</li>
+</ul>
+<h3 id="83-review-session-file-audit-log">8.3 Review session file (audit log)<a class="headerlink" href="#83-review-session-file-audit-log" title="Permanent link">&para;</a></h3>
+<p>Written to <code>data/review-sessions/&lt;ulid&gt;.json</code>. Session IDs are ULIDs — lexicographically sortable by time. Kept permanently.</p>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="p">{</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">&quot;sessionId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;01JXYZ...&quot;</span><span class="p">,</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="nt">&quot;generatedAt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-04-02T10:00:00Z&quot;</span><span class="p">,</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">  </span><span class="nt">&quot;candidatesConsidered&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">8</span><span class="p">,</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">  </span><span class="nt">&quot;items&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">      </span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;promote&quot;</span><span class="p">,</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">      </span><span class="nt">&quot;candidateId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;id&gt;&quot;</span><span class="p">,</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">      </span><span class="nt">&quot;lesson&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;summary&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;mistake&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;remediation&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">    </span><span class="p">},</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">      </span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;archive&quot;</span><span class="p">,</span>
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="w">      </span><span class="nt">&quot;candidateId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;id&gt;&quot;</span><span class="p">,</span>
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="w">      </span><span class="nt">&quot;archiveReason&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;situational: specific file conflict, not generalizable&quot;</span>
+</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="w">    </span><span class="p">},</span>
+</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="w">      </span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;expand_existing&quot;</span><span class="p">,</span>
+</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a><span class="w">      </span><span class="nt">&quot;candidateId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;id&gt;&quot;</span><span class="p">,</span>
+</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span class="w">      </span><span class="nt">&quot;targetSlug&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;git-stash-drops-untracked&quot;</span><span class="p">,</span>
+</span><span id="__span-3-20"><a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a><span class="w">      </span><span class="nt">&quot;expansionNote&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;adds sub-case: stash pop conflict when working tree dirty&quot;</span>
+</span><span id="__span-3-21"><a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-3-22"><a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a><span class="w">  </span><span class="p">]</span>
+</span><span id="__span-3-23"><a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a><span class="p">}</span>
+</span></code></pre></div>
+<hr />
+<h2 id="9-phase-4-conversational-review">9. Phase 4 — Conversational Review<a class="headerlink" href="#9-phase-4-conversational-review" title="Permanent link">&para;</a></h2>
+<p>The slash command presents candidates directly in the Claude conversation. No terminal TUI, no stdin, no external process. The LLM context is the interface.</p>
+<h3 id="91-candidate-presentation-format">9.1 Candidate presentation format<a class="headerlink" href="#91-candidate-presentation-format" title="Permanent link">&para;</a></h3>
+<p>Claude presents reviewed candidates as a numbered list after the LLM review pass:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>Found 5 candidates. Archived 2 as noise. 3 ready for review:
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>1. git stash silently drops untracked files
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>   tool:git · severity:data-loss · priority:7 · conf:0.85
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>   Mistake:     git stash only stashes tracked files — untracked files silently left behind
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>   Remediation: Use git stash -u (--include-untracked)
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>   Trigger:     \bgit\s+stash\b(?!.*-u|--include-untracked)
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>2. ts-node requires --esm for ESM module resolution
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>   lang:ts · priority:5 · conf:0.72
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>   Mistake:     Running ts-node on an ESM project without --esm causes ERR_REQUIRE_ESM
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>   Remediation: Add --esm flag: ts-node --esm src/index.ts
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>   Trigger:     \bts-node\b(?!.*--esm)
+</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>
+</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>3. jsx file must use .tsx extension  [expands: typescript-file-using-jsx]
+</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>   lang:ts · priority:5 · conf:0.68
+</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>   Mistake:     TypeScript files using JSX must have .tsx extension not .ts
+</span><span id="__span-4-18"><a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>   Remediation: Rename .ts → .tsx for any file containing JSX
+</span><span id="__span-4-19"><a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>   Trigger:     (none — SessionStart injection)
+</span><span id="__span-4-20"><a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>
+</span><span id="__span-4-21"><a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a>Archived by LLM:
+</span><span id="__span-4-22"><a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a>  • [duplicate]    biome config schema — near-match of existing lesson
+</span><span id="__span-4-23"><a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a>  • [situational]  git restore conflict — specific to bisect task, not generalizable
+</span><span id="__span-4-24"><a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a>
+</span><span id="__span-4-25"><a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a>Reply with your decisions, e.g.:
+</span><span id="__span-4-26"><a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a>  approve 1 2       — promote as-is
+</span><span id="__span-4-27"><a id="__codelineno-4-27" name="__codelineno-4-27" href="#__codelineno-4-27"></a>  skip 3            — leave as candidate for next session
+</span><span id="__span-4-28"><a id="__codelineno-4-28" name="__codelineno-4-28" href="#__codelineno-4-28"></a>  edit 2 summary &quot;ts-node needs --esm for ESM projects&quot;
+</span><span id="__span-4-29"><a id="__codelineno-4-29" name="__codelineno-4-29" href="#__codelineno-4-29"></a>  archive 1 &quot;already know this&quot;
+</span><span id="__span-4-30"><a id="__codelineno-4-30" name="__codelineno-4-30" href="#__codelineno-4-30"></a>  approve all
+</span></code></pre></div>
+<h3 id="92-user-response-grammar">9.2 User response grammar<a class="headerlink" href="#92-user-response-grammar" title="Permanent link">&para;</a></h3>
+<p>Claude accepts flexible natural language. Recognised patterns:</p>
+<table>
+<thead>
+<tr>
+<th>Intent</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Approve one or more</td>
+<td><code>approve 1 3</code>, <code>approve all</code></td>
+</tr>
+<tr>
+<td>Skip (keep as candidate)</td>
+<td><code>skip 2</code>, <code>skip all</code></td>
+</tr>
+<tr>
+<td>Archive with reason</td>
+<td><code>archive 3 "too niche"</code></td>
+</tr>
+<tr>
+<td>Edit a field then approve</td>
+<td><code>edit 1 summary "X" then approve</code>, <code>edit 2 priority 8</code></td>
+</tr>
+<tr>
+<td>Unarchive an LLM-archived item</td>
+<td><code>unarchive biome-config</code></td>
+</tr>
+<tr>
+<td>Ask to see full details</td>
+<td><code>show 2</code></td>
+</tr>
+</tbody>
+</table>
+<p>After parsing the response, Claude confirms its interpretation before writing to the DB:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>Got it. About to:
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>  ✓ Promote: git-stash-drops-untracked, ts-node-esm-flag
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>  ↷ Skip:    jsx-tsx-extension (will reappear next session)
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>Confirm? [y/n]
+</span></code></pre></div>
+<h3 id="93-promotion">9.3 Promotion<a class="headerlink" href="#93-promotion" title="Permanent link">&para;</a></h3>
+<p>On confirmation, Claude runs:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>node<span class="w"> </span>scripts/lessons.mjs<span class="w"> </span>promote<span class="w"> </span>--ids<span class="w"> </span>&lt;id1&gt;,&lt;id2&gt;<span class="w"> </span><span class="o">[</span>--patch<span class="w"> </span><span class="s1">&#39;{&quot;id&quot;: {...fields}}&#39;</span><span class="o">]</span>
+</span></code></pre></div>
+<p>The <code>promote</code> subcommand accepts a list of IDs (and optional field patches for edits) and writes the DB transitions atomically via SQLite WAL:</p>
+<ul>
+<li><strong>Promoted IDs</strong> → <code>UPDATE status='active', reviewedAt=now()</code></li>
+<li><strong>Archived IDs</strong> → <code>UPDATE status='archived', archivedAt=now(), archiveReason=...</code></li>
+<li><strong>Skipped IDs</strong> → no write; remain <code>status='candidate'</code></li>
+</ul>
+<p>Then rebuilds <code>lesson-cache.json</code> and reports:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>✓ Added: git-stash-drops-untracked   (tool:git, priority:7)
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>✓ Added: ts-node-esm-flag            (lang:ts,  priority:5)
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>↷ Skipped: jsx-tsx-extension (will reappear next session)
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>lesson-cache.json rebuilt. 2 new lessons active.
+</span></code></pre></div>
+<hr />
+<h2 id="10-no-external-dependencies">10. No External Dependencies<a class="headerlink" href="#10-no-external-dependencies" title="Permanent link">&para;</a></h2>
+<p>The conversational review approach eliminates all UI-related dependencies:</p>
+<ul>
+<li>No <code>ink</code> / <code>react</code></li>
+<li>No <code>esbuild</code> build step</li>
+<li>No bundled binary to commit and maintain</li>
+<li>No stdin / terminal handoff problem</li>
+</ul>
+<p>The only runtime requirement is Node.js ≥ 22.5 (for <code>node:sqlite</code>), which is already required for the DB layer.</p>
+<hr />
+<h2 id="11-files-to-create-modify">11. Files to Create / Modify<a class="headerlink" href="#11-files-to-create-modify" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Action</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>data/lessons.db</code></td>
+<td>Create (migrate)</td>
+<td>SQLite DB replacing lessons.json + filtered-candidates.json</td>
+</tr>
+<tr>
+<td><code>data/review-sessions/</code></td>
+<td>Create dir</td>
+<td>Permanent ULID-named audit logs</td>
+</tr>
+<tr>
+<td><code>scripts/migrate-db.mjs</code></td>
+<td>Create</td>
+<td>One-time migration from JSON files to SQLite</td>
+</tr>
+<tr>
+<td><code>.claude/commands/lessons/review.md</code></td>
+<td>Create</td>
+<td>Slash command</td>
+</tr>
+<tr>
+<td><code>scripts/lessons.mjs</code></td>
+<td>Modify</td>
+<td>Add <code>promote</code> subcommand; rename <code>scan candidates</code> → <code>scan aggregate</code>; update DB paths</td>
+</tr>
+<tr>
+<td><code>scripts/scanner/*.mjs</code></td>
+<td>Modify</td>
+<td>Write candidates to SQLite instead of filtered-candidates.json</td>
+</tr>
+<tr>
+<td><code>package.json</code></td>
+<td>Modify</td>
+<td>Bump <code>engines.node &gt;= 22.5</code></td>
+</tr>
+</tbody>
+</table>
+<p><code>lesson-cache.json</code> remains as a generated-only build artifact — the compiled output of <code>lessons build</code>, consumed by hook scripts for fast regex matching. Not a source-of-truth; regenerated on every promotion.</p>
+<hr />
+<h2 id="13-verification">13. Verification<a class="headerlink" href="#13-verification" title="Permanent link">&para;</a></h2>
+<ol>
+<li><code>scripts/migrate-db.mjs</code> — DB has 30 active + 15 candidate records; <code>.bak</code> files present</li>
+<li><code>/lessons:review</code> — scan runs, aggregate runs, LLM review writes <code>data/review-sessions/&lt;ulid&gt;.json</code></li>
+<li>TUI opens — arrow keys navigate, space toggles, <code>→</code> opens split-pane editor</li>
+<li>Edit a field inline — change persists when switching rows</li>
+<li>Confirm promotion — selected records show <code>status: 'active'</code> in DB; manifest rebuilt</li>
+<li>Untouched candidates — verify they remain <code>status: 'candidate'</code> in DB</li>
+<li>Re-run <code>/lessons:review</code> — untouched candidates reappear; promoted records absent</li>
+<li>Archived row <code>→</code> — LLM reason visible; [Unarchive] action works</li>
+<li>Empty state — "No candidates found. Run <code>lessons scan</code> to discover new ones."</li>
+</ol>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../001-lessons-learned-plugin/" class="md-footer__link md-footer__link--prev" aria-label="Previous: PRD-001">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                PRD-001
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../003-mcp-server/" class="md-footer__link md-footer__link--next" aria-label="Next: PRD-003">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                PRD-003
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Maintained by <a href="https://github.com/joeblackwaslike">Joe Black</a>. MIT License.
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/joeblackwaslike/lessons-learned" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.top", "navigation.footer", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
