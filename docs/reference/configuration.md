@@ -2,7 +2,7 @@
 
 Full reference for all fields in `data/config.json`.
 
-Schema: [`schemas/config.schema.json`](../../schemas/config.schema.json)
+Schema: [`schemas/config.schema.json`](https://github.com/joeblackwaslike/lessons-learned/blob/main/schemas/config.schema.json)
 
 Every field has an environment variable equivalent that takes precedence over the config file. Env vars are read at runtime — no config file edit or manifest rebuild is required.
 
