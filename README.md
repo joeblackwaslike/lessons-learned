@@ -103,6 +103,27 @@ Replace `/Users/you/lessons-learned` with your actual clone path. Restart Claude
 
 > **Tip:** `echo $(pwd)` from inside the repo gives you the path to paste.
 
+#### Optional: Context Anti-Compact (beta)
+
+Add this block to also enable the [Context Anti-Compact](docs/user-guide/anti-compact.md) beta feature, which intercepts `/compact` and generates a structured session handoff instead of allowing lossy built-in compression:
+
+```json
+"PreCompact": [
+  {
+    "matcher": "",
+    "hooks": [
+      {
+        "type": "command",
+        "command": "LESSONS_PRECOMPACT_HANDOFF=1 node \"/Users/you/lessons-learned/hooks/precompact-handoff.mjs\"",
+        "timeout": 60
+      }
+    ]
+  }
+]
+```
+
+The env var `LESSONS_PRECOMPACT_HANDOFF=1` is what enables the feature — the hook is a no-op without it, so you can also wire it unconditionally and toggle the env var in your shell profile.
+
 ---
 
 ### Gemini CLI

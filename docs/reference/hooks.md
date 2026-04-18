@@ -48,6 +48,18 @@ Hook configuration lives in `hooks/hooks.json`. For manual installation (without
         ]
       }
     ],
+    "PreCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/precompact-handoff.mjs\"",
+            "timeout": 60
+          }
+        ]
+      }
+    ],
     "SubagentStart": [
       {
         "matcher": ".+",
@@ -207,6 +219,73 @@ For file tools (`Read`, `Edit`, `Write`, `Glob`):
 | `LESSONS_AGENT_PLATFORM` | Platform normalization: `gemini`, `codex` (default: Claude Code)    |
 
 **Timeout:** 5 seconds. The hook is fast (manifest load + regex match + JSON output) and should complete in milliseconds.
+
+---
+
+## `PreCompact` hooks
+
+!!! warning "Beta"
+    The `PreCompact` hook is a beta feature. Enable it with `LESSONS_PRECOMPACT_HANDOFF=1`. See [Context Anti-Compact](../user-guide/anti-compact.md) for full documentation.
+
+### `precompact-handoff.mjs`
+
+**Matcher:** `` (empty — fires on every compaction)
+
+**Opt-in:** Only runs when `LESSONS_PRECOMPACT_HANDOFF=1` is set. Exits `0` (no-op) otherwise.
+
+Fires before `/compact` executes, giving the hook the opportunity to block compaction.
+
+**Purpose:** Intercepts context window compaction, generates a high-quality structured session handoff via `claude -p`, and exits with code `2` to block the built-in compaction. The handoff preserves decision rationale, exact commands, issue IDs, and file paths that lossy compaction would discard.
+
+**What it does:**
+
+1. Parses the session transcript at `transcript_path` (from stdin) — extracts `user` and `assistant` message text, strips injected system context, counts chars from `attachment` records separately
+2. Estimates token usage: `(msgChars + attachChars) / 4` and infers the context window as `approxTokens / 0.8` (since `PreCompact` fires at exactly 80%)
+3. Pipes the conversation to `claude -p --no-session-persistence` with a structured summarization prompt
+4. Falls back to structured extraction (active issues, recent commits, full thread) if `claude -p` fails or times out
+5. Outputs the handoff as `additionalContext` and exits `2`
+
+**Input (stdin):**
+
+```json
+{
+  "hook_event_name": "PreCompact",
+  "session_id": "550e8400-...",
+  "transcript_path": "/Users/alice/.claude/projects/my-project/abc123.jsonl"
+}
+```
+
+**Output (stdout):**
+
+Raw text (not JSON) — Claude Code `PreCompact` hooks use the same raw text convention as `SessionStart`:
+
+```
+# [lessons-learned] Pre-Compact Handoff
+
+Context: ~142k / ~178k tokens (~80%). Compaction would degrade inference quality —
+blocking to preserve session context.
+
+Copy this prompt to continue in a new session:
+
+```
+[Structured handoff content]
+```
+```
+
+**Exit codes:**
+
+| Code | Meaning |
+| ---- | ------- |
+| `0` | Feature disabled (env var not set) — compaction proceeds normally |
+| `2` | Handoff generated — compaction blocked |
+
+**Environment variables read:**
+
+| Variable | Purpose |
+| -------- | ------- |
+| `LESSONS_PRECOMPACT_HANDOFF` | Set to `1` to enable the feature (opt-in) |
+
+**Timeout:** 60 seconds — accommodates the `claude -p` call latency (typically 20–40 seconds).
 
 ---
 

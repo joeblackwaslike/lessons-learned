@@ -19,6 +19,7 @@ nav:
       - Configuration: user-guide/configuration.md
       - Scanning & Discovery: user-guide/scanning.md
       - Emitting Lessons: user-guide/emitting-lessons.md
+      - Context Anti-Compact (beta): user-guide/anti-compact.md
   - Developer Guide:
       - Overview: developer-guide/index.md
       - Architecture: developer-guide/architecture.md

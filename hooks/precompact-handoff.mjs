@@ -10,10 +10,20 @@
  * stdout: raw text injected before compaction is blocked
  */
 
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { execFileSync, spawn } from 'node:child_process';
 
-const CLAUDE_BIN = '/Users/joeblack/.nvm/versions/node/v24.10.0/bin/claude';
+// Feature is opt-in while in beta. Set LESSONS_PRECOMPACT_HANDOFF=1 to enable.
+const ENABLED = Boolean(process.env.LESSONS_PRECOMPACT_HANDOFF);
+
+// Resolve claude binary: prefer PATH, fall back to common nvm location.
+function findClaudeBin() {
+  try {
+    return execFileSync('which', ['claude'], { encoding: 'utf8' }).trim();
+  } catch {}
+  const fallback = `${process.env.HOME}/.nvm/versions/node/v24.10.0/bin/claude`;
+  return existsSync(fallback) ? fallback : 'claude';
+}
 
 function parseTranscript(path) {
   let msgChars = 0;
@@ -55,6 +65,7 @@ function parseTranscript(path) {
 }
 
 async function generateHandoff(entries) {
+  const claudeBin = findClaudeBin();
   const convText = entries.map(e =>
     `${e.role === 'user' ? 'User' : 'Claude'}: ${e.text}`
   ).join('\n\n---\n\n');
@@ -75,7 +86,7 @@ CONVERSATION:
 ${convText}`;
 
   return new Promise((resolve) => {
-    const child = spawn(CLAUDE_BIN, ['-p', '--no-session-persistence'], {
+    const child = spawn(claudeBin, ['-p', '--no-session-persistence'], {
       stdio: ['pipe', 'pipe', 'pipe'],
     });
 
@@ -129,6 +140,8 @@ function buildFallbackHandoff(entries) {
 }
 
 async function main() {
+  if (!ENABLED) process.exit(0);
+
   let transcriptPath = null;
 
   try {
