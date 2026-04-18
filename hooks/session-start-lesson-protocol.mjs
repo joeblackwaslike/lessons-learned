@@ -83,11 +83,28 @@ function main() {
       l => (l.type === 'protocol' || l.type === 'directive') && !l.disabled
     );
 
-    if (reasoningLessons.length > 0) {
-      output += '\n\n# [lessons-learned] Reasoning Reminders\n';
-      for (const l of reasoningLessons) {
-        output += `\n${l.message}\n`;
-      }
+    const directives = reasoningLessons
+      .filter(l => l.type === 'directive')
+      .sort((a, b) => (b.priority ?? 5) - (a.priority ?? 5));
+    const protocols = reasoningLessons
+      .filter(l => l.type === 'protocol')
+      .sort((a, b) => (b.priority ?? 5) - (a.priority ?? 5));
+
+    if (directives.length > 0) {
+      output += '\n\n## Non-Negotiable Directives\n\n';
+      output += '<IMPORTANT>\n';
+      output += 'These are non-negotiable rules derived from real failures with measurable cost. ';
+      output += 'Applying them is not optional — each one prevented a real incident. ';
+      output += 'Skipping a rule to save time has caused real incidents.\n';
+      output += '</IMPORTANT>\n';
+      for (const l of directives) output += `\n${l.message}\n`;
+    }
+
+    if (protocols.length > 0) {
+      output += '\n\n---\n\n## Active Protocols\n\n';
+      output += 'The following protocols capture hard-won coordination patterns. ';
+      output += 'Apply before starting work in the relevant context — they save time, tokens, and turmoil.\n';
+      for (const l of protocols) output += `\n${l.message}\n`;
     }
   } catch {
     // Manifest missing or unreadable — skip reasoning lessons silently
