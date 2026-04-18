@@ -846,34 +846,49 @@ function cmdReview(args) {
     return;
   }
 
+  const groups = new Map();
+  for (const c of candidates) {
+    const key = c.tags?.[0] ?? '(untagged)';
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(c);
+  }
+  const sortedGroups = [...groups.entries()].sort(([a], [b]) => {
+    if (a === '(untagged)') return 1;
+    if (b === '(untagged)') return -1;
+    return a.localeCompare(b);
+  });
+
   let pass = 0,
     fail = 0;
-  for (const c of candidates) {
-    const errors = [];
-    if (!c.problem || c.problem.length < MIN_FIELD_LENGTH) errors.push('problem too short');
-    if (!c.solution || c.solution.length < MIN_FIELD_LENGTH)
-      errors.push('solution too short');
-    if (TEMPLATE_PLACEHOLDER_RE.test(c.problem)) errors.push('problem has placeholder');
-    if (TEMPLATE_PLACEHOLDER_RE.test(c.solution)) errors.push('solution has placeholder');
-    const trigger = (c.commandPatterns ?? [])[0];
-    if (trigger && PROSE_TRIGGER_RE.test(trigger.trim()))
-      errors.push(`prose trigger: "${trigger}"`);
-    const dup = activeProblemTexts.find(l => jaccardSimilarity(c.problem, l.problem) >= 0.5);
-    if (dup)
-      errors.push(
-        `fuzzy duplicate of "${dup.slug}" (${jaccardSimilarity(c.problem, dup.problem).toFixed(2)})`
-      );
+  for (const [groupTag, groupCandidates] of sortedGroups) {
+    console.log(`\n── ${groupTag} (${groupCandidates.length}) ${'─'.repeat(Math.max(0, 40 - groupTag.length))}`);
+    for (const c of groupCandidates) {
+      const errors = [];
+      if (!c.problem || c.problem.length < MIN_FIELD_LENGTH) errors.push('problem too short');
+      if (!c.solution || c.solution.length < MIN_FIELD_LENGTH)
+        errors.push('solution too short');
+      if (TEMPLATE_PLACEHOLDER_RE.test(c.problem)) errors.push('problem has placeholder');
+      if (TEMPLATE_PLACEHOLDER_RE.test(c.solution)) errors.push('solution has placeholder');
+      const trigger = (c.commandPatterns ?? [])[0];
+      if (trigger && PROSE_TRIGGER_RE.test(trigger.trim()))
+        errors.push(`prose trigger: "${trigger}"`);
+      const dup = activeProblemTexts.find(l => jaccardSimilarity(c.problem, l.problem) >= 0.5);
+      if (dup)
+        errors.push(
+          `fuzzy duplicate of "${dup.slug}" (${jaccardSimilarity(c.problem, dup.problem).toFixed(2)})`
+        );
 
-    const status = errors.length === 0 ? '✓ PASS' : '✗ FAIL';
-    if (errors.length === 0) pass++;
-    else fail++;
+      const status = errors.length === 0 ? '✓ PASS' : '✗ FAIL';
+      if (errors.length === 0) pass++;
+      else fail++;
 
-    const tool = c.toolNames?.[0] ?? 'unknown';
-    console.log(`\n${status} | ${tool} | conf:${c.confidence} | sessions:${c.sessionCount}`);
-    console.log(`  [${c.id}]`);
-    console.log(`  Problem:  ${c.problem.replace(/\n/g, ' ').slice(0, 100)}`);
-    console.log(`  Solution: ${c.solution.replace(/\n/g, ' ').slice(0, 100)}`);
-    if (errors.length > 0) console.log(`  Issues:   ${errors.join(', ')}`);
+      const tool = c.toolNames?.[0] ?? 'unknown';
+      console.log(`\n${status} | ${tool} | conf:${c.confidence} | sessions:${c.sessionCount}`);
+      console.log(`  [${c.id}]`);
+      console.log(`  Problem:  ${c.problem.replace(/\n/g, ' ').slice(0, 100)}`);
+      console.log(`  Solution: ${c.solution.replace(/\n/g, ' ').slice(0, 100)}`);
+      if (errors.length > 0) console.log(`  Issues:   ${errors.join(', ')}`);
+    }
   }
 
   console.log(`\n${pass} pass, ${fail} fail out of ${candidates.length} candidates`);
