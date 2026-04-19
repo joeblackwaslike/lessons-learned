@@ -20,13 +20,7 @@
  *   node scripts/lessons.mjs <subcommand> --help
  */
 
-import {
-  readFileSync,
-  writeFileSync,
-  createReadStream,
-  readdirSync,
-  statSync,
-} from 'node:fs';
+import { readFileSync, writeFileSync, createReadStream, readdirSync, statSync } from 'node:fs';
 import {
   openDb,
   closeDb,
@@ -83,6 +77,7 @@ Subcommands:
   promote           Promote candidates to active, archive, or patch fields
   restore           Restore archived lessons back to active
   review            Review candidates from the DB against validation rules
+  doctor            Audit active lessons for quality issues
   scan              Incrementally scan session logs for new candidates
   scan aggregate    List ranked candidates from the DB (for /lessons:review)
 
@@ -99,6 +94,25 @@ Examples:
   node scripts/lessons.mjs scan aggregate
   node scripts/lessons.mjs promote --ids <id1>,<id2>
   node scripts/lessons.mjs promote --ids <id1> --archive "<id2>:reason"
+  node scripts/lessons.mjs doctor
+`.trim(),
+
+  doctor: `
+lessons doctor — Audit active lessons for quality issues.
+
+Checks:
+  - Missing toolNames (hint/guard lessons that can never fire)
+  - Summary longer than 80 chars (truncated in injection output)
+  - Summary ending with ... (truncation indicator)
+  - Template placeholders left in summary, problem, or solution
+  - hint/guard with no commandPatterns or pathPatterns (fires on every tool call)
+
+Usage:
+  node scripts/lessons.mjs doctor
+  node scripts/lessons.mjs doctor --json
+
+Options:
+  --json   Output failing lessons as JSON array; exits 1 if any found
 `.trim(),
 
   add: `
@@ -334,9 +348,7 @@ function validateLesson(input) {
   if (TEMPLATE_PLACEHOLDER_RE.test(input.solution))
     errors.push('solution contains unfilled template placeholder');
   if (input.solution.length < MIN_FIELD_LENGTH)
-    errors.push(
-      `solution too short (${input.solution.length} chars, min ${MIN_FIELD_LENGTH})`
-    );
+    errors.push(`solution too short (${input.solution.length} chars, min ${MIN_FIELD_LENGTH})`);
   if (input.trigger && PROSE_TRIGGER_RE.test(input.trigger.trim()))
     errors.push(`trigger "${input.trigger}" looks like prose, not a shell command`);
   return errors;
@@ -764,7 +776,9 @@ async function cmdOnboard(args) {
   }
 
   const fromIdx = args.includes('--from') ? parseInt(args[args.indexOf('--from') + 1], 10) : 0;
-  const maxCount = args.includes('--count') ? parseInt(args[args.indexOf('--count') + 1], 10) : Infinity;
+  const maxCount = args.includes('--count')
+    ? parseInt(args[args.indexOf('--count') + 1], 10)
+    : Infinity;
   const slice = lessons.slice(fromIdx, fromIdx + maxCount);
   const total = lessons.length;
 
@@ -863,12 +877,13 @@ function cmdReview(args) {
   let pass = 0,
     fail = 0;
   for (const [groupTag, groupCandidates] of sortedGroups) {
-    console.log(`\n── ${groupTag} (${groupCandidates.length}) ${'─'.repeat(Math.max(0, 40 - groupTag.length))}`);
+    console.log(
+      `\n── ${groupTag} (${groupCandidates.length}) ${'─'.repeat(Math.max(0, 40 - groupTag.length))}`
+    );
     for (const c of groupCandidates) {
       const errors = [];
       if (!c.problem || c.problem.length < MIN_FIELD_LENGTH) errors.push('problem too short');
-      if (!c.solution || c.solution.length < MIN_FIELD_LENGTH)
-        errors.push('solution too short');
+      if (!c.solution || c.solution.length < MIN_FIELD_LENGTH) errors.push('solution too short');
       if (TEMPLATE_PLACEHOLDER_RE.test(c.problem)) errors.push('problem has placeholder');
       if (TEMPLATE_PLACEHOLDER_RE.test(c.solution)) errors.push('solution has placeholder');
       const trigger = (c.commandPatterns ?? [])[0];
@@ -979,6 +994,79 @@ async function cmdPromote(args) {
     for (const r of archived) console.log(`  - ${r.slug} (${r.id})`);
   }
   console.log(`Review session saved to DB: ${sessionId}`);
+}
+
+// ─── Doctor subcommand ───────────────────────────────────────────────
+
+const SUMMARY_MAX_LENGTH = 80;
+
+function auditLesson(lesson) {
+  const issues = [];
+  const { type } = lesson;
+  const isInjectOnMatch = type === 'hint' || type === 'guard';
+  if (isInjectOnMatch && (!lesson.toolNames || lesson.toolNames.length === 0))
+    issues.push('missing toolNames — lesson can never fire');
+
+  if (lesson.summary && lesson.summary.length > SUMMARY_MAX_LENGTH)
+    issues.push(`summary too long (${lesson.summary.length} chars, max ${SUMMARY_MAX_LENGTH})`);
+
+  if (lesson.summary && lesson.summary.endsWith('...'))
+    issues.push('summary appears truncated (ends with ...)');
+
+  for (const field of ['summary', 'problem', 'solution']) {
+    if (lesson[field] && TEMPLATE_PLACEHOLDER_RE.test(lesson[field]))
+      issues.push(`${field} contains unfilled template placeholder`);
+  }
+
+  if (
+    isInjectOnMatch &&
+    (!lesson.commandPatterns || lesson.commandPatterns.length === 0) &&
+    (!lesson.pathPatterns || lesson.pathPatterns.length === 0)
+  )
+    issues.push('no commandPatterns or pathPatterns — fires on every matching tool call');
+
+  return issues;
+}
+
+function cmdDoctor(args) {
+  if (args.includes('--help') || args.includes('-h')) {
+    console.log(HELP.doctor);
+    return;
+  }
+
+  const db = openDb();
+  const lessons = getActiveRecords(db);
+  closeDb(db);
+
+  const results = lessons.map(l => ({ lesson: l, issues: auditLesson(l) }));
+  const failing = results.filter(r => r.issues.length > 0);
+
+  if (args.includes('--json')) {
+    console.log(
+      JSON.stringify(
+        failing.map(r => ({ slug: r.lesson.slug, issues: r.issues })),
+        null,
+        2
+      )
+    );
+    if (failing.length > 0) process.exit(1);
+    return;
+  }
+
+  if (failing.length === 0) {
+    console.log(`✓ All ${lessons.length} lessons passed quality checks.`);
+    return;
+  }
+
+  console.log(`${failing.length} of ${lessons.length} lessons have quality issues:\n`);
+  for (const { lesson, issues } of failing) {
+    console.log(`  ${lesson.slug} [${lesson.type ?? 'hint'}]`);
+    console.log(`    ${lesson.summary}`);
+    for (const issue of issues) console.log(`    ✗ ${issue}`);
+    console.log();
+  }
+  console.log(`To fix: node scripts/lessons.mjs edit --id <slug> --patch '{"field":"value"}'`);
+  process.exit(1);
 }
 
 // ─── Edit subcommand ─────────────────────────────────────────────────
@@ -1153,7 +1241,12 @@ async function runScan(args) {
     const newBytes = fileSize - offset;
     if (flags.verbose) log(`  Scanning: ${filePath} (${newBytes} new bytes)`);
 
-    const { candidates, bytesRead } = await scanFile(filePath, offset, flags, projectIdFromFilePath(filePath));
+    const { candidates, bytesRead } = await scanFile(
+      filePath,
+      offset,
+      flags,
+      projectIdFromFilePath(filePath)
+    );
     allCandidates.push(...candidates);
     updateOffset(state, filePath, bytesRead);
     filesScanned++;
@@ -1317,7 +1410,7 @@ function findJsonlFiles(dir, maxDepth = 5, depth = 0) {
 
 async function scanFile(filePath, startOffset, flags, projectId = null) {
   const candidates = [];
-  const cancelPrefixes = [];   // problem prefixes from #lesson:cancel blocks
+  const cancelPrefixes = []; // problem prefixes from #lesson:cancel blocks
   const detector = new HeuristicDetector();
   let bytesRead = startOffset;
 
@@ -1345,10 +1438,13 @@ async function scanFile(filePath, startOffset, flags, projectId = null) {
   // Drop any lesson whose problem starts with a cancel prefix from this file.
   // Cancel tags always appear after the lesson tags they target (chronological order),
   // so filtering after the full pass correctly suppresses them.
-  const filtered = cancelPrefixes.length === 0 ? candidates : candidates.filter(c => {
-    const problemLower = (c.problem ?? '').toLowerCase();
-    return !cancelPrefixes.some(prefix => problemLower.startsWith(prefix));
-  });
+  const filtered =
+    cancelPrefixes.length === 0
+      ? candidates
+      : candidates.filter(c => {
+          const problemLower = (c.problem ?? '').toLowerCase();
+          return !cancelPrefixes.some(prefix => problemLower.startsWith(prefix));
+        });
 
   return { candidates: filtered, bytesRead };
 }
@@ -1439,6 +1535,9 @@ async function main() {
       break;
     case 'review':
       cmdReview(rest);
+      break;
+    case 'doctor':
+      cmdDoctor(rest);
       break;
     case 'scan':
       await cmdScan(rest);
