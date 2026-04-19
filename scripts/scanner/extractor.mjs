@@ -99,8 +99,8 @@ export function extractFromHeuristic(window) {
   }
 
   // Extract problem and solution text from the error and correction turns
-  const problem = errorTurn?.text?.slice(0, 500) ?? 'Unknown error';
-  const solution = correctionTurn?.text?.slice(0, 500) ?? 'See correction';
+  const problem = errorTurn?.text?.slice(0, 1500) ?? 'Unknown error';
+  const solution = correctionTurn?.text?.slice(0, 1500) ?? 'See correction';
 
   /** @type {LessonCandidate} */
   const candidate = {

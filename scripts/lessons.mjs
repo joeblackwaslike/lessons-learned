@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env -S node --no-warnings
 
 /**
  * lessons — Manage the lessons-learned lesson store.
@@ -183,14 +183,19 @@ Options:
 lessons review — Review T2 scan candidates against intake validation rules.
 
 Usage:
-  node scripts/lessons.mjs review
+  node scripts/lessons.mjs review [--batch=N] [--offset=N]
 
-Reads from data/cross-project-candidates.json (written by: lessons scan candidates).
+Options:
+  --batch=N   Show N candidates at a time (default: all)
+  --offset=N  Skip first N candidates (default: 0)
+
 Shows each candidate with a PASS/FAIL status based on intake validation rules:
   - Problem and solution meet minimum length
   - No unfilled template placeholders
   - Trigger is a shell command, not prose
   - Not a fuzzy duplicate of an existing lesson (Jaccard ≥ 0.5)
+
+Grouped by tag → tool, with similarity clustering when detected.
 `.trim(),
 
   promote: `
@@ -855,41 +860,207 @@ function cmdList(args) {
   }
 }
 
+/**
+ * Clusters candidates by Jaccard similarity on problem field.
+ * Returns array of clusters, each containing similar candidates.
+ * @unused - Reserved for future --cluster-preview feature
+ */
+function _clusterBySimilarity(candidates, threshold = 0.6) {
+  const clusters = [];
+  const processed = new Set();
+
+  for (let i = 0; i < candidates.length; i++) {
+    if (processed.has(i)) continue;
+
+    const cluster = [candidates[i]];
+    processed.add(i);
+
+    // Find all similar candidates
+    for (let j = i + 1; j < candidates.length; j++) {
+      if (processed.has(j)) continue;
+
+      const similarity = jaccardSimilarity(candidates[i].problem, candidates[j].problem);
+      if (similarity >= threshold) {
+        cluster.push(candidates[j]);
+        processed.add(j);
+      }
+    }
+
+    clusters.push(cluster);
+  }
+
+  return clusters;
+}
+
+/**
+ * Generates a comparison preview for a cluster
+ * @unused - Reserved for future --cluster-preview feature
+ */
+function _generateClusterPreview(cluster) {
+  const items = cluster.map(c => c.candidate);
+  const ids = items.map(c => c.id.slice(0, 8));
+
+  let preview = `CLUSTER COMPARISON (${items.length} candidates)\n${'─'.repeat(60)}\n\n`;
+
+  // Check what's the same vs different
+  const problemSame = items.every(c => c.problem === items[0].problem);
+  const solutionSame = items.every(c => c.solution === items[0].solution);
+  const confSame = items.every(c => c.confidence === items[0].confidence);
+  const priSame = items.every(c => c.priority === items[0].priority);
+
+  // Show IDs
+  preview += `IDs: ${cluster.map((c, i) => `[${c.index}] ${ids[i]}`).join(', ')}\n\n`;
+
+  // Problem
+  if (problemSame) {
+    preview += `Problem: IDENTICAL (${items[0].problem.length} chars)\n`;
+    preview += `  ${items[0].problem.slice(0, 120)}...\n\n`;
+  } else {
+    preview += `Problem: VARIATIONS\n`;
+    items.forEach((c, i) => {
+      preview += `  [${cluster[i].index}] ${c.problem.slice(0, 80)}...\n`;
+    });
+    preview += '\n';
+  }
+
+  // Solution
+  if (solutionSame) {
+    preview += `Solution: IDENTICAL (${items[0].solution.length} chars)\n`;
+    preview += `  ${items[0].solution.slice(0, 120)}...\n\n`;
+  } else {
+    preview += `Solution: VARIATIONS\n`;
+    items.forEach((c, i) => {
+      preview += `  [${cluster[i].index}] ${c.solution.slice(0, 80)}...\n`;
+    });
+    preview += '\n';
+  }
+
+  // Metadata differences
+  preview += `Metadata:\n`;
+  preview += `  Conf:     ${items.map((c, i) => `[${cluster[i].index}] ${c.confidence}`).join('  ')}  ${confSame ? '[SAME]' : '[DIFF]'}\n`;
+  preview += `  Priority: ${items.map((c, i) => `[${cluster[i].index}] ${c.priority}`).join('  ')}  ${priSame ? '[SAME]' : '[DIFF]'}\n`;
+
+  // Tags
+  preview += `  Tags:\n`;
+  items.forEach((c, i) => {
+    const tags = c.tags?.join(', ') || 'none';
+    preview += `    [${cluster[i].index}] ${tags}\n`;
+  });
+
+  // Merged result preview
+  preview += `\n${'─'.repeat(60)}\nMERGED RESULT:\n`;
+  preview += `  Problem: ${problemSame ? 'keep shared' : 'longest'} (${Math.max(...items.map(c => c.problem.length))} chars)\n`;
+  preview += `  Solution: ${solutionSame ? 'keep shared' : 'longest'} (${Math.max(...items.map(c => c.solution.length))} chars)\n`;
+
+  const allTags = new Set(items.flatMap(c => c.tags || []));
+  preview += `  Tags: ${[...allTags].join(', ')} (union)\n`;
+  preview += `  Conf: ${Math.max(...items.map(c => c.confidence))} (max)\n`;
+  preview += `  Priority: ${Math.max(...items.map(c => c.priority))} (max)\n`;
+
+  return preview;
+}
+
 function cmdReview(args) {
   if (args.includes('--help') || args.includes('-h')) {
     console.log(HELP.review);
     return;
   }
 
+  // Parse flags
+  let batchSize = null;
+  let offset = 0;
+  const showClusters = !args.includes('--no-clusters');
+
+  for (const arg of args) {
+    if (arg.startsWith('--batch=')) {
+      batchSize = parseInt(arg.split('=')[1], 10);
+    } else if (arg.startsWith('--offset=')) {
+      offset = parseInt(arg.split('=')[1], 10);
+    }
+  }
+
   const db = openDb();
-  const candidates = getCandidateRecords(db);
+  const allCandidates = getCandidateRecords(db);
   const activeProblemTexts = getActiveRecords(db).map(l => ({ slug: l.slug, problem: l.problem }));
   closeDb(db);
 
-  if (candidates.length === 0) {
+  if (allCandidates.length === 0) {
     console.log('No candidates found. Run: node scripts/lessons.mjs scan');
     return;
   }
 
-  const groups = new Map();
-  for (const c of candidates) {
-    const key = c.tags?.[0] ?? '(untagged)';
-    if (!groups.has(key)) groups.set(key, []);
-    groups.get(key).push(c);
+  // Apply batch/offset
+  const totalCandidates = allCandidates.length;
+  const candidates = batchSize
+    ? allCandidates.slice(offset, offset + batchSize)
+    : allCandidates.slice(offset);
+
+  const showing = candidates.length;
+  const remaining = totalCandidates - offset - showing;
+
+  if (batchSize) {
+    console.log(
+      `\n╔═══ Batch ${Math.floor(offset / batchSize) + 1} of ${Math.ceil(totalCandidates / batchSize)} ═══════════════════════════════════════════════════════`
+    );
+    console.log(`║ Showing ${showing} of ${totalCandidates} candidates (${remaining} remaining)`);
+    console.log(`╚${'═'.repeat(70)}`);
   }
-  const sortedGroups = [...groups.entries()].sort(([a], [b]) => {
-    if (a === '(untagged)') return 1;
-    if (b === '(untagged)') return -1;
-    return a.localeCompare(b);
-  });
+
+  if (candidates.length === 0) {
+    console.log('No candidates in this range.');
+    return;
+  }
+
+  // Cluster within this batch
+  let clusters = [];
+  if (showClusters) {
+    const processed = new Set();
+    for (let i = 0; i < candidates.length; i++) {
+      if (processed.has(i)) continue;
+      const cluster = [{ candidate: candidates[i], index: offset + i + 1 }];
+      processed.add(i);
+
+      for (let j = i + 1; j < candidates.length; j++) {
+        if (processed.has(j)) continue;
+        const sim = jaccardSimilarity(candidates[i].problem, candidates[j].problem);
+        if (sim >= 0.5) {
+          cluster.push({ candidate: candidates[j], index: offset + j + 1 });
+          processed.add(j);
+        }
+      }
+
+      clusters.push(cluster);
+    }
+  } else {
+    clusters = candidates.map((c, i) => [{ candidate: c, index: offset + i + 1 }]);
+  }
 
   let pass = 0,
     fail = 0;
-  for (const [groupTag, groupCandidates] of sortedGroups) {
-    console.log(
-      `\n── ${groupTag} (${groupCandidates.length}) ${'─'.repeat(Math.max(0, 40 - groupTag.length))}`
-    );
-    for (const c of groupCandidates) {
+
+  for (const cluster of clusters) {
+    const isCluster = cluster.length > 1;
+
+    if (isCluster) {
+      // Calculate cluster similarity
+      const sims = [];
+      for (let i = 0; i < cluster.length - 1; i++) {
+        for (let j = i + 1; j < cluster.length; j++) {
+          sims.push(jaccardSimilarity(cluster[i].candidate.problem, cluster[j].candidate.problem));
+        }
+      }
+      const avgSim = sims.reduce((a, b) => a + b, 0) / sims.length;
+      const ids = cluster.map(c => c.candidate.id).join(',');
+
+      console.log(
+        `\n╔═══ CLUSTER: ${cluster.length} similar candidates (avg similarity: ${avgSim.toFixed(2)}) ═══`
+      );
+      console.log(`║ IDs: ${ids}`);
+      console.log(`╚${'═'.repeat(70)}`);
+    }
+
+    for (const { candidate: c, index: candidateNum } of cluster) {
+      // Validation
       const errors = [];
       if (!c.problem || c.problem.length < MIN_FIELD_LENGTH) errors.push('problem too short');
       if (!c.solution || c.solution.length < MIN_FIELD_LENGTH) errors.push('solution too short');
@@ -908,17 +1079,61 @@ function cmdReview(args) {
       if (errors.length === 0) pass++;
       else fail++;
 
-      const tool = c.toolNames?.[0] ?? 'unknown';
-      console.log(`\n${status} | ${tool} | conf:${c.confidence} | sessions:${c.sessionCount}`);
-      console.log(`  [${c.id}]`);
-      console.log(`  Problem:  ${c.problem.replace(/\n/g, ' ').slice(0, 100)}`);
-      console.log(`  Solution: ${c.solution.replace(/\n/g, ' ').slice(0, 100)}`);
-      if (errors.length > 0) console.log(`  Issues:   ${errors.join(', ')}`);
+      const indent = isCluster ? '  ' : '';
+
+      // Header
+      console.log(`${indent}\n┌─ [${candidateNum}/${totalCandidates}] ${status} ${'─'.repeat(55)}`);
+
+      // Metadata
+      const tool = (c.toolNames?.[0] ?? 'unknown').padEnd(25);
+      const conf = `conf:${c.confidence}`.padEnd(10);
+      const pri = `pri:${c.priority}`.padEnd(8);
+      const sessions = `sessions:${c.sessionCount}`.padEnd(12);
+      console.log(`${indent}│ ${tool} ${conf} ${pri} ${sessions}`);
+
+      const tags = c.tags?.length ? c.tags.join(', ') : 'none';
+      console.log(`${indent}│ Tags: ${tags}`);
+      console.log(`${indent}│ ID:   ${c.id}`);
+
+      // Problem (first 2 lines, 100 chars each)
+      console.log(`${indent}├─ Problem ${'─'.repeat(60)}`);
+      const problemLines = c.problem.split('\n');
+      for (let i = 0; i < Math.min(2, problemLines.length); i++) {
+        const line = problemLines[i].slice(0, 100);
+        console.log(`${indent}│ ${line}`);
+      }
+      if (problemLines.length > 2 || c.problem.length > 200) {
+        console.log(`${indent}│ ... (${c.problem.length} chars total)`);
+      }
+
+      // Solution (first 2 lines, 100 chars each)
+      console.log(`${indent}├─ Solution ${'─'.repeat(59)}`);
+      const solutionLines = c.solution.split('\n');
+      for (let i = 0; i < Math.min(2, solutionLines.length); i++) {
+        const line = solutionLines[i].slice(0, 100);
+        console.log(`${indent}│ ${line}`);
+      }
+      if (solutionLines.length > 2 || c.solution.length > 200) {
+        console.log(`${indent}│ ... (${c.solution.length} chars total)`);
+      }
+
+      // Issues
+      if (errors.length > 0) {
+        console.log(`${indent}├─ Issues ${'─'.repeat(61)}`);
+        console.log(`${indent}│ ${errors.join(', ')}`);
+      }
+
+      console.log(`${indent}└${'─'.repeat(70)}`);
     }
   }
 
-  console.log(`\n${pass} pass, ${fail} fail out of ${candidates.length} candidates`);
-  console.log(`\nTo promote: node scripts/lessons.mjs promote --ids <id1>,<id2>`);
+  console.log(`\n${pass} pass, ${fail} fail`);
+
+  if (batchSize && remaining > 0) {
+    console.log(
+      `Next: node scripts/lessons.mjs review --batch=${batchSize} --offset=${offset + batchSize}`
+    );
+  }
 }
 
 // ─── Promote subcommand ──────────────────────────────────────────────

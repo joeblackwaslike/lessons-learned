@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-04-18T11:32:39.108Z",
+  "generatedAt": "2026-04-19T16:45:40.107Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -1789,6 +1789,58 @@
       "problem": "All lesson summaries injected at batch start (2000 chars); by Task 4, agent forgot the bare-except lesson and wrote `except: pass`",
       "solution": "Co-locate each lesson reminder immediately before the task it guards: [Task N] → [one-line lesson reminder] → [acceptance criteria]"
     },
+    "01KPK9KPK0S1QXRHFM4BWE1XNG": {
+      "slug": "tmp-on-the-pxe-server-is-a-449-mb-tmpfs-d535",
+      "type": "hint",
+      "priority": 4,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "\\bssh\\b",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "tags": [
+        "tool:ssh",
+        "severity:data-loss",
+        "scope:pi-cluster"
+      ],
+      "scope": null,
+      "message": "## Lesson: /tmp on the PXE server is a 449 MB tmpfs that survives across SSH sessions but is cleared on reboot.\n/tmp on the PXE server is a 449 MB tmpfs that survives across SSH sessions but is cleared on reboot. The recovery image stored in /tmp was lost before it could be copied out, because a reboot happened between sessions.\n**Fix**: Never defer \"copy from /tmp to persistent storage\" — do it as the absolute first action before any other work. Set a reminder in the session handoff note that /tmp may already be empty in the next session.",
+      "summary": "/tmp on the PXE server is a 449 MB tmpfs that survives across SSH sessions but is cleared on reboot.",
+      "problem": "/tmp on the PXE server is a 449 MB tmpfs that survives across SSH sessions but is cleared on reboot. The recovery image stored in /tmp was lost before it could be copied out, because a reboot happened between sessions.",
+      "solution": "Never defer \"copy from /tmp to persistent storage\" — do it as the absolute first action before any other work. Set a reminder in the session handoff note that /tmp may already be empty in the next session."
+    },
+    "01KPK9KPK1K2MKGPJXCPYNKRTX": {
+      "slug": "claude-p-produces-output-quickly-but-the-99d4",
+      "type": "hint",
+      "priority": 4,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "\\bclaude\\b",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "tags": [
+        "tool:bash",
+        "tool:claude-cli",
+        "severity:timeout"
+      ],
+      "scope": null,
+      "message": "## Lesson: claude -p produces output quickly but the process hangs for 60+ seconds after printing (session cleanup).\nclaude -p produces output quickly but the process hangs for 60+ seconds after printing (session cleanup). subprocess.run with timeout=60 kills the process and raises TimeoutExpired even though the response was already printed to stdout.\n**Fix**: Use async spawn (Node.js) or background subprocess: capture stdout as it streams in, then kill the process after a fixed delay (e.g., 30s). The output is available immediately; the hang is post-output cleanup only.",
+      "summary": "claude -p produces output quickly but the process hangs for 60+ seconds after printing (session cleanup).",
+      "problem": "claude -p produces output quickly but the process hangs for 60+ seconds after printing (session cleanup). subprocess.run with timeout=60 kills the process and raises TimeoutExpired even though the response was already printed to stdout.",
+      "solution": "Use async spawn (Node.js) or background subprocess: capture stdout as it streams in, then kill the process after a fixed delay (e.g., 30s). The output is available immediately; the hang is post-output cleanup only."
+    },
     "01KN38M1DX1EC9G9Y7MBMZDHN8": {
       "slug": "said-run-pytest-tests-without-specifying-20c5",
       "type": "protocol",
@@ -1848,6 +1900,32 @@
       "summary": "Misread corrected retry output as proof the block failed — diagnosed a problem that did not exist",
       "problem": "When a guard lesson blocks a Bash command and Claude self-corrects by retrying without the flagged argument, the output log shows both the blocked attempt and the successful retry. Misreading the retry as a new failure causes false diagnosis — the system actually worked correctly through its full block → self-correct → retry cycle.",
       "solution": "Before diagnosing unexpected output as a guard failure, trace the expected flow: guard fires → Claude sees the block reason → Claude retries with corrected command → retry succeeds. Verify whether the observed output matches that flow before concluding anything is broken."
+    },
+    "01KPK9KPJZGEMJ4E98JHT7RKAC": {
+      "slug": "invoked-brainstorming-skill-acknowledged-1976",
+      "type": "hint",
+      "priority": 3,
+      "toolNames": [
+        "Agent"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "\\buser\\b",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "tags": [
+        "tool:Agent",
+        "severity:process-violation",
+        "topic:brainstorming"
+      ],
+      "scope": null,
+      "message": "## Lesson: Invoked brainstorming skill, acknowledged the hard gate (\"don't proceed without approval\"), then immediately launched...\nInvoked brainstorming skill, acknowledged the hard gate (\"don't proceed without approval\"), then immediately launched Explore agents and started writing a PRD — skipping the entire brainstorming conversation. The skill's HARD-GATE says no implementation until user approves the design. Exploring the codebase and writing a PRD is implementation-adjacent action, not brainstorming.\n**Fix**: When the brainstorming skill fires, stop and ask clarifying questions one at a time. Do not spawn Explore agents or write any document until the brainstorming conversation is complete and the user has approved the design.",
+      "summary": "Invoked brainstorming skill, acknowledged the hard gate (\"don't proceed without approval\"), then immediately launched...",
+      "problem": "Invoked brainstorming skill, acknowledged the hard gate (\"don't proceed without approval\"), then immediately launched Explore agents and started writing a PRD — skipping the entire brainstorming conversation. The skill's HARD-GATE says no implementation until user approves the design. Exploring the codebase and writing a PRD is implementation-adjacent action, not brainstorming.",
+      "solution": "When the brainstorming skill fires, stop and ask clarifying questions one at a time. Do not spawn Explore agents or write any document until the brainstorming conversation is complete and the user has approved the design."
     }
   }
 }
