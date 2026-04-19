@@ -100,19 +100,28 @@ Examples:
   doctor: `
 lessons doctor — Audit active lessons for quality issues.
 
-Checks:
-  - Missing toolNames (hint/guard lessons that can never fire)
-  - Summary longer than 80 chars (truncated in injection output)
-  - Summary ending with ... (truncation indicator)
-  - Template placeholders left in summary, problem, or solution
-  - hint/guard with no commandPatterns or pathPatterns (fires on every tool call)
+Per-lesson checks:
+  - dead-trigger: hint/guard missing toolNames — lesson can never fire
+  - directive-with-toolNames: toolNames silently ignored for directive/protocol types
+  - summary-too-long: summary > 80 chars (truncated in injection output)
+  - summary-truncated: summary ends with ... (truncation indicator)
+  - placeholder: unfilled template placeholders in summary, problem, or solution
+  - no-patterns: hint/guard with no commandPatterns or pathPatterns (fires on every call)
+  - weak-pair: solution < 60 chars, or solution Jaccard similarity with problem >= 0.7
+  - overspecified-trigger: commandPattern > 40 non-regex chars (too specific, misses variants)
+  - solution-staleness: solution contains version strings that may be outdated
+  - context-bleed: problem/solution contains session-specific language (first-person, "this repo")
+  - orphaned-scope: scope ID not found in ~/.claude/projects/ — lesson will never fire
+
+Store-level checks:
+  - priority-homogeneity: >80% of lessons share the same priority value
 
 Usage:
   node scripts/lessons.mjs doctor
   node scripts/lessons.mjs doctor --json
 
 Options:
-  --json   Output failing lessons as JSON array; exits 1 if any found
+  --json   Output as { lessons: [...], store: [...] } JSON; exits 1 if any issues
 `.trim(),
 
   add: `
@@ -999,25 +1008,46 @@ async function cmdPromote(args) {
 // ─── Doctor subcommand ───────────────────────────────────────────────
 
 const SUMMARY_MAX_LENGTH = 80;
+const WEAK_SOLUTION_MIN_LENGTH = 60;
+const SOLUTION_RESTATE_THRESHOLD = 0.7;
+const OVERSPECIFIED_PATTERN_LENGTH = 40;
+const PRIORITY_HOMOGENEITY_THRESHOLD = 0.8;
+const CONTEXT_BLEED_RE =
+  /\bthis (repo|project|codebase)\b|\blast (session|week|tuesday|monday|wednesday|thursday|friday)\b|\bthe PR\b|\b I (ran|tried|found|noticed|saw|did|added|removed|wrote|used)\b/i;
+const VERSION_REF_RE = /[@v]\d+\.\d+|\bversion\s+\d|\bv\d+\b/i;
+const PROJECTS_DIR = join(homedir(), '.claude', 'projects');
 
 function auditLesson(lesson) {
   const issues = [];
   const { type } = lesson;
   const isInjectOnMatch = type === 'hint' || type === 'guard';
+  const isSessionStart = type === 'directive' || type === 'protocol';
+
+  // dead-trigger: hint/guard with no toolNames can never fire (matchLessons bails at step 1)
   if (isInjectOnMatch && (!lesson.toolNames || lesson.toolNames.length === 0))
     issues.push('missing toolNames — lesson can never fire');
 
+  // directive-with-toolNames: toolNames silently ignored for session-start types
+  if (isSessionStart && lesson.toolNames && lesson.toolNames.length > 0)
+    issues.push(
+      `directive/protocol has toolNames (${lesson.toolNames.join(', ')}) — toolNames are silently ignored for session-start types; convert to hint if trigger-scoped`
+    );
+
+  // summary-too-long: injection formatter truncates at 80 chars
   if (lesson.summary && lesson.summary.length > SUMMARY_MAX_LENGTH)
     issues.push(`summary too long (${lesson.summary.length} chars, max ${SUMMARY_MAX_LENGTH})`);
 
+  // summary-truncated: ends with ellipsis
   if (lesson.summary && lesson.summary.endsWith('...'))
     issues.push('summary appears truncated (ends with ...)');
 
+  // placeholder: unfilled template fields
   for (const field of ['summary', 'problem', 'solution']) {
     if (lesson[field] && TEMPLATE_PLACEHOLDER_RE.test(lesson[field]))
       issues.push(`${field} contains unfilled template placeholder`);
   }
 
+  // no-patterns: hint/guard with no patterns fires on every call to that tool
   if (
     isInjectOnMatch &&
     (!lesson.commandPatterns || lesson.commandPatterns.length === 0) &&
@@ -1025,7 +1055,78 @@ function auditLesson(lesson) {
   )
     issues.push('no commandPatterns or pathPatterns — fires on every matching tool call');
 
+  // weak-pair: solution too short, or solution mostly restates the problem
+  if (lesson.solution && lesson.solution.length < WEAK_SOLUTION_MIN_LENGTH)
+    issues.push(
+      `solution too short (${lesson.solution.length} chars, min ${WEAK_SOLUTION_MIN_LENGTH}) — won't transfer knowledge`
+    );
+  if (
+    lesson.problem &&
+    lesson.solution &&
+    jaccardSimilarity(lesson.problem, lesson.solution) >= SOLUTION_RESTATE_THRESHOLD
+  )
+    issues.push(
+      `solution restates problem (Jaccard ${jaccardSimilarity(lesson.problem, lesson.solution).toFixed(2)}) — solution must add new information`
+    );
+
+  // overspecified-trigger: very long patterns likely match only the exact original invocation
+  for (const pat of lesson.commandPatterns ?? []) {
+    const raw = pat.replace(/[\\^$.*+?()[\]{}|]/g, '');
+    if (raw.length > OVERSPECIFIED_PATTERN_LENGTH)
+      issues.push(
+        `commandPattern "${pat.slice(0, 50)}${pat.length > 50 ? '…' : ''}" may be overspecified (${raw.length} non-regex chars) — generalize to the hazardous argument, not the full invocation`
+      );
+  }
+
+  // solution-staleness: references specific version strings
+  if (lesson.solution && VERSION_REF_RE.test(lesson.solution))
+    issues.push(
+      'solution references a version string — verify it is still current, or remove the version pin'
+    );
+
+  // context-bleed: session-specific language that is uninterpretable globally
+  for (const field of ['problem', 'solution']) {
+    if (lesson[field] && CONTEXT_BLEED_RE.test(lesson[field]))
+      issues.push(
+        `${field} contains session-specific language ("this repo", first-person, date references) — rewrite to be universally applicable`
+      );
+  }
+
+  // orphaned-scope: scope ID doesn't match any project directory
+  // Directory names have a leading '-' (raw path replacement); scope strips it — normalize both.
+  if (lesson.scope) {
+    let projects = [];
+    try {
+      projects = readdirSync(PROJECTS_DIR).map(d => d.replace(/^-/, ''));
+    } catch {
+      /* ~/.claude/projects not present in this env */
+    }
+    if (projects.length > 0 && !projects.includes(lesson.scope))
+      issues.push(
+        `scope "${lesson.scope}" does not match any directory in ~/.claude/projects/ — lesson will never fire`
+      );
+  }
+
   return issues;
+}
+
+function auditStore(lessons) {
+  const warnings = [];
+
+  // priority-homogeneity: if >80% of lessons share the same priority, ordering is arbitrary
+  // Only meaningful with enough lessons to form a real distribution.
+  if (lessons.length >= 5) {
+    const priorityCounts = {};
+    for (const l of lessons) priorityCounts[l.priority] = (priorityCounts[l.priority] ?? 0) + 1;
+    for (const [pri, count] of Object.entries(priorityCounts)) {
+      if (count / lessons.length >= PRIORITY_HOMOGENEITY_THRESHOLD)
+        warnings.push(
+          `priority homogeneity: ${count}/${lessons.length} lessons are priority ${pri} — injection ordering within the cluster is arbitrary; differentiate priorities`
+        );
+    }
+  }
+
+  return warnings;
 }
 
 function cmdDoctor(args) {
@@ -1039,33 +1140,42 @@ function cmdDoctor(args) {
   closeDb(db);
 
   const results = lessons.map(l => ({ lesson: l, issues: auditLesson(l) }));
+  const storeWarnings = auditStore(lessons);
   const failing = results.filter(r => r.issues.length > 0);
+  const hasIssues = failing.length > 0 || storeWarnings.length > 0;
 
   if (args.includes('--json')) {
-    console.log(
-      JSON.stringify(
-        failing.map(r => ({ slug: r.lesson.slug, issues: r.issues })),
-        null,
-        2
-      )
-    );
-    if (failing.length > 0) process.exit(1);
+    const out = {
+      lessons: failing.map(r => ({ slug: r.lesson.slug, issues: r.issues })),
+      store: storeWarnings,
+    };
+    console.log(JSON.stringify(out, null, 2));
+    if (hasIssues) process.exit(1);
     return;
   }
 
-  if (failing.length === 0) {
+  if (!hasIssues) {
     console.log(`✓ All ${lessons.length} lessons passed quality checks.`);
     return;
   }
 
-  console.log(`${failing.length} of ${lessons.length} lessons have quality issues:\n`);
-  for (const { lesson, issues } of failing) {
-    console.log(`  ${lesson.slug} [${lesson.type ?? 'hint'}]`);
-    console.log(`    ${lesson.summary}`);
-    for (const issue of issues) console.log(`    ✗ ${issue}`);
+  if (storeWarnings.length > 0) {
+    console.log('Store-level warnings:');
+    for (const w of storeWarnings) console.log(`  ⚠ ${w}`);
     console.log();
   }
-  console.log(`To fix: node scripts/lessons.mjs edit --id <slug> --patch '{"field":"value"}'`);
+
+  if (failing.length > 0) {
+    console.log(`${failing.length} of ${lessons.length} lessons have quality issues:\n`);
+    for (const { lesson, issues } of failing) {
+      console.log(`  ${lesson.slug} [${lesson.type ?? 'hint'}]`);
+      console.log(`    ${lesson.summary}`);
+      for (const issue of issues) console.log(`    ✗ ${issue}`);
+      console.log();
+    }
+    console.log(`To fix: node scripts/lessons.mjs edit --id <slug> --patch '{"field":"value"}'`);
+  }
+
   process.exit(1);
 }
 

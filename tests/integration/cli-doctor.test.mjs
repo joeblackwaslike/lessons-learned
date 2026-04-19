@@ -33,8 +33,10 @@ function insertLesson(dbPath, overrides = {}) {
     status: 'active',
     type: 'hint',
     summary: 'A valid summary under 80 chars',
-    problem: 'A problem description long enough to pass validation checks',
-    solution: 'A solution description long enough to pass validation checks',
+    problem:
+      'Running git stash without the -u flag silently leaves untracked files behind, risking data loss when the stash is applied elsewhere.',
+    solution:
+      'Use git stash -u or git stash --include-untracked to include untracked files in every stash operation.',
     injection: null,
     injectOn: JSON.stringify(['PreToolUse']),
     toolNames: JSON.stringify(['Bash']),
@@ -225,7 +227,7 @@ describe('lessons doctor', () => {
     assert.equal(exitCode, 0, `hint with pathPatterns should pass: ${stdout}`);
   });
 
-  it('--json outputs failing slugs and exits 1', async () => {
+  it('--json outputs { lessons, store } shape and exits 1', async () => {
     insertLesson(store.dbPath, {
       slug: 'bad-toolnames-slug',
       type: 'hint',
@@ -237,21 +239,133 @@ describe('lessons doctor', () => {
       env: env(),
     });
     assert.equal(exitCode, 1);
-    const results = JSON.parse(stdout);
-    assert.ok(Array.isArray(results));
-    const bad = results.find(r => r.slug === 'bad-toolnames-slug');
-    assert.ok(bad, 'bad lesson should appear in JSON output');
+    const out = JSON.parse(stdout);
+    assert.ok(Array.isArray(out.lessons), 'output.lessons should be an array');
+    assert.ok(Array.isArray(out.store), 'output.store should be an array');
+    const bad = out.lessons.find(r => r.slug === 'bad-toolnames-slug');
+    assert.ok(bad, 'bad lesson should appear in output.lessons');
     assert.ok(bad.issues.some(i => i.includes('toolNames')));
   });
 
-  it('--json exits 0 when no issues', async () => {
+  it('--json exits 0 with empty arrays when no issues', async () => {
     const { exitCode, stdout } = await run(LESSONS_CLI, {
       args: ['doctor', '--json'],
       env: env(),
     });
     assert.equal(exitCode, 0);
-    const results = JSON.parse(stdout);
-    assert.deepEqual(results, []);
+    const out = JSON.parse(stdout);
+    assert.deepEqual(out.lessons, []);
+    assert.deepEqual(out.store, []);
+  });
+
+  it('flags directive with non-empty toolNames', async () => {
+    insertLesson(store.dbPath, {
+      type: 'directive',
+      toolNames: JSON.stringify(['Bash']),
+      commandPatterns: JSON.stringify([]),
+      pathPatterns: JSON.stringify([]),
+    });
+
+    const { exitCode, stdout } = await run(LESSONS_CLI, {
+      args: ['doctor'],
+      env: env(),
+    });
+    assert.equal(exitCode, 1);
+    assert.match(stdout, /directive\/protocol has toolNames/);
+  });
+
+  it('does not flag directive with empty toolNames', async () => {
+    insertLesson(store.dbPath, {
+      type: 'directive',
+      toolNames: JSON.stringify([]),
+      commandPatterns: JSON.stringify([]),
+      pathPatterns: JSON.stringify([]),
+    });
+
+    const { exitCode } = await run(LESSONS_CLI, { args: ['doctor'], env: env() });
+    assert.equal(exitCode, 0);
+  });
+
+  it('flags solution shorter than 60 chars', async () => {
+    insertLesson(store.dbPath, {
+      solution: 'Use -u flag.',
+    });
+
+    const { exitCode, stdout } = await run(LESSONS_CLI, {
+      args: ['doctor'],
+      env: env(),
+    });
+    assert.equal(exitCode, 1);
+    assert.match(stdout, /solution too short/);
+  });
+
+  it('flags solution that restates the problem', async () => {
+    const shared =
+      'Running git stash silently omits untracked files leaving them behind risking data loss';
+    insertLesson(store.dbPath, { problem: shared, solution: shared });
+
+    const { exitCode, stdout } = await run(LESSONS_CLI, {
+      args: ['doctor'],
+      env: env(),
+    });
+    assert.equal(exitCode, 1);
+    assert.match(stdout, /solution restates problem/);
+  });
+
+  it('flags overspecified commandPattern', async () => {
+    insertLesson(store.dbPath, {
+      commandPatterns: JSON.stringify([
+        'git stash push --include-untracked --keep-index --message "my specific stash"',
+      ]),
+    });
+
+    const { exitCode, stdout } = await run(LESSONS_CLI, {
+      args: ['doctor'],
+      env: env(),
+    });
+    assert.equal(exitCode, 1);
+    assert.match(stdout, /may be overspecified/);
+  });
+
+  it('flags solution with version reference', async () => {
+    insertLesson(store.dbPath, {
+      solution:
+        'Install via pip install pydantic==v1.10 and use the v1 API which differs from v2 behavior significantly',
+    });
+
+    const { exitCode, stdout } = await run(LESSONS_CLI, {
+      args: ['doctor'],
+      env: env(),
+    });
+    assert.equal(exitCode, 1);
+    assert.match(stdout, /solution references a version string/);
+  });
+
+  it('flags context bleed in problem field', async () => {
+    insertLesson(store.dbPath, {
+      problem:
+        'In this repo I ran the migration and found that it silently dropped foreign key constraints during the upgrade process',
+    });
+
+    const { exitCode, stdout } = await run(LESSONS_CLI, {
+      args: ['doctor'],
+      env: env(),
+    });
+    assert.equal(exitCode, 1);
+    assert.match(stdout, /context-bleed|session-specific language/);
+  });
+
+  it('emits store-level priority-homogeneity warning when all lessons same priority', async () => {
+    // Need >= 5 lessons for the check to activate; seed 4 more all at priority 5 (default)
+    // so 4/5 = 80% at priority 5, meeting the threshold.
+    for (let i = 0; i < 4; i++) insertLesson(store.dbPath, { priority: 5 });
+
+    const { exitCode, stdout } = await run(LESSONS_CLI, {
+      args: ['doctor'],
+      env: env(),
+    });
+    assert.equal(exitCode, 1);
+    assert.match(stdout, /priority homogeneity/);
   });
 
   it('reports multiple issues on the same lesson', async () => {
