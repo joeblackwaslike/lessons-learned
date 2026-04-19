@@ -134,9 +134,11 @@ Group lessons into batches of `batchSize`. For each batch:
 2. Ask: **Approve batch, Reject batch, Review individually, or Stop?**
 
 - **Approve batch** — import all lessons in this batch:
+
   ```bash
   node scripts/lessons.mjs onboard --file '<path>' --from <startIndex> --count <batchSize>
   ```
+
   Report results. Update progress (nextIndex, approved, rejected counts).
 
 - **Reject batch** — skip all in this batch. Update progress (nextIndex, skipped counts).

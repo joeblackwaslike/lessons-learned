@@ -8,5 +8,17 @@
   "homepage": "https://github.com/joeblackwaslike/lessons-learned",
   "repository": "https://github.com/joeblackwaslike/lessons-learned.git",
   "license": "MIT",
-  "keywords": ["lessons", "mistakes", "patterns", "injection", "hooks", "dedup", "scanner"]
+  "keywords": ["lessons", "mistakes", "patterns", "injection", "hooks", "dedup", "scanner"],
+  "commands": [
+    "commands/add.md",
+    "commands/cancel.md",
+    "commands/config.md",
+    "commands/doctor.md",
+    "commands/handoff.md",
+    "commands/help.md",
+    "commands/manage.md",
+    "commands/onboard.md",
+    "commands/review.md",
+    "commands/scope.md"
+  ]
 }

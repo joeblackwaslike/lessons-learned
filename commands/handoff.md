@@ -52,6 +52,7 @@ echo "{\"transcript_path\":\"${TRANSCRIPT}\"}" | \
 If the hook is not found, fall back to generating a manual summary:
 
 Summarize the current session using your own context. Include:
+
 - Original goal and overall task
 - Key decisions made and WHY (rationale, not just outcome)
 - Current state: what is done, in progress, and blocked

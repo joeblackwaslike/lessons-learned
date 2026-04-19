@@ -193,18 +193,19 @@ For each pair: review both summaries. Recommend merging (archive one, enrich the
 
 After all 8 checks, present this summary table:
 
-| Check | Issue | Found | Severity |
-| ----- | ----- | ----- | -------- |
-| 1 | commandPatterns, no toolNames | N | critical |
-| 2 | pathPatterns, no toolNames | N | critical |
-| 3 | Unreachable hints | N | critical |
-| 4 | Guards fire on quoted args | N | high |
-| 5 | Truncated summaries | N | high |
-| 6 | Long summaries (>80 chars) | N | low |
-| 7 | Invalid toolNames casing | N | high |
-| 8 | Near-duplicate lessons (>40%) | N | medium |
+| Check | Issue                         | Found | Severity |
+| ----- | ----------------------------- | ----- | -------- |
+| 1     | commandPatterns, no toolNames | N     | critical |
+| 2     | pathPatterns, no toolNames    | N     | critical |
+| 3     | Unreachable hints             | N     | critical |
+| 4     | Guards fire on quoted args    | N     | high     |
+| 5     | Truncated summaries           | N     | high     |
+| 6     | Long summaries (>80 chars)    | N     | low      |
+| 7     | Invalid toolNames casing      | N     | high     |
+| 8     | Near-duplicate lessons (>40%) | N     | medium   |
 
 Then ask:
+
 > "Apply all high-confidence mechanical fixes automatically (checks 1, 2, 4, 5, 7), review judgment calls (checks 3, 6, 8) interactively, or handle everything manually?"
 
 **Automatic fixes** (checks 1, 2, 4, 5, 7): apply with `node scripts/lessons.mjs edit --id <id> --patch '<json>'` for each, confirm count when done.

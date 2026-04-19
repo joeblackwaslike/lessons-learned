@@ -117,6 +117,7 @@ Combine both result sets and show a numbered list. Label each entry clearly:
 - `[session:unscanned]` — emitted this session, not yet in DB
 
 Format:
+
 ```
 N. [STATUS] <slug or problem prefix>
    Summary: <summary>
@@ -171,6 +172,7 @@ Emit one block per unscanned lesson being cancelled.
 ## Step 5: Confirm
 
 Report what was done:
+
 - N DB records archived (list slugs)
 - N session-unscanned lessons cancelled via `#lesson:cancel` markers
 - Manifest rebuilt: yes/no

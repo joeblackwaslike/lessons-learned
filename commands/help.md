@@ -114,6 +114,7 @@ QUICK RECIPES  (type #1–#5 to run)
 ```
 
 Rules for the "WHAT'S NEW" section:
+
 - Only include commands whose file appears in the `git log` output (status A or M)
 - For each file, map it to the command name from the frontmatter
 - Keep descriptions tight — one clause each, action-first
@@ -121,6 +122,7 @@ Rules for the "WHAT'S NEW" section:
 - Sort: Added entries first, then Updated
 
 Rules for ← NEW markers in the command list:
+
 - Add `← NEW` to any command whose file was added (git status A) in the last 21 days
 - Do not add it to modified-only files
 

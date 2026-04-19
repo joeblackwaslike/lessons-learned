@@ -19,7 +19,7 @@ A scoped lesson (`scope: "<project-id>"`) only injects when the hook's `cwd` mat
 **Project ID** is derived from `cwd` at inject time:
 
 ```js
-cwd.replace(/\//g, '-').replace(/^-/, '')
+cwd.replace(/\//g, '-').replace(/^-/, '');
 // /Users/joe/github/foo/bar → Users-joe-github-foo-bar
 ```
 
