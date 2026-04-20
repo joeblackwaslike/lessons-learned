@@ -1,4 +1,4 @@
-#!/usr/bin/env -S node --no-warnings
+#!/usr/bin/env -S node --disable-warning=ExperimentalWarning
 
 /**
  * lessons — Manage the lessons-learned lesson store.
@@ -58,6 +58,15 @@ const DATA_DIR = process.env.LESSONS_DATA_DIR ?? join(PLUGIN_ROOT, 'data');
 const MANIFEST_PATH = process.env.LESSONS_MANIFEST_PATH ?? join(DATA_DIR, 'lesson-manifest.json');
 const CONFIG_PATH = process.env.LESSONS_CONFIG_PATH ?? join(DATA_DIR, 'config.json');
 const DEFAULT_SCAN_PATH = join(homedir(), '.claude', 'projects');
+
+// ─── ANSI colors ─────────────────────────────────────────────────────
+
+const ANSI = {
+  red: s => `\x1b[31m${s}\x1b[0m`,
+  green: s => `\x1b[32m${s}\x1b[0m`,
+  dim: s => `\x1b[2m${s}\x1b[0m`,
+  bold: s => `\x1b[1m${s}\x1b[0m`,
+};
 
 // ─── Help ────────────────────────────────────────────────────────────
 
@@ -960,6 +969,163 @@ function _generateClusterPreview(cluster) {
   return preview;
 }
 
+/**
+ * Split text into diff-able sentences (on '. ' boundaries and newlines).
+ */
+function splitSentences(text) {
+  return text
+    .split(/\.\s+|\n+/)
+    .map(s => s.trim())
+    .filter(Boolean);
+}
+
+/**
+ * Render a sentence-level diff between two texts.
+ * Shared sentences → plain. A-only → red `-`. B-only → green `+`.
+ * Returns an array of formatted lines.
+ */
+function sentenceDiff(textA, textB) {
+  const sentA = splitSentences(textA);
+  const sentB = splitSentences(textB);
+  const setA = new Set(sentA);
+  const setB = new Set(sentB);
+  const lines = [];
+
+  // Walk A sentences, marking shared vs removed
+  for (const s of sentA) {
+    if (setB.has(s)) {
+      lines.push(`  ${s}`);
+    } else {
+      lines.push(ANSI.red(`- ${s}`));
+    }
+  }
+  // Add B-only sentences
+  for (const s of sentB) {
+    if (!setA.has(s)) {
+      lines.push(ANSI.green(`+ ${s}`));
+    }
+  }
+
+  return lines;
+}
+
+/**
+ * Render the action preview block for a cluster.
+ * Shows what merge/promote-best/archive-all would produce.
+ */
+function renderClusterActions(cluster) {
+  const items = cluster.map(c => c.candidate);
+  const [a, b] = items;
+
+  // Merge: longest field wins, tag union, max conf/priority
+  const mergedProblem = a.problem.length >= b.problem.length ? a.problem : b.problem;
+  const mergedSolution = a.solution.length >= b.solution.length ? a.solution : b.solution;
+  const mergedTags = [...new Set([...(a.tags ?? []), ...(b.tags ?? [])])];
+  const mergedConf = Math.max(a.confidence, b.confidence);
+  const mergedPri = Math.max(a.priority, b.priority);
+
+  // Best: candidate with highest confidence (tie → first)
+  const best = a.confidence >= b.confidence ? { label: '[A]', c: a } : { label: '[B]', c: b };
+  const other = best.label === '[A]' ? { label: '[B]', c: b } : { label: '[A]', c: a };
+
+  const lines = [];
+  lines.push(ANSI.dim('  Actions:'));
+
+  // merge action
+  lines.push(
+    ANSI.dim(
+      `  merge  → problem: ${mergedProblem.slice(0, 60).replace(/\n/g, ' ')}… | solution: ${mergedSolution.slice(0, 40).replace(/\n/g, ' ')}… | tags: ${mergedTags.join(', ')} | conf:${mergedConf} pri:${mergedPri}`
+    )
+  );
+
+  // promote-best action
+  const bestTagStr = best.c.tags?.join(', ') || 'none';
+  lines.push(
+    ANSI.dim(
+      `  promote-best ${best.label} → conf:${best.c.confidence} · ${best.c.sessionCount} sessions · ${bestTagStr} (archive ${other.label})`
+    )
+  );
+
+  // archive-all action
+  lines.push(ANSI.dim(`  archive-all → discard both candidates`));
+
+  return lines;
+}
+
+/**
+ * Render a cluster as a unified diff view.
+ * For 2-member clusters: full diff layout.
+ * For 3+ members: compact listing (rare in practice).
+ */
+function renderClusterDiff(cluster, totalCandidates, validationErrors) {
+  const WIDTH = 70;
+  const [entryA, entryB] = cluster;
+  const a = entryA.candidate;
+  const b = entryB?.candidate;
+
+  // Determine shared tool and first tag for the header
+  const toolLabel = a.toolNames?.[0] ?? 'unknown';
+  const firstTag = a.tags?.[0] ?? b?.tags?.[0] ?? '';
+  const memberCount = cluster.length;
+
+  const headerBase = `── cluster · ${memberCount} similar · ${toolLabel}${firstTag ? ' · ' + firstTag : ''} `;
+  const headerPad = '─'.repeat(Math.max(0, WIDTH - headerBase.length));
+  console.log(`\n${headerBase}${headerPad}`);
+
+  if (memberCount === 2) {
+    // Problem diff
+    console.log(ANSI.bold('  Problem'));
+    const problemLines = sentenceDiff(a.problem, b.problem);
+    for (const line of problemLines) console.log(`  ${line}`);
+
+    console.log('');
+
+    // Solution diff
+    console.log(ANSI.bold('  Solution'));
+    const solutionLines = sentenceDiff(a.solution, b.solution);
+    for (const line of solutionLines) console.log(`  ${line}`);
+
+    console.log('');
+
+    // Metadata footer: [A] in red, [B] in green
+    const aErrors = validationErrors.get(a.id) ?? [];
+    const bErrors = validationErrors.get(b.id) ?? [];
+    const aStatus = aErrors.length === 0 ? '✓' : '✗';
+    const bStatus = bErrors.length === 0 ? '✓' : '✗';
+    const aTags = a.tags?.join(', ') || 'none';
+    const bTags = b.tags?.join(', ') || 'none';
+
+    console.log(
+      ANSI.red(
+        `  [A]${entryA.index}/${totalCandidates} ${aStatus} conf:${a.confidence} · ${a.sessionCount} sessions · ${aTags}${aErrors.length ? ' · ' + aErrors.join('; ') : ''}`
+      )
+    );
+    console.log(
+      ANSI.green(
+        `  [B]${entryB.index}/${totalCandidates} ${bStatus} conf:${b.confidence} · ${b.sessionCount} sessions · ${bTags}${bErrors.length ? ' · ' + bErrors.join('; ') : ''}`
+      )
+    );
+
+    console.log('');
+    for (const line of renderClusterActions(cluster)) console.log(line);
+  } else {
+    // 3+ members: compact listing
+    for (const { candidate: c, index } of cluster) {
+      const errs = validationErrors.get(c.id) ?? [];
+      const status = errs.length === 0 ? '✓' : '✗';
+      const tags = c.tags?.join(', ') || 'none';
+      console.log(
+        `  [${index}/${totalCandidates}] ${status} conf:${c.confidence} · ${c.sessionCount} sessions · ${tags}`
+      );
+      console.log(`    P: ${c.problem.slice(0, 80).replace(/\n/g, ' ')}`);
+      console.log(`    S: ${c.solution.slice(0, 80).replace(/\n/g, ' ')}`);
+      if (errs.length) console.log(`    ! ${errs.join(', ')}`);
+    }
+  }
+
+  console.log('─'.repeat(WIDTH));
+}
+
 function cmdReview(args) {
   if (args.includes('--help') || args.includes('-h')) {
     console.log(HELP.review);
@@ -1035,95 +1201,76 @@ function cmdReview(args) {
     clusters = candidates.map((c, i) => [{ candidate: c, index: offset + i + 1 }]);
   }
 
+  // Pre-compute validation errors for every candidate in this batch
+  const validationErrors = new Map();
   let pass = 0,
     fail = 0;
 
-  for (const cluster of clusters) {
-    const isCluster = cluster.length > 1;
-
-    if (isCluster) {
-      // Calculate cluster similarity
-      const sims = [];
-      for (let i = 0; i < cluster.length - 1; i++) {
-        for (let j = i + 1; j < cluster.length; j++) {
-          sims.push(jaccardSimilarity(cluster[i].candidate.problem, cluster[j].candidate.problem));
-        }
-      }
-      const avgSim = sims.reduce((a, b) => a + b, 0) / sims.length;
-      const ids = cluster.map(c => c.candidate.id).join(',');
-
-      console.log(
-        `\n╔═══ CLUSTER: ${cluster.length} similar candidates (avg similarity: ${avgSim.toFixed(2)}) ═══`
+  for (const { candidate: c } of clusters.flat()) {
+    const errors = [];
+    if (!c.problem || c.problem.length < MIN_FIELD_LENGTH) errors.push('problem too short');
+    if (!c.solution || c.solution.length < MIN_FIELD_LENGTH) errors.push('solution too short');
+    if (TEMPLATE_PLACEHOLDER_RE.test(c.problem)) errors.push('problem has placeholder');
+    if (TEMPLATE_PLACEHOLDER_RE.test(c.solution)) errors.push('solution has placeholder');
+    const trigger = (c.commandPatterns ?? [])[0];
+    if (trigger && PROSE_TRIGGER_RE.test(trigger.trim()))
+      errors.push(`prose trigger: "${trigger}"`);
+    const dup = activeProblemTexts.find(l => jaccardSimilarity(c.problem, l.problem) >= 0.5);
+    if (dup)
+      errors.push(
+        `fuzzy duplicate of "${dup.slug}" (${jaccardSimilarity(c.problem, dup.problem).toFixed(2)})`
       );
-      console.log(`║ IDs: ${ids}`);
-      console.log(`╚${'═'.repeat(70)}`);
-    }
+    validationErrors.set(c.id, errors);
+    if (errors.length === 0) pass++;
+    else fail++;
+  }
 
-    for (const { candidate: c, index: candidateNum } of cluster) {
-      // Validation
-      const errors = [];
-      if (!c.problem || c.problem.length < MIN_FIELD_LENGTH) errors.push('problem too short');
-      if (!c.solution || c.solution.length < MIN_FIELD_LENGTH) errors.push('solution too short');
-      if (TEMPLATE_PLACEHOLDER_RE.test(c.problem)) errors.push('problem has placeholder');
-      if (TEMPLATE_PLACEHOLDER_RE.test(c.solution)) errors.push('solution has placeholder');
-      const trigger = (c.commandPatterns ?? [])[0];
-      if (trigger && PROSE_TRIGGER_RE.test(trigger.trim()))
-        errors.push(`prose trigger: "${trigger}"`);
-      const dup = activeProblemTexts.find(l => jaccardSimilarity(c.problem, l.problem) >= 0.5);
-      if (dup)
-        errors.push(
-          `fuzzy duplicate of "${dup.slug}" (${jaccardSimilarity(c.problem, dup.problem).toFixed(2)})`
-        );
-
+  for (const cluster of clusters) {
+    if (cluster.length > 1) {
+      // Cluster diff view
+      renderClusterDiff(cluster, totalCandidates, validationErrors);
+    } else {
+      // Single-candidate card (unchanged style)
+      const { candidate: c, index: candidateNum } = cluster[0];
+      const errors = validationErrors.get(c.id) ?? [];
       const status = errors.length === 0 ? '✓ PASS' : '✗ FAIL';
-      if (errors.length === 0) pass++;
-      else fail++;
 
-      const indent = isCluster ? '  ' : '';
+      console.log(`\n┌─ [${candidateNum}/${totalCandidates}] ${status} ${'─'.repeat(55)}`);
 
-      // Header
-      console.log(`${indent}\n┌─ [${candidateNum}/${totalCandidates}] ${status} ${'─'.repeat(55)}`);
-
-      // Metadata
       const tool = (c.toolNames?.[0] ?? 'unknown').padEnd(25);
       const conf = `conf:${c.confidence}`.padEnd(10);
       const pri = `pri:${c.priority}`.padEnd(8);
       const sessions = `sessions:${c.sessionCount}`.padEnd(12);
-      console.log(`${indent}│ ${tool} ${conf} ${pri} ${sessions}`);
+      console.log(`│ ${tool} ${conf} ${pri} ${sessions}`);
 
       const tags = c.tags?.length ? c.tags.join(', ') : 'none';
-      console.log(`${indent}│ Tags: ${tags}`);
-      console.log(`${indent}│ ID:   ${c.id}`);
+      console.log(`│ Tags: ${tags}`);
+      console.log(`│ ID:   ${c.id}`);
 
-      // Problem (first 2 lines, 100 chars each)
-      console.log(`${indent}├─ Problem ${'─'.repeat(60)}`);
+      console.log(`├─ Problem ${'─'.repeat(60)}`);
       const problemLines = c.problem.split('\n');
       for (let i = 0; i < Math.min(2, problemLines.length); i++) {
-        const line = problemLines[i].slice(0, 100);
-        console.log(`${indent}│ ${line}`);
+        console.log(`│ ${problemLines[i].slice(0, 100)}`);
       }
       if (problemLines.length > 2 || c.problem.length > 200) {
-        console.log(`${indent}│ ... (${c.problem.length} chars total)`);
+        console.log(`│ ... (${c.problem.length} chars total)`);
       }
 
-      // Solution (first 2 lines, 100 chars each)
-      console.log(`${indent}├─ Solution ${'─'.repeat(59)}`);
+      console.log(`├─ Solution ${'─'.repeat(59)}`);
       const solutionLines = c.solution.split('\n');
       for (let i = 0; i < Math.min(2, solutionLines.length); i++) {
-        const line = solutionLines[i].slice(0, 100);
-        console.log(`${indent}│ ${line}`);
+        console.log(`│ ${solutionLines[i].slice(0, 100)}`);
       }
       if (solutionLines.length > 2 || c.solution.length > 200) {
-        console.log(`${indent}│ ... (${c.solution.length} chars total)`);
+        console.log(`│ ... (${c.solution.length} chars total)`);
       }
 
-      // Issues
       if (errors.length > 0) {
-        console.log(`${indent}├─ Issues ${'─'.repeat(61)}`);
-        console.log(`${indent}│ ${errors.join(', ')}`);
+        console.log(`├─ Issues ${'─'.repeat(61)}`);
+        console.log(`│ ${errors.join(', ')}`);
       }
 
-      console.log(`${indent}└${'─'.repeat(70)}`);
+      console.log(`└${'─'.repeat(70)}`);
     }
   }
 
