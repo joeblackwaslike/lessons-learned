@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-04-19T16:45:40.107Z",
+  "generatedAt": "2026-04-20T17:21:35.903Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -1478,6 +1478,36 @@
       "summary": "Tasks without a verification command pass quality gates despite incorrect output",
       "problem": "Task 'improve error messages' had no verification command; quality gate passed but messages were unchanged; agent improvised a different change",
       "solution": "Write the verification command before the task description: 'This task is done when: <shell command> exits 0 with output <expected>'"
+    },
+    "01KPNYJW4H07WK1QQ83BTGBNJ0": {
+      "slug": "suppressoutput-true-in-hook-json-hides-t-c48e",
+      "type": "hint",
+      "priority": 6,
+      "toolNames": [
+        "Bash",
+        "Edit"
+      ],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [
+        {
+          "source": "hooks/lib/output\\.mjs",
+          "flags": "i"
+        },
+        {
+          "source": "hooks/.*/[^/]*inject[^/]*\\.mjs",
+          "flags": "i"
+        }
+      ],
+      "tags": [
+        "tool:hooks",
+        "category:claude-code"
+      ],
+      "scope": null,
+      "message": "## Lesson: suppressOutput: true in hook JSON hides the PreToolUse:Bash hook error label in session log\nWhen a PreToolUse hook returns hookSpecificOutput.additionalContext, Claude Code shows a PreToolUse:Bash hook error label in the session log for every matched tool call, creating visual noise even though the hook exits 0 and works correctly.\n**Fix**: Add suppressOutput: true at the top level of the hook JSON output. This suppresses the session log display while still injecting additionalContext into the context window.",
+      "summary": "suppressOutput: true in hook JSON hides the PreToolUse:Bash hook error label in session log",
+      "problem": "When a PreToolUse hook returns hookSpecificOutput.additionalContext, Claude Code shows a PreToolUse:Bash hook error label in the session log for every matched tool call, creating visual noise even though the hook exits 0 and works correctly.",
+      "solution": "Add suppressOutput: true at the top level of the hook JSON output. This suppresses the session log display while still injecting additionalContext into the context window."
     },
     "01KMZ3CHGQMTYQA0AFPQRGCSEG": {
       "slug": "oh-my-zsh-nvm-plugin-outputs-warnings-in-df6f",

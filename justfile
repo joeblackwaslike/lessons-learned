@@ -4,6 +4,8 @@
 set dotenv-load := false
 set shell := ["zsh", "-cu"]
 
+export NODE_NO_WARNINGS := "1"
+
 # Show available recipes
 default:
     @just --list

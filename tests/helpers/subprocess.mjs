@@ -12,7 +12,7 @@ export async function run(scriptPath, { stdin = '', env = {}, args = [] } = {}) 
   const { spawn } = await import('node:child_process');
 
   return new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, [scriptPath, ...args], {
+    const child = spawn(process.execPath, ['--no-warnings', scriptPath, ...args], {
       env: { ...process.env, ...env },
       stdio: ['pipe', 'pipe', 'pipe'],
     });

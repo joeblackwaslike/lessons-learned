@@ -20,7 +20,7 @@ export function formatHookOutput(additionalContext, lessonsSeen, metadata) {
   const metaComment = `<!-- lessonInjection: ${JSON.stringify({ version: 1, ...metadata })} -->`;
   const fullContext = additionalContext ? `${additionalContext}\n\n${metaComment}` : '';
 
-  const output = {};
+  const output = { suppressOutput: true };
 
   if (fullContext) {
     output.hookSpecificOutput = { additionalContext: fullContext };
