@@ -27,7 +27,7 @@ import { createHash } from 'node:crypto';
 import { embed } from './embedder.mjs';
 import { upsertEmbedding, searchNearestLessons, getActiveRecordsNeedingEmbedding } from '../db.mjs';
 
-const SIMILARITY_THRESHOLD = parseFloat(process.env.LESSONS_SEMANTIC_THRESHOLD ?? '0.8');
+const SIMILARITY_THRESHOLD = parseFloat(process.env.LESSONS_SEMANTIC_THRESHOLD ?? '0.72');
 const WINDOW_SIZE = parseInt(process.env.LESSONS_SEMANTIC_WINDOW ?? '10', 10);
 const MAX_CLAUDE_CALLS = parseInt(process.env.LESSONS_SEMANTIC_MAX_CALLS ?? '5', 10);
 const CLAUDE_MODEL = process.env.LESSONS_CLAUDE_MODEL ?? 'claude-haiku-4-5-20251001';
@@ -90,15 +90,18 @@ export async function semanticScanFile(db, filePath, startOffset, opts = {}, pro
 
   const candidates = [];
   let claudeCalls = 0;
+  let consecutiveFailures = 0;
   const seenHashes = new Set();
 
   for (let i = 0; i <= turns.length - WINDOW_SIZE; i++) {
     const window = turns.slice(i, i + WINDOW_SIZE);
     const windowText = window.map(t => `[${t.type}] ${t.text}`).join('\n\n');
+    // nomic-embed-text has 2048 token context; code/error text runs ~2 chars/token
+    const embeddableText = windowText.slice(0, 2000);
 
     let vec;
     try {
-      vec = await embed(windowText);
+      vec = await embed(embeddableText);
     } catch (err) {
       if (verbose) process.stderr.write(`  embed failed: ${err.message}\n`);
       continue;
@@ -125,9 +128,16 @@ export async function semanticScanFile(db, filePath, startOffset, opts = {}, pro
     let extracted;
     try {
       extracted = await extractWithClaude(windowText, apiKey);
+      consecutiveFailures = 0;
     } catch (err) {
       if (verbose) process.stderr.write(`  Claude extraction failed: ${err.message}\n`);
       claudeCalls++;
+      consecutiveFailures++;
+      if (consecutiveFailures >= 3) {
+        if (verbose)
+          process.stderr.write(`  Aborting semantic scan: 3 consecutive Claude failures\n`);
+        break;
+      }
       continue;
     }
     claudeCalls++;
@@ -263,7 +273,7 @@ function parseTurns(line) {
       .map(b => b.text)
       .join('\n')
       .trim();
-    return text ? [{ ...base, type: 'assistant', text }] : [];
+    return text ? [{ ...base, type: 'assistant', text: text.slice(0, 2000) }] : [];
   }
 
   if (obj.type === 'user') {
@@ -273,7 +283,7 @@ function parseTurns(line) {
 
     for (const block of content) {
       if (block.type === 'text' && block.text?.trim()) {
-        turns.push({ ...base, type: 'user', text: block.text.trim() });
+        turns.push({ ...base, type: 'user', text: block.text.trim().slice(0, 1000) });
       } else if (block.type === 'tool_result') {
         let text = '';
         if (typeof block.content === 'string') {
