@@ -79,6 +79,20 @@ CREATE TABLE IF NOT EXISTS review_sessions (
   archived  TEXT NOT NULL DEFAULT '[]',
   patches   TEXT NOT NULL DEFAULT '{}'
 );
+
+CREATE TABLE IF NOT EXISTS pending_semantic_windows (
+  id              TEXT PRIMARY KEY,
+  windowText      TEXT NOT NULL,
+  nearestDistance REAL NOT NULL,
+  nearestLessonId TEXT,
+  projectId       TEXT,
+  filePath        TEXT,
+  windowIndex     INTEGER,
+  createdAt       TEXT NOT NULL,
+  processedAt     TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_psw_processedAt ON pending_semantic_windows(processedAt);
 `;
 
 // ─── Lifecycle ───────────────────────────────────────────────────────
@@ -650,6 +664,23 @@ export function getCandidateRecords(db) {
 }
 
 /**
+ * Fetch candidate records with confidence below threshold.
+ * @param {DatabaseSync} db
+ * @param {number} maxConfidence
+ * @returns {object[]}
+ */
+export function getCandidatesBelowConfidence(db, maxConfidence) {
+  return db
+    .prepare(
+      `SELECT id, slug, confidence FROM lessons
+       WHERE status='candidate' AND confidence < ?
+       ORDER BY confidence DESC`
+    )
+    .all(maxConfidence)
+    .map(r => Object.assign({}, r));
+}
+
+/**
  * Fetch records by IDs. Used by promote to validate inputs.
  * @param {DatabaseSync} db
  * @param {string[]} ids
@@ -851,5 +882,66 @@ export function getActiveRecordsNeedingEmbedding(db) {
       )
       .all()
       .map(r => Object.assign({}, r))
+  );
+}
+
+// ─── Pending semantic windows ─────────────────────────────────────────
+
+/**
+ * @typedef {{ id: string, windowText: string, nearestDistance: number, nearestLessonId: string|null, projectId: string|null, filePath: string|null, windowIndex: number|null, createdAt: string, processedAt: string|null }} PendingWindow
+ */
+
+/**
+ * Insert a pending semantic window for interactive review.
+ *
+ * @param {DatabaseSync} db
+ * @param {{ id: string, windowText: string, nearestDistance: number, nearestLessonId?: string|null, projectId?: string|null, filePath?: string|null, windowIndex?: number|null }} record
+ */
+export function insertPendingWindow(db, record) {
+  const now = new Date().toISOString();
+  db.prepare(
+    `INSERT OR IGNORE INTO pending_semantic_windows
+       (id, windowText, nearestDistance, nearestLessonId, projectId, filePath, windowIndex, createdAt)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+  ).run(
+    record.id,
+    record.windowText,
+    record.nearestDistance,
+    record.nearestLessonId ?? null,
+    record.projectId ?? null,
+    record.filePath ?? null,
+    record.windowIndex ?? null,
+    now
+  );
+}
+
+/**
+ * Return all unprocessed pending windows, oldest first.
+ *
+ * @param {DatabaseSync} db
+ * @returns {object[]}
+ */
+export function getPendingWindows(db) {
+  return db
+    .prepare(
+      `SELECT * FROM pending_semantic_windows WHERE processedAt IS NULL ORDER BY createdAt ASC`
+    )
+    .all()
+    .map(r => Object.assign({}, r));
+}
+
+/**
+ * Mark one or more pending windows as processed.
+ *
+ * @param {DatabaseSync} db
+ * @param {string[]} ids
+ */
+export function archivePendingWindows(db, ids) {
+  if (ids.length === 0) return;
+  const now = new Date().toISOString();
+  const placeholders = ids.map(() => '?').join(',');
+  db.prepare(`UPDATE pending_semantic_windows SET processedAt=? WHERE id IN (${placeholders})`).run(
+    now,
+    ...ids
   );
 }

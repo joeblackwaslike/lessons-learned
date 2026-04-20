@@ -27,6 +27,9 @@ import {
   getActiveRecords,
   getManifestRecords,
   getCandidateRecords,
+  getCandidatesBelowConfidence,
+  getPendingWindows,
+  archivePendingWindows,
   insertCandidate,
   insertCandidateBatch,
   promoteToActive,
@@ -86,6 +89,8 @@ Subcommands:
   list              List all active lessons with their trigger patterns
   onboard           Batch-import lessons from a JSON array
   promote           Promote candidates to active, archive, or patch fields
+  purge             Archive all candidates below a confidence threshold
+  windows           List or archive pending semantic windows (from Tier 3 scan)
   restore           Restore archived lessons back to active
   review            Review candidates from the DB against validation rules
   doctor            Audit active lessons for quality issues
@@ -295,6 +300,42 @@ Notes:
   - Only lessons with status='archived' can be restored.
   - archivedAt and archiveReason are cleared on restore.
   - The manifest is automatically rebuilt after restore.
+`.trim(),
+
+  purge: `
+lessons purge — Archive all candidates below a confidence threshold.
+
+Usage:
+  node scripts/lessons.mjs purge --below-conf <threshold>
+  node scripts/lessons.mjs purge --below-conf <threshold> --dry-run
+
+Options:
+  --below-conf <n>   Archive candidates with confidence < n (0–1, required)
+  --dry-run          Show what would be archived without making changes
+
+Notes:
+  - Only candidates (status='candidate') are affected; active lessons are untouched.
+  - Archived candidates are hidden from 'lessons review' and 'scan aggregate'.
+  - Use 'lessons restore' to recover individual IDs if needed.
+  - A review session is written to the DB for auditability.
+`.trim(),
+
+  windows: `
+lessons windows — Manage pending semantic windows from Tier 3 scanning.
+
+Usage:
+  node scripts/lessons.mjs windows                   List all pending windows
+  node scripts/lessons.mjs windows --show <id>       Print full window text
+  node scripts/lessons.mjs windows --archive <id>    Mark window(s) as processed
+
+Options:
+  --show <id>      Print full text of a pending window (for lesson extraction)
+  --archive <ids>  Comma-separated IDs to mark as processed
+
+Notes:
+  - Pending windows are conversation fragments flagged by semantic similarity to existing lessons.
+  - Use 'lessons review' to see a summary of pending windows alongside candidates.
+  - Extract a lesson with 'lessons add', then archive the window with --archive.
 `.trim(),
 
   onboard: `
@@ -1284,6 +1325,28 @@ function cmdReview(args) {
       `Next: node scripts/lessons.mjs review --batch=${batchSize} --offset=${offset + batchSize}`
     );
   }
+
+  // Show pending semantic windows if any
+  const dbW = openDb();
+  const pendingWindows = getPendingWindows(dbW);
+  closeDb(dbW);
+
+  if (pendingWindows.length > 0) {
+    console.log(`\n${'═'.repeat(71)}`);
+    console.log(`Pending Semantic Windows (${pendingWindows.length}) — from Tier 3 scanner`);
+    console.log(`${'═'.repeat(71)}`);
+    console.log(`These conversation windows are semantically similar to existing lessons.`);
+    console.log(`Review each, extract a lesson with 'lessons add', then archive.\n`);
+    for (const w of pendingWindows) {
+      const preview = w.windowText.replace(/\n/g, ' ').slice(0, 120);
+      console.log(
+        `  [${w.id}] dist:${Number(w.nearestDistance).toFixed(3)}  nearest:${w.nearestLessonId ?? 'n/a'}`
+      );
+      console.log(`    ${preview}...`);
+      console.log(`    Show: node scripts/lessons.mjs windows --show ${w.id}`);
+      console.log(`    Archive: node scripts/lessons.mjs windows --archive ${w.id}\n`);
+    }
+  }
 }
 
 // ─── Promote subcommand ──────────────────────────────────────────────
@@ -1642,6 +1705,137 @@ function cmdRestore(args) {
   buildManifest();
 }
 
+// ─── Windows subcommand ──────────────────────────────────────────────
+
+function cmdWindows(args) {
+  if (args.includes('--help') || args.includes('-h')) {
+    console.log(HELP.windows);
+    return;
+  }
+
+  const db = openDb();
+
+  const showIdx = args.indexOf('--show');
+  if (showIdx !== -1) {
+    const id = args[showIdx + 1];
+    if (!id) {
+      console.error('windows --show: id required');
+      closeDb(db);
+      process.exit(1);
+    }
+    const row = db.prepare('SELECT * FROM pending_semantic_windows WHERE id=?').get(id);
+    if (!row) {
+      console.error(`windows: not found: ${id}`);
+      closeDb(db);
+      process.exit(1);
+    }
+    const r = Object.assign({}, /** @type {any} */ (row));
+    console.log(`id: ${r.id}`);
+    console.log(
+      `dist: ${r.nearestDistance.toFixed(3)}  nearest: ${r.nearestLessonId ?? 'n/a'}  project: ${r.projectId ?? 'n/a'}`
+    );
+    console.log(`created: ${r.createdAt}  processed: ${r.processedAt ?? 'no'}`);
+    console.log('\n── window text ─────────────────────────────────');
+    console.log(r.windowText);
+    closeDb(db);
+    return;
+  }
+
+  const archiveIdx = args.indexOf('--archive');
+  if (archiveIdx !== -1) {
+    const raw = args[archiveIdx + 1];
+    if (!raw) {
+      console.error('windows --archive: id(s) required');
+      closeDb(db);
+      process.exit(1);
+    }
+    const ids = raw
+      .split(',')
+      .map(s => s.trim())
+      .filter(Boolean);
+    archivePendingWindows(db, ids);
+    closeDb(db);
+    console.log(`Archived ${ids.length} window(s).`);
+    return;
+  }
+
+  // Default: list
+  const windows = getPendingWindows(db);
+  closeDb(db);
+
+  if (windows.length === 0) {
+    console.log('No pending semantic windows.');
+    return;
+  }
+
+  console.log(`Pending semantic windows (${windows.length}):\n`);
+  for (const w of windows) {
+    const preview = w.windowText.replace(/\n/g, ' ').slice(0, 100);
+    console.log(`  ${w.id}  dist:${w.nearestDistance.toFixed(3)}  ${preview}...`);
+  }
+  console.log(`\nUse --show <id> for full text, --archive <id> to mark processed.`);
+}
+
+// ─── Purge subcommand ────────────────────────────────────────────────
+
+function cmdPurge(args) {
+  if (args.includes('--help') || args.includes('-h')) {
+    console.log(HELP.purge);
+    return;
+  }
+
+  const confIdx = args.indexOf('--below-conf');
+  if (confIdx === -1 || !args[confIdx + 1]) {
+    console.error('purge: --below-conf <threshold> is required');
+    console.error('Run with --help for usage.');
+    process.exit(1);
+  }
+
+  const threshold = parseFloat(args[confIdx + 1]);
+  if (isNaN(threshold) || threshold <= 0 || threshold > 1) {
+    console.error(
+      `purge: --below-conf must be a number between 0 and 1, got: ${args[confIdx + 1]}`
+    );
+    process.exit(1);
+  }
+
+  const dryRun = args.includes('--dry-run');
+
+  const db = openDb();
+  const candidates = getCandidatesBelowConfidence(db, threshold);
+
+  if (candidates.length === 0) {
+    closeDb(db);
+    console.log(`No candidates found with confidence < ${threshold}`);
+    return;
+  }
+
+  if (dryRun) {
+    closeDb(db);
+    console.log(`Would archive ${candidates.length} candidate(s) with confidence < ${threshold}:`);
+    for (const r of candidates) console.log(`  - ${r.slug} (conf: ${r.confidence})`);
+    return;
+  }
+
+  const items = candidates.map(r => ({
+    id: r.id,
+    reason: `bulk purge: confidence ${r.confidence} < ${threshold}`,
+  }));
+  const archived = archiveRecords(db, items);
+
+  const sessionId = generateUlid();
+  insertReviewSession(db, {
+    id: sessionId,
+    createdAt: new Date().toISOString(),
+    promoted: [],
+    archived: archived.map(r => ({ id: r.id, reason: `bulk purge: confidence < ${threshold}` })),
+  });
+  closeDb(db);
+
+  console.log(`Archived ${archived.length} candidate(s) with confidence < ${threshold}`);
+  console.log(`Review session saved: ${sessionId}`);
+}
+
 // ─── Scan subcommand ─────────────────────────────────────────────────
 
 async function cmdScan(args) {
@@ -1739,17 +1933,16 @@ async function runScan(args) {
 
     if (flags.semantic && vecDb) {
       try {
-        const { candidates: semCandidates } = await semanticScanFile(
+        const { windowsStored } = await semanticScanFile(
           vecDb,
           filePath,
           offset,
           { verbose: flags.verbose, dryRun: flags.dryRun },
           projectId
         );
-        if (flags.verbose && semCandidates.length > 0) {
-          log(`  [semantic] ${semCandidates.length} candidate(s) from ${filePath}`);
+        if (flags.verbose && windowsStored > 0) {
+          log(`  [semantic] ${windowsStored} window(s) stored for review from ${filePath}`);
         }
-        allCandidates.push(...semCandidates);
       } catch (err) {
         process.stderr.write(`  [semantic] scan failed for ${filePath}: ${err.message}\n`);
       }
@@ -2041,6 +2234,12 @@ async function main() {
       break;
     case 'restore':
       cmdRestore(rest);
+      break;
+    case 'purge':
+      cmdPurge(rest);
+      break;
+    case 'windows':
+      cmdWindows(rest);
       break;
     case 'review':
       cmdReview(rest);
