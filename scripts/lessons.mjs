@@ -51,6 +51,8 @@ import {
   getResumeOffset,
   updateOffset,
 } from './scanner/incremental.mjs';
+import { semanticScanFile, seedLessonEmbeddings } from './scanner/semantic.mjs';
+import { loadVecExtension } from './db.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PLUGIN_ROOT = join(__dirname, '..');
@@ -239,6 +241,7 @@ Options:
   --path <dir>      Scan a specific directory instead of ~/.claude/projects/
   --tier1-only      Only structured scanning (#lesson tags)
   --tier2-only      Only heuristic scanning (error→correction detection)
+  --semantic        Also run Tier 3 semantic scan (requires ANTHROPIC_API_KEY)
   --dry-run         Show candidates without saving state
   --verbose, -v     Show per-file scan details
   --auto            Background/silent mode (no stdout)
@@ -1670,6 +1673,7 @@ async function runScan(args) {
     full: args.includes('--full'),
     tier1Only: args.includes('--tier1-only'),
     tier2Only: args.includes('--tier2-only'),
+    semantic: args.includes('--semantic'),
     dryRun: args.includes('--dry-run'),
     verbose: args.includes('--verbose') || args.includes('-v'),
     auto: args.includes('--auto'),
@@ -1683,7 +1687,9 @@ async function runScan(args) {
   const scanPath = flags.path ?? DEFAULT_SCAN_PATH;
 
   log(`Scanning: ${scanPath}`);
-  log(`Mode: ${flags.tier1Only ? 'Tier 1 only' : flags.tier2Only ? 'Tier 2 only' : 'Both tiers'}`);
+  log(
+    `Mode: ${flags.tier1Only ? 'Tier 1 only' : flags.tier2Only ? 'Tier 2 only' : 'Both tiers'}${flags.semantic ? ' + semantic' : ''}`
+  );
   log(`Type: ${flags.full ? 'Full rescan' : 'Incremental'}`);
   log();
 
@@ -1701,6 +1707,20 @@ async function runScan(args) {
     filesSkipped = 0,
     totalNewBytes = 0;
 
+  // Open a vec-enabled db handle for semantic scanning (separate from the write handle below).
+  let vecDb = null;
+  if (flags.semantic) {
+    vecDb = openDb(undefined, { allowExtension: true });
+    loadVecExtension(vecDb);
+    await seedLessonEmbeddings(vecDb, { verbose: flags.verbose });
+    const embeddedCount = vecDb.prepare(`SELECT COUNT(*) as n FROM lesson_vec_map`).get()?.n ?? 0;
+    log(`Semantic mode: ${embeddedCount} active lesson embedding(s) indexed`);
+    if (embeddedCount === 0) {
+      log('  Warning: no active lessons embedded yet. Semantic scan will produce no results.');
+      log('  Promote at least one lesson to active first, then re-scan.');
+    }
+  }
+
   for (const filePath of files) {
     const offset = flags.full ? 0 : getResumeOffset(state, filePath);
     const fileSize = statSync(filePath).size;
@@ -1713,17 +1733,34 @@ async function runScan(args) {
     const newBytes = fileSize - offset;
     if (flags.verbose) log(`  Scanning: ${filePath} (${newBytes} new bytes)`);
 
-    const { candidates, bytesRead } = await scanFile(
-      filePath,
-      offset,
-      flags,
-      projectIdFromFilePath(filePath)
-    );
+    const projectId = projectIdFromFilePath(filePath);
+    const { candidates, bytesRead } = await scanFile(filePath, offset, flags, projectId);
     allCandidates.push(...candidates);
+
+    if (flags.semantic && vecDb) {
+      try {
+        const { candidates: semCandidates } = await semanticScanFile(
+          vecDb,
+          filePath,
+          offset,
+          { verbose: flags.verbose, dryRun: flags.dryRun },
+          projectId
+        );
+        if (flags.verbose && semCandidates.length > 0) {
+          log(`  [semantic] ${semCandidates.length} candidate(s) from ${filePath}`);
+        }
+        allCandidates.push(...semCandidates);
+      } catch (err) {
+        process.stderr.write(`  [semantic] scan failed for ${filePath}: ${err.message}\n`);
+      }
+    }
+
     updateOffset(state, filePath, bytesRead);
     filesScanned++;
     totalNewBytes += newBytes;
   }
+
+  if (vecDb) closeDb(vecDb);
 
   log(
     `\nScanned ${filesScanned} files (${filesSkipped} skipped, ${formatBytes(totalNewBytes)} processed)`

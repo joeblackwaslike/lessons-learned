@@ -14,6 +14,9 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash, randomBytes } from 'node:crypto';
 import { readdirSync, readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+
+const _require = createRequire(import.meta.url);
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PLUGIN_ROOT = join(__dirname, '..');
@@ -64,6 +67,11 @@ CREATE INDEX IF NOT EXISTS idx_lessons_priority        ON lessons(priority DESC)
 CREATE INDEX IF NOT EXISTS idx_lessons_status_priority ON lessons(status, priority DESC);
 CREATE INDEX IF NOT EXISTS idx_lessons_hash            ON lessons(contentHash);
 
+CREATE TABLE IF NOT EXISTS lesson_vec_map (
+  lesson_id TEXT NOT NULL PRIMARY KEY,
+  vec_rowid INTEGER NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS review_sessions (
   id        TEXT PRIMARY KEY,
   createdAt TEXT NOT NULL,
@@ -78,10 +86,13 @@ CREATE TABLE IF NOT EXISTS review_sessions (
 /**
  * Open (or create) the DB and initialize the schema.
  * @param {string} [path]
+ * @param {{ allowExtension?: boolean }} [options]
  * @returns {DatabaseSync}
  */
-export function openDb(path = DB_PATH) {
-  const db = new DatabaseSync(path);
+export function openDb(path = DB_PATH, { allowExtension = false } = {}) {
+  const db = allowExtension
+    ? new DatabaseSync(path, { allowExtension: true })
+    : new DatabaseSync(path);
   initSchema(db);
   applyMigrations(db);
   return db;
@@ -179,7 +190,10 @@ function applyMigrations(db) {
 
   // Migration: rename mistake→problem, remediation→solution
   // Re-read cols to account for prior migrations that may have recreated the table.
-  const currentCols = db.prepare('PRAGMA table_info(lessons)').all().map(r => r.name);
+  const currentCols = db
+    .prepare('PRAGMA table_info(lessons)')
+    .all()
+    .map(r => r.name);
   if (currentCols.includes('mistake')) {
     db.exec('ALTER TABLE lessons RENAME COLUMN mistake TO problem');
     db.exec('ALTER TABLE lessons RENAME COLUMN remediation TO solution');
@@ -193,6 +207,15 @@ function applyMigrations(db) {
   // Migration: add scope column (NULL = global; project ID string = scoped to that project)
   if (!currentCols.includes('scope')) {
     db.exec(`ALTER TABLE lessons ADD COLUMN scope TEXT`);
+  }
+
+  // Migration: add embedding BLOB column (stored as Float32 buffer; NULL = not yet embedded)
+  const latestCols = db
+    .prepare('PRAGMA table_info(lessons)')
+    .all()
+    .map(r => r.name);
+  if (!latestCols.includes('embedding')) {
+    db.exec(`ALTER TABLE lessons ADD COLUMN embedding BLOB`);
   }
 
   // Migration: import legacy review session JSON files into the review_sessions table
@@ -723,4 +746,110 @@ export function getReviewSession(db, id) {
     archived: JSON.parse(/** @type {string} */ (r.archived)),
     patches: JSON.parse(/** @type {string} */ (r.patches)),
   };
+}
+
+// ─── Vector / Embedding (sqlite-vec) ─────────────────────────────────
+
+/**
+ * Load the sqlite-vec extension and ensure the vec_lessons virtual table exists.
+ *
+ * Must be called on a db opened with `allowExtension: true`.
+ * Safe to call multiple times (CREATE VIRTUAL TABLE IF NOT EXISTS).
+ *
+ * @param {DatabaseSync} db
+ */
+export function loadVecExtension(db) {
+  const { getLoadablePath } = _require('sqlite-vec');
+  db.loadExtension(getLoadablePath());
+  db.exec(`CREATE VIRTUAL TABLE IF NOT EXISTS vec_lessons USING vec0(embedding float[768])`);
+}
+
+/**
+ * Store a lesson's embedding in the vec_lessons virtual table and in lessons.embedding.
+ *
+ * The lesson_vec_map table bridges the TEXT lesson_id to the INTEGER rowid
+ * that vec0 requires.
+ *
+ * @param {DatabaseSync} db
+ * @param {string} lessonId
+ * @param {number[]} floatArray - L2-normalized 768-dim vector
+ */
+export function upsertEmbedding(db, lessonId, floatArray) {
+  const blob = Buffer.from(Float32Array.from(floatArray).buffer);
+  const embJson = JSON.stringify(floatArray);
+
+  db.prepare(`UPDATE lessons SET embedding = ? WHERE id = ?`).run(blob, lessonId);
+
+  const existing = db
+    .prepare(`SELECT vec_rowid FROM lesson_vec_map WHERE lesson_id = ?`)
+    .get(lessonId);
+  if (existing) {
+    // vec0 requires BigInt for explicit rowid — plain Number is rejected
+    db.prepare(`DELETE FROM vec_lessons WHERE rowid = ?`).run(
+      BigInt(/** @type {number} */ (existing.vec_rowid))
+    );
+    const { lastInsertRowid } = db
+      .prepare(`INSERT INTO vec_lessons(embedding) VALUES (?)`)
+      .run(embJson);
+    db.prepare(`UPDATE lesson_vec_map SET vec_rowid = ? WHERE lesson_id = ?`).run(
+      Number(lastInsertRowid),
+      lessonId
+    );
+  } else {
+    const { lastInsertRowid } = db
+      .prepare(`INSERT INTO vec_lessons(embedding) VALUES (?)`)
+      .run(embJson);
+    db.prepare(`INSERT INTO lesson_vec_map(lesson_id, vec_rowid) VALUES (?, ?)`).run(
+      lessonId,
+      Number(lastInsertRowid)
+    );
+  }
+}
+
+/**
+ * ANN search: return the nearest active lessons to the given query embedding.
+ *
+ * @param {DatabaseSync} db
+ * @param {number[]} floatArray - L2-normalized 768-dim query vector
+ * @param {number} [limit]
+ * @returns {{ lessonId: string, distance: number }[]}
+ */
+export function searchNearestLessons(db, floatArray, limit = 5) {
+  const rows = db
+    .prepare(
+      `SELECT rowid, distance FROM vec_lessons WHERE embedding MATCH ? ORDER BY distance LIMIT ?`
+    )
+    .all(JSON.stringify(floatArray), limit);
+
+  if (rows.length === 0) return [];
+
+  const placeholders = rows.map(() => '?').join(',');
+  const rowids = rows.map(r => Number(r.rowid));
+  const mappings = db
+    .prepare(`SELECT lesson_id, vec_rowid FROM lesson_vec_map WHERE vec_rowid IN (${placeholders})`)
+    .all(...rowids);
+
+  const rowidToId = new Map(mappings.map(m => [Number(m.vec_rowid), m.lesson_id]));
+  return /** @type {{ lessonId: string, distance: number }[]} */ (
+    rows
+      .map(r => ({ lessonId: rowidToId.get(Number(r.rowid)) ?? null, distance: r.distance }))
+      .filter(r => r.lessonId !== null)
+  );
+}
+
+/**
+ * Get active lessons that have not yet been embedded.
+ *
+ * @param {DatabaseSync} db
+ * @returns {{ id: string, problem: string, solution: string }[]}
+ */
+export function getActiveRecordsNeedingEmbedding(db) {
+  return /** @type {{ id: string, problem: string, solution: string }[]} */ (
+    db
+      .prepare(
+        `SELECT id, problem, solution FROM lessons WHERE status='active' AND embedding IS NULL`
+      )
+      .all()
+      .map(r => Object.assign({}, r))
+  );
 }
