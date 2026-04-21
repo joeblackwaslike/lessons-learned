@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-04-20T17:21:35.903Z",
+  "generatedAt": "2026-04-21T11:47:15.581Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -1009,6 +1009,36 @@
       "summary": "Plan approval without a refine-then-execute option forces unnecessary round trips",
       "problem": "When presenting a plan for approval and offering only approve-or-reject, users who want one small tweak must either accept the plan as-is or restart the planning cycle. This wastes a full turn and breaks flow. ExitPlanMode and AskUserQuestion both support custom option text.",
       "solution": "Whenever presenting a plan for user approval, always include an explicit option worded as 'Incorporate feedback and begin executing' (or equivalent). This allows users to correct one thing and proceed without a full planning restart. List it alongside 'Approve as-is' and 'Go back and revise'."
+    },
+    "01KPQXVCJWF7GZD6BJQKXNA4A2": {
+      "slug": "hooks-without-timeout-field-create-zombi-195b",
+      "type": "hint",
+      "priority": 7,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [
+        {
+          "source": ".*/\\.claude/settings\\.json",
+          "flags": "i"
+        },
+        {
+          "source": ".*/hooks/.*",
+          "flags": "i"
+        }
+      ],
+      "tags": [
+        "tool:hooks",
+        "category:claude-code",
+        "severity:resource-leak"
+      ],
+      "scope": null,
+      "message": "## Lesson: Hooks without timeout field create zombie processes accumulating per tool call\nHooks in settings.json without a timeout field cause Claude Code to spawn the hook process without ever calling wait() on it. The process exits but remains as a zombie with PPID of the claude process, and accumulates linearly — one zombie per tool call — for any hook using PreToolUse/* or PostToolUse/*.\n**Fix**: Add \"timeout\": <seconds> to every hook entry in settings.json. This makes Claude properly await and reap each child process after the hook runs.",
+      "summary": "Hooks without timeout field create zombie processes accumulating per tool call",
+      "problem": "Hooks in settings.json without a timeout field cause Claude Code to spawn the hook process without ever calling wait() on it. The process exits but remains as a zombie with PPID of the claude process, and accumulates linearly — one zombie per tool call — for any hook using PreToolUse/* or PostToolUse/*.",
+      "solution": "Add \"timeout\": <seconds> to every hook entry in settings.json. This makes Claude properly await and reap each child process after the hook runs."
     },
     "01JQSEED00000000000000005": {
       "slug": "npm-link-peer-deps-r2f7",
