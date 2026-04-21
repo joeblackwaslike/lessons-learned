@@ -330,11 +330,13 @@ lessons windows — Manage pending semantic windows from Tier 3 scanning.
 Usage:
   node scripts/lessons.mjs windows                   List all pending windows
   node scripts/lessons.mjs windows --show <id>       Print full window text
-  node scripts/lessons.mjs windows --archive <id>    Mark window(s) as processed
+  node scripts/lessons.mjs windows --archive <id>           Mark window(s) as processed
+  node scripts/lessons.mjs windows --archive-nearest <id>   Archive all windows nearest to a lesson
 
 Options:
-  --show <id>      Print full text of a pending window (for lesson extraction)
-  --archive <ids>  Comma-separated IDs to mark as processed
+  --show <id>               Print full text of a pending window (for lesson extraction)
+  --archive <ids>           Comma-separated IDs to mark as processed
+  --archive-nearest <id>    Archive all unprocessed windows whose nearest lesson is <id>
 
 Notes:
   - Pending windows are conversation fragments flagged by semantic similarity to existing lessons.
@@ -1760,6 +1762,25 @@ function cmdWindows(args) {
     archivePendingWindows(db, ids);
     closeDb(db);
     console.log(`Archived ${ids.length} window(s).`);
+    return;
+  }
+
+  const nearestIdx = args.indexOf('--archive-nearest');
+  if (nearestIdx !== -1) {
+    const lessonId = args[nearestIdx + 1];
+    if (!lessonId) {
+      console.error('windows --archive-nearest: lesson id required');
+      closeDb(db);
+      process.exit(1);
+    }
+    const now = new Date().toISOString();
+    const result = db
+      .prepare(
+        `UPDATE pending_semantic_windows SET processedAt=? WHERE nearestLessonId=? AND processedAt IS NULL`
+      )
+      .run(now, lessonId);
+    closeDb(db);
+    console.log(`Archived ${result.changes} window(s) nearest to ${lessonId}.`);
     return;
   }
 
