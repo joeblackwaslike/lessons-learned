@@ -31,3 +31,6 @@ site/
 .DS_Store
 *.swp
 *.swo
+
+*.db-shm
+*.db-wal
