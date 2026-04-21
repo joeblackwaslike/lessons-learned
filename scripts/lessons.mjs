@@ -57,7 +57,11 @@ import {
   updateSemanticOffset,
   resetSemanticOffsets,
 } from './scanner/incremental.mjs';
-import { semanticScanFile, seedLessonEmbeddings } from './scanner/semantic.mjs';
+import {
+  semanticScanFile,
+  seedLessonEmbeddings,
+  seedInsightEmbeddings,
+} from './scanner/semantic.mjs';
 import { loadVecExtension } from './db.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -1737,6 +1741,7 @@ function cmdWindows(args) {
     }
     const r = Object.assign({}, /** @type {any} */ (row));
     console.log(`id: ${r.id}`);
+    console.log(`type: ${r.seedType ?? 'lesson'}`);
     console.log(
       `dist: ${r.nearestDistance.toFixed(3)}  nearest: ${r.nearestLessonId ?? 'n/a'}  project: ${r.projectId ?? 'n/a'}`
     );
@@ -1784,21 +1789,35 @@ function cmdWindows(args) {
     return;
   }
 
-  // Default: list
+  // Default: list — optionally filter by type
+  const typeIdx = args.indexOf('--type');
+  const typeFilter = typeIdx !== -1 ? args[typeIdx + 1] : null;
+
   const windows = getPendingWindows(db);
   closeDb(db);
 
-  if (windows.length === 0) {
-    console.log('No pending semantic windows.');
+  const filtered = typeFilter ? windows.filter(w => w.seedType === typeFilter) : windows;
+
+  if (filtered.length === 0) {
+    console.log(typeFilter ? `No pending ${typeFilter} windows.` : 'No pending semantic windows.');
     return;
   }
 
-  console.log(`Pending semantic windows (${windows.length}):\n`);
-  for (const w of windows) {
-    const preview = w.windowText.replace(/\n/g, ' ').slice(0, 100);
-    console.log(`  ${w.id}  dist:${w.nearestDistance.toFixed(3)}  ${preview}...`);
+  const total = windows.length;
+  const insightCount = windows.filter(w => w.seedType === 'insight').length;
+  const lessonCount = total - insightCount;
+
+  console.log(
+    `Pending semantic windows (${total} total: ${lessonCount} lesson, ${insightCount} insight)${typeFilter ? ` — showing ${typeFilter}` : ''}:\n`
+  );
+  for (const w of filtered) {
+    const tag = w.seedType === 'insight' ? '[insight]' : '[lesson] ';
+    const preview = w.windowText.replace(/\n/g, ' ').slice(0, 90);
+    console.log(`  ${tag}  ${w.id}  dist:${w.nearestDistance.toFixed(3)}  ${preview}...`);
   }
-  console.log(`\nUse --show <id> for full text, --archive <id> to mark processed.`);
+  console.log(
+    `\nUse --show <id> for full text, --archive <id> to mark processed, --type lesson|insight to filter.`
+  );
 }
 
 // ─── Purge subcommand ────────────────────────────────────────────────
@@ -1938,10 +1957,16 @@ async function runScan(args) {
     vecDb = openDb(undefined, { allowExtension: true });
     loadVecExtension(vecDb);
     await seedLessonEmbeddings(vecDb, { verbose: flags.verbose });
+    await seedInsightEmbeddings(vecDb, { verbose: flags.verbose });
     const embeddedCount = vecDb.prepare(`SELECT COUNT(*) as n FROM lesson_vec_map`).get()?.n ?? 0;
-    log(`Semantic mode: ${embeddedCount} active lesson embedding(s) indexed`);
+    const seedCount = vecDb.prepare(`SELECT COUNT(*) as n FROM insight_seed_map`).get()?.n ?? 0;
+    log(
+      `Semantic mode: ${embeddedCount} lesson embedding(s), ${seedCount} insight seed(s) indexed`
+    );
     if (embeddedCount === 0) {
-      log('  Warning: no active lessons embedded yet. Semantic scan will produce no results.');
+      log(
+        '  Warning: no active lessons embedded yet. Lesson-similarity scan will produce no results.'
+      );
       log('  Promote at least one lesson to active first, then re-scan.');
     }
   }

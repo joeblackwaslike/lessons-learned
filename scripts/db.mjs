@@ -85,6 +85,7 @@ CREATE TABLE IF NOT EXISTS pending_semantic_windows (
   windowText      TEXT NOT NULL,
   nearestDistance REAL NOT NULL,
   nearestLessonId TEXT,
+  seedType        TEXT NOT NULL DEFAULT 'lesson',
   projectId       TEXT,
   filePath        TEXT,
   windowIndex     INTEGER,
@@ -93,6 +94,12 @@ CREATE TABLE IF NOT EXISTS pending_semantic_windows (
 );
 
 CREATE INDEX IF NOT EXISTS idx_psw_processedAt ON pending_semantic_windows(processedAt);
+
+CREATE TABLE IF NOT EXISTS insight_seed_map (
+  seed_id   TEXT PRIMARY KEY,
+  vec_rowid INTEGER NOT NULL,
+  seedText  TEXT NOT NULL
+);
 `;
 
 // ─── Lifecycle ───────────────────────────────────────────────────────
@@ -230,6 +237,17 @@ function applyMigrations(db) {
     .map(r => r.name);
   if (!latestCols.includes('embedding')) {
     db.exec(`ALTER TABLE lessons ADD COLUMN embedding BLOB`);
+  }
+
+  // Migration: add seedType column to pending_semantic_windows (distinguishes lesson vs insight matches)
+  const pswCols = db
+    .prepare('PRAGMA table_info(pending_semantic_windows)')
+    .all()
+    .map(r => r.name);
+  if (!pswCols.includes('seedType')) {
+    db.exec(
+      `ALTER TABLE pending_semantic_windows ADD COLUMN seedType TEXT NOT NULL DEFAULT 'lesson'`
+    );
   }
 
   // Migration: import legacy review session JSON files into the review_sessions table
@@ -793,6 +811,7 @@ export function loadVecExtension(db) {
   const { getLoadablePath } = _require('sqlite-vec');
   db.loadExtension(getLoadablePath());
   db.exec(`CREATE VIRTUAL TABLE IF NOT EXISTS vec_lessons USING vec0(embedding float[768])`);
+  db.exec(`CREATE VIRTUAL TABLE IF NOT EXISTS vec_insight_seeds USING vec0(embedding float[768])`);
 }
 
 /**
@@ -869,6 +888,103 @@ export function searchNearestLessons(db, floatArray, limit = 5) {
 }
 
 /**
+ * Upsert an insight seed embedding in vec_insight_seeds + insight_seed_map.
+ *
+ * @param {import('node:sqlite').DatabaseSync} db
+ * @param {string} seedId
+ * @param {number[]} floatArray
+ * @param {string} seedText
+ */
+export function upsertInsightSeed(db, seedId, floatArray, seedText) {
+  const embJson = JSON.stringify(floatArray);
+
+  const existing = db
+    .prepare(`SELECT vec_rowid FROM insight_seed_map WHERE seed_id = ?`)
+    .get(seedId);
+  if (existing) {
+    db.prepare(`DELETE FROM vec_insight_seeds WHERE rowid = ?`).run(
+      BigInt(/** @type {any} */ (existing).vec_rowid)
+    );
+    const { lastInsertRowid } = db
+      .prepare(`INSERT INTO vec_insight_seeds(embedding) VALUES (?)`)
+      .run(embJson);
+    db.prepare(`UPDATE insight_seed_map SET vec_rowid = ? WHERE seed_id = ?`).run(
+      Number(lastInsertRowid),
+      seedId
+    );
+  } else {
+    const { lastInsertRowid } = db
+      .prepare(`INSERT INTO vec_insight_seeds(embedding) VALUES (?)`)
+      .run(embJson);
+    db.prepare(`INSERT INTO insight_seed_map(seed_id, vec_rowid, seedText) VALUES (?, ?, ?)`).run(
+      seedId,
+      Number(lastInsertRowid),
+      seedText
+    );
+  }
+}
+
+/**
+ * Return IDs of insight seeds already stored in insight_seed_map.
+ *
+ * @param {import('node:sqlite').DatabaseSync} db
+ * @returns {string[]}
+ */
+export function getInsightSeedIds(db) {
+  return db
+    .prepare(`SELECT seed_id FROM insight_seed_map`)
+    .all()
+    .map(r => String(/** @type {any} */ (r).seed_id));
+}
+
+/**
+ * ANN search against vec_insight_seeds.
+ *
+ * @param {import('node:sqlite').DatabaseSync} db
+ * @param {number[]} floatArray
+ * @param {number} [limit]
+ * @returns {{ seedId: string, seedText: string, distance: number }[]}
+ */
+export function searchNearestInsightSeeds(db, floatArray, limit = 1) {
+  const rows = db
+    .prepare(
+      `SELECT rowid, distance FROM vec_insight_seeds WHERE embedding MATCH ? ORDER BY distance LIMIT ?`
+    )
+    .all(JSON.stringify(floatArray), limit);
+
+  if (rows.length === 0) return [];
+
+  const placeholders = rows.map(() => '?').join(',');
+  const rowids = rows.map(r => Number(/** @type {any} */ (r).rowid));
+  const mappings = db
+    .prepare(
+      `SELECT seed_id, seedText, vec_rowid FROM insight_seed_map WHERE vec_rowid IN (${placeholders})`
+    )
+    .all(...rowids);
+
+  const rowidToSeed = new Map(
+    mappings.map(m => [
+      Number(/** @type {any} */ (m).vec_rowid),
+      { seedId: /** @type {any} */ (m).seed_id, seedText: /** @type {any} */ (m).seedText },
+    ])
+  );
+  return /** @type {{ seedId: string, seedText: string, distance: number }[]} */ (
+    rows
+      .map(r => {
+        const seed = rowidToSeed.get(Number(/** @type {any} */ (r).rowid));
+        return seed
+          ? {
+              seedId: seed.seedId,
+              seedText: seed.seedText,
+              distance: /** @type {any} */ (r).distance,
+            }
+          : null;
+      })
+      .filter(Boolean)
+  );
+}
+
+/**
  * Get active lessons that have not yet been embedded.
  *
  * @param {DatabaseSync} db
@@ -895,19 +1011,20 @@ export function getActiveRecordsNeedingEmbedding(db) {
  * Insert a pending semantic window for interactive review.
  *
  * @param {DatabaseSync} db
- * @param {{ id: string, windowText: string, nearestDistance: number, nearestLessonId?: string|null, projectId?: string|null, filePath?: string|null, windowIndex?: number|null }} record
+ * @param {{ id: string, windowText: string, nearestDistance: number, nearestLessonId?: string|null, seedType?: string, projectId?: string|null, filePath?: string|null, windowIndex?: number|null }} record
  */
 export function insertPendingWindow(db, record) {
   const now = new Date().toISOString();
   db.prepare(
     `INSERT OR IGNORE INTO pending_semantic_windows
-       (id, windowText, nearestDistance, nearestLessonId, projectId, filePath, windowIndex, createdAt)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+       (id, windowText, nearestDistance, nearestLessonId, seedType, projectId, filePath, windowIndex, createdAt)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).run(
     record.id,
     record.windowText,
     record.nearestDistance,
     record.nearestLessonId ?? null,
+    record.seedType ?? 'lesson',
     record.projectId ?? null,
     record.filePath ?? null,
     record.windowIndex ?? null,

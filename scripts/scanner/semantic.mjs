@@ -26,13 +26,31 @@ import { embed } from './embedder.mjs';
 import {
   upsertEmbedding,
   searchNearestLessons,
+  searchNearestInsightSeeds,
   getActiveRecordsNeedingEmbedding,
   insertPendingWindow,
+  upsertInsightSeed,
+  getInsightSeedIds,
 } from '../db.mjs';
 
 const SIMILARITY_THRESHOLD = parseFloat(process.env.LESSONS_SEMANTIC_THRESHOLD ?? '0.72');
 const WINDOW_SIZE = parseInt(process.env.LESSONS_SEMANTIC_WINDOW ?? '10', 10);
 const MAX_WINDOWS = parseInt(process.env.LESSONS_SEMANTIC_MAX_WINDOWS ?? '5', 10);
+const INSIGHT_THRESHOLD = parseFloat(process.env.LESSONS_INSIGHT_THRESHOLD ?? '0.65');
+
+/** Synthetic seed phrases representing the shape of a breakthrough or critical insight. */
+const INSIGHT_SEEDS = [
+  'I was wrong about this. The actual reason is',
+  'The root cause turned out to be something unexpected',
+  'The surprising thing is that this behaves differently than expected because',
+  'The fundamental constraint here is that you cannot',
+  'The correct way to think about this is fundamentally different',
+  'The bug was that we were assuming something but the actual behavior is different',
+  'The better approach works because it avoids the underlying problem entirely',
+  'The real issue is that these two things are coupled in a non-obvious way',
+  'This changes the approach because we now understand the real constraint',
+  'The key insight is that the mental model was wrong all along',
+];
 
 // ─── Seeding ─────────────────────────────────────────────────────────
 
@@ -53,6 +71,31 @@ export async function seedLessonEmbeddings(db, { verbose = false } = {}) {
     const vec = await embed(text);
     upsertEmbedding(db, row.id, vec);
     if (verbose) process.stderr.write(`  Embedded: ${row.id}\n`);
+  }
+}
+
+/**
+ * Embed any insight seed phrases not yet in vec_insight_seeds and store them.
+ * Seeds are identified by stable index-based IDs (insight-0, insight-1, ...).
+ * Already-embedded seeds are skipped — safe to call on every scan startup.
+ *
+ * @param {import('node:sqlite').DatabaseSync} db
+ * @param {{ verbose?: boolean }} [opts]
+ */
+export async function seedInsightEmbeddings(db, { verbose = false } = {}) {
+  const existingIds = new Set(getInsightSeedIds(db));
+  const toEmbed = INSIGHT_SEEDS.filter((_, i) => !existingIds.has(`insight-${i}`));
+
+  if (toEmbed.length === 0) return;
+
+  if (verbose) process.stderr.write(`  Embedding ${toEmbed.length} insight seed(s)...\n`);
+
+  for (let i = 0; i < INSIGHT_SEEDS.length; i++) {
+    const seedId = `insight-${i}`;
+    if (existingIds.has(seedId)) continue;
+    const vec = await embed(INSIGHT_SEEDS[i]);
+    upsertInsightSeed(db, seedId, vec, INSIGHT_SEEDS[i]);
+    if (verbose) process.stderr.write(`  Embedded seed: ${seedId}\n`);
   }
 }
 
@@ -106,26 +149,42 @@ export async function semanticScanFile(db, filePath, startOffset, opts = {}, pro
       continue;
     }
 
-    const nearest = searchNearestLessons(db, vec, 3);
-    if (nearest.length === 0) continue;
-    if (nearest[0].distance >= SIMILARITY_THRESHOLD) continue;
+    const lessonNearest = searchNearestLessons(db, vec, 3);
+    const insightNearest = searchNearestInsightSeeds(db, vec, 1);
+
+    const lessonMatch =
+      lessonNearest.length > 0 && lessonNearest[0].distance < SIMILARITY_THRESHOLD;
+    const insightMatch =
+      insightNearest.length > 0 && insightNearest[0].distance < INSIGHT_THRESHOLD;
+
+    if (!lessonMatch && !insightMatch) continue;
 
     const hash = createHash('sha256').update(embeddableText).digest('hex');
     if (seenHashes.has(hash)) continue;
     seenHashes.add(hash);
 
-    if (verbose)
+    // insight wins if both fire (it's the more novel signal)
+    const seedType = insightMatch ? 'insight' : 'lesson';
+    const nearestDistance = insightMatch ? insightNearest[0].distance : lessonNearest[0].distance;
+    const nearestLessonId = lessonMatch ? (lessonNearest[0].lessonId ?? null) : null;
+
+    if (verbose) {
+      const tag = insightMatch
+        ? `insight(${insightNearest[0].distance.toFixed(3)})`
+        : `lesson(${lessonNearest[0].distance.toFixed(3)})`;
       process.stderr.write(
-        `  [semantic] window ${i}: distance ${nearest[0].distance.toFixed(3)} — ${dryRun ? 'dry-run, skipping store' : 'storing for review'}\n`
+        `  [semantic] window ${i}: ${tag} — ${dryRun ? 'dry-run, skipping store' : 'storing for review'}\n`
       );
+    }
 
     if (!dryRun) {
       const { generateUlid } = await import('../db.mjs');
       insertPendingWindow(db, {
         id: generateUlid(),
         windowText,
-        nearestDistance: nearest[0].distance,
-        nearestLessonId: nearest[0].lessonId ?? null,
+        nearestDistance,
+        nearestLessonId,
+        seedType,
         projectId,
         filePath,
         windowIndex: i,
