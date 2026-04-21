@@ -53,6 +53,9 @@ import {
   saveScanState,
   getResumeOffset,
   updateOffset,
+  getSemanticOffset,
+  updateSemanticOffset,
+  resetSemanticOffsets,
 } from './scanner/incremental.mjs';
 import { semanticScanFile, seedLessonEmbeddings } from './scanner/semantic.mjs';
 import { loadVecExtension } from './db.mjs';
@@ -246,7 +249,8 @@ Options:
   --path <dir>      Scan a specific directory instead of ~/.claude/projects/
   --tier1-only      Only structured scanning (#lesson tags)
   --tier2-only      Only heuristic scanning (error→correction detection)
-  --semantic        Also run Tier 3 semantic scan (requires ANTHROPIC_API_KEY)
+  --semantic        Also run Tier 3 semantic scan (incremental, Ollama required)
+  --semantic-full   Reset semantic offsets and rescan all historical sessions
   --dry-run         Show candidates without saving state
   --verbose, -v     Show per-file scan details
   --auto            Background/silent mode (no stdout)
@@ -1865,9 +1869,10 @@ async function cmdScan(args) {
 async function runScan(args) {
   const flags = {
     full: args.includes('--full'),
+    semanticFull: args.includes('--semantic-full'),
     tier1Only: args.includes('--tier1-only'),
     tier2Only: args.includes('--tier2-only'),
-    semantic: args.includes('--semantic'),
+    semantic: args.includes('--semantic') || args.includes('--semantic-full'),
     dryRun: args.includes('--dry-run'),
     verbose: args.includes('--verbose') || args.includes('-v'),
     auto: args.includes('--auto'),
@@ -1896,10 +1901,15 @@ async function runScan(args) {
   }
 
   const state = flags.full ? { files: {}, lastFullScanAt: null } : loadScanState();
+
+  // Reset semantic offsets to 0 for all files so the full history is re-scanned.
+  if (flags.semanticFull && !flags.full) resetSemanticOffsets(state);
+
   const allCandidates = [];
   let filesScanned = 0,
     filesSkipped = 0,
     totalNewBytes = 0;
+  let semanticFilesScanned = 0;
 
   // Open a vec-enabled db handle for semantic scanning (separate from the write handle below).
   let vecDb = null;
@@ -1917,40 +1927,48 @@ async function runScan(args) {
 
   for (const filePath of files) {
     const offset = flags.full ? 0 : getResumeOffset(state, filePath);
+    const semanticOffset = flags.full ? 0 : getSemanticOffset(state, filePath);
     const fileSize = statSync(filePath).size;
 
-    if (!flags.full && offset >= fileSize) {
+    const regularNeedsWork = flags.full || offset < fileSize;
+    const semanticNeedsWork = flags.semantic && (flags.full || semanticOffset < fileSize);
+
+    if (!regularNeedsWork && !semanticNeedsWork) {
       filesSkipped++;
       continue;
     }
 
-    const newBytes = fileSize - offset;
-    if (flags.verbose) log(`  Scanning: ${filePath} (${newBytes} new bytes)`);
+    if (regularNeedsWork) {
+      const newBytes = fileSize - offset;
+      if (flags.verbose) log(`  Scanning: ${filePath} (${newBytes} new bytes)`);
 
-    const projectId = projectIdFromFilePath(filePath);
-    const { candidates, bytesRead } = await scanFile(filePath, offset, flags, projectId);
-    allCandidates.push(...candidates);
+      const projectId = projectIdFromFilePath(filePath);
+      const { candidates, bytesRead } = await scanFile(filePath, offset, flags, projectId);
+      allCandidates.push(...candidates);
+      updateOffset(state, filePath, bytesRead);
+      filesScanned++;
+      totalNewBytes += newBytes;
+    }
 
-    if (flags.semantic && vecDb) {
+    if (semanticNeedsWork && vecDb) {
+      const projectId = projectIdFromFilePath(filePath);
       try {
-        const { windowsStored } = await semanticScanFile(
+        const { windowsStored, bytesRead: semBytesRead } = await semanticScanFile(
           vecDb,
           filePath,
-          offset,
+          semanticOffset,
           { verbose: flags.verbose, dryRun: flags.dryRun },
           projectId
         );
+        updateSemanticOffset(state, filePath, semBytesRead);
         if (flags.verbose && windowsStored > 0) {
           log(`  [semantic] ${windowsStored} window(s) stored for review from ${filePath}`);
         }
+        semanticFilesScanned++;
       } catch (err) {
         process.stderr.write(`  [semantic] scan failed for ${filePath}: ${err.message}\n`);
       }
     }
-
-    updateOffset(state, filePath, bytesRead);
-    filesScanned++;
-    totalNewBytes += newBytes;
   }
 
   if (vecDb) closeDb(vecDb);
@@ -1988,6 +2006,10 @@ async function runScan(args) {
     if (result.skipped > 0 && flags.verbose) {
       for (const reason of result.skippedReasons) log(`  Skipped: ${reason}`);
     }
+  }
+
+  if (flags.semantic) {
+    log(`Semantic: ${semanticFilesScanned} file(s) processed — run 'lessons windows' to review`);
   }
 
   if (!flags.dryRun) {

@@ -69,6 +69,29 @@ export function getResumeOffset(state, filePath) {
 }
 
 /**
+ * Get the byte offset for semantic scanning, tracked independently from the
+ * regular (Tier 1/2) offset. Defaults to 0 so semantic can catch up to files
+ * that were already indexed by earlier scans before --semantic was added.
+ *
+ * @param {object} state
+ * @param {string} filePath — absolute path to JSONL file
+ * @returns {number}
+ */
+export function getSemanticOffset(state, filePath) {
+  const entry = state.files?.[filePath];
+  if (!entry) return 0;
+
+  try {
+    const currentSize = statSync(filePath).size;
+    if (currentSize < entry.fileSize) return 0;
+  } catch {
+    return 0;
+  }
+
+  return entry.semanticOffset ?? 0;
+}
+
+/**
  * Update the scan offset for a file after processing.
  *
  * @param {object} state — mutable state object
@@ -84,8 +107,35 @@ export function updateOffset(state, filePath, newOffset) {
   }
 
   state.files[filePath] = {
+    ...state.files[filePath],
     offset: newOffset,
     lastScanAt: new Date().toISOString(),
     fileSize,
   };
+}
+
+/**
+ * Update the semantic scan offset independently from the regular offset.
+ *
+ * @param {object} state — mutable state object
+ * @param {string} filePath — absolute path
+ * @param {number} newOffset — byte position after last semantically-processed line
+ */
+export function updateSemanticOffset(state, filePath, newOffset) {
+  state.files[filePath] = {
+    ...state.files[filePath],
+    semanticOffset: newOffset,
+  };
+}
+
+/**
+ * Reset semantic offsets for all tracked files to 0, enabling a full semantic rescan
+ * without disturbing the regular (Tier 1/2) offsets.
+ *
+ * @param {object} state — mutable state object
+ */
+export function resetSemanticOffsets(state) {
+  for (const filePath of Object.keys(state.files ?? {})) {
+    state.files[filePath] = { ...state.files[filePath], semanticOffset: 0 };
+  }
 }
