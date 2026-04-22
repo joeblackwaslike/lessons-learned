@@ -9,8 +9,11 @@
  * Exports:
  *   loadScanState() — read persisted state
  *   saveScanState(state) — write state to disk
- *   getResumeOffset(state, filePath) — byte offset to resume from
- *   updateOffset(state, filePath, newOffset) — record progress
+ *   getResumeOffset(state, filePath) — byte offset to resume from (Tier 1/2)
+ *   updateOffset(state, filePath, newOffset) — record Tier 1/2 progress
+ *   getStructuralOffset(state, filePath) — byte offset for structural (Tier 3) scan
+ *   updateStructuralOffset(state, filePath, newOffset) — record structural progress
+ *   resetStructuralOffsets(state) — force full structural rescan on next run
  */
 
 import { readFileSync, writeFileSync, statSync } from 'node:fs';
@@ -45,7 +48,7 @@ export function saveScanState(state) {
 }
 
 /**
- * Get the byte offset to resume scanning for a given file.
+ * Get the byte offset to resume scanning for a given file (Tier 1/2).
  *
  * If the file has shrunk (e.g., rotated or replaced), resets to 0.
  *
@@ -69,15 +72,18 @@ export function getResumeOffset(state, filePath) {
 }
 
 /**
- * Get the byte offset for semantic scanning, tracked independently from the
- * regular (Tier 1/2) offset. Defaults to 0 so semantic can catch up to files
- * that were already indexed by earlier scans before --semantic was added.
+ * Get the byte offset for structural (Tier 3) scanning, tracked independently
+ * from the regular Tier 1/2 offset. Defaults to 0 so structural can catch up
+ * to files indexed by earlier scans before --structural was added.
+ *
+ * Reads both `structuralOffset` (new) and `semanticOffset` (legacy key) for
+ * backwards compatibility with existing scan-state.json files.
  *
  * @param {object} state
  * @param {string} filePath — absolute path to JSONL file
  * @returns {number}
  */
-export function getSemanticOffset(state, filePath) {
+export function getStructuralOffset(state, filePath) {
   const entry = state.files?.[filePath];
   if (!entry) return 0;
 
@@ -88,11 +94,11 @@ export function getSemanticOffset(state, filePath) {
     return 0;
   }
 
-  return entry.semanticOffset ?? 0;
+  return entry.structuralOffset ?? entry.semanticOffset ?? 0;
 }
 
 /**
- * Update the scan offset for a file after processing.
+ * Update the scan offset for a file after processing (Tier 1/2).
  *
  * @param {object} state — mutable state object
  * @param {string} filePath — absolute path
@@ -115,27 +121,27 @@ export function updateOffset(state, filePath, newOffset) {
 }
 
 /**
- * Update the semantic scan offset independently from the regular offset.
+ * Update the structural scan offset independently from the regular offset.
  *
  * @param {object} state — mutable state object
  * @param {string} filePath — absolute path
- * @param {number} newOffset — byte position after last semantically-processed line
+ * @param {number} newOffset — byte position after last structurally-processed line
  */
-export function updateSemanticOffset(state, filePath, newOffset) {
+export function updateStructuralOffset(state, filePath, newOffset) {
   state.files[filePath] = {
     ...state.files[filePath],
-    semanticOffset: newOffset,
+    structuralOffset: newOffset,
   };
 }
 
 /**
- * Reset semantic offsets for all tracked files to 0, enabling a full semantic rescan
- * without disturbing the regular (Tier 1/2) offsets.
+ * Reset structural offsets for all tracked files to 0, enabling a full structural
+ * rescan without disturbing the regular (Tier 1/2) offsets.
  *
  * @param {object} state — mutable state object
  */
-export function resetSemanticOffsets(state) {
+export function resetStructuralOffsets(state) {
   for (const filePath of Object.keys(state.files ?? {})) {
-    state.files[filePath] = { ...state.files[filePath], semanticOffset: 0 };
+    state.files[filePath] = { ...state.files[filePath], structuralOffset: 0 };
   }
 }

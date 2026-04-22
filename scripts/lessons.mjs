@@ -53,12 +53,11 @@ import {
   saveScanState,
   getResumeOffset,
   updateOffset,
-  getSemanticOffset,
-  updateSemanticOffset,
-  resetSemanticOffsets,
+  getStructuralOffset,
+  updateStructuralOffset,
+  resetStructuralOffsets,
 } from './scanner/incremental.mjs';
-import { semanticScanFile, patternScanFile, seedLessonEmbeddings } from './scanner/semantic.mjs';
-import { loadVecExtension } from './db.mjs';
+import { patternScanFile } from './scanner/structural.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PLUGIN_ROOT = join(__dirname, '..');
@@ -93,7 +92,7 @@ Subcommands:
   onboard           Batch-import lessons from a JSON array
   promote           Promote candidates to active, archive, or patch fields
   purge             Archive all candidates below a confidence threshold
-  windows           List or archive pending semantic windows (from Tier 3 scan)
+  windows           List or archive pending structural windows (from Tier 3 scan)
   restore           Restore archived lessons back to active
   review            Review candidates from the DB against validation rules
   doctor            Audit active lessons for quality issues
@@ -249,8 +248,8 @@ Options:
   --path <dir>      Scan a specific directory instead of ~/.claude/projects/
   --tier1-only      Only structured scanning (#lesson tags)
   --tier2-only      Only heuristic scanning (error→correction detection)
-  --semantic        Also run Tier 3 semantic scan (incremental, Ollama required)
-  --semantic-full   Reset semantic offsets and rescan all historical sessions
+  --structural      Also run Tier 3 structural scan (pattern matching, no external services)
+  --structural-full Reset structural offsets and rescan all historical sessions
   --dry-run         Show candidates without saving state
   --verbose, -v     Show per-file scan details
   --auto            Background/silent mode (no stdout)
@@ -325,7 +324,7 @@ Notes:
 `.trim(),
 
   windows: `
-lessons windows — Manage pending semantic windows from Tier 3 scanning.
+lessons windows — Manage pending structural windows from Tier 3 scanning.
 
 Usage:
   node scripts/lessons.mjs windows                   List all pending windows
@@ -339,7 +338,7 @@ Options:
   --archive-nearest <id>    Archive all unprocessed windows whose nearest lesson is <id>
 
 Notes:
-  - Pending windows are conversation fragments flagged by semantic similarity to existing lessons.
+  - Pending windows are conversation fragments flagged by structural pattern matching.
   - Use 'lessons review' to see a summary of pending windows alongside candidates.
   - Extract a lesson with 'lessons add', then archive the window with --archive.
 `.trim(),
@@ -1339,9 +1338,9 @@ function cmdReview(args) {
 
   if (pendingWindows.length > 0) {
     console.log(`\n${'═'.repeat(71)}`);
-    console.log(`Pending Semantic Windows (${pendingWindows.length}) — from Tier 3 scanner`);
+    console.log(`Pending Structural Windows (${pendingWindows.length}) — from Tier 3 scanner`);
     console.log(`${'═'.repeat(71)}`);
-    console.log(`These conversation windows are semantically similar to existing lessons.`);
+    console.log(`These conversation windows were flagged by insight-pattern detection.`);
     console.log(`Review each, extract a lesson with 'lessons add', then archive.\n`);
     for (const w of pendingWindows) {
       const preview = w.windowText.replace(/\n/g, ' ').slice(0, 120);
@@ -1795,7 +1794,9 @@ function cmdWindows(args) {
   const filtered = typeFilter ? windows.filter(w => w.seedType === typeFilter) : windows;
 
   if (filtered.length === 0) {
-    console.log(typeFilter ? `No pending ${typeFilter} windows.` : 'No pending semantic windows.');
+    console.log(
+      typeFilter ? `No pending ${typeFilter} windows.` : 'No pending structural windows.'
+    );
     return;
   }
 
@@ -1804,7 +1805,7 @@ function cmdWindows(args) {
   const lessonCount = total - insightCount;
 
   console.log(
-    `Pending semantic windows (${total} total: ${lessonCount} lesson, ${insightCount} insight)${typeFilter ? ` — showing ${typeFilter}` : ''}:\n`
+    `Pending structural windows (${total} total: ${lessonCount} lesson, ${insightCount} insight)${typeFilter ? ` — showing ${typeFilter}` : ''}:\n`
   );
   for (const w of filtered) {
     const tag = w.seedType === 'insight' ? '[insight]' : '[lesson] ';
@@ -1905,10 +1906,10 @@ async function cmdScan(args) {
 async function runScan(args) {
   const flags = {
     full: args.includes('--full'),
-    semanticFull: args.includes('--semantic-full'),
+    structuralFull: args.includes('--structural-full'),
     tier1Only: args.includes('--tier1-only'),
     tier2Only: args.includes('--tier2-only'),
-    semantic: args.includes('--semantic') || args.includes('--semantic-full'),
+    structural: args.includes('--structural') || args.includes('--structural-full'),
     dryRun: args.includes('--dry-run'),
     verbose: args.includes('--verbose') || args.includes('-v'),
     auto: args.includes('--auto'),
@@ -1923,7 +1924,7 @@ async function runScan(args) {
 
   log(`Scanning: ${scanPath}`);
   log(
-    `Mode: ${flags.tier1Only ? 'Tier 1 only' : flags.tier2Only ? 'Tier 2 only' : 'Both tiers'}${flags.semantic ? ' + semantic' : ''}`
+    `Mode: ${flags.tier1Only ? 'Tier 1 only' : flags.tier2Only ? 'Tier 2 only' : 'Both tiers'}${flags.structural ? ' + structural' : ''}`
   );
   log(`Type: ${flags.full ? 'Full rescan' : 'Incremental'}`);
   log();
@@ -1938,40 +1939,26 @@ async function runScan(args) {
 
   const state = flags.full ? { files: {}, lastFullScanAt: null } : loadScanState();
 
-  // Reset semantic offsets to 0 for all files so the full history is re-scanned.
-  if (flags.semanticFull && !flags.full) resetSemanticOffsets(state);
+  // Reset structural offsets to 0 for all files so the full history is re-scanned.
+  if (flags.structuralFull && !flags.full) resetStructuralOffsets(state);
 
   const allCandidates = [];
   let filesScanned = 0,
     filesSkipped = 0,
     totalNewBytes = 0;
-  let semanticFilesScanned = 0;
+  let structuralFilesScanned = 0;
 
-  // Open a vec-enabled db handle for semantic scanning (separate from the write handle below).
-  let vecDb = null;
-  if (flags.semantic) {
-    vecDb = openDb(undefined, { allowExtension: true });
-    loadVecExtension(vecDb);
-    await seedLessonEmbeddings(vecDb, { verbose: flags.verbose });
-    const embeddedCount = vecDb.prepare(`SELECT COUNT(*) as n FROM lesson_vec_map`).get()?.n ?? 0;
-    log(`Semantic mode: ${embeddedCount} lesson embedding(s) indexed`);
-    if (embeddedCount === 0) {
-      log(
-        '  Warning: no active lessons embedded yet. Lesson-similarity scan will produce no results.'
-      );
-      log('  Promote at least one lesson to active first, then re-scan.');
-    }
-  }
+  const db = openDb();
 
   for (const filePath of files) {
     const offset = flags.full ? 0 : getResumeOffset(state, filePath);
-    const semanticOffset = flags.full ? 0 : getSemanticOffset(state, filePath);
+    const structuralOffset = flags.full ? 0 : getStructuralOffset(state, filePath);
     const fileSize = statSync(filePath).size;
 
     const regularNeedsWork = flags.full || offset < fileSize;
-    const semanticNeedsWork = flags.semantic && (flags.full || semanticOffset < fileSize);
+    const structuralNeedsWork = flags.structural && (flags.full || structuralOffset < fileSize);
 
-    if (!regularNeedsWork && !semanticNeedsWork) {
+    if (!regularNeedsWork && !structuralNeedsWork) {
       filesSkipped++;
       continue;
     }
@@ -1988,37 +1975,28 @@ async function runScan(args) {
       totalNewBytes += newBytes;
     }
 
-    if (semanticNeedsWork && vecDb) {
+    if (structuralNeedsWork) {
       const projectId = projectIdFromFilePath(filePath);
       try {
-        const { windowsStored, bytesRead: semBytesRead } = await semanticScanFile(
-          vecDb,
+        const { windowsStored, bytesRead: structBytesRead } = await patternScanFile(
+          db,
           filePath,
-          semanticOffset,
+          structuralOffset,
           { verbose: flags.verbose, dryRun: flags.dryRun },
           projectId
         );
-        const { windowsStored: insightStored } = await patternScanFile(
-          vecDb,
-          filePath,
-          semanticOffset,
-          { verbose: flags.verbose, dryRun: flags.dryRun },
-          projectId
-        );
-        updateSemanticOffset(state, filePath, semBytesRead);
-        if (flags.verbose && (windowsStored > 0 || insightStored > 0)) {
-          log(
-            `  [semantic] ${windowsStored} lesson window(s), ${insightStored} insight window(s) stored from ${filePath}`
-          );
+        updateStructuralOffset(state, filePath, structBytesRead);
+        if (flags.verbose && windowsStored > 0) {
+          log(`  [structural] ${windowsStored} insight window(s) stored from ${filePath}`);
         }
-        semanticFilesScanned++;
+        structuralFilesScanned++;
       } catch (err) {
-        process.stderr.write(`  [semantic] scan failed for ${filePath}: ${err.message}\n`);
+        process.stderr.write(`  [structural] scan failed for ${filePath}: ${err.message}\n`);
       }
     }
   }
 
-  if (vecDb) closeDb(vecDb);
+  closeDb(db);
 
   log(
     `\nScanned ${filesScanned} files (${filesSkipped} skipped, ${formatBytes(totalNewBytes)} processed)`
@@ -2044,9 +2022,9 @@ async function runScan(args) {
   // Write all candidates to DB (no auto-promote — use /lessons:review to promote)
   if (!flags.dryRun && deduplicated.length > 0) {
     const records = deduplicated.map(mapCandidateToDbRecord);
-    const db = openDb();
-    const result = insertCandidateBatch(db, records);
-    closeDb(db);
+    const dbWrite = openDb();
+    const result = insertCandidateBatch(dbWrite, records);
+    closeDb(dbWrite);
     log(
       `\nSaved ${result.inserted} new candidate(s) to DB (${result.skipped} skipped as duplicates)`
     );
@@ -2055,8 +2033,10 @@ async function runScan(args) {
     }
   }
 
-  if (flags.semantic) {
-    log(`Semantic: ${semanticFilesScanned} file(s) processed — run 'lessons windows' to review`);
+  if (flags.structural) {
+    log(
+      `Structural: ${structuralFilesScanned} file(s) processed — run 'lessons windows' to review`
+    );
   }
 
   if (!flags.dryRun) {
