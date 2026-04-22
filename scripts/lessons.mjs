@@ -57,11 +57,7 @@ import {
   updateSemanticOffset,
   resetSemanticOffsets,
 } from './scanner/incremental.mjs';
-import {
-  semanticScanFile,
-  seedLessonEmbeddings,
-  seedInsightEmbeddings,
-} from './scanner/semantic.mjs';
+import { semanticScanFile, patternScanFile, seedLessonEmbeddings } from './scanner/semantic.mjs';
 import { loadVecExtension } from './db.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -1957,12 +1953,8 @@ async function runScan(args) {
     vecDb = openDb(undefined, { allowExtension: true });
     loadVecExtension(vecDb);
     await seedLessonEmbeddings(vecDb, { verbose: flags.verbose });
-    await seedInsightEmbeddings(vecDb, { verbose: flags.verbose });
     const embeddedCount = vecDb.prepare(`SELECT COUNT(*) as n FROM lesson_vec_map`).get()?.n ?? 0;
-    const seedCount = vecDb.prepare(`SELECT COUNT(*) as n FROM insight_seed_map`).get()?.n ?? 0;
-    log(
-      `Semantic mode: ${embeddedCount} lesson embedding(s), ${seedCount} insight seed(s) indexed`
-    );
+    log(`Semantic mode: ${embeddedCount} lesson embedding(s) indexed`);
     if (embeddedCount === 0) {
       log(
         '  Warning: no active lessons embedded yet. Lesson-similarity scan will produce no results.'
@@ -2006,9 +1998,18 @@ async function runScan(args) {
           { verbose: flags.verbose, dryRun: flags.dryRun },
           projectId
         );
+        const { windowsStored: insightStored } = await patternScanFile(
+          vecDb,
+          filePath,
+          semanticOffset,
+          { verbose: flags.verbose, dryRun: flags.dryRun },
+          projectId
+        );
         updateSemanticOffset(state, filePath, semBytesRead);
-        if (flags.verbose && windowsStored > 0) {
-          log(`  [semantic] ${windowsStored} window(s) stored for review from ${filePath}`);
+        if (flags.verbose && (windowsStored > 0 || insightStored > 0)) {
+          log(
+            `  [semantic] ${windowsStored} lesson window(s), ${insightStored} insight window(s) stored from ${filePath}`
+          );
         }
         semanticFilesScanned++;
       } catch (err) {

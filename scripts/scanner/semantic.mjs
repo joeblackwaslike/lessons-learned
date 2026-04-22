@@ -26,31 +26,13 @@ import { embed } from './embedder.mjs';
 import {
   upsertEmbedding,
   searchNearestLessons,
-  searchNearestInsightSeeds,
   getActiveRecordsNeedingEmbedding,
   insertPendingWindow,
-  upsertInsightSeed,
-  getInsightSeedIds,
 } from '../db.mjs';
 
 const SIMILARITY_THRESHOLD = parseFloat(process.env.LESSONS_SEMANTIC_THRESHOLD ?? '0.72');
 const WINDOW_SIZE = parseInt(process.env.LESSONS_SEMANTIC_WINDOW ?? '10', 10);
 const MAX_WINDOWS = parseInt(process.env.LESSONS_SEMANTIC_MAX_WINDOWS ?? '5', 10);
-const INSIGHT_THRESHOLD = parseFloat(process.env.LESSONS_INSIGHT_THRESHOLD ?? '0.65');
-
-/** Synthetic seed phrases representing the shape of a breakthrough or critical insight. */
-const INSIGHT_SEEDS = [
-  'Root Cause: the real issue is that',
-  'The fix works because the underlying assumption was wrong',
-  'Now I have the full picture. The actual problem is',
-  'The real constraint here is non-obvious:',
-  'This behavior is surprising — the actual reason is',
-  'The correct mental model is fundamentally different because',
-  'What I missed: these two things are coupled in a way that',
-  'The bug was that the assumption was incorrect — the actual behavior is',
-  'The key realization is that this system works differently than expected',
-  'Stop — found the actual root cause:',
-];
 
 // ─── Seeding ─────────────────────────────────────────────────────────
 
@@ -71,31 +53,6 @@ export async function seedLessonEmbeddings(db, { verbose = false } = {}) {
     const vec = await embed(text);
     upsertEmbedding(db, row.id, vec);
     if (verbose) process.stderr.write(`  Embedded: ${row.id}\n`);
-  }
-}
-
-/**
- * Embed any insight seed phrases not yet in vec_insight_seeds and store them.
- * Seeds are identified by stable index-based IDs (insight-0, insight-1, ...).
- * Already-embedded seeds are skipped — safe to call on every scan startup.
- *
- * @param {import('node:sqlite').DatabaseSync} db
- * @param {{ verbose?: boolean }} [opts]
- */
-export async function seedInsightEmbeddings(db, { verbose = false } = {}) {
-  const existingIds = new Set(getInsightSeedIds(db));
-  const toEmbed = INSIGHT_SEEDS.filter((_, i) => !existingIds.has(`insight-${i}`));
-
-  if (toEmbed.length === 0) return;
-
-  if (verbose) process.stderr.write(`  Embedding ${toEmbed.length} insight seed(s)...\n`);
-
-  for (let i = 0; i < INSIGHT_SEEDS.length; i++) {
-    const seedId = `insight-${i}`;
-    if (existingIds.has(seedId)) continue;
-    const vec = await embed(INSIGHT_SEEDS[i]);
-    upsertInsightSeed(db, seedId, vec, INSIGHT_SEEDS[i]);
-    if (verbose) process.stderr.write(`  Embedded seed: ${seedId}\n`);
   }
 }
 
@@ -150,30 +107,15 @@ export async function semanticScanFile(db, filePath, startOffset, opts = {}, pro
     }
 
     const lessonNearest = searchNearestLessons(db, vec, 3);
-    const insightNearest = searchNearestInsightSeeds(db, vec, 1);
-
-    const lessonMatch =
-      lessonNearest.length > 0 && lessonNearest[0].distance < SIMILARITY_THRESHOLD;
-    const insightMatch =
-      insightNearest.length > 0 && insightNearest[0].distance < INSIGHT_THRESHOLD;
-
-    if (!lessonMatch && !insightMatch) continue;
+    if (lessonNearest.length === 0 || lessonNearest[0].distance >= SIMILARITY_THRESHOLD) continue;
 
     const hash = createHash('sha256').update(embeddableText).digest('hex');
     if (seenHashes.has(hash)) continue;
     seenHashes.add(hash);
 
-    // insight wins if both fire (it's the more novel signal)
-    const seedType = insightMatch ? 'insight' : 'lesson';
-    const nearestDistance = insightMatch ? insightNearest[0].distance : lessonNearest[0].distance;
-    const nearestLessonId = lessonMatch ? (lessonNearest[0].lessonId ?? null) : null;
-
     if (verbose) {
-      const tag = insightMatch
-        ? `insight(${insightNearest[0].distance.toFixed(3)})`
-        : `lesson(${lessonNearest[0].distance.toFixed(3)})`;
       process.stderr.write(
-        `  [semantic] window ${i}: ${tag} — ${dryRun ? 'dry-run, skipping store' : 'storing for review'}\n`
+        `  [semantic] window ${i}: lesson(${lessonNearest[0].distance.toFixed(3)}) — ${dryRun ? 'dry-run, skipping store' : 'storing for review'}\n`
       );
     }
 
@@ -182,9 +124,9 @@ export async function semanticScanFile(db, filePath, startOffset, opts = {}, pro
       insertPendingWindow(db, {
         id: generateUlid(),
         windowText,
-        nearestDistance,
-        nearestLessonId,
-        seedType,
+        nearestDistance: lessonNearest[0].distance,
+        nearestLessonId: lessonNearest[0].lessonId ?? null,
+        seedType: 'lesson',
         projectId,
         filePath,
         windowIndex: i,
@@ -260,4 +202,87 @@ function parseTurns(line) {
   }
 
   return [];
+}
+
+/** Lexically stable phrases Claude uses when announcing a breakthrough or root cause. */
+const INSIGHT_PATTERNS = [
+  /\bRoot Cause:/i,
+  /\bStop\s*[—–-]\s*found/i,
+  /\bNow I have the full picture/i,
+  /\bThe actual (problem|issue|reason|cause) is/i,
+  /\bThe real (issue|problem|cause|constraint) is/i,
+  /\bWhat I missed:/i,
+  /\bFound the culprit/i,
+  /\bThe (key|critical) (realization|insight|distinction) is/i,
+  /\bI was wrong (about|—)/i,
+  /\bThe correct (way|model|approach) is/i,
+];
+
+/**
+ * Scan a single JSONL file for insight-announcement phrases in assistant turns.
+ * No Ollama required — pattern matching only. Matching windows are stored as
+ * seedType:'insight' pending_semantic_windows for interactive review.
+ *
+ * @param {import('node:sqlite').DatabaseSync} db
+ * @param {string} filePath
+ * @param {number} startOffset
+ * @param {{ verbose?: boolean, dryRun?: boolean }} [opts]
+ * @param {string | null} [projectId]
+ * @returns {Promise<{ windowsStored: number, bytesRead: number }>}
+ */
+export async function patternScanFile(db, filePath, startOffset, opts = {}, projectId = null) {
+  const { verbose = false, dryRun = false } = opts;
+
+  const turns = [];
+  let bytesRead = startOffset;
+
+  const stream = createReadStream(filePath, { start: startOffset || undefined, encoding: 'utf8' });
+  const rl = createInterface({ input: stream, crlfDelay: Infinity });
+
+  for await (const line of rl) {
+    bytesRead += Buffer.byteLength(line, 'utf8') + 1;
+    if (!line.trim()) continue;
+    const parsed = parseTurns(line);
+    turns.push(...parsed);
+  }
+
+  let windowsStored = 0;
+
+  for (let i = 0; i < turns.length; i++) {
+    const turn = turns[i];
+    if (turn.type !== 'assistant') continue;
+    if (!INSIGHT_PATTERNS.some(re => re.test(turn.text))) continue;
+
+    // Capture surrounding context: 3 turns before, up to 6 after the matching turn
+    const winStart = Math.max(0, i - 3);
+    const winEnd = Math.min(turns.length, i + 7);
+    const window = turns.slice(winStart, winEnd);
+    const windowText = window.map(t => `[${t.type}] ${t.text}`).join('\n\n');
+
+    if (verbose) {
+      process.stderr.write(
+        `  [insight] turn ${i}: pattern match — ${dryRun ? 'dry-run' : 'storing'}\n`
+      );
+    }
+
+    if (!dryRun) {
+      const { generateUlid } = await import('../db.mjs');
+      insertPendingWindow(db, {
+        id: generateUlid(),
+        windowText,
+        nearestDistance: 0,
+        nearestLessonId: null,
+        seedType: 'insight',
+        projectId,
+        filePath,
+        windowIndex: i,
+      });
+    }
+
+    windowsStored++;
+    // Skip ahead to avoid overlapping windows from the same insight moment
+    i += 6;
+  }
+
+  return { windowsStored, bytesRead };
 }
