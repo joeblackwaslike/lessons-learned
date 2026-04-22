@@ -27,9 +27,25 @@ tool call  ──PreToolUse hook──►  match  ──inject──►  additio
 
 ## Installation
 
-### Requirements
+### Claude Code (recommended)
 
-- Node.js ≥ 22.5
+Install via the [agent-marketplace](https://github.com/joeblackwaslike/agent-marketplace):
+
+```bash
+# Add the marketplace (once)
+claude plugin marketplace add joeblackwaslike/agent-marketplace
+
+# Install the plugin
+claude plugin install lessons-learned
+```
+
+Hooks are wired automatically. Skip to [CLI](#cli) to start managing lessons.
+
+---
+
+### Manual install
+
+**Requirements:** Node.js ≥ 22.5
 
 ```bash
 git clone https://github.com/joeblackwaslike/lessons-learned.git ~/lessons-learned
@@ -37,7 +53,7 @@ cd ~/lessons-learned
 npm ci
 ```
 
----
+Then wire hooks manually in `~/.claude/settings.json`:
 
 ### Claude Code
 
