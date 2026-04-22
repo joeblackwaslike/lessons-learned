@@ -40,16 +40,16 @@ const INSIGHT_THRESHOLD = parseFloat(process.env.LESSONS_INSIGHT_THRESHOLD ?? '0
 
 /** Synthetic seed phrases representing the shape of a breakthrough or critical insight. */
 const INSIGHT_SEEDS = [
-  'I was wrong about this. The actual reason is',
-  'The root cause turned out to be something unexpected',
-  'The surprising thing is that this behaves differently than expected because',
-  'The fundamental constraint here is that you cannot',
-  'The correct way to think about this is fundamentally different',
-  'The bug was that we were assuming something but the actual behavior is different',
-  'The better approach works because it avoids the underlying problem entirely',
-  'The real issue is that these two things are coupled in a non-obvious way',
-  'This changes the approach because we now understand the real constraint',
-  'The key insight is that the mental model was wrong all along',
+  'Root Cause: the real issue is that',
+  'The fix works because the underlying assumption was wrong',
+  'Now I have the full picture. The actual problem is',
+  'The real constraint here is non-obvious:',
+  'This behavior is surprising — the actual reason is',
+  'The correct mental model is fundamentally different because',
+  'What I missed: these two things are coupled in a way that',
+  'The bug was that the assumption was incorrect — the actual behavior is',
+  'The key realization is that this system works differently than expected',
+  'Stop — found the actual root cause:',
 ];
 
 // ─── Seeding ─────────────────────────────────────────────────────────
