@@ -66,6 +66,8 @@ export async function patternScanFile(db, filePath, startOffset, opts = {}, proj
   for (let i = 0; i < turns.length; i++) {
     const turn = turns[i];
     if (turn.type !== 'assistant') continue;
+    // Skip learning-mode ★ Insight blocks — pedagogical observations, not debugging breakthroughs
+    if (turn.text.startsWith('`★ Insight ─')) continue;
     if (!INSIGHT_PATTERNS.some(re => re.test(turn.text))) continue;
 
     // Capture surrounding context: 3 turns before, up to 6 after the matching turn
