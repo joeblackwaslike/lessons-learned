@@ -1,9 +1,10 @@
 # Context Anti-Compact
 
-!!! warning "Beta Feature"
-    Context Anti-Compact is a **beta feature** — enabled by opt-in only. The underlying hook mechanics are stable, but the quality of the generated handoff and edge-case behavior are still being refined. [Feedback and reports welcome.](https://github.com/joeblackwaslike/lessons-learned/issues)
+!!! warning "Moved to standalone plugin"
+Context Anti-Compact has been extracted to its own repository: **[joeblackwaslike/anti-compact](https://github.com/joeblackwaslike/anti-compact)**. Install and configure it from there. This copy in lessons-learned still works but will not receive updates.
 
-    This feature is planned to be spun off into its own standalone plugin and repository once it matures.
+!!! warning "Beta Feature"
+Context Anti-Compact is a **beta feature** — enabled by opt-in only. The underlying hook mechanics are stable, but the quality of the generated handoff and edge-case behavior are still being refined. [Feedback and reports welcome.](https://github.com/joeblackwaslike/anti-compact/issues)
 
 ---
 
@@ -13,7 +14,7 @@ When a session grows large, Claude Code triggers `/compact` — a built-in mecha
 
 The result is a measurable drop in inference quality:
 
-- Key decisions lose their rationale. The model knows *what* was decided but not *why*, making it more likely to reverse good decisions.
+- Key decisions lose their rationale. The model knows _what_ was decided but not _why_, making it more likely to reverse good decisions.
 - In-progress work loses its exact state. Commands, issue IDs, file paths, and error messages that were live context get smoothed over.
 - The model's confidence about recent steps drops — it may re-ask questions that were already answered, re-explore paths already ruled out, or repeat mistakes already corrected.
 
@@ -69,8 +70,11 @@ blocking to preserve session context.
 Copy this prompt to continue in a new session:
 
 ```
+
 [Structured handoff document...]
+
 ```
+
 ```
 
 Copy the fenced block, start a new session, and paste it as your first message.

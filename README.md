@@ -119,7 +119,9 @@ Replace `/Users/you/lessons-learned` with your actual clone path. Restart Claude
 
 > **Tip:** `echo $(pwd)` from inside the repo gives you the path to paste.
 
-#### Optional: Context Anti-Compact (beta)
+#### Optional: Context Anti-Compact (beta) — deprecated here
+
+> **Moved:** Context Anti-Compact has been extracted to its own standalone plugin at [joeblackwaslike/anti-compact](https://github.com/joeblackwaslike/anti-compact). Install it from there. The version below still works but will not receive updates.
 
 Add this block to also enable the [Context Anti-Compact](docs/user-guide/anti-compact.md) beta feature, which intercepts `/compact` and generates a structured session handoff instead of allowing lossy built-in compression:
 
