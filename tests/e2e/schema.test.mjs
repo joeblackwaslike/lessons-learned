@@ -87,7 +87,7 @@ describe('schema: inject output', () => {
       env: baseEnv,
     });
     const out = JSON.parse(stdout);
-    const knownKeys = new Set(['hookSpecificOutput', 'env']);
+    const knownKeys = new Set(['hookSpecificOutput', 'env', 'suppressOutput']);
     for (const key of Object.keys(out)) {
       assert.ok(knownKeys.has(key), `unexpected top-level key: ${key}`);
     }

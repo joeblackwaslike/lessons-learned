@@ -1274,52 +1274,69 @@ function cmdReview(args) {
     else fail++;
   }
 
+  const tagGroups = new Map();
   for (const cluster of clusters) {
-    if (cluster.length > 1) {
-      // Cluster diff view
-      renderClusterDiff(cluster, totalCandidates, validationErrors);
-    } else {
-      // Single-candidate card (unchanged style)
-      const { candidate: c, index: candidateNum } = cluster[0];
-      const errors = validationErrors.get(c.id) ?? [];
-      const status = errors.length === 0 ? '✓ PASS' : '✗ FAIL';
+    const firstTag = cluster[0].candidate.tags?.[0] ?? '(untagged)';
+    if (!tagGroups.has(firstTag)) tagGroups.set(firstTag, []);
+    tagGroups.get(firstTag).push(cluster);
+  }
 
-      console.log(`\n┌─ [${candidateNum}/${totalCandidates}] ${status} ${'─'.repeat(55)}`);
+  const sortedTags = [...tagGroups.keys()].sort((a, b) => {
+    if (a === '(untagged)') return 1;
+    if (b === '(untagged)') return -1;
+    return a.localeCompare(b);
+  });
 
-      const tool = (c.toolNames?.[0] ?? 'unknown').padEnd(25);
-      const conf = `conf:${c.confidence}`.padEnd(10);
-      const pri = `pri:${c.priority}`.padEnd(8);
-      const sessions = `sessions:${c.sessionCount}`.padEnd(12);
-      console.log(`│ ${tool} ${conf} ${pri} ${sessions}`);
+  for (const tag of sortedTags) {
+    const tagClusters = tagGroups.get(tag);
+    console.log(`\n── ${tag} (${tagClusters.length}) ${'─'.repeat(Math.max(2, 55 - tag.length))}`);
+    for (const cluster of tagClusters) {
+      if (cluster.length > 1) {
+        // Cluster diff view
+        renderClusterDiff(cluster, totalCandidates, validationErrors);
+      } else {
+        // Single-candidate card
+        const { candidate: c, index: candidateNum } = cluster[0];
+        const errors = validationErrors.get(c.id) ?? [];
+        const status = errors.length === 0 ? '✓ PASS' : '✗ FAIL';
 
-      const tags = c.tags?.length ? c.tags.join(', ') : 'none';
-      console.log(`│ Tags: ${tags}`);
-      console.log(`│ ID:   ${c.id}`);
+        console.log(`\n┌─ [${candidateNum}/${totalCandidates}] ${status} ${'─'.repeat(55)}`);
 
-      console.log(`├─ Problem ${'─'.repeat(60)}`);
-      const problemLines = c.problem.split('\n');
-      for (let i = 0; i < Math.min(2, problemLines.length); i++) {
-        console.log(`│ ${problemLines[i].slice(0, 100)}`);
+        const tool = (c.toolNames?.[0] ?? 'unknown').padEnd(25);
+        const conf = `conf:${c.confidence}`.padEnd(10);
+        const pri = `pri:${c.priority}`.padEnd(8);
+        const sessions = `sessions:${c.sessionCount}`.padEnd(12);
+        console.log(`│ ${tool} ${conf} ${pri} ${sessions}`);
+
+        const tags = c.tags?.length ? c.tags.join(', ') : 'none';
+        console.log(`│ Tags: ${tags}`);
+        console.log(`│ ID:   ${c.id}`);
+
+        console.log(`├─ Problem ${'─'.repeat(60)}`);
+        const problemLines = c.problem.split('\n');
+        for (let i = 0; i < Math.min(2, problemLines.length); i++) {
+          console.log(`│ ${problemLines[i].slice(0, 100)}`);
+        }
+        if (problemLines.length > 2 || c.problem.length > 200) {
+          console.log(`│ ... (${c.problem.length} chars total)`);
+        }
+
+        console.log(`├─ Solution ${'─'.repeat(59)}`);
+        const solutionLines = c.solution.split('\n');
+        for (let i = 0; i < Math.min(2, solutionLines.length); i++) {
+          console.log(`│ ${solutionLines[i].slice(0, 100)}`);
+        }
+        if (solutionLines.length > 2 || c.solution.length > 200) {
+          console.log(`│ ... (${c.solution.length} chars total)`);
+        }
+
+        if (errors.length > 0) {
+          console.log(`├─ Issues ${'─'.repeat(61)}`);
+          console.log(`│ ${errors.join(', ')}`);
+        }
+
+        console.log(`└${'─'.repeat(70)}`);
       }
-      if (problemLines.length > 2 || c.problem.length > 200) {
-        console.log(`│ ... (${c.problem.length} chars total)`);
-      }
-
-      console.log(`├─ Solution ${'─'.repeat(59)}`);
-      const solutionLines = c.solution.split('\n');
-      for (let i = 0; i < Math.min(2, solutionLines.length); i++) {
-        console.log(`│ ${solutionLines[i].slice(0, 100)}`);
-      }
-      if (solutionLines.length > 2 || c.solution.length > 200) {
-        console.log(`│ ... (${c.solution.length} chars total)`);
-      }
-
-      if (errors.length > 0) {
-        console.log(`├─ Issues ${'─'.repeat(61)}`);
-        console.log(`│ ${errors.join(', ')}`);
-      }
-
-      console.log(`└${'─'.repeat(70)}`);
     }
   }
 

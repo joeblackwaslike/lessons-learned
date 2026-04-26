@@ -210,7 +210,8 @@ function insertCandidate(dbPath, overrides = {}) {
   const db = new DatabaseSync(dbPath);
   const id = `test-cand-${Math.random().toString(36).slice(2)}`;
   const now = new Date().toISOString();
-  db.prepare(`
+  db.prepare(
+    `
     INSERT INTO lessons (
       id, slug, status, type, summary, problem, solution,
       injectOn, toolNames, commandPatterns, pathPatterns, block,
@@ -224,7 +225,8 @@ function insertCandidate(dbPath, overrides = {}) {
       5, 0.8, :tags, 'heuristic', '[]',
       1, 1, 1, :contentHash, :createdAt, :updatedAt
     )
-  `).run({
+  `
+  ).run({
     id,
     slug: `slug-${id}`,
     summary: overrides.summary ?? 'A candidate lesson summary for testing purposes here',
@@ -250,8 +252,17 @@ describe('lessons review', () => {
   });
 
   it('shows group headers when candidates have different tags', async () => {
-    insertCandidate(store.dbPath, { tags: ['tool:git'] });
-    insertCandidate(store.dbPath, { tags: ['tool:npm'] });
+    insertCandidate(store.dbPath, {
+      tags: ['tool:git'],
+      problem: 'Git commit history rewrite corrupts the repository log when executed incorrectly',
+      solution: 'Use git reflog to recover and avoid force-push on shared branches',
+    });
+    insertCandidate(store.dbPath, {
+      tags: ['tool:npm'],
+      problem:
+        'Npm package installation fails silently when lockfile has conflicting dependency versions',
+      solution: 'Delete node_modules and package-lock.json then reinstall to resolve conflicts',
+    });
     const { stdout, exitCode } = await run(LESSONS_CLI, {
       args: ['review'],
       env: env(),
@@ -262,9 +273,25 @@ describe('lessons review', () => {
   });
 
   it('sorts groups alphabetically with (untagged) last', async () => {
-    insertCandidate(store.dbPath, { tags: [] });
-    insertCandidate(store.dbPath, { tags: ['tool:z'] });
-    insertCandidate(store.dbPath, { tags: ['tool:a'] });
+    insertCandidate(store.dbPath, {
+      tags: [],
+      problem:
+        'Memory leak occurs when event listeners are attached but never removed from DOM elements',
+      solution: 'Always call removeEventListener in cleanup functions or use AbortController',
+    });
+    insertCandidate(store.dbPath, {
+      tags: ['tool:z'],
+      problem:
+        'Database migration rollback leaves the schema in a broken state after a failed transaction',
+      solution: 'Wrap migrations in explicit transactions and test rollback paths before deploying',
+    });
+    insertCandidate(store.dbPath, {
+      tags: ['tool:a'],
+      problem:
+        'Python virtual environment activation fails on Windows because the Scripts path differs from Unix',
+      solution:
+        'Use cross-platform activation scripts or invoke python -m directly to avoid path issues',
+    });
     const { stdout } = await run(LESSONS_CLI, {
       args: ['review'],
       env: env(),
