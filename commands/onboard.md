@@ -99,10 +99,10 @@ fs.writeFileSync('data/onboard-progress.json', JSON.stringify({
 ### Mode: Approve all
 
 ```bash
-node scripts/lessons.mjs onboard --file '<path>'
+node /Users/joeblack/github/joeblackwaslike/lessons-learned/scripts/lessons.mjs onboard --file '<path>'
 ```
 
-Report the output. Run `node scripts/lessons.mjs build` if any were added. Delete the progress file and end.
+Report the output. Run `node /Users/joeblack/github/joeblackwaslike/lessons-learned/scripts/lessons.mjs build` if any were added. Delete the progress file and end.
 
 ---
 
@@ -136,7 +136,7 @@ Group lessons into batches of `batchSize`. For each batch:
 - **Approve batch** — import all lessons in this batch:
 
   ```bash
-  node scripts/lessons.mjs onboard --file '<path>' --from <startIndex> --count <batchSize>
+  node /Users/joeblack/github/joeblackwaslike/lessons-learned/scripts/lessons.mjs onboard --file '<path>' --from <startIndex> --count <batchSize>
   ```
 
   Report results. Update progress (nextIndex, approved, rejected counts).
@@ -172,7 +172,7 @@ Type:     <type or "hint"> | Tool(s): <tool or "(unset)"> | Tags: <tags or "(non
 
 Ask: **Approve, Skip, Reject, or Stop?**
 
-- **Approve** — `node scripts/lessons.mjs add --json '<json-object>'`
+- **Approve** — `node /Users/joeblack/github/joeblackwaslike/lessons-learned/scripts/lessons.mjs add --json '<json-object>'`
   - Report slug on success or error reason on failure (ask skip or stop on validation failure)
 - **Skip** — move to next, count as skipped
 - **Reject** — move to next, count as rejected
@@ -197,7 +197,7 @@ Onboarding complete.
 If any were approved, run:
 
 ```bash
-node scripts/lessons.mjs build
+node /Users/joeblack/github/joeblackwaslike/lessons-learned/scripts/lessons.mjs build
 ```
 
 Delete the progress file:

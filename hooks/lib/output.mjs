@@ -6,6 +6,9 @@
  *   hookSpecificOutput: { additionalContext: "..." },
  *   env: { LESSONS_SEEN: "slug1,slug2" }
  * }
+ *
+ * suppressOutput is intentionally omitted: it would hide the lesson injection
+ * from the Claude Code UI entirely, making the system invisible to the user.
  */
 
 /**
@@ -20,7 +23,7 @@ export function formatHookOutput(additionalContext, lessonsSeen, metadata) {
   const metaComment = `<!-- lessonInjection: ${JSON.stringify({ version: 1, ...metadata })} -->`;
   const fullContext = additionalContext ? `${additionalContext}\n\n${metaComment}` : '';
 
-  const output = { suppressOutput: true };
+  const output = {};
 
   if (fullContext) {
     output.hookSpecificOutput = { additionalContext: fullContext };

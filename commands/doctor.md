@@ -14,7 +14,7 @@ Work through all 8 checks below in order. Do not ask questions before completing
 Before auditing, count unreviewed candidates:
 
 ```bash
-node scripts/lessons.mjs list --json | node -e "
+node /Users/joeblack/github/joeblackwaslike/lessons-learned/scripts/lessons.mjs list --json | node -e "
 const l = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
 const c = l.filter(x => x.status === 'candidate');
 console.log(c.length + ' candidate(s)');
@@ -39,7 +39,7 @@ Then proceed with the 8 checks regardless.
 `matchLessons()` checks `toolNames` first and short-circuits. A lesson with `commandPatterns` but empty `toolNames` can never fire.
 
 ```bash
-node scripts/lessons.mjs list --json | node -e "
+node /Users/joeblack/github/joeblackwaslike/lessons-learned/scripts/lessons.mjs list --json | node -e "
 const l = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
 const dead = l.filter(x => !x.toolNames?.length && x.commandPatterns?.length);
 console.log(JSON.stringify(dead.map(x=>({id:x.id,slug:x.slug,patterns:x.commandPatterns})),null,2));
@@ -55,7 +55,7 @@ For each: all shell command patterns (`\bgit\b`, `\bpython\b`, etc.) should be f
 Same failure mode: file-path-triggered lessons need a toolName (Read, Edit, Write, or Glob) or they never fire.
 
 ```bash
-node scripts/lessons.mjs list --json | node -e "
+node /Users/joeblack/github/joeblackwaslike/lessons-learned/scripts/lessons.mjs list --json | node -e "
 const l = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
 const dead = l.filter(x => !x.toolNames?.length && x.pathPatterns?.length);
 console.log(JSON.stringify(dead.map(x=>({id:x.id,slug:x.slug,pathPatterns:x.pathPatterns})),null,2));
@@ -71,7 +71,7 @@ For each: path glob patterns should typically use `toolNames: ["Read", "Edit", "
 Hint-type lessons with no triggers at all (no `commandPatterns`, `pathPatterns`, `toolNames`) and not reclassified as `protocol` or `guard` are completely unreachable.
 
 ```bash
-node scripts/lessons.mjs list --json | node -e "
+node /Users/joeblack/github/joeblackwaslike/lessons-learned/scripts/lessons.mjs list --json | node -e "
 const l = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
 const dead = l.filter(x =>
   x.type === 'hint' &&
@@ -98,7 +98,7 @@ Note IDs and proposed fix for each.
 Guards should only fire when the trigger word appears in the executable part of a command, not inside `--patch '...'` or other quoted argument strings. The fix is `commandMatchTarget: "executable"`, which strips quoted content before matching.
 
 ```bash
-node scripts/lessons.mjs list --json | node -e "
+node /Users/joeblack/github/joeblackwaslike/lessons-learned/scripts/lessons.mjs list --json | node -e "
 const l = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
 const m = JSON.parse(require('fs').readFileSync('data/lesson-manifest.json','utf8'));
 const guards = l.filter(x => x.type === 'guard');
@@ -120,7 +120,7 @@ For each: propose `edit --patch '{"commandMatchTarget":"executable"}'`.
 Summaries ending in `...` or `…` are cut mid-sentence and lose their meaning in injection output.
 
 ```bash
-node scripts/lessons.mjs list --json | node -e "
+node /Users/joeblack/github/joeblackwaslike/lessons-learned/scripts/lessons.mjs list --json | node -e "
 const l = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
 const t = l.filter(x => x.summary.endsWith('...') || x.summary.endsWith('…'));
 console.log(JSON.stringify(t.map(x=>({id:x.id,slug:x.slug,summary:x.summary,problem:x.problem.substring(0,150)})),null,2));
@@ -136,7 +136,7 @@ For each: reconstruct a complete summary (≤80 chars) from the `problem` field.
 Summaries over 80 chars are verbose in injection output — the key insight gets buried or wrapped awkwardly.
 
 ```bash
-node scripts/lessons.mjs list --json | node -e "
+node /Users/joeblack/github/joeblackwaslike/lessons-learned/scripts/lessons.mjs list --json | node -e "
 const l = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
 const long = l.filter(x => x.summary.length > 80).sort((a,b)=>b.summary.length-a.summary.length);
 console.log(JSON.stringify(long.map(x=>({id:x.id,length:x.summary.length,summary:x.summary})),null,2));
@@ -152,7 +152,7 @@ For each: propose a tightened version (≤80 chars) that preserves the core fail
 `matchLessons()` does exact string comparison against platform-normalized tool names. `"bash"`, `"BASH"`, or `"edit"` silently never match. Valid canonical names: `Bash`, `Read`, `Edit`, `Write`, `Glob`, `Grep`, `Agent`, `TodoWrite`.
 
 ```bash
-node scripts/lessons.mjs list --json | node -e "
+node /Users/joeblack/github/joeblackwaslike/lessons-learned/scripts/lessons.mjs list --json | node -e "
 const VALID = new Set(['Bash','Read','Edit','Write','Glob','Grep','Agent','TodoWrite','WebFetch','WebSearch','mcp__plugin_serena_serena__find_symbol']);
 const l = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
 const bad = l.filter(x => (x.toolNames??[]).some(t => !VALID.has(t)));
@@ -171,7 +171,7 @@ The intake validator blocks near-duplicates at insert time, but edits can cause 
 ```bash
 node -e "
 const l = JSON.parse(require('fs').readFileSync('/dev/stdout','utf8'));
-" 2>/dev/null; node scripts/lessons.mjs list --json | node -e "
+" 2>/dev/null; node /Users/joeblack/github/joeblackwaslike/lessons-learned/scripts/lessons.mjs list --json | node -e "
 function tokenize(s){return new Set(s.toLowerCase().match(/\b\w{3,}\b/g)??[]);}
 function jaccard(a,b){const ua=tokenize(a),ub=tokenize(b);const inter=[...ua].filter(x=>ub.has(x)).length;const union=new Set([...ua,...ub]).size;return union?inter/union:0;}
 const l = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
@@ -208,7 +208,7 @@ Then ask:
 
 > "Apply all high-confidence mechanical fixes automatically (checks 1, 2, 4, 5, 7), review judgment calls (checks 3, 6, 8) interactively, or handle everything manually?"
 
-**Automatic fixes** (checks 1, 2, 4, 5, 7): apply with `node scripts/lessons.mjs edit --id <id> --patch '<json>'` for each, confirm count when done.
+**Automatic fixes** (checks 1, 2, 4, 5, 7): apply with `node /Users/joeblack/github/joeblackwaslike/lessons-learned/scripts/lessons.mjs edit --id <id> --patch '<json>'` for each, confirm count when done.
 
 **Interactive review** (checks 3, 6, 8): present each proposed change one at a time with the current value, proposed value, and reason. Ask "apply, skip, or edit?" for each.
 

@@ -39,7 +39,7 @@ console.log(cwd.replace(/\//g, '-').replace(/^-/, ''));
 ## Step 2: Load active global lessons
 
 ```bash
-node scripts/lessons.mjs list --json | node -e "
+node /Users/joeblack/github/joeblackwaslike/lessons-learned/scripts/lessons.mjs list --json | node -e "
 const l = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
 const globals = l.filter(x => x.status === 'active' && !x.scope);
 console.log(JSON.stringify(globals, null, 2));
@@ -115,7 +115,7 @@ For **edit**: ask what they'd like to change (the lesson text, tags, or decision
 For each approved candidate:
 
 ```bash
-node scripts/lessons.mjs edit --id <id> --patch '{"scope":"<project-id>"}'
+node /Users/joeblack/github/joeblackwaslike/lessons-learned/scripts/lessons.mjs edit --id <id> --patch '{"scope":"<project-id>"}'
 ```
 
 The `edit` command auto-rebuilds the manifest after each patch.
