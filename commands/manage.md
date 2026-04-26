@@ -15,11 +15,11 @@ You are running the `/lessons:manage` workflow. This is an open-ended session �
 Run these two commands to get a complete picture:
 
 ```bash
-node /Users/joeblack/github/joeblackwaslike/lessons-learned/scripts/lessons.mjs scan aggregate
+node ${CLAUDE_PLUGIN_ROOT}/scripts/lessons.mjs scan aggregate
 ```
 
 ```bash
-node /Users/joeblack/github/joeblackwaslike/lessons-learned/scripts/lessons.mjs list --json
+node ${CLAUDE_PLUGIN_ROOT}/scripts/lessons.mjs list --json
 ```
 
 Then run a raw DB query to get archived and reviewed records:
@@ -117,7 +117,7 @@ Confirm? (yes / cancel)
 On yes:
 
 ```bash
-node /Users/joeblack/github/joeblackwaslike/lessons-learned/scripts/lessons.mjs promote --ids <id1>,<id2>,...
+node ${CLAUDE_PLUGIN_ROOT}/scripts/lessons.mjs promote --ids <id1>,<id2>,...
 ```
 
 ### Archiving any lesson (candidate, reviewed, or active)
@@ -127,7 +127,7 @@ Accept: "archive 2", "archive SLUG — reason", "archive active lesson X because
 Ask for a reason if not given. Show confirmation, then:
 
 ```bash
-node /Users/joeblack/github/joeblackwaslike/lessons-learned/scripts/lessons.mjs promote --archive "<id>:reason" [--archive "<id2>:reason2" ...]
+node ${CLAUDE_PLUGIN_ROOT}/scripts/lessons.mjs promote --archive "<id>:reason" [--archive "<id2>:reason2" ...]
 ```
 
 Note: `--ids` is not required when only archiving.
@@ -139,7 +139,7 @@ Supported fields: `summary`, `problem`, `solution`, `injection`, `injectOn`, `co
 Works on any lesson regardless of status. Show the user the current value of the field(s) they want to change, confirm, then:
 
 ```bash
-node /Users/joeblack/github/joeblackwaslike/lessons-learned/scripts/lessons.mjs edit --id <id> --patch '{"FIELD": VALUE}'
+node ${CLAUDE_PLUGIN_ROOT}/scripts/lessons.mjs edit --id <id> --patch '{"FIELD": VALUE}'
 ```
 
 Status is unchanged — active lessons stay active, candidates stay candidates. The manifest is rebuilt automatically if the lesson is active.
@@ -147,13 +147,13 @@ Status is unchanged — active lessons stay active, candidates stay candidates. 
 For candidates where the user wants to edit AND promote in one step, use `promote --patch` instead:
 
 ```bash
-node /Users/joeblack/github/joeblackwaslike/lessons-learned/scripts/lessons.mjs promote --ids <id> --patch '{"ID": {"FIELD": VALUE}}'
+node ${CLAUDE_PLUGIN_ROOT}/scripts/lessons.mjs promote --ids <id> --patch '{"ID": {"FIELD": VALUE}}'
 ```
 
 ### Restoring archived lessons
 
 ```bash
-node /Users/joeblack/github/joeblackwaslike/lessons-learned/scripts/lessons.mjs restore --ids <id1>,<id2>,...
+node ${CLAUDE_PLUGIN_ROOT}/scripts/lessons.mjs restore --ids <id1>,<id2>,...
 ```
 
 Only works on `status='archived'` records. Clears `archivedAt`/`archiveReason` and rebuilds the manifest.

@@ -137,7 +137,7 @@ After writing, show only the changed field with its new value and ask: "Anything
 
 **Removing from scanPaths** — confirm before removing; warn if it would leave scanPaths empty.
 
-**Changes that affect injection** (injectionBudgetBytes, maxLessonsPerInjection, minConfidence, minPriority) — note: "This takes effect immediately. Run `node /Users/joeblack/github/joeblackwaslike/lessons-learned/scripts/lessons.mjs build` to rebuild the manifest if you want to verify what's included."
+**Changes that affect injection** (injectionBudgetBytes, maxLessonsPerInjection, minConfidence, minPriority) — note: "This takes effect immediately. Run `node ${CLAUDE_PLUGIN_ROOT}/scripts/lessons.mjs build` to rebuild the manifest if you want to verify what's included."
 
 ---
 

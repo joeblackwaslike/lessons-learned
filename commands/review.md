@@ -14,7 +14,7 @@ Do not ask clarifying questions before Phase 4 — gather all information first.
 Run an incremental scan to pick up any new candidates from recent session logs:
 
 ```bash
-node /Users/joeblack/github/joeblackwaslike/lessons-learned/scripts/lessons.mjs scan
+node ${CLAUDE_PLUGIN_ROOT}/scripts/lessons.mjs scan
 ```
 
 Report the number of bytes scanned and how many new candidates were saved to the DB.
@@ -26,7 +26,7 @@ Report the number of bytes scanned and how many new candidates were saved to the
 Pull all current candidates from the DB and capture the JSON output:
 
 ```bash
-node /Users/joeblack/github/joeblackwaslike/lessons-learned/scripts/lessons.mjs scan aggregate
+node ${CLAUDE_PLUGIN_ROOT}/scripts/lessons.mjs scan aggregate
 ```
 
 Parse the returned JSON. If `totalCandidates` is 0, tell the user "No candidates found — nothing to review." and stop.
@@ -39,7 +39,7 @@ Run both queries before starting the pass:
 
 ```bash
 # Active lessons for duplicate/near-duplicate checks
-node /Users/joeblack/github/joeblackwaslike/lessons-learned/scripts/lessons.mjs list
+node ${CLAUDE_PLUGIN_ROOT}/scripts/lessons.mjs list
 
 # Current project ID for scope detection
 pwd | node -e "const c=require('fs').readFileSync('/dev/stdin','utf8').trim(); console.log(c.replace(/\//g,'-').replace(/^-/,''));"
@@ -132,10 +132,10 @@ On confirmation, apply scope patches first (for any project-scoped items), then 
 
 ```bash
 # Apply scope for project-scoped items (one per flagged lesson)
-node /Users/joeblack/github/joeblackwaslike/lessons-learned/scripts/lessons.mjs edit --id <id> --patch '{"scope":"<project-id>"}' 2>/dev/null
+node ${CLAUDE_PLUGIN_ROOT}/scripts/lessons.mjs edit --id <id> --patch '{"scope":"<project-id>"}' 2>/dev/null
 
 # Promote all confirmed items
-node /Users/joeblack/github/joeblackwaslike/lessons-learned/scripts/lessons.mjs promote \
+node ${CLAUDE_PLUGIN_ROOT}/scripts/lessons.mjs promote \
   --ids <id1>,<id2>,... \
   [--archive "id1:reason" --archive "id2:reason" ...] \
   [--patch '{"id1":{"summary":"...","priority":8},...}']
@@ -150,7 +150,7 @@ Run both steps.
 Print the output from `promote` verbatim, then add a one-line summary:
 
 ```
-Done — N promoted, M archived. Run `node /Users/joeblack/github/joeblackwaslike/lessons-learned/scripts/lessons.mjs build` if the manifest needs refreshing (promote does this automatically).
+Done — N promoted, M archived. Run `node ${CLAUDE_PLUGIN_ROOT}/scripts/lessons.mjs build` if the manifest needs refreshing (promote does this automatically).
 ```
 
 ---

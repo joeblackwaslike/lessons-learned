@@ -169,7 +169,7 @@ Add this lesson? (yes / edit / cancel)
 On "yes", build the JSON and run:
 
 ```bash
-node /Users/joeblack/github/joeblackwaslike/lessons-learned/scripts/lessons.mjs add --json '<json>'
+node ${CLAUDE_PLUGIN_ROOT}/scripts/lessons.mjs add --json '<json>'
 ```
 
 Where `<json>` is a single-line JSON object with all collected fields, including `type`.

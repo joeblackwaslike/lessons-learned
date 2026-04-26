@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-04-26T13:23:34.135Z",
+  "generatedAt": "2026-04-26T14:57:32.662Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -1039,6 +1039,25 @@
       "summary": "Hooks without timeout field create zombie processes accumulating per tool call",
       "problem": "Hooks in settings.json without a timeout field cause Claude Code to spawn the hook process without ever calling wait() on it. The process exits but remains as a zombie with PPID of the claude process, and accumulates linearly — one zombie per tool call — for any hook using PreToolUse/* or PostToolUse/*.",
       "solution": "Add \"timeout\": <seconds> to every hook entry in settings.json. This makes Claude properly await and reap each child process after the hook runs."
+    },
+    "01KQ54QDEMHDF0KMWJH3KB5KK7": {
+      "slug": "bias-toward-action-do-it-yourself-before-8eec",
+      "type": "protocol",
+      "priority": 7,
+      "toolNames": [],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "tags": [
+        "category:autonomy",
+        "category:workflow",
+        "behavior:anti-pattern"
+      ],
+      "scope": null,
+      "message": "## Lesson: Bias toward action — do it yourself before asking the user\nAsking the user to do something you can do yourself is unnecessary friction. Self-blocking on mechanical steps (fill in placeholders, run a command, check a value) wastes the user's time with no benefit and signals false caution.\n**Fix**: Before asking the user to do anything, ask: can I do this myself? If yes, do it. Only pause for genuine ambiguity about intent, irreversibility, or scope — not because asking feels safer. Engineering culture is biased toward action; be the same.",
+      "summary": "Bias toward action — do it yourself before asking the user",
+      "problem": "Asking the user to do something you can do yourself is unnecessary friction. Self-blocking on mechanical steps (fill in placeholders, run a command, check a value) wastes the user's time with no benefit and signals false caution.",
+      "solution": "Before asking the user to do anything, ask: can I do this myself? If yes, do it. Only pause for genuine ambiguity about intent, irreversibility, or scope — not because asking feels safer. Engineering culture is biased toward action; be the same."
     },
     "01JQSEED00000000000000005": {
       "slug": "npm-link-peer-deps-r2f7",

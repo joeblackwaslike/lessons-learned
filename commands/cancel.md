@@ -25,7 +25,7 @@ Cancellation has two paths depending on timing:
 Run both queries in parallel — one for DB records, one for unscanned tags in the current session file.
 
 ```bash
-node /Users/joeblack/github/joeblackwaslike/lessons-learned/scripts/lessons.mjs list --json | node -e "
+node ${CLAUDE_PLUGIN_ROOT}/scripts/lessons.mjs list --json | node -e "
 const l = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
 const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 const recent = l.filter(x => x.createdAt >= cutoff)
@@ -144,13 +144,13 @@ For each selected lesson:
 ### DB records (status = candidate, active, reviewed)
 
 ```bash
-node /Users/joeblack/github/joeblackwaslike/lessons-learned/scripts/lessons.mjs edit --id <id> --patch '{"status":"archived","archiveReason":"user-cancelled via /lessons:cancel"}'
+node ${CLAUDE_PLUGIN_ROOT}/scripts/lessons.mjs edit --id <id> --patch '{"status":"archived","archiveReason":"user-cancelled via /lessons:cancel"}'
 ```
 
 After archiving any active lessons, rebuild the manifest:
 
 ```bash
-node /Users/joeblack/github/joeblackwaslike/lessons-learned/scripts/lessons.mjs build
+node ${CLAUDE_PLUGIN_ROOT}/scripts/lessons.mjs build
 ```
 
 ### Session-unscanned lessons
@@ -177,4 +177,4 @@ Report what was done:
 - N session-unscanned lessons cancelled via `#lesson:cancel` markers
 - Manifest rebuilt: yes/no
 
-If the user wants to verify, suggest: `node /Users/joeblack/github/joeblackwaslike/lessons-learned/scripts/lessons.mjs list --json | node -e "const l=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')); console.log(l.filter(x=>x.status==='archived').slice(-5).map(x=>x.slug+' '+x.archivedAt).join('\n'))"`
+If the user wants to verify, suggest: `node ${CLAUDE_PLUGIN_ROOT}/scripts/lessons.mjs list --json | node -e "const l=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')); console.log(l.filter(x=>x.status==='archived').slice(-5).map(x=>x.slug+' '+x.archivedAt).join('\n'))"`
