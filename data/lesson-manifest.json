@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-04-21T11:47:15.581Z",
+  "generatedAt": "2026-04-26T13:23:34.135Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -1534,10 +1534,10 @@
         "category:claude-code"
       ],
       "scope": null,
-      "message": "## Lesson: suppressOutput: true in hook JSON hides the PreToolUse:Bash hook error label in session log\nWhen a PreToolUse hook returns hookSpecificOutput.additionalContext, Claude Code shows a PreToolUse:Bash hook error label in the session log for every matched tool call, creating visual noise even though the hook exits 0 and works correctly.\n**Fix**: Add suppressOutput: true at the top level of the hook JSON output. This suppresses the session log display while still injecting additionalContext into the context window.",
-      "summary": "suppressOutput: true in hook JSON hides the PreToolUse:Bash hook error label in session log",
-      "problem": "When a PreToolUse hook returns hookSpecificOutput.additionalContext, Claude Code shows a PreToolUse:Bash hook error label in the session log for every matched tool call, creating visual noise even though the hook exits 0 and works correctly.",
-      "solution": "Add suppressOutput: true at the top level of the hook JSON output. This suppresses the session log display while still injecting additionalContext into the context window."
+      "message": "## Lesson: suppressOutput:true in hook JSON makes lesson injection invisible to the user\nsuppressOutput:true in hook JSON suppresses not just the hook error label but the entire visual indicator in the Claude Code UI. Lesson injection becomes completely invisible to the user — the model receives context but the user never sees lessons firing, defeating the system purpose.\n**Fix**: Omit suppressOutput from PreToolUse hook output. Let CC show the collapsible details block with lesson content — that visibility is the whole point.",
+      "summary": "suppressOutput:true in hook JSON makes lesson injection invisible to the user",
+      "problem": "suppressOutput:true in hook JSON suppresses not just the hook error label but the entire visual indicator in the Claude Code UI. Lesson injection becomes completely invisible to the user — the model receives context but the user never sees lessons firing, defeating the system purpose.",
+      "solution": "Omit suppressOutput from PreToolUse hook output. Let CC show the collapsible details block with lesson content — that visibility is the whole point."
     },
     "01KMZ3CHGQMTYQA0AFPQRGCSEG": {
       "slug": "oh-my-zsh-nvm-plugin-outputs-warnings-in-df6f",
