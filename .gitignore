@@ -17,6 +17,7 @@ data/cross-project-candidates.txt
 data/review-sessions/
 
 site/
+docs/_backlog.md
 
 # Beads / Dolt files (added by bd init)
 .dolt/
