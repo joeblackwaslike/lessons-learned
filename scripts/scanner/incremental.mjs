@@ -145,3 +145,33 @@ export function resetStructuralOffsets(state) {
     state.files[filePath] = { ...state.files[filePath], structuralOffset: 0 };
   }
 }
+
+/**
+ * Get the file size recorded at the last deep (LLM) scan for a file.
+ * Returns 0 if the file has never been deep-scanned.
+ *
+ * The deep scanner reads whole files, so we track by file size (not byte offset).
+ * If the current size differs from deepScanSize, the session has grown and needs re-scan.
+ *
+ * @param {object} state
+ * @param {string} filePath
+ * @returns {number}
+ */
+export function getDeepScanSize(state, filePath) {
+  return state.files?.[filePath]?.deepScanSize ?? 0;
+}
+
+/**
+ * Record the file size after a successful deep scan.
+ *
+ * @param {object} state — mutable state object
+ * @param {string} filePath — absolute path
+ * @param {number} fileSize — current size in bytes
+ */
+export function updateDeepScanSize(state, filePath, fileSize) {
+  state.files[filePath] = {
+    ...state.files[filePath],
+    deepScanSize: fileSize,
+    deepScanAt: new Date().toISOString(),
+  };
+}

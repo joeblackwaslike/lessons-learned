@@ -40,7 +40,7 @@ import {
   insertReviewSession,
   computeContentHash as computeContentHashFromDb,
 } from './db.mjs';
-import { join, resolve, dirname, relative, sep } from 'node:path';
+import { join, resolve, dirname, relative, sep, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { randomBytes } from 'node:crypto';
 import { createInterface } from 'node:readline';
@@ -56,8 +56,11 @@ import {
   getStructuralOffset,
   updateStructuralOffset,
   resetStructuralOffsets,
+  getDeepScanSize,
+  updateDeepScanSize,
 } from './scanner/incremental.mjs';
 import { patternScanFile } from './scanner/structural.mjs';
+import { deepScanFile } from './scanner/deep-scan.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PLUGIN_ROOT = join(__dirname, '..');
@@ -250,6 +253,9 @@ Options:
   --tier2-only      Only heuristic scanning (error→correction detection)
   --structural      Also run Tier 3 structural scan (pattern matching, no external services)
   --structural-full Reset structural offsets and rescan all historical sessions
+  --deep            Run Tier 4 LLM deep scan (requires ANTHROPIC_API_KEY)
+  --deep-full       Reset deep scan state and re-scan all sessions (expensive)
+  --max-sessions N  Limit deep scan to N sessions per run (default: 10 in auto mode, unlimited otherwise)
   --dry-run         Show candidates without saving state
   --verbose, -v     Show per-file scan details
   --auto            Background/silent mode (no stdout)
@@ -1915,8 +1921,96 @@ async function cmdScan(args) {
       "'scan promote' has been removed. Use: node scripts/lessons.mjs promote --ids <id>"
     );
     process.exit(1);
+  } else if (args.includes('--deep') || args.includes('--deep-full')) {
+    await runDeepScan(args);
   } else {
     await runScan(args);
+  }
+}
+
+async function runDeepScan(args) {
+  const isAuto = args.includes('--auto');
+  const dryRun = args.includes('--dry-run');
+  const verbose = args.includes('--verbose') || args.includes('-v');
+  const deepFull = args.includes('--deep-full');
+  const log = isAuto ? () => {} : console.log.bind(console);
+
+  const maxIdx = args.indexOf('--max-sessions');
+  const maxSessions =
+    maxIdx !== -1 && args[maxIdx + 1] ? parseInt(args[maxIdx + 1], 10) : isAuto ? 10 : Infinity;
+
+  if (!process.env.ANTHROPIC_API_KEY) {
+    if (!isAuto) console.error('ANTHROPIC_API_KEY is not set — deep scan requires it.');
+    return;
+  }
+
+  const scanPath = DEFAULT_SCAN_PATH;
+  const files = findJsonlFiles(scanPath);
+  const state = loadScanState();
+  const now = Date.now();
+
+  // Sort by most recently modified first so fresh sessions are processed first
+  const sortedFiles = files
+    .map(f => {
+      try {
+        return { path: f, mtime: statSync(f).mtimeMs, size: statSync(f).size };
+      } catch {
+        return null;
+      }
+    })
+    .filter(Boolean)
+    // Skip files modified in the last 5 minutes (likely the current active session)
+    .filter(f => now - f.mtime > 5 * 60 * 1000)
+    // Skip files that haven't changed since last deep scan
+    .filter(f => deepFull || getDeepScanSize(state, f.path) !== f.size)
+    .sort((a, b) => b.mtime - a.mtime)
+    .slice(0, isFinite(maxSessions) ? maxSessions : undefined);
+
+  log(`Deep scan: ${sortedFiles.length} session(s) to process`);
+  if (sortedFiles.length === 0) return;
+
+  const db = openDb();
+  let totalCandidates = 0;
+  let totalMemories = 0;
+
+  for (const { path: filePath, size } of sortedFiles) {
+    const projectId = projectIdFromFilePath(filePath);
+    try {
+      const { candidatesInserted, memoryWritten, turnsProcessed } = await deepScanFile(
+        db,
+        filePath,
+        { verbose, dryRun },
+        projectId
+      );
+      totalCandidates += candidatesInserted;
+      totalMemories += memoryWritten;
+
+      if (!dryRun) {
+        updateDeepScanSize(state, filePath, size);
+      }
+
+      if (verbose) {
+        log(
+          `  ${basename(filePath)}: ${turnsProcessed} turns → ${candidatesInserted} candidates, ${memoryWritten} memories`
+        );
+      }
+    } catch (err) {
+      process.stderr.write(`  [deep] scan failed for ${basename(filePath)}: ${err.message}\n`);
+    }
+  }
+
+  closeDb(db);
+
+  if (!dryRun) {
+    saveScanState(state);
+  }
+
+  log(
+    `\nDeep scan complete: ${totalCandidates} candidates inserted, ${totalMemories} memories written`
+  );
+
+  if (totalCandidates > 0) {
+    buildManifest();
   }
 }
 

@@ -45,6 +45,7 @@
     "typescript": "^6.0.2"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.92.0",
     "sqlite-vec": "^0.1.9"
   }
 }

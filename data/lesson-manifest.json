@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-04-26T14:57:32.662Z",
+  "generatedAt": "2026-05-02T14:20:50.363Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -2005,6 +2005,240 @@
       "summary": "Invoked brainstorming skill, acknowledged the hard gate (\"don't proceed without approval\"), then immediately launched...",
       "problem": "Invoked brainstorming skill, acknowledged the hard gate (\"don't proceed without approval\"), then immediately launched Explore agents and started writing a PRD — skipping the entire brainstorming conversation. The skill's HARD-GATE says no implementation until user approves the design. Exploring the codebase and writing a PRD is implementation-adjacent action, not brainstorming.",
       "solution": "When the brainstorming skill fires, stop and ask clarifying questions one at a time. Do not spawn Explore agents or write any document until the brainstorming conversation is complete and the user has approved the design."
+    },
+    "01KPKE12SMPWWJ5910HH9AKXXK": {
+      "slug": "called-exitplanmode-three-times-in-the-s-b915",
+      "type": "hint",
+      "priority": 3,
+      "toolNames": [
+        "ExitPlanMode"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "\\buser\\b",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "tags": [
+        "severity:process-violation",
+        "topic:plan-mode"
+      ],
+      "scope": null,
+      "message": "## Lesson: Called ExitPlanMode three times in the same session when the user had clearly not approved the design.\nCalled ExitPlanMode three times in the same session when the user had clearly not approved the design. ExitPlanMode is only for requesting final approval — not for checkpoints mid-conversation where the user is still giving feedback.\n**Fix**: Only call ExitPlanMode once the brainstorming conversation is complete, the user has said something equivalent to \"looks good\" or \"proceed,\" and the plan file contains a proper implementation plan (not a PRD).",
+      "summary": "Called ExitPlanMode three times in the same session when the user had clearly not approved the design.",
+      "problem": "Called ExitPlanMode three times in the same session when the user had clearly not approved the design. ExitPlanMode is only for requesting final approval — not for checkpoints mid-conversation where the user is still giving feedback.",
+      "solution": "Only call ExitPlanMode once the brainstorming conversation is complete, the user has said something equivalent to \"looks good\" or \"proceed,\" and the plan file contains a proper implementation plan (not a PRD)."
+    },
+    "01KPKE12SM4F7CB0ZVKFMSQ3T4": {
+      "slug": "wrote-the-full-prd-content-into-the-plan-a106",
+      "type": "hint",
+      "priority": 3,
+      "toolNames": [
+        "Write"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "\\bplan\\b",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "tags": [
+        "severity:process-violation",
+        "topic:plan-mode"
+      ],
+      "scope": null,
+      "message": "## Lesson: Wrote the full PRD content into the plan file.\nWrote the full PRD content into the plan file. The plan file should contain an implementation plan (phases, files, steps, verification) — not a product requirements document. The PRD already existed at docs/prds/003-mcp-server.md. Duplicating it into the plan file confused the purpose of both documents.\n**Fix**: The plan file = implementation steps for the engineer to execute. The PRD = what and why. Keep them separate. The plan file should reference the PRD, not restate it.",
+      "summary": "Wrote the full PRD content into the plan file.",
+      "problem": "Wrote the full PRD content into the plan file. The plan file should contain an implementation plan (phases, files, steps, verification) — not a product requirements document. The PRD already existed at docs/prds/003-mcp-server.md. Duplicating it into the plan file confused the purpose of both documents.",
+      "solution": "The plan file = implementation steps for the engineer to execute. The PRD = what and why. Keep them separate. The plan file should reference the PRD, not restate it."
+    },
+    "01KPKE12SMGWFDQSBB5V4XZ4H7": {
+      "slug": "the-pytest-guard-lesson-fires-on-any-bas-fad3",
+      "type": "hint",
+      "priority": 3,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "\\bnode\\b",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "tags": [
+        "tool:Bash",
+        "tool:hooks",
+        "severity:blocked",
+        "topic:self-referential-guard"
+      ],
+      "scope": null,
+      "message": "## Lesson: The pytest guard lesson fires on any Bash command containing the word \"pytest\" —\nThe pytest guard lesson fires on any Bash command containing the word \"pytest\" — including --patch JSON strings passed to the edit CLI, blocking the edit entirely\n**Fix**: Write the patch JSON to a temp file first, then reference it with `--patch \"$(cat /tmp/patch.json)\"` to avoid the regex match on the command string",
+      "summary": "The pytest guard lesson fires on any Bash command containing the word \"pytest\" —",
+      "problem": "The pytest guard lesson fires on any Bash command containing the word \"pytest\" — including --patch JSON strings passed to the edit CLI, blocking the edit entirely",
+      "solution": "Write the patch JSON to a temp file first, then reference it with `--patch \"$(cat /tmp/patch.json)\"` to avoid the regex match on the command string"
+    },
+    "01KPKE12SMWP47JX1G6ERVH3XA": {
+      "slug": "stripquotedstrings-strips-singledouble-q-658c",
+      "type": "hint",
+      "priority": 3,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "\\bgit\\b",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "tags": [
+        "tool:git",
+        "tool:hooks",
+        "severity:blocked",
+        "topic:guard-false-positive"
+      ],
+      "scope": null,
+      "message": "## Lesson: stripQuotedStrings strips single/double-quoted strings but not heredoc bodies —\nstripQuotedStrings strips single/double-quoted strings but not heredoc bodies — the trigger word in the unquoted heredoc content still fires the guard\n**Fix**: write commit messages with trigger words to a temp file and use `git commit -F /tmp/commit_msg.txt` instead of inline heredoc",
+      "summary": "stripQuotedStrings strips single/double-quoted strings but not heredoc bodies —",
+      "problem": "stripQuotedStrings strips single/double-quoted strings but not heredoc bodies — the trigger word in the unquoted heredoc content still fires the guard",
+      "solution": "write commit messages with trigger words to a temp file and use `git commit -F /tmp/commit_msg.txt` instead of inline heredoc"
+    },
+    "01KPKE12SNK9RSFDDVMAXTEWWH": {
+      "slug": "a-hand-written-runmount-unit-in-the-nfs-16a3",
+      "type": "hint",
+      "priority": 3,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "\\bsystemctl\\b",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "tags": [
+        "tool:ssh",
+        "category:nfs-boot",
+        "severity:service-failure"
+      ],
+      "scope": null,
+      "message": "## Lesson: A hand-written run.mount unit in the NFS root's /etc/systemd/system/ trying to mount /run as tmpfs causes systemd to...\nA hand-written run.mount unit in the NFS root's /etc/systemd/system/ trying to mount /run as tmpfs causes systemd to refuse (\"Cannot create mount unit for API file system '/run'\"), which cascades to block any service that depends on run.mount — including tailscaled\n**Fix**: Remove /etc/systemd/system/run.mount and its wants symlink from the NFS root; systemd handles /run natively and rejects attempts to override it via unit files",
+      "summary": "A hand-written run.mount unit in the NFS root's /etc/systemd/system/ trying to mount /run as tmpfs causes systemd to...",
+      "problem": "A hand-written run.mount unit in the NFS root's /etc/systemd/system/ trying to mount /run as tmpfs causes systemd to refuse (\"Cannot create mount unit for API file system '/run'\"), which cascades to block any service that depends on run.mount — including tailscaled",
+      "solution": "Remove /etc/systemd/system/run.mount and its wants symlink from the NFS root; systemd handles /run natively and rejects attempts to override it via unit files"
+    },
+    "01KPKE12SN3MG26G54D028P2CD": {
+      "slug": "k3s-fails-immediately-with-failed-to-fin-4b3c",
+      "type": "hint",
+      "priority": 3,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "\\bk3s\\b",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "tags": [
+        "category:k3s",
+        "category:pi5",
+        "category:pxe-boot",
+        "severity:blocking"
+      ],
+      "scope": null,
+      "message": "## Lesson: k3s fails immediately with \"failed to find memory cgroup (v2)\" —\nk3s fails immediately with \"failed to find memory cgroup (v2)\" — the Pi OS kernel doesn't enable the memory cgroup controller by default\n**Fix**: Add `cgroup_memory=1 cgroup_enable=memory` to `cmdline.txt` in the node's TFTP serial dir (`/tftpboot/<serial>/cmdline.txt`) and reboot; on regular SD-card Pi OS this goes in `/boot/firmware/cmdline.txt`",
+      "summary": "k3s fails immediately with \"failed to find memory cgroup (v2)\" —",
+      "problem": "k3s fails immediately with \"failed to find memory cgroup (v2)\" — the Pi OS kernel doesn't enable the memory cgroup controller by default",
+      "solution": "Add `cgroup_memory=1 cgroup_enable=memory` to `cmdline.txt` in the node's TFTP serial dir (`/tftpboot/<serial>/cmdline.txt`) and reboot; on regular SD-card Pi OS this goes in `/boot/firmware/cmdline.txt`"
+    },
+    "01KPKE12SPKZJXWHSJGN1871S1": {
+      "slug": "made-a-confident-architectural-recommend-6e2a",
+      "type": "hint",
+      "priority": 3,
+      "toolNames": [
+        "none (planning/recommendation)"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "\\bRecommending\\b",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "tags": [
+        "category:planning",
+        "severity:trust-erosion",
+        "domain:nodejs"
+      ],
+      "scope": null,
+      "message": "## Lesson: Made a confident architectural recommendation based on stale priors instead of researching the Node.\nMade a confident architectural recommendation based on stale priors instead of researching the Node.js module customization hooks API first. The injected lessons-learned directives explicitly required research before any planning, but were ignored. User's correct Python intuition (importlib hooks) mapped directly to Node's equivalent (module.register + resolve/load hooks), which research confirmed.\n**Fix**: Always research the idiomatic solution in the target ecosystem before recommending an approach — especially when crossing language boundaries where your priors may not transfer. Follow the lessons-learned directives without exception.",
+      "summary": "Made a confident architectural recommendation based on stale priors instead of researching the Node.",
+      "problem": "Made a confident architectural recommendation based on stale priors instead of researching the Node.js module customization hooks API first. The injected lessons-learned directives explicitly required research before any planning, but were ignored. User's correct Python intuition (importlib hooks) mapped directly to Node's equivalent (module.register + resolve/load hooks), which research confirmed.",
+      "solution": "Always research the idiomatic solution in the target ecosystem before recommending an approach — especially when crossing language boundaries where your priors may not transfer. Follow the lessons-learned directives without exception."
+    },
+    "01KPT4RXX37RVGEDGKJM7RH1EJ": {
+      "slug": "vite-generates-absolute-asset-paths-e-f2a5",
+      "type": "hint",
+      "priority": 3,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "\\bVite\\b",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "tags": [
+        "tool:vite",
+        "category:deployment",
+        "severity:broken-site"
+      ],
+      "scope": null,
+      "message": "## Lesson: Vite generates absolute asset paths (e.\nVite generates absolute asset paths (e.g., `/assets/index.css`) by default. GitHub Pages serves from a subdirectory (`/repo-name/`), so all assets 404.\n**Fix**: Set `base: '/repo-name/'` in `vite.config.js` when deploying to GitHub Pages at a subdirectory URL.",
+      "summary": "Vite generates absolute asset paths (e.",
+      "problem": "Vite generates absolute asset paths (e.g., `/assets/index.css`) by default. GitHub Pages serves from a subdirectory (`/repo-name/`), so all assets 404.",
+      "solution": "Set `base: '/repo-name/'` in `vite.config.js` when deploying to GitHub Pages at a subdirectory URL."
+    },
+    "01KPT4RXXJZ9PK6Q3ZNDMF1MPS": {
+      "slug": "serenas-replacesymbolbody-on-a-js-consta-9fb4",
+      "type": "hint",
+      "priority": 3,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "\\bmcp__plugin_serena_serena__replace_symbol_body\\b",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "tags": [
+        "tool:serena",
+        "severity:syntax-error"
+      ],
+      "scope": null,
+      "message": "## Lesson: Serena's replace_symbol_body on a JS constant (not a function) prepends an extra `const` keyword, producing `const...\nSerena's replace_symbol_body on a JS constant (not a function) prepends an extra `const` keyword, producing `const const FOO = ...` and a doubled semicolon. The body it receives already includes the `const` prefix, so the replacement double-declares it.\n**Fix**: Use Edit for constant value replacements; reserve replace_symbol_body for function/class bodies only.",
+      "summary": "Serena's replace_symbol_body on a JS constant (not a function) prepends an extra `const` keyword, producing `const...",
+      "problem": "Serena's replace_symbol_body on a JS constant (not a function) prepends an extra `const` keyword, producing `const const FOO = ...` and a doubled semicolon. The body it receives already includes the `const` prefix, so the replacement double-declares it.",
+      "solution": "Use Edit for constant value replacements; reserve replace_symbol_body for function/class bodies only."
     }
   }
 }

@@ -34,12 +34,22 @@ function main() {
   // Only scan on fresh session start — not resume/clear/compact
   if (hookEvent !== 'startup') return;
 
-  // Fire-and-forget: detach so this hook exits immediately
+  // Tier 1/2 scan — fire-and-forget
   const child = spawn(process.execPath, [LESSONS_CLI, 'scan', '--auto'], {
     detached: true,
     stdio: 'ignore',
   });
   child.unref();
+
+  // Tier 4 LLM deep scan — only if API key is present
+  if (process.env.ANTHROPIC_API_KEY) {
+    const deepChild = spawn(
+      process.execPath,
+      [LESSONS_CLI, 'scan', '--deep', '--auto', '--max-sessions', '10'],
+      { detached: true, stdio: 'ignore' }
+    );
+    deepChild.unref();
+  }
 }
 
 main();
