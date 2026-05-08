@@ -1,0 +1,168 @@
+#!/usr/bin/env node
+/**
+ * render-report.mjs
+ *
+ * Reads a Promptfoo JSON result file and renders a Markdown eval report
+ * matching the format defined in PRD 004 section 17.
+ *
+ * Usage:
+ *   node scripts/render-report.mjs [--input <path>] [--output <path>]
+ *
+ * Defaults:
+ *   --input   results/cache/latest-run.json
+ *   --output  results/reports/report-<timestamp>.md  (and stdout)
+ */
+
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { resolve, join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const EVALS_ROOT = resolve(__dirname, '..');
+
+const args = parseArgs(process.argv.slice(2));
+const inputPath = resolve(
+  args['--input'] ?? join(EVALS_ROOT, 'results', 'cache', 'latest-run.json')
+);
+const reportsDir = join(EVALS_ROOT, 'results', 'reports');
+mkdirSync(reportsDir, { recursive: true });
+
+const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+const defaultOutput = join(reportsDir, `report-${timestamp}.md`);
+const outputPath = args['--output'] ? resolve(args['--output']) : defaultOutput;
+
+// --- Load Promptfoo JSON --------------------------------------------------------
+
+let runData;
+try {
+  runData = JSON.parse(readFileSync(inputPath, 'utf8'));
+} catch (err) {
+  console.error(`Failed to read result file: ${inputPath}\n${err.message}`);
+  process.exit(1);
+}
+
+// --- Extract results ------------------------------------------------------------
+
+const results = runData.results ?? [];
+const createdAt = runData.createdAt ?? new Date().toISOString();
+const stats = computeStats(results);
+
+// --- Render report --------------------------------------------------------------
+
+const report = [
+  `# Eval Report — ${formatDate(createdAt)}`,
+  '',
+  `**Run:** \`${runData.id ?? 'unknown'}\` | **Ref:** \`${gitRef()}\` | **Judge:** claude-sonnet-4-6 + o4-mini`,
+  '',
+  '## Summary',
+  '',
+  '| Metric | Value |',
+  '|--------|-------|',
+  `| Lessons evaluated | ${stats.total} |`,
+  `| Pass rate | ${stats.passRate}% (${stats.passed}/${stats.total}) |`,
+  `| Mean improvement delta | ${stats.meanDelta} |`,
+  `| Regressions | ${stats.regressions} |`,
+  `| New failures | ${stats.failures} |`,
+  `| Cache hits (control arms) | ${stats.cacheHits} |`,
+  '',
+  '## Results',
+  '',
+  '| Scenario | Type | Mode | Control | Treatment | Delta | Pass |',
+  '|---|---|---|---|---|---|---|',
+  ...results.map(formatResultRow),
+  '',
+  ...renderFailures(results.filter(r => !r.pass)),
+].join('\n');
+
+// --- Write output ---------------------------------------------------------------
+
+writeFileSync(outputPath, report, 'utf8');
+console.log(report);
+console.error(`\nReport written to: ${outputPath}`);
+
+// --- Helpers --------------------------------------------------------------------
+
+function computeStats(results) {
+  if (results.length === 0) {
+    return {
+      total: 0,
+      passed: 0,
+      passRate: '–',
+      meanDelta: '–',
+      regressions: 0,
+      failures: 0,
+      cacheHits: 0,
+    };
+  }
+  const passed = results.filter(r => r.pass).length;
+  const deltas = results.map(r => r.delta).filter(d => typeof d === 'number');
+  const meanDelta = deltas.length
+    ? (deltas.reduce((a, b) => a + b, 0) / deltas.length).toFixed(2)
+    : '–';
+  return {
+    total: results.length,
+    passed,
+    passRate: ((passed / results.length) * 100).toFixed(0),
+    meanDelta: meanDelta === '–' ? '–' : `+${meanDelta}`,
+    regressions: results.filter(r => r.regression).length,
+    failures: results.filter(r => !r.pass && !r.regression).length,
+    cacheHits: results.filter(r => r.cacheHit).length,
+  };
+}
+
+function formatResultRow(result) {
+  const scenario = result.scenarioId ?? '–';
+  const type = result.lessonType ?? '–';
+  const mode = result.mode ?? '–';
+  const control = typeof result.controlScore === 'number' ? result.controlScore.toFixed(2) : '—';
+  const treatment =
+    typeof result.treatmentScore === 'number' ? result.treatmentScore.toFixed(2) : '—';
+  const delta =
+    typeof result.delta === 'number'
+      ? result.delta >= 0
+        ? `+${result.delta.toFixed(2)}`
+        : result.delta.toFixed(2)
+      : '—';
+  const pass = result.pass ? '✅' : '❌';
+  return `| ${scenario} | ${type} | ${mode} | ${control} | ${treatment} | ${delta} | ${pass} |`;
+}
+
+function renderFailures(failures) {
+  if (failures.length === 0) return [];
+  return [
+    '## Failures',
+    '',
+    ...failures.flatMap(f => [
+      `### ${f.scenarioId ?? 'unknown'} (${f.lessonType ?? '–'}) — FAILED`,
+      '',
+      `Delta: ${typeof f.delta === 'number' ? f.delta.toFixed(2) : '–'} (threshold: ${f.deltaThreshold ?? '–'}) | Treatment outcome_code: ${f.treatmentScore?.toFixed(2) ?? '–'} (threshold: ${f.outcomeThreshold ?? '–'})`,
+      '',
+      f.failureReason ? `**Diagnosis:** ${f.failureReason}` : '',
+      '',
+    ]),
+  ];
+}
+
+function formatDate(iso) {
+  return new Date(iso).toISOString().replace('T', ' ').slice(0, 16) + ' UTC';
+}
+
+function gitRef() {
+  try {
+    return execFileSync('git', ['rev-parse', '--short', 'HEAD'], { encoding: 'utf8' }).trim();
+  } catch {
+    return 'unknown';
+  }
+}
+
+function parseArgs(argv) {
+  const result = {};
+  for (let i = 0; i < argv.length; i++) {
+    if (argv[i].startsWith('--')) {
+      result[argv[i]] = argv[i + 1];
+      i++;
+    }
+  }
+  return result;
+}

@@ -35,3 +35,9 @@ docs/_backlog.md
 
 *.db-shm
 *.db-wal
+
+# pnpm
+pnpm-debug.log*
+
+# Eval result cache (arm results — committed reports live in evals/results/reports/)
+evals/results/cache/

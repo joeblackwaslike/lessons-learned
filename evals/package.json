@@ -1,0 +1,22 @@
+{
+  "name": "@lessons-learned/evals",
+  "version": "0.1.0",
+  "description": "Eval framework for lessons-learned lesson effectiveness",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=22.5"
+  },
+  "scripts": {
+    "eval": "promptfoo eval --config promptfooconfig.yaml --output results/cache/latest-run.json",
+    "eval:smoke": "promptfoo eval --config promptfooconfig.yaml --filter-pattern 'TC-H3|TC-G1' --output results/cache/smoke-run.json",
+    "eval:report": "node scripts/render-report.mjs",
+    "eval:report:latest": "node scripts/render-report.mjs --input results/cache/latest-run.json",
+    "eval:clean": "rm -rf results/cache/*.json"
+  },
+  "dependencies": {
+    "promptfoo": "^0.121.0",
+    "ulid": "^2.3.0",
+    "js-yaml": "^4.1.0"
+  }
+}

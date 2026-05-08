@@ -1,0 +1,41 @@
+description: "lessons-learned lesson effectiveness eval suite"
+
+# Primary agent provider — runs Claude Code in a materialized workspace
+providers:
+  - id: file://providers/claude-agent.mjs
+    label: claude-code
+    config:
+      model: claude-sonnet-4-6
+      timeout: 300000        # 5 min per arm
+
+# Judge providers are referenced inline in scenario assertions, not here.
+# This avoids API key validation on startup when no scenarios are loaded.
+# Phase 2: add assertions that reference anthropic:messages:claude-sonnet-4-6-20251022
+# and openai:chat:o4-mini by label.
+
+# Prompt template — each scenario test overrides this via vars.prompt or a file reference.
+# Phase 1 placeholder: real scenario prompts come from PROMPT.md files in Phase 2.
+prompts:
+  - '{{prompt}}'
+
+defaultTest:
+  options:
+    # All tests use the claude-code provider unless overridden
+    provider: file://providers/claude-agent.mjs
+    timeout: 300000
+
+# Scenarios added here as Phase 2+ delivers them.
+# Each entry pairs a prompt file with control+treatment test vars.
+# Format:
+#   - description: "TC-XX scenario-name [control|treatment]"
+#     vars:
+#       scenarioId: TC-XX-scenario-name
+#       prompt: "{{file://scenarios/TC-XX-scenario-name/PROMPT.md}}"
+#       intervention:
+#         type: none | lesson | lesson-group
+#         ids: []
+tests: []
+
+# Output
+outputPath: results/cache/latest-run.json
+sharing: false

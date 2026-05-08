@@ -1,0 +1,18 @@
+packages:
+  - evals
+
+allowBuilds:
+  # Native SQLite addon — required for lessons-learned db
+  better-sqlite3: true
+  # JS bundler — required by Promptfoo
+  esbuild: true
+  # SWC transpiler — required by Promptfoo
+  '@swc/core': true
+  # ONNX runtime — Promptfoo model inference (not used in eval runs, but needed at install)
+  onnxruntime-node: true
+  # Protocol buffers — Promptfoo gRPC deps
+  protobufjs: true
+  # Image processing — Promptfoo report rendering
+  sharp: true
+  # Playwright browser — not needed (using Markdown reports, not HTML)
+  '@playwright/browser-chromium': false

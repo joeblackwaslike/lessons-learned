@@ -1,0 +1,37 @@
+# lessons-learned eval targets
+# Usage: just eval-smoke | just eval-run | just eval-report
+
+_default:
+    @just --list
+
+# Run quick smoke suite (TC-H3 + TC-G1 only, ~2 min)
+eval-smoke:
+    pnpm --filter @lessons-learned/evals eval:smoke
+
+# Run full eval suite
+eval-run *ARGS:
+    pnpm --filter @lessons-learned/evals eval {{ ARGS }}
+
+# Run eval for a single lesson by slug
+eval-lesson lesson-id:
+    pnpm --filter @lessons-learned/evals eval -- --filter-description '{{ lesson-id }}'
+
+# Run eval for a single scenario by ID
+eval-scenario scenario-id:
+    pnpm --filter @lessons-learned/evals eval -- --filter-description '{{ scenario-id }}'
+
+# Render Markdown report from latest results
+eval-report:
+    pnpm --filter @lessons-learned/evals eval:report
+
+# Render report from a specific result file
+eval-report-file input:
+    pnpm --filter @lessons-learned/evals eval:report -- --input '{{ input }}'
+
+# Force re-run both arms (no cache)
+eval-no-cache *ARGS:
+    pnpm --filter @lessons-learned/evals eval -- --no-cache {{ ARGS }}
+
+# Clean cached arm results
+eval-clean:
+    pnpm --filter @lessons-learned/evals eval:clean

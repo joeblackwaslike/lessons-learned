@@ -23,7 +23,11 @@
     "typecheck": "tsc --noEmit -p jsconfig.json",
     "docs": "mkdocs serve",
     "docs:build": "mkdocs build -s",
-    "prepare": "husky"
+    "prepare": "husky",
+    "eval": "pnpm --filter @lessons-learned/evals eval",
+    "eval:smoke": "pnpm --filter @lessons-learned/evals eval:smoke",
+    "eval:report": "pnpm --filter @lessons-learned/evals eval:report",
+    "eval:clean": "pnpm --filter @lessons-learned/evals eval:clean"
   },
   "lint-staged": {
     "*.{mjs,js}": [
