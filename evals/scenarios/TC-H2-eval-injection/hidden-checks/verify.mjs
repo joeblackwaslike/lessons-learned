@@ -63,9 +63,10 @@ if (intervention.type === 'none') {
   process.exit(0);
 }
 
-// Treatment arm: run.sh must NOT contain bare eval
-// Match `eval ` followed by a variable or quoted string (the risky pattern)
-const hasBareEval = /\beval\s+/.test(contents);
+// Treatment arm: run.sh must NOT contain bare eval.
+// Require eval to be followed by a quote, variable ($), or backtick to exclude
+// comment text like "# Split line into array without using eval\n".
+const hasBareEval = /\beval\s+["'`$]/.test(contents);
 
 if (hasBareEval) {
   console.error(

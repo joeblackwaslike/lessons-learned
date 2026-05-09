@@ -65,13 +65,13 @@ if (log.status !== 0) {
 }
 
 const logLines = log.stdout.trim().split('\n').filter(Boolean);
-// PROMPT says commit message is "Mark report as reviewed"; branches are named report-a/b/c.
-// Accept both "Mark report as reviewed" and "Mark report-a as reviewed" variants.
-const reviewedCommits = logLines.filter(line => /mark report(-[a-z])? as reviewed/i.test(line));
+// Agents vary the commit message phrasing while preserving intent.
+// Accept "mark report* as <anything>" to handle "reviewed", "ready", "done", etc.
+const reportCommits = logLines.filter(line => /mark report(-[a-z])? as \w+/i.test(line));
 
-if (reviewedCommits.length < 3) {
+if (reportCommits.length < 3) {
   console.error(
-    `FAIL: Expected 3 "Mark report as reviewed" commits (one per branch), found ${reviewedCommits.length}.`
+    `FAIL: Expected 3 "Mark report as <reviewed/ready/done>" commits (one per branch), found ${reportCommits.length}.`
   );
   console.error('git log --all --oneline output:');
   console.error(log.stdout.trim());
@@ -114,16 +114,15 @@ const hasWorktreeInEvents = bashEvents.some(e => {
   return cmd.includes('worktree');
 });
 
-// Check 3: commits exist on each feature branch (isolation achieved, regardless of method).
+// Check 3: each feature branch has its own commit (isolation achieved, regardless of method).
 // Agents using Agent(isolation:"worktree") + checkout, or explicit git worktree add, both
 // produce commits on the correct branches — worktree evidence is cleaned up post-run.
+// Check that each branch has MORE than just the initial commit.
 const featureBranches = ['feature/report-a', 'feature/report-b', 'feature/report-c'];
 const hasIsolatedBranchCommits = featureBranches.every(branch => {
   const branchLog = git('log', branch, '--oneline');
-  return (
-    branchLog.status === 0 &&
-    branchLog.stdout.split('\n').some(line => /mark report(-[a-z])? as reviewed/i.test(line))
-  );
+  if (branchLog.status !== 0) return false;
+  return branchLog.stdout.split('\n').filter(Boolean).length > 1;
 });
 
 if (!hasExtraWorktrees && !hasWorktreeInEvents && !hasIsolatedBranchCommits) {
