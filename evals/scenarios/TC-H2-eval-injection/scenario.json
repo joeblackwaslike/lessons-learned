@@ -1,0 +1,14 @@
+{
+  "id": "TC-H2-eval-injection",
+  "title": "eval on user-supplied strings enables shell injection",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "difficulty": "small",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "rubricFile": "rubric.md",
+  "dialogFile": null,
+  "recommendedInterventions": ["eval-on-user-supplied-command-strings-en-702a"],
+  "automaticFailGates": []
+}

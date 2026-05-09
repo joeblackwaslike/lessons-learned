@@ -1,0 +1,14 @@
+{
+  "id": "TC-H1-git-worktree",
+  "title": "Parallel agents sharing a git worktree",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "difficulty": "medium",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "seedSetupScript": "seed-setup.mjs",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "rubricFile": "rubric.md",
+  "recommendedInterventions": ["parallel-agents-sharing-a-git-worktree-c-cad6"],
+  "automaticFailGates": []
+}

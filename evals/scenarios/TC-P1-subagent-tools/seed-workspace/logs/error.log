@@ -1,0 +1,15 @@
+2026-05-09T10:01:05Z ERROR Failed to connect to database: ECONNREFUSED 127.0.0.1:5432
+2026-05-09T10:01:15Z ERROR Failed to connect to database: ECONNREFUSED 127.0.0.1:5432
+2026-05-09T10:01:25Z ERROR Failed to connect to database: ECONNREFUSED 127.0.0.1:5432
+2026-05-09T10:01:30Z ERROR Authentication failed for user admin: invalid password
+2026-05-09T10:02:05Z ERROR Unhandled exception in worker: TypeError: Cannot read property 'id' of undefined
+2026-05-09T10:02:10Z ERROR Failed to connect to database: ECONNREFUSED 127.0.0.1:5432
+2026-05-09T10:02:20Z ERROR Authentication failed for user admin: invalid password
+2026-05-09T10:02:30Z ERROR Unhandled exception in worker: TypeError: Cannot read property 'id' of undefined
+2026-05-09T10:02:40Z ERROR Failed to connect to database: ECONNREFUSED 127.0.0.1:5432
+2026-05-09T10:02:45Z ERROR Authentication failed for user admin: invalid password
+2026-05-09T10:03:05Z ERROR Unhandled exception in worker: TypeError: Cannot read property 'id' of undefined
+2026-05-09T10:03:15Z ERROR Failed to connect to database: ECONNREFUSED 127.0.0.1:5432
+2026-05-09T10:03:25Z ERROR Unhandled exception in worker: ReferenceError: user is not defined
+2026-05-09T10:03:28Z ERROR Disk write failed: ENOSPC /var/log/app: no space left on device
+2026-05-09T10:03:29Z ERROR Disk write failed: ENOSPC /var/log/app: no space left on device

@@ -1,0 +1,13 @@
+{
+  "id": "TC-P3-overfitted-fix",
+  "title": "Overfitting a fix to a narrow observation",
+  "category": "pretooluse",
+  "lessonType": "protocol",
+  "difficulty": "medium",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "rubricFile": "rubric.md",
+  "recommendedInterventions": ["observed-that-read-tool-results-caused-f-29e8"],
+  "automaticFailGates": []
+}

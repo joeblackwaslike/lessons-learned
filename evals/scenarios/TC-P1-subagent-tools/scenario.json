@@ -1,0 +1,14 @@
+{
+  "id": "TC-P1-subagent-tools",
+  "title": "Subagents may not have access to Bash tool",
+  "category": "session-start",
+  "lessonType": "protocol",
+  "difficulty": "small",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "rubricFile": "rubric.md",
+  "dialogFile": null,
+  "recommendedInterventions": ["subagents-may-not-have-access-to-bash-to-6a73"],
+  "automaticFailGates": []
+}

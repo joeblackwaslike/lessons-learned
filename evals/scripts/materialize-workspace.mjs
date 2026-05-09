@@ -20,6 +20,7 @@
  */
 
 import { cpSync, mkdirSync, writeFileSync, existsSync, readFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import { resolve, join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -48,6 +49,23 @@ if (!scenarioDir || !workspaceDir) {
 const seedDir = join(scenarioDir, 'seed-workspace');
 if (existsSync(seedDir)) {
   cpSync(seedDir, workspaceDir, { recursive: true });
+}
+
+// --- Seed setup script ----------------------------------------------------------
+// If the scenario has a seed-setup.mjs, run it after copying the seed.
+// This handles complex initialization like creating git repos, branches, etc.
+// argv[2] = workspaceDir
+
+const seedSetupScript = join(scenarioDir, 'seed-setup.mjs');
+if (existsSync(seedSetupScript)) {
+  const result = spawnSync(process.execPath, ['--no-warnings', seedSetupScript, workspaceDir], {
+    encoding: 'utf8',
+    timeout: 30_000,
+  });
+  if (result.status !== 0) {
+    console.error(`seed-setup.mjs failed:\n${result.stderr}`);
+    process.exit(1);
+  }
 }
 
 // --- Lesson manifest injection --------------------------------------------------

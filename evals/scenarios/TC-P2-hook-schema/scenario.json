@@ -1,0 +1,13 @@
+{
+  "id": "TC-P2-hook-schema",
+  "title": "Wrong hook response schema is silently ignored",
+  "category": "pretooluse",
+  "lessonType": "protocol",
+  "difficulty": "medium",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "rubricFile": "rubric.md",
+  "recommendedInterventions": ["used-decision-deny-reason-systemmessage-f9e4"],
+  "automaticFailGates": []
+}

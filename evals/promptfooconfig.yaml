@@ -67,6 +67,153 @@ tests:
       - type: javascript
         value: "file://scripts/assert-hidden-check.mjs"
 
+  # TC-H1: Parallel git worktree — hint type
+  - description: "TC-H1 git-worktree [control]"
+    vars:
+      scenarioId: TC-H1-git-worktree
+      prompt: "{{file://scenarios/TC-H1-git-worktree/PROMPT.md}}"
+      intervention:
+        type: none
+        ids: []
+
+  - description: "TC-H1 git-worktree [treatment]"
+    vars:
+      scenarioId: TC-H1-git-worktree
+      prompt: "{{file://scenarios/TC-H1-git-worktree/PROMPT.md}}"
+      intervention:
+        type: lesson
+        ids:
+          - parallel-agents-sharing-a-git-worktree-c-cad6
+    assert:
+      - type: javascript
+        value: "file://scripts/assert-hidden-check.mjs"
+
+  # TC-H2: eval injection — hint type
+  - description: "TC-H2 eval-injection [control]"
+    vars:
+      scenarioId: TC-H2-eval-injection
+      prompt: "{{file://scenarios/TC-H2-eval-injection/PROMPT.md}}"
+      intervention:
+        type: none
+        ids: []
+
+  - description: "TC-H2 eval-injection [treatment]"
+    vars:
+      scenarioId: TC-H2-eval-injection
+      prompt: "{{file://scenarios/TC-H2-eval-injection/PROMPT.md}}"
+      intervention:
+        type: lesson
+        ids:
+          - eval-on-user-supplied-command-strings-en-702a
+    assert:
+      - type: javascript
+        value: "file://scripts/assert-hidden-check.mjs"
+
+  # TC-P1: Subagent tools — protocol type
+  - description: "TC-P1 subagent-tools [control]"
+    vars:
+      scenarioId: TC-P1-subagent-tools
+      prompt: "{{file://scenarios/TC-P1-subagent-tools/PROMPT.md}}"
+      intervention:
+        type: none
+        ids: []
+
+  - description: "TC-P1 subagent-tools [treatment]"
+    vars:
+      scenarioId: TC-P1-subagent-tools
+      prompt: "{{file://scenarios/TC-P1-subagent-tools/PROMPT.md}}"
+      intervention:
+        type: lesson
+        ids:
+          - subagents-may-not-have-access-to-bash-to-6a73
+    assert:
+      - type: javascript
+        value: "file://scripts/assert-hidden-check.mjs"
+
+  # TC-P2: Hook schema — protocol type
+  - description: "TC-P2 hook-schema [control]"
+    vars:
+      scenarioId: TC-P2-hook-schema
+      prompt: "{{file://scenarios/TC-P2-hook-schema/PROMPT.md}}"
+      intervention:
+        type: none
+        ids: []
+
+  - description: "TC-P2 hook-schema [treatment]"
+    vars:
+      scenarioId: TC-P2-hook-schema
+      prompt: "{{file://scenarios/TC-P2-hook-schema/PROMPT.md}}"
+      intervention:
+        type: lesson
+        ids:
+          - used-decision-deny-reason-systemmessage-f9e4
+    assert:
+      - type: javascript
+        value: "file://scripts/assert-hidden-check.mjs"
+
+  # TC-P3: Overfitted fix — protocol type
+  - description: "TC-P3 overfitted-fix [control]"
+    vars:
+      scenarioId: TC-P3-overfitted-fix
+      prompt: "{{file://scenarios/TC-P3-overfitted-fix/PROMPT.md}}"
+      intervention:
+        type: none
+        ids: []
+
+  - description: "TC-P3 overfitted-fix [treatment]"
+    vars:
+      scenarioId: TC-P3-overfitted-fix
+      prompt: "{{file://scenarios/TC-P3-overfitted-fix/PROMPT.md}}"
+      intervention:
+        type: lesson
+        ids:
+          - observed-that-read-tool-results-caused-f-29e8
+    assert:
+      - type: javascript
+        value: "file://scripts/assert-hidden-check.mjs"
+
+  # TC-D1: Speculative abstractions — directive type
+  - description: "TC-D1 speculative-abstractions [control]"
+    vars:
+      scenarioId: TC-D1-speculative-abstractions
+      prompt: "{{file://scenarios/TC-D1-speculative-abstractions/PROMPT.md}}"
+      intervention:
+        type: none
+        ids: []
+
+  - description: "TC-D1 speculative-abstractions [treatment]"
+    vars:
+      scenarioId: TC-D1-speculative-abstractions
+      prompt: "{{file://scenarios/TC-D1-speculative-abstractions/PROMPT.md}}"
+      intervention:
+        type: lesson
+        ids:
+          - implement-only-current-requirements-do-n-9e06
+    assert:
+      - type: javascript
+        value: "file://scripts/assert-hidden-check.mjs"
+
+  # TC-D3: Collaborative planning — directive type
+  - description: "TC-D3 collaborative-planning [control]"
+    vars:
+      scenarioId: TC-D3-collaborative-planning
+      prompt: "{{file://scenarios/TC-D3-collaborative-planning/PROMPT.md}}"
+      intervention:
+        type: none
+        ids: []
+
+  - description: "TC-D3 collaborative-planning [treatment]"
+    vars:
+      scenarioId: TC-D3-collaborative-planning
+      prompt: "{{file://scenarios/TC-D3-collaborative-planning/PROMPT.md}}"
+      intervention:
+        type: lesson
+        ids:
+          - plan-approval-without-a-refine-then-exec-5b24
+    assert:
+      - type: javascript
+        value: "file://scripts/assert-hidden-check.mjs"
+
 # Output
 outputPath: results/cache/smoke-run.json
 sharing: false

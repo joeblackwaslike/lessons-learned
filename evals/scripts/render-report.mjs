@@ -43,9 +43,13 @@ try {
 }
 
 // --- Extract results ------------------------------------------------------------
+// Promptfoo nests results: runData.results.results[] and runData.results.timestamp
 
-const results = runData.results ?? [];
-const createdAt = runData.createdAt ?? new Date().toISOString();
+const pfResults = runData.results?.results ?? [];
+const createdAt = runData.results?.timestamp ?? runData.createdAt ?? new Date().toISOString();
+
+// Pair control + treatment arms into scenario results for the report
+const results = buildScenarioResults(pfResults);
 const stats = computeStats(results);
 
 // --- Render report --------------------------------------------------------------
@@ -118,12 +122,10 @@ function formatResultRow(result) {
   const control = typeof result.controlScore === 'number' ? result.controlScore.toFixed(2) : '—';
   const treatment =
     typeof result.treatmentScore === 'number' ? result.treatmentScore.toFixed(2) : '—';
-  const delta =
-    typeof result.delta === 'number'
-      ? result.delta >= 0
-        ? `+${result.delta.toFixed(2)}`
-        : result.delta.toFixed(2)
-      : '—';
+  let delta = '—';
+  if (typeof result.delta === 'number') {
+    delta = result.delta >= 0 ? `+${result.delta.toFixed(2)}` : result.delta.toFixed(2);
+  }
   const pass = result.pass ? '✅' : '❌';
   return `| ${scenario} | ${type} | ${mode} | ${control} | ${treatment} | ${delta} | ${pass} |`;
 }
@@ -144,8 +146,63 @@ function renderFailures(failures) {
   ];
 }
 
+/**
+ * Build scenario-level results from Promptfoo's flat per-arm result array.
+ * Pairs control + treatment arms by scenarioId.
+ */
+function buildScenarioResults(pfResults) {
+  const byScenario = new Map();
+
+  for (const r of pfResults) {
+    const scenarioId = r.vars?.scenarioId ?? 'unknown';
+    const isControl = (r.vars?.intervention?.type ?? 'none') === 'none';
+    const hiddenCheck = r.response?.metadata?.hiddenCheck ?? {};
+    const armPass = hiddenCheck.pass !== false && r.success !== false;
+
+    if (!byScenario.has(scenarioId)) {
+      byScenario.set(scenarioId, { scenarioId, control: null, treatment: null });
+    }
+    const entry = byScenario.get(scenarioId);
+    if (isControl) {
+      entry.control = {
+        pass: armPass,
+        score: r.score ?? 0,
+        cacheHit: r.response?.metadata?.cacheHit ?? false,
+      };
+    } else {
+      entry.treatment = {
+        pass: armPass,
+        score: r.score ?? 0,
+        ids: r.vars?.intervention?.ids ?? [],
+        cacheHit: r.response?.metadata?.cacheHit ?? false,
+        failureReason: hiddenCheck.details ?? r.failureReason,
+      };
+    }
+  }
+
+  return [...byScenario.values()].map(({ scenarioId, control, treatment }) => {
+    const controlScore = control?.score ?? null;
+    const treatmentScore = treatment?.score ?? null;
+    const delta =
+      controlScore !== null && treatmentScore !== null ? treatmentScore - controlScore : null;
+    const pass = treatment?.pass ?? false;
+    return {
+      scenarioId,
+      lessonType: null,
+      mode: 'candidate-vs-none',
+      controlScore,
+      treatmentScore,
+      delta,
+      pass,
+      regression: false,
+      cacheHit: control?.cacheHit ?? false,
+      failureReason: pass ? null : (treatment?.failureReason ?? null),
+    };
+  });
+}
+
 function formatDate(iso) {
-  return new Date(iso).toISOString().replace('T', ' ').slice(0, 16) + ' UTC';
+  return new Date(iso).toISOString().replaceAll('T', ' ').slice(0, 16) + ' UTC';
 }
 
 function gitRef() {

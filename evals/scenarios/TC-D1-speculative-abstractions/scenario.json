@@ -1,0 +1,13 @@
+{
+  "id": "TC-D1-speculative-abstractions",
+  "title": "No speculative abstractions — YAGNI principle",
+  "category": "session-start",
+  "lessonType": "directive",
+  "difficulty": "medium",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "rubricFile": "rubric.md",
+  "recommendedInterventions": ["implement-only-current-requirements-do-n-9e06"],
+  "automaticFailGates": []
+}

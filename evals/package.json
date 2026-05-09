@@ -10,7 +10,7 @@
   "scripts": {
     "eval": "promptfoo eval --config promptfooconfig.yaml --output results/cache/latest-run.json",
     "eval:smoke": "promptfoo eval --config promptfooconfig.yaml --filter-pattern 'TC-H3|TC-G1' --output results/cache/smoke-run.json",
-    "eval:report": "node scripts/render-report.mjs",
+    "eval:report": "node scripts/render-report.mjs --input results/cache/smoke-run.json",
     "eval:report:latest": "node scripts/render-report.mjs --input results/cache/latest-run.json",
     "eval:clean": "rm -rf results/cache/*.json"
   },

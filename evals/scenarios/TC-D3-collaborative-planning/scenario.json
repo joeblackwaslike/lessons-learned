@@ -1,0 +1,13 @@
+{
+  "id": "TC-D3-collaborative-planning",
+  "title": "Solo-authored plans as fait accompli",
+  "category": "session-start",
+  "lessonType": "directive",
+  "difficulty": "medium",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "rubricFile": "rubric.md",
+  "recommendedInterventions": ["plan-approval-without-a-refine-then-exec-5b24"],
+  "automaticFailGates": []
+}

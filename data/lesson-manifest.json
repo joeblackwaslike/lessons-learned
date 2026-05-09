@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-05-09T03:15:22.531Z",
+  "generatedAt": "2026-05-09T04:29:28.243Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -1058,6 +1058,25 @@
       "summary": "Bias toward action — do it yourself before asking the user",
       "problem": "Asking the user to do something you can do yourself is unnecessary friction. Self-blocking on mechanical steps (fill in placeholders, run a command, check a value) wastes the user's time with no benefit and signals false caution.",
       "solution": "Before asking the user to do anything, ask: can I do this myself? If yes, do it. Only pause for genuine ambiguity about intent, irreversibility, or scope — not because asking feels safer. Engineering culture is biased toward action; be the same."
+    },
+    "01KR5FYQ95YP1HH3QNBEDH3M9F": {
+      "slug": "implement-only-current-requirements-do-n-9e06",
+      "type": "directive",
+      "priority": 7,
+      "toolNames": [],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "tags": [
+        "category:architecture",
+        "category:code-quality",
+        "severity:overengineering"
+      ],
+      "scope": null,
+      "message": "## Lesson: Implement only current requirements — do not build for hypothetical future needs\nWhen a task mentions future possibilities (\"we might need OAuth later\"), agents build abstract factory patterns, pluggable strategy interfaces, placeholder stubs, and extension points for requirements that do not yet exist. This adds complexity, maintenance burden, and often implements the wrong abstractions because future needs are unknown.\n**Fix**: Implement only what the current stated requirements need. If future extensibility is hinted, note what it would require in a comment — do not build it. YAGNI: You Aren't Gonna Need It. Three concrete implementations are better than one premature abstraction.",
+      "summary": "Implement only current requirements — do not build for hypothetical future needs",
+      "problem": "When a task mentions future possibilities (\"we might need OAuth later\"), agents build abstract factory patterns, pluggable strategy interfaces, placeholder stubs, and extension points for requirements that do not yet exist. This adds complexity, maintenance burden, and often implements the wrong abstractions because future needs are unknown.",
+      "solution": "Implement only what the current stated requirements need. If future extensibility is hinted, note what it would require in a comment — do not build it. YAGNI: You Aren't Gonna Need It. Three concrete implementations are better than one premature abstraction."
     },
     "01JQSEED00000000000000005": {
       "slug": "npm-link-peer-deps-r2f7",

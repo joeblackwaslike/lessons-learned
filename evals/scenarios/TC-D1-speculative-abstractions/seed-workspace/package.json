@@ -1,0 +1,7 @@
+{
+  "name": "auth-module",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/"
+  }
+}
