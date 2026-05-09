@@ -238,12 +238,25 @@ function buildEnv(workspaceDir, _intervention) {
     allowed.filter(k => process.env[k] != null).map(k => [k, process.env[k]])
   );
 
-  // Use a minimal fake HOME so the eval agent does NOT load global ~/.claude hooks
-  // (e.g. learning-mode, session-start lesson injection) that would contaminate results.
+  // Use a fake HOME to prevent global ~/.claude hooks from firing in eval agents
+  // (learning-mode injection, session-start lesson protocols, etc. contaminate results).
   // Project-level .claude/settings.json (in cwd) is still loaded by Claude Code.
   const evalHomeDir = join(workspaceDir, '.eval', 'home');
   mkdirSync(evalHomeDir, { recursive: true });
   env.HOME = evalHomeDir;
+
+  // Claude Code stores CLAUDE_CODE_OAUTH_TOKEN in ~/.claude/settings.json env section.
+  // With fake HOME that file doesn't exist, so we read and forward the token explicitly.
+  if (!env.ANTHROPIC_API_KEY) {
+    const realClaudeSettings = join(process.env.HOME ?? '', '.claude', 'settings.json');
+    try {
+      const settings = JSON.parse(readFileSync(realClaudeSettings, 'utf8'));
+      const token = settings?.env?.CLAUDE_CODE_OAUTH_TOKEN;
+      if (token) env.CLAUDE_CODE_OAUTH_TOKEN = token;
+    } catch {
+      // No real settings file — fall through; auth may fail if ANTHROPIC_API_KEY also absent
+    }
+  }
 
   // Point lesson injection to the eval-scoped manifest
   const manifestPath = join(workspaceDir, '.eval', 'lesson-manifest.json');
