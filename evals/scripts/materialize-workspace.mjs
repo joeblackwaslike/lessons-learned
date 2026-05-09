@@ -87,8 +87,12 @@ writeFileSync(
 // --- Hook shim installation -----------------------------------------------------
 // Install eval-hook-shim.mjs as a PreToolUse hook in the workspace .claude/settings.json.
 // The shim logs tool call events to .eval/hook-events.ndjson for trajectory analysis.
+//
+// Also install the lesson inject hook at project level so hint/guard lessons fire
+// even when the eval agent runs with a fake HOME (no global ~/.claude/settings.json).
 
 const shimPath = resolve(__dirname, 'eval-hook-shim.mjs');
+const lessonInjectPath = resolve(EVALS_ROOT, '..', 'hooks', 'pretooluse-lesson-inject.mjs');
 const claudeDir = join(workspaceDir, '.claude');
 const settingsPath = join(claudeDir, 'settings.json');
 mkdirSync(claudeDir, { recursive: true });
@@ -107,6 +111,12 @@ workspaceSettings.hooks.PreToolUse.push({
   matcher: 'Read|Edit|Write|Bash|Glob',
   hooks: [{ type: 'command', command: `node "${shimPath}"`, timeout: 5 }],
 });
+if (existsSync(lessonInjectPath)) {
+  workspaceSettings.hooks.PreToolUse.push({
+    matcher: 'Read|Edit|Write|Bash|Glob',
+    hooks: [{ type: 'command', command: `node "${lessonInjectPath}"`, timeout: 10 }],
+  });
+}
 writeFileSync(settingsPath, JSON.stringify(workspaceSettings, null, 2));
 
 // --- Workspace scope directive --------------------------------------------------
