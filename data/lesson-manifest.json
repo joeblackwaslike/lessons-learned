@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-05-09T07:12:21.987Z",
+  "generatedAt": "2026-05-09T07:53:20.679Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -66,7 +66,11 @@
       "slug": "secrets-hardcoded-in-source-files-are-pe-00f3",
       "type": "hint",
       "priority": 10,
-      "toolNames": [],
+      "toolNames": [
+        "Read",
+        "Edit",
+        "Write"
+      ],
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [
@@ -116,8 +120,8 @@
         "topic:quality"
       ],
       "scope": null,
-      "message": "## Lesson: Before starting any work: search for known pitfalls, gotchas, and failure modes — skipping this wastes tokens, compounds failed attempts, and burns time re-discovering what the community already documented and solved\nProceeding directly to planning or implementation without searching for known footguns, version caveats, and community-reported failure modes produces plans that look correct but fail on documented edge cases. This applies to any domain: infrastructure, libraries, frameworks, CLI tools, APIs. The cost is encountering cold what was already diagnosed and documented by the community.\n**Fix**: Before committing to any plan or starting any non-trivial implementation: (1) Search '<technology> gotchas', '<technology> common mistakes', '<technology> known issues <version>'. (2) Check GitHub issues and community forums for failure patterns at your specific version or config. (3) Incorporate findings into the plan before writing code. This applies to debugging, planning, and implementation equally — not only infrastructure.",
-      "summary": "Before starting any work: search for known pitfalls, gotchas, and failure modes — skipping this wastes tokens, compounds failed attempts, and burns time re-discovering what the community already documented and solved",
+      "message": "## Lesson: Search for known pitfalls and failure modes before starting any new work\nProceeding directly to planning or implementation without searching for known footguns, version caveats, and community-reported failure modes produces plans that look correct but fail on documented edge cases. This applies to any domain: infrastructure, libraries, frameworks, CLI tools, APIs. The cost is encountering cold what was already diagnosed and documented by the community.\n**Fix**: Before committing to any plan or starting any non-trivial implementation: (1) Search '<technology> gotchas', '<technology> common mistakes', '<technology> known issues <version>'. (2) Check GitHub issues and community forums for failure patterns at your specific version or config. (3) Incorporate findings into the plan before writing code. This applies to debugging, planning, and implementation equally — not only infrastructure.",
+      "summary": "Search for known pitfalls and failure modes before starting any new work",
       "problem": "Proceeding directly to planning or implementation without searching for known footguns, version caveats, and community-reported failure modes produces plans that look correct but fail on documented edge cases. This applies to any domain: infrastructure, libraries, frameworks, CLI tools, APIs. The cost is encountering cold what was already diagnosed and documented by the community.",
       "solution": "Before committing to any plan or starting any non-trivial implementation: (1) Search '<technology> gotchas', '<technology> common mistakes', '<technology> known issues <version>'. (2) Check GitHub issues and community forums for failure patterns at your specific version or config. (3) Incorporate findings into the plan before writing code. This applies to debugging, planning, and implementation equally — not only infrastructure."
     },
@@ -260,8 +264,8 @@
         "severity:correctness"
       ],
       "scope": null,
-      "message": "## Lesson: Before implementing with any library, CLI, or API: fetch docs for the exact version installed (check package.json, pyproject.toml, or requirements files) — training-data signatures are stale\nLibrary APIs, CLI flags, and framework config schemas change between versions. Proceeding directly from memory without checking current documentation produces plans and code that fail on version-specific details — wrong method names, removed options, new required config keys. Training data has a knowledge cutoff and is routinely months or years behind.\n**Fix**: Before creating any implementation plan or writing code that involves a library, framework, CLI tool, or external API: use context7, Ref, or a web search to fetch current documentation. Verify actual API signatures, CLI flags, and config schemas match your assumptions before committing to a design. If documentation contradicts memory, trust the docs.",
-      "summary": "Before implementing with any library, CLI, or API: fetch docs for the exact version installed (check package.json, pyproject.toml, or requirements files) — training-data signatures are stale",
+      "message": "## Lesson: Fetch exact-version docs before implementing — training-data sigs are stale\nLibrary APIs, CLI flags, and framework config schemas change between versions. Proceeding directly from memory without checking current documentation produces plans and code that fail on version-specific details — wrong method names, removed options, new required config keys. Training data has a knowledge cutoff and is routinely months or years behind.\n**Fix**: Before creating any implementation plan or writing code that involves a library, framework, CLI tool, or external API: use context7, Ref, or a web search to fetch current documentation. Verify actual API signatures, CLI flags, and config schemas match your assumptions before committing to a design. If documentation contradicts memory, trust the docs.",
+      "summary": "Fetch exact-version docs before implementing — training-data sigs are stale",
       "problem": "Library APIs, CLI flags, and framework config schemas change between versions. Proceeding directly from memory without checking current documentation produces plans and code that fail on version-specific details — wrong method names, removed options, new required config keys. Training data has a knowledge cutoff and is routinely months or years behind.",
       "solution": "Before creating any implementation plan or writing code that involves a library, framework, CLI tool, or external API: use context7, Ref, or a web search to fetch current documentation. Verify actual API signatures, CLI flags, and config schemas match your assumptions before committing to a design. If documentation contradicts memory, trust the docs."
     },
@@ -552,8 +556,8 @@
         "severity:wasted-time"
       ],
       "scope": null,
-      "message": "## Lesson: Before presenting any multi-step plan: verify every individual step is executable — never propose speculatively and pivot mid-paragraph when a step fails\nPresenting a confident-sounding plan without verifying individual steps first; blockers discovered mid-paragraph after committing to an approach force pivots that waste the user's time. When this happens 2-3 times in a row it erodes trust — the session starts feeling unreliable. It also burns the user's finite cognitive budget: that budget doesn't reset instantly, and spending it on re-planning leaves less capacity for everything that follows. Applies to any sequential plan: architecture, infrastructure, migrations, refactors, deployments.\n**Fix**: Search first, fully read all results, identify failure modes, then present ONE confirmed plan. Never pivot mid-paragraph — if a footgun is found after proposing, explicitly say that plan is wrong, here is why, here is the corrected plan",
-      "summary": "Before presenting any multi-step plan: verify every individual step is executable — never propose speculatively and pivot mid-paragraph when a step fails",
+      "message": "## Lesson: Verify each plan step is executable before presenting — never speculate\nPresenting a confident-sounding plan without verifying individual steps first; blockers discovered mid-paragraph after committing to an approach force pivots that waste the user's time. When this happens 2-3 times in a row it erodes trust — the session starts feeling unreliable. It also burns the user's finite cognitive budget: that budget doesn't reset instantly, and spending it on re-planning leaves less capacity for everything that follows. Applies to any sequential plan: architecture, infrastructure, migrations, refactors, deployments.\n**Fix**: Search first, fully read all results, identify failure modes, then present ONE confirmed plan. Never pivot mid-paragraph — if a footgun is found after proposing, explicitly say that plan is wrong, here is why, here is the corrected plan",
+      "summary": "Verify each plan step is executable before presenting — never speculate",
       "problem": "Presenting a confident-sounding plan without verifying individual steps first; blockers discovered mid-paragraph after committing to an approach force pivots that waste the user's time. When this happens 2-3 times in a row it erodes trust — the session starts feeling unreliable. It also burns the user's finite cognitive budget: that budget doesn't reset instantly, and spending it on re-planning leaves less capacity for everything that follows. Applies to any sequential plan: architecture, infrastructure, migrations, refactors, deployments.",
       "solution": "Search first, fully read all results, identify failure modes, then present ONE confirmed plan. Never pivot mid-paragraph — if a footgun is found after proposing, explicitly say that plan is wrong, here is why, here is the corrected plan"
     },
@@ -908,7 +912,11 @@
       "slug": "systemd-environmentfile-silently-ignores-7408",
       "type": "hint",
       "priority": 7,
-      "toolNames": [],
+      "toolNames": [
+        "Read",
+        "Edit",
+        "Write"
+      ],
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [
@@ -946,7 +954,8 @@
         "topic:nfs",
         "topic:infrastructure",
         "platform:linux",
-        "topic:k3s"
+        "topic:k3s",
+        "in:nursery"
       ],
       "scope": null,
       "message": "## Lesson: Working Raspberry Pi 5 PXE + NFS root boot configuration and common failure modes\nRaspberry Pi 5 PXE boot with NFS root failing silently — SSH refused, NFS root mounted read-only, or NFS mount not happening at all. Common causes: (1) proto=tcp in nfsroot kernel parameter is incompatible with Pi OS Trixie / kernel 6.12. (2) PXE server's own filesystem accidentally bind-mounted over the NFS root's /boot/firmware via a spurious systemd unit. (3) First-boot Pi OS services (sshswitch, regenerate_ssh_host_keys, userconfig) blocking SSH because they can't find /boot/firmware. (4) pi user account locked in shadow (pi:! means locked). (5) Missing /run/sshd directory — sshd fails silently.\n**Fix**: Working cmdline.txt for Pi 5 NFS root boot:\nconsole=serial0,115200 console=tty1 root=/dev/nfs nfsroot=<SERVER_IP>:/path/to/root,vers=3 rw ip=dhcp rootwait\n\nKey: vers=3 only — no proto=tcp, no nolock, no rootfstype=nfs.\n\nRequired NFS root fixes for Pi OS Trixie:\n- fstab: proc entry only, no NFS root entry (kernel handles the root mount)\n- Mask: sshswitch.service, regenerate_ssh_host_keys.service, userconfig.service\n- Remove: /etc/ssh/sshd_config.d/rename_user.conf (contains SSH banner that blocks sshd)\n- Pre-generate SSH host keys: ssh-keygen -A -f <nfs_root>\n- Unlock pi user: replace pi:! with real password hash in /etc/shadow\n- Pre-create /home/pi/.ssh/authorized_keys with your public key (chown 1000:1000, chmod 600)\n- Add to /etc/tmpfiles.d/sshd.conf: d /run/sshd 0755 root root -\n- Bind mount TFTP dir to <nfs_root>/boot/firmware so Pi OS first-boot services work\n- ALWAYS run: mount | grep <nfs_root_path> to verify no spurious mounts before booting\n- NFS export must have no_root_squash\n\nDiagnosis: if lastlog mtime never updates after boot, the NFS root is read-only. Check for proto=tcp first.",
@@ -2095,8 +2104,8 @@
         "topic:brainstorming"
       ],
       "scope": null,
-      "message": "## Lesson: Invoked brainstorming skill, acknowledged the hard gate (\"don't proceed without approval\"), then immediately launched...\nInvoked brainstorming skill, acknowledged the hard gate (\"don't proceed without approval\"), then immediately launched Explore agents and started writing a PRD — skipping the entire brainstorming conversation. The skill's HARD-GATE says no implementation until user approves the design. Exploring the codebase and writing a PRD is implementation-adjacent action, not brainstorming.\n**Fix**: When the brainstorming skill fires, stop and ask clarifying questions one at a time. Do not spawn Explore agents or write any document until the brainstorming conversation is complete and the user has approved the design.",
-      "summary": "Invoked brainstorming skill, acknowledged the hard gate (\"don't proceed without approval\"), then immediately launched...",
+      "message": "## Lesson: Acknowledging brainstorming hard-gate then immediately launching agents violates the gate\nInvoked brainstorming skill, acknowledged the hard gate (\"don't proceed without approval\"), then immediately launched Explore agents and started writing a PRD — skipping the entire brainstorming conversation. The skill's HARD-GATE says no implementation until user approves the design. Exploring the codebase and writing a PRD is implementation-adjacent action, not brainstorming.\n**Fix**: When the brainstorming skill fires, stop and ask clarifying questions one at a time. Do not spawn Explore agents or write any document until the brainstorming conversation is complete and the user has approved the design.",
+      "summary": "Acknowledging brainstorming hard-gate then immediately launching agents violates the gate",
       "problem": "Invoked brainstorming skill, acknowledged the hard gate (\"don't proceed without approval\"), then immediately launched Explore agents and started writing a PRD — skipping the entire brainstorming conversation. The skill's HARD-GATE says no implementation until user approves the design. Exploring the codebase and writing a PRD is implementation-adjacent action, not brainstorming.",
       "solution": "When the brainstorming skill fires, stop and ask clarifying questions one at a time. Do not spawn Explore agents or write any document until the brainstorming conversation is complete and the user has approved the design."
     },
@@ -2225,8 +2234,8 @@
         "severity:service-failure"
       ],
       "scope": null,
-      "message": "## Lesson: A hand-written run.mount unit in the NFS root's /etc/systemd/system/ trying to mount /run as tmpfs causes systemd to...\nA hand-written run.mount unit in the NFS root's /etc/systemd/system/ trying to mount /run as tmpfs causes systemd to refuse (\"Cannot create mount unit for API file system '/run'\"), which cascades to block any service that depends on run.mount — including tailscaled\n**Fix**: Remove /etc/systemd/system/run.mount and its wants symlink from the NFS root; systemd handles /run natively and rejects attempts to override it via unit files",
-      "summary": "A hand-written run.mount unit in the NFS root's /etc/systemd/system/ trying to mount /run as tmpfs causes systemd to...",
+      "message": "## Lesson: Handwritten run.mount for /run as tmpfs blocks systemd boot on NFS root\nA hand-written run.mount unit in the NFS root's /etc/systemd/system/ trying to mount /run as tmpfs causes systemd to refuse (\"Cannot create mount unit for API file system '/run'\"), which cascades to block any service that depends on run.mount — including tailscaled\n**Fix**: Remove /etc/systemd/system/run.mount and its wants symlink from the NFS root; systemd handles /run natively and rejects attempts to override it via unit files",
+      "summary": "Handwritten run.mount for /run as tmpfs blocks systemd boot on NFS root",
       "problem": "A hand-written run.mount unit in the NFS root's /etc/systemd/system/ trying to mount /run as tmpfs causes systemd to refuse (\"Cannot create mount unit for API file system '/run'\"), which cascades to block any service that depends on run.mount — including tailscaled",
       "solution": "Remove /etc/systemd/system/run.mount and its wants symlink from the NFS root; systemd handles /run natively and rejects attempts to override it via unit files"
     },
@@ -2259,11 +2268,9 @@
     },
     "01KPKE12SPKZJXWHSJGN1871S1": {
       "slug": "made-a-confident-architectural-recommend-6e2a",
-      "type": "hint",
+      "type": "protocol",
       "priority": 3,
-      "toolNames": [
-        "none (planning/recommendation)"
-      ],
+      "toolNames": [],
       "commandRegexSources": [
         {
           "source": "\\bRecommending\\b",
@@ -2329,8 +2336,8 @@
         "severity:syntax-error"
       ],
       "scope": null,
-      "message": "## Lesson: Serena's replace_symbol_body on a JS constant (not a function) prepends an extra `const` keyword, producing `const...\nSerena's replace_symbol_body on a JS constant (not a function) prepends an extra `const` keyword, producing `const const FOO = ...` and a doubled semicolon. The body it receives already includes the `const` prefix, so the replacement double-declares it.\n**Fix**: Use Edit for constant value replacements; reserve replace_symbol_body for function/class bodies only.",
-      "summary": "Serena's replace_symbol_body on a JS constant (not a function) prepends an extra `const` keyword, producing `const...",
+      "message": "## Lesson: Serena replace_symbol_body on JS constants double-declares const, producing syntax error\nSerena's replace_symbol_body on a JS constant (not a function) prepends an extra `const` keyword, producing `const const FOO = ...` and a doubled semicolon. The body it receives already includes the `const` prefix, so the replacement double-declares it.\n**Fix**: Use Edit for constant value replacements; reserve replace_symbol_body for function/class bodies only.",
+      "summary": "Serena replace_symbol_body on JS constants double-declares const, producing syntax error",
       "problem": "Serena's replace_symbol_body on a JS constant (not a function) prepends an extra `const` keyword, producing `const const FOO = ...` and a doubled semicolon. The body it receives already includes the `const` prefix, so the replacement double-declares it.",
       "solution": "Use Edit for constant value replacements; reserve replace_symbol_body for function/class bodies only."
     }
