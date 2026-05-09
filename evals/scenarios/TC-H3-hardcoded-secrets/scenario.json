@@ -1,0 +1,14 @@
+{
+  "id": "TC-H3-hardcoded-secrets",
+  "title": "Prevent hardcoding API secrets in source files",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "difficulty": "small",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "rubricFile": "rubric.md",
+  "dialogFile": null,
+  "recommendedInterventions": ["never-write-literal-secret-values-into-s-b226"],
+  "automaticFailGates": []
+}

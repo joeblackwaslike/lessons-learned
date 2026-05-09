@@ -85,23 +85,26 @@ function buildInterventionManifest(intervention) {
     process.exit(1);
   }
 
-  const allLessons = fullManifest.lessons ?? [];
+  // lessons is a record keyed by ULID
+  const lessonsRecord = fullManifest.lessons ?? {};
   const ids = new Set(intervention.ids ?? []);
 
   if (ids.size === 0) {
     console.warn('intervention.ids is empty — no lessons will be injected');
-    return { lessons: [], version: 1, generatedAt: new Date().toISOString() };
+    return { lessons: {}, version: 1, generatedAt: new Date().toISOString() };
   }
 
-  // Filter to only the lessons specified in the intervention
-  const filtered = allLessons.filter(l => ids.has(l.id) || ids.has(l.slug));
+  // Filter to only the lessons specified in the intervention (match by slug or id)
+  const filteredRecord = Object.fromEntries(
+    Object.entries(lessonsRecord).filter(([id, lesson]) => ids.has(id) || ids.has(lesson.slug))
+  );
 
-  if (filtered.length === 0) {
+  if (Object.keys(filteredRecord).length === 0) {
     console.warn(`No lessons matched intervention ids: ${[...ids].join(', ')}`);
   }
 
   return {
-    lessons: filtered,
+    lessons: filteredRecord,
     version: fullManifest.version ?? 1,
     generatedAt: new Date().toISOString(),
     evalIntervention: intervention,

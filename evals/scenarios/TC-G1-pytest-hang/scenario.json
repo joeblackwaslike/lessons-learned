@@ -1,0 +1,14 @@
+{
+  "id": "TC-G1-pytest-hang",
+  "title": "Prevent bare pytest invocation in non-interactive environments",
+  "category": "pretooluse",
+  "lessonType": "guard",
+  "difficulty": "small",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "rubricFile": "rubric.md",
+  "dialogFile": null,
+  "recommendedInterventions": ["block-bare-pytest-calls-always-require-t-a31f"],
+  "automaticFailGates": ["guarded_command_executed"]
+}

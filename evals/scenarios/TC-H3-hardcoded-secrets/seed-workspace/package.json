@@ -1,0 +1,10 @@
+{
+  "name": "my-app",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "A minimal Node.js application",
+  "main": "src/index.js",
+  "dependencies": {
+    "stripe": "^14.0.0"
+  }
+}

@@ -13,13 +13,23 @@
  */
 
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, rmSync, existsSync } from 'node:fs';
+import {
+  mkdtempSync,
+  rmSync,
+  existsSync,
+  mkdirSync,
+  writeFileSync,
+  readFileSync,
+  readdirSync,
+} from 'node:fs';
+import { createHash } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const EVALS_ROOT = resolve(__dirname, '..');
+const CACHE_DIR = join(EVALS_ROOT, 'results', 'cache');
 
 const MATERIALIZE_SCRIPT = join(EVALS_ROOT, 'scripts', 'materialize-workspace.mjs');
 const COLLECT_SCRIPT = join(EVALS_ROOT, 'scripts', 'collect-artifacts.mjs');
@@ -42,18 +52,30 @@ export default class ClaudeAgentProvider {
    */
   async callApi(prompt, context, options) {
     const { vars = {} } = context;
-    const { scenarioId, intervention = { type: 'none', ids: [] } } = vars;
+    if (typeof vars.scenarioId !== 'string' || !vars.scenarioId) {
+      throw new Error('Provider requires vars.scenarioId (non-empty string)');
+    }
+    const scenarioId = vars.scenarioId;
+    const { intervention = { type: 'none', ids: [] } } = vars;
     const model = options?.config?.model ?? this.model;
     const timeout = options?.config?.timeout ?? this.timeout;
     const startMs = Date.now();
 
-    if (!scenarioId) {
-      throw new Error('Provider requires vars.scenarioId');
-    }
-
     const scenarioDir = join(EVALS_ROOT, 'scenarios', scenarioId);
     if (!existsSync(scenarioDir)) {
       throw new Error(`Scenario directory not found: ${scenarioDir}`);
+    }
+
+    // Check arm cache before spinning up a workspace
+    const cacheKey = computeCacheKey(scenarioDir, intervention, model);
+    const cacheFile = join(CACHE_DIR, `${cacheKey}.json`);
+    if (existsSync(cacheFile)) {
+      try {
+        const cached = JSON.parse(readFileSync(cacheFile, 'utf8'));
+        return { ...cached, metadata: { ...cached.metadata, cacheHit: true } };
+      } catch {
+        // corrupt cache — fall through to fresh run
+      }
     }
 
     const workspaceDir = mkdtempSync(join(tmpdir(), `eval-${scenarioId}-`));
@@ -98,6 +120,28 @@ export default class ClaudeAgentProvider {
       const output = claudeResult.stdout ?? '';
       const stderr = claudeResult.stderr ?? '';
 
+      // Write agent output for verify scripts and artifact collector
+      const evalMetaDir = join(workspaceDir, '.eval');
+      mkdirSync(evalMetaDir, { recursive: true });
+      writeFileSync(join(evalMetaDir, 'agent-output.txt'), output);
+
+      // Run hidden-checks/verify.mjs if present
+      const verifyScriptPath = join(scenarioDir, 'hidden-checks', 'verify.mjs');
+      let hiddenCheck = { pass: true, details: 'no verify script', skipped: true };
+      if (existsSync(verifyScriptPath)) {
+        const verifyResult = spawnSync(
+          process.execPath,
+          ['--no-warnings', verifyScriptPath, workspaceDir],
+          { encoding: 'utf8', timeout: 30_000 }
+        );
+        hiddenCheck = {
+          pass: verifyResult.status === 0,
+          details: (verifyResult.stdout + verifyResult.stderr).trim(),
+          exitCode: verifyResult.status,
+          skipped: false,
+        };
+      }
+
       // Collect artifacts: hook events, workspace diff, tool trajectory
       const artifactsResult = spawnSync(
         process.execPath,
@@ -114,7 +158,7 @@ export default class ClaudeAgentProvider {
         }
       }
 
-      return {
+      const result = {
         output,
         metadata: {
           scenarioId,
@@ -123,9 +167,20 @@ export default class ClaudeAgentProvider {
           durationMs: Date.now() - startMs,
           exitCode: claudeResult.status,
           stderr: stderr.slice(0, 2000),
+          hiddenCheck,
           artifacts,
+          cacheHit: false,
+          cacheKey,
         },
       };
+
+      // Write to cache for future runs (only cache successful agent completions)
+      if (claudeResult.status === 0) {
+        mkdirSync(CACHE_DIR, { recursive: true });
+        writeFileSync(cacheFile, JSON.stringify(result, null, 2));
+      }
+
+      return result;
     } finally {
       try {
         rmSync(workspaceDir, { recursive: true, force: true });
@@ -173,4 +228,51 @@ function buildEnv(workspaceDir, intervention, scenarioId) {
   env.EVAL_INTERVENTION_IDS = JSON.stringify(intervention.ids ?? []);
 
   return env;
+}
+
+/**
+ * Compute a stable cache key for an arm run.
+ * Key = sha256(scenarioContentHash : model : interventionJson)
+ * Intervention ids are sorted so order doesn't affect the key.
+ */
+function computeCacheKey(scenarioDir, intervention, model) {
+  const scenarioHash = hashDir(scenarioDir);
+  const sortedIntervention = {
+    type: intervention.type ?? 'none',
+    ids: [...(intervention.ids ?? [])].sort((a, b) => a.localeCompare(b)),
+  };
+  return createHash('sha256')
+    .update(scenarioHash)
+    .update(':')
+    .update(model)
+    .update(':')
+    .update(JSON.stringify(sortedIntervention))
+    .digest('hex');
+}
+
+/** sha256 of all file contents under dir, sorted by relative path for stability */
+function hashDir(dir) {
+  const hash = createHash('sha256');
+  for (const relPath of collectFiles(dir).sort()) {
+    hash.update(relPath);
+    hash.update(readFileSync(join(dir, relPath)));
+  }
+  return hash.digest('hex');
+}
+
+function collectFiles(dir, base = '') {
+  const results = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const rel = base ? `${base}/${entry.name}` : entry.name;
+    const abs = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      results.push(...collectFiles(abs, rel));
+    } else if (entry.isFile()) {
+      // Skip node_modules and .git for hashing
+      if (!rel.startsWith('node_modules/') && !rel.startsWith('.git/')) {
+        results.push(rel);
+      }
+    }
+  }
+  return results;
 }

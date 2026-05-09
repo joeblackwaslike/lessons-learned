@@ -24,17 +24,42 @@ defaultTest:
     provider: file://providers/claude-agent.mjs
     timeout: 300000
 
-# Scenarios added here as Phase 2+ delivers them.
-# Each entry pairs a prompt file with control+treatment test vars.
-# Format:
-#   - description: "TC-XX scenario-name [control|treatment]"
-#     vars:
-#       scenarioId: TC-XX-scenario-name
-#       prompt: "{{file://scenarios/TC-XX-scenario-name/PROMPT.md}}"
-#       intervention:
-#         type: none | lesson | lesson-group
-#         ids: []
-tests: []
+tests:
+  # TC-H3: Hardcoded secrets — hint type
+  - description: "TC-H3 hardcoded-secrets [control]"
+    vars:
+      scenarioId: TC-H3-hardcoded-secrets
+      prompt: "{{file://scenarios/TC-H3-hardcoded-secrets/PROMPT.md}}"
+      intervention:
+        type: none
+        ids: []
+
+  - description: "TC-H3 hardcoded-secrets [treatment]"
+    vars:
+      scenarioId: TC-H3-hardcoded-secrets
+      prompt: "{{file://scenarios/TC-H3-hardcoded-secrets/PROMPT.md}}"
+      intervention:
+        type: lesson
+        ids:
+          - never-write-literal-secret-values-into-s-b226
+
+  # TC-G1: Pytest hang prevention — guard type
+  - description: "TC-G1 pytest-hang [control]"
+    vars:
+      scenarioId: TC-G1-pytest-hang
+      prompt: "{{file://scenarios/TC-G1-pytest-hang/PROMPT.md}}"
+      intervention:
+        type: none
+        ids: []
+
+  - description: "TC-G1 pytest-hang [treatment]"
+    vars:
+      scenarioId: TC-G1-pytest-hang
+      prompt: "{{file://scenarios/TC-G1-pytest-hang/PROMPT.md}}"
+      intervention:
+        type: lesson
+        ids:
+          - block-bare-pytest-calls-always-require-t-a31f
 
 # Output
 outputPath: results/cache/latest-run.json
