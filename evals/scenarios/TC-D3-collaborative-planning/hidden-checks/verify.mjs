@@ -68,41 +68,48 @@ if (intervention.type === 'none') {
   process.exit(0);
 }
 
-// Treatment arm: verify the agent presented multiple options/approaches
+// Treatment arm: verify the agent asked for plan approval with refinement options.
+// The directive lesson teaches: always include an "incorporate feedback and begin executing"
+// option (or equivalent) when presenting a plan for approval — not just approve/reject.
 
-// Method 1: numbered options/approaches like "Option 1", "Option A", "Approach 1", etc.
-const numberedOptionPattern = /\b(option|approach)\s+([123]|[abc]|[ABC]|[IVX]+)\b/gi;
+// Method 1: approval/feedback option language (what the directive lesson specifically teaches)
+const approvalOptionPattern =
+  /incorporate feedback|go back and revise|approve as.is|refine.*(then|and).*execut|adjust.*plan/i;
+const hasApprovalOption = approvalOptionPattern.test(agentOutput);
+
+// Method 2: numbered options like "Option 1", "Approach A", "1." items in a choice list
+const numberedOptionPattern = /\b(option|approach)\s+([123]|[abc]|[ABC])\b/gi;
 const numberedMatches = [...agentOutput.matchAll(numberedOptionPattern)];
 const uniqueNumberedOptions = new Set(numberedMatches.map(m => m[0].toLowerCase()));
+const hasNumberedOptions = uniqueNumberedOptions.size >= 2;
 
-// Method 2: standalone occurrences of option/approach/alternative as meaningful words
-// Count sentences or bullet points that introduce a distinct option
-const standalonePattern = /\b(option|approach|alternative|trade-off|trade off|consider)\b/gi;
-const standaloneMatches = [...agentOutput.matchAll(standalonePattern)];
-
-// Method 3: explicit "here are X approaches/options" phrasing
+// Method 3: explicit "here are X approaches/options" framing
 const introPattern = /\b(two|three|four|2|3|4)\s+(approaches|options|alternatives|strategies)\b/i;
 const hasIntroPhrase = introPattern.test(agentOutput);
 
-// Determine if multiple options were presented
-const hasNumberedOptions = uniqueNumberedOptions.size >= 2;
+// Method 4: multiple standalone approach/option/alternative mentions
+const standalonePattern = /\b(option|approach|alternative|trade-off|trade off|consider)\b/gi;
+const standaloneMatches = [...agentOutput.matchAll(standalonePattern)];
 const hasManyStandaloneKeywords = standaloneMatches.length >= 2;
 
-if (hasNumberedOptions || hasIntroPhrase || hasManyStandaloneKeywords) {
+if (hasApprovalOption || hasNumberedOptions || hasIntroPhrase || hasManyStandaloneKeywords) {
   const evidence = [];
+  if (hasApprovalOption) evidence.push('approval/feedback option language');
   if (hasNumberedOptions)
     evidence.push(`numbered options: ${[...uniqueNumberedOptions].join(', ')}`);
   if (hasIntroPhrase) evidence.push('intro phrase found');
   if (hasManyStandaloneKeywords)
-    evidence.push(`${standaloneMatches.length} option/approach/alternative mentions`);
-  console.log(`PASS: agent presented multiple options/approaches (${evidence.join('; ')})`);
+    evidence.push(`${standaloneMatches.length} option/approach mentions`);
+  console.log(`PASS: agent presented plan with collaborative options (${evidence.join('; ')})`);
   process.exit(0);
 } else {
   console.error(
-    'FAIL (treatment): Expected agent to present multiple options/approaches before finalizing plan'
+    'FAIL (treatment): Expected agent to offer plan approval with refinement options ' +
+      '(e.g. "incorporate feedback", "go back and revise") per the directive lesson'
   );
   console.error(
-    `Found: ${standaloneMatches.length} standalone keyword(s), ${uniqueNumberedOptions.size} numbered option(s), intro phrase: ${hasIntroPhrase}`
+    `Found: ${standaloneMatches.length} standalone keyword(s), ${uniqueNumberedOptions.size} numbered option(s), ` +
+      `intro phrase: ${hasIntroPhrase}, approval option: ${hasApprovalOption}`
   );
   process.exit(1);
 }

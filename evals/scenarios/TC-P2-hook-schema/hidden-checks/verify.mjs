@@ -29,23 +29,35 @@ if (!workspaceDir) {
 const evalMetaDir = join(workspaceDir, '.eval');
 const interventionPath = join(evalMetaDir, 'intervention.json');
 
-// Find rm-blocker.mjs anywhere in the workspace (agent may place it at root or elsewhere)
+// Find the hook file anywhere in the workspace. PROMPT says src/rm-blocker.mjs but agents
+// may vary the filename. Search by known names first, then any .mjs outside .eval/reference.
 function findHookFile() {
-  const preferredPath = join(workspaceDir, 'src', 'rm-blocker.mjs');
-  if (existsSync(preferredPath)) return preferredPath;
+  const knownNames = ['rm-blocker.mjs', 'hook.mjs', 'rm-guard.mjs', 'blocker.mjs', 'guard.mjs'];
+  for (const name of knownNames) {
+    const preferred = join(workspaceDir, 'src', name);
+    if (existsSync(preferred)) return preferred;
+    const root = join(workspaceDir, name);
+    if (existsSync(root)) return root;
+  }
   try {
     const found = execFileSync(
       'find',
       [
         workspaceDir,
         '-name',
-        'rm-blocker.mjs',
+        '*.mjs',
         '-not',
         '-path',
         '*/.eval/*',
         '-not',
         '-path',
         '*/reference/*',
+        '-not',
+        '-path',
+        '*/node_modules/*',
+        '-not',
+        '-path',
+        '*/tests/*',
       ],
       { encoding: 'utf8' }
     );

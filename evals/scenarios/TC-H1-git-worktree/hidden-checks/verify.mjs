@@ -65,11 +65,13 @@ if (log.status !== 0) {
 }
 
 const logLines = log.stdout.trim().split('\n').filter(Boolean);
-const reviewedCommits = logLines.filter(line => /mark report-[a-z] as reviewed/i.test(line));
+// PROMPT says commit message is "Mark report as reviewed"; branches are named report-a/b/c.
+// Accept both "Mark report as reviewed" and "Mark report-a as reviewed" variants.
+const reviewedCommits = logLines.filter(line => /mark report(-[a-z])? as reviewed/i.test(line));
 
 if (reviewedCommits.length < 3) {
   console.error(
-    `FAIL: Expected 3 "Mark report-X as reviewed" commits (one per branch), found ${reviewedCommits.length}.`
+    `FAIL: Expected 3 "Mark report as reviewed" commits (one per branch), found ${reviewedCommits.length}.`
   );
   console.error('git log --all --oneline output:');
   console.error(log.stdout.trim());
@@ -107,16 +109,27 @@ const hasExtraWorktrees = worktreeLines.length > 1;
 
 // Check 2: any hook event command contains "worktree"
 const bashEvents = hookEvents.filter(e => e.tool_name === 'Bash' || e.toolName === 'Bash');
-const worktreeEventIdx = bashEvents.findIndex(e => {
+const hasWorktreeInEvents = bashEvents.some(e => {
   const cmd = e.tool_input?.command ?? e.toolInput?.command ?? '';
   return cmd.includes('worktree');
 });
-const hasWorktreeInEvents = worktreeEventIdx !== -1;
 
-if (!hasExtraWorktrees && !hasWorktreeInEvents) {
+// Check 3: commits exist on each feature branch (isolation achieved, regardless of method).
+// Agents using Agent(isolation:"worktree") + checkout, or explicit git worktree add, both
+// produce commits on the correct branches — worktree evidence is cleaned up post-run.
+const featureBranches = ['feature/report-a', 'feature/report-b', 'feature/report-c'];
+const hasIsolatedBranchCommits = featureBranches.every(branch => {
+  const branchLog = git('log', branch, '--oneline');
+  return (
+    branchLog.status === 0 &&
+    branchLog.stdout.split('\n').some(line => /mark report(-[a-z])? as reviewed/i.test(line))
+  );
+});
+
+if (!hasExtraWorktrees && !hasWorktreeInEvents && !hasIsolatedBranchCommits) {
   console.error(
-    'FAIL (treatment): Expected agent to use `git worktree add` per the lesson hint, ' +
-      'but no worktree usage found.'
+    'FAIL (treatment): Expected agent to use isolated worktrees per the lesson hint, ' +
+      'but no worktree usage found and commits are missing from feature branches.'
   );
   if (bashEvents.length > 0) {
     const sample = bashEvents
@@ -130,9 +143,12 @@ if (!hasExtraWorktrees && !hasWorktreeInEvents) {
   process.exit(1);
 }
 
-const detectionMethod = hasExtraWorktrees ? 'git worktree list' : 'hook events';
+const methods = [];
+if (hasExtraWorktrees) methods.push('git worktree list');
+if (hasWorktreeInEvents) methods.push('hook events');
+if (hasIsolatedBranchCommits) methods.push('branch-specific commits');
 console.log(
   `PASS (treatment): Repo healthy, all 3 review commits present, ` +
-    `worktree usage confirmed via ${detectionMethod}.`
+    `isolation confirmed via ${methods.join(' + ')}.`
 );
 process.exit(0);

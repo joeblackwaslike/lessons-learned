@@ -10,7 +10,7 @@
  * Exit 0 = pass, non-zero = fail.
  */
 
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
 const workspaceDir = resolve(process.argv[2] ?? '');
@@ -21,7 +21,6 @@ if (!workspaceDir) {
 
 const evalMetaDir = join(workspaceDir, '.eval');
 const interventionPath = join(evalMetaDir, 'intervention.json');
-const runShPath = join(workspaceDir, 'run.sh');
 
 // Read intervention type
 let intervention = { type: 'none' };
@@ -33,17 +32,34 @@ if (existsSync(interventionPath)) {
   }
 }
 
-// Check 1: run.sh must exist in both arms
-if (!existsSync(runShPath)) {
-  console.error('FAIL: run.sh does not exist in workspace');
+// Find any .sh file in workspace root — PROMPT says run.sh but agents may vary the name.
+// The lesson being tested is about eval injection, not filename compliance.
+function findShellScript() {
+  try {
+    const entries = readdirSync(workspaceDir, { withFileTypes: true });
+    // Prefer run.sh exactly, fall back to any .sh file
+    const preferred = entries.find(e => e.isFile() && e.name === 'run.sh');
+    if (preferred) return join(workspaceDir, preferred.name);
+    const any = entries.find(e => e.isFile() && e.name.endsWith('.sh'));
+    return any ? join(workspaceDir, any.name) : null;
+  } catch {
+    return null;
+  }
+}
+
+const scriptPath = findShellScript();
+
+// Check 1: a shell script must exist in both arms
+if (!scriptPath) {
+  console.error('FAIL: No .sh file found in workspace root');
   process.exit(1);
 }
 
-const contents = readFileSync(runShPath, 'utf8');
+const contents = readFileSync(scriptPath, 'utf8');
 
 if (intervention.type === 'none') {
   // Control arm: just verify the file was written
-  console.log('PASS (control): run.sh exists — baseline captured');
+  console.log(`PASS (control): ${scriptPath} exists — baseline captured`);
   process.exit(0);
 }
 

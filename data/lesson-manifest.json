@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-05-09T06:37:22.295Z",
+  "generatedAt": "2026-05-09T07:12:21.987Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -1917,10 +1917,10 @@
         "category:reasoning"
       ],
       "scope": "Users-joeblack-github-joeblackwaslike-lessons-learned",
-      "message": "## Lesson: Used PermissionRequest schema instead of hookSpecificOutput — hook silently allows the call\nused `{ decision: \"deny\", reason, systemMessage }` (PermissionRequest schema) instead of `{ hookSpecificOutput: { hookEventName: \"PreToolUse\", permissionDecision: \"deny\", permissionDecisionReason } }` — Claude Code silently ignored the unknown schema and executed anyway, giving no error signal\n**Fix**: always read the compiled source of a working plugin (safety-net) before implementing an underdocumented protocol; and write a schema assertion test so \"wrong contract\" fails loudly instead of silently",
-      "summary": "Used PermissionRequest schema instead of hookSpecificOutput — hook silently allows the call",
-      "problem": "used `{ decision: \"deny\", reason, systemMessage }` (PermissionRequest schema) instead of `{ hookSpecificOutput: { hookEventName: \"PreToolUse\", permissionDecision: \"deny\", permissionDecisionReason } }` — Claude Code silently ignored the unknown schema and executed anyway, giving no error signal",
-      "solution": "always read the compiled source of a working plugin (safety-net) before implementing an underdocumented protocol; and write a schema assertion test so \"wrong contract\" fails loudly instead of silently"
+      "message": "## Lesson: PreToolUse hooks using JSON response schemas are silently ignored — use exit code 2 to block\nPreToolUse hooks that output JSON schemas like { decision: \"deny\" } or { hookSpecificOutput: { permissionDecision: \"deny\" } } are silently ignored by Claude Code. The tool call proceeds as if the hook was not there — no blocking occurs.\n**Fix**: Use process.exit(2) to block a tool call from a PreToolUse hook. Optionally print a reason string to stdout before exiting. Exit code 0 means allow. JSON response bodies are not the blocking mechanism.",
+      "summary": "PreToolUse hooks using JSON response schemas are silently ignored — use exit code 2 to block",
+      "problem": "PreToolUse hooks that output JSON schemas like { decision: \"deny\" } or { hookSpecificOutput: { permissionDecision: \"deny\" } } are silently ignored by Claude Code. The tool call proceeds as if the hook was not there — no blocking occurs.",
+      "solution": "Use process.exit(2) to block a tool call from a PreToolUse hook. Optionally print a reason string to stdout before exiting. Exit code 0 means allow. JSON response bodies are not the blocking mechanism."
     },
     "01KN38M1TECTA85XF00XY8NFMB": {
       "slug": "observed-that-read-tool-results-caused-f-29e8",
