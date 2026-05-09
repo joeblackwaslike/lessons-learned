@@ -58,10 +58,12 @@ mkdirSync(evalMetaDir, { recursive: true });
 const manifest = buildInterventionManifest(intervention);
 writeFileSync(join(evalMetaDir, 'lesson-manifest.json'), JSON.stringify(manifest, null, 2));
 
-// Write intervention metadata for artifact collector
+// Write intervention metadata for artifact collector.
+// Do not include scenarioId — agents that read .eval/ could use it to locate and explore
+// the eval repo on the host filesystem.
 writeFileSync(
   join(evalMetaDir, 'intervention.json'),
-  JSON.stringify({ ...intervention, scenarioId: scenarioDir.split('/').pop() }, null, 2)
+  JSON.stringify({ type: intervention.type, ids: intervention.ids ?? [] }, null, 2)
 );
 
 // --- Hook shim installation -----------------------------------------------------
@@ -88,6 +90,33 @@ workspaceSettings.hooks.PreToolUse.push({
   hooks: [{ type: 'command', command: `node "${shimPath}"`, timeout: 5 }],
 });
 writeFileSync(settingsPath, JSON.stringify(workspaceSettings, null, 2));
+
+// --- Workspace scope directive --------------------------------------------------
+// Inject a CLAUDE.md that constrains the agent to the workspace directory.
+// Also injects protocol/directive lessons directly — more reliable than SessionStart hooks
+// in --print mode, since CLAUDE.md is always loaded by Claude Code.
+const claudeMdSections = [
+  '# Workspace',
+  '',
+  'This is a self-contained project. Work only within the current directory.',
+  'Do not explore paths outside this workspace or read system configuration files.',
+];
+
+const protocolLessons = Object.values(manifest.lessons ?? {}).filter(
+  l => (l.type === 'protocol' || l.type === 'directive') && !l.disabled
+);
+
+if (protocolLessons.length > 0) {
+  claudeMdSections.push(
+    '',
+    '# Active Protocols',
+    '',
+    'The following protocols apply to this session. Follow them strictly before taking any actions.',
+    ...protocolLessons.flatMap(l => ['', l.message ?? `## ${l.summary}`])
+  );
+}
+
+writeFileSync(join(workspaceDir, 'CLAUDE.md'), claudeMdSections.join('\n') + '\n');
 
 // --- Helpers --------------------------------------------------------------------
 

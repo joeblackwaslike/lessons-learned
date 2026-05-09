@@ -72,16 +72,9 @@ if (matches.length === 0) {
 
 const blocker = findBlocker(matches, command);
 if (blocker) {
-  process.stdout.write(
-    JSON.stringify({
-      hookSpecificOutput: {
-        hookEventName: 'PreToolUse',
-        permissionDecision: 'deny',
-        permissionDecisionReason: blocker.reason,
-      },
-    })
-  );
-  process.exit(0);
+  // Exit code 2 blocks the tool call; stdout is shown to the agent as the denial reason.
+  process.stdout.write(blocker.reason);
+  process.exit(2);
 }
 
 // ─── Stage 4–5: Dedup, rank, budget ─────────────────────────────────

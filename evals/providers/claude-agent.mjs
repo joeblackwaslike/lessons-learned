@@ -104,7 +104,7 @@ export default class ClaudeAgentProvider {
       const claudeBin = findClaudeBin();
 
       // Run Claude Code non-interactively in the materialized workspace
-      const env = buildEnv(workspaceDir, intervention, scenarioId);
+      const env = buildEnv(workspaceDir, intervention);
       const claudeResult = spawnSync(
         claudeBin,
         ['--print', '--dangerously-skip-permissions', '-p', prompt],
@@ -213,19 +213,38 @@ function findClaudeBin() {
   throw new Error('claude binary not found. Set CLAUDE_BIN env var or ensure claude is on PATH.');
 }
 
-function buildEnv(workspaceDir, intervention, scenarioId) {
-  const env = { ...process.env };
+function buildEnv(workspaceDir, _intervention) {
+  // Use a strict allowlist instead of spreading process.env.
+  // Spreading leaks Claude Code session identifiers, background task paths, and other
+  // context that agents can read and use to contaminate eval results.
+  const allowed = [
+    'HOME',
+    'USER',
+    'LOGNAME',
+    'SHELL',
+    'PATH',
+    'TMPDIR',
+    'TMP',
+    'TEMP',
+    'LANG',
+    'LC_ALL',
+    'LC_CTYPE',
+    'NODE_PATH',
+    'ANTHROPIC_API_KEY',
+    'ANTHROPIC_BASE_URL',
+    'XDG_RUNTIME_DIR',
+  ];
 
-  // Point lesson injection to the eval-scoped manifest (written by materialize-workspace.mjs)
+  const env = Object.fromEntries(
+    allowed.filter(k => process.env[k] != null).map(k => [k, process.env[k]])
+  );
+
+  // Point lesson injection to the eval-scoped manifest
   const manifestPath = join(workspaceDir, '.eval', 'lesson-manifest.json');
   if (existsSync(manifestPath)) {
     env.LESSONS_MANIFEST_PATH = manifestPath;
   }
-
   env.LESSONS_DISABLE_SCAN = '1';
-  env.EVAL_SCENARIO_ID = scenarioId;
-  env.EVAL_INTERVENTION_TYPE = intervention.type ?? 'none';
-  env.EVAL_INTERVENTION_IDS = JSON.stringify(intervention.ids ?? []);
 
   return env;
 }

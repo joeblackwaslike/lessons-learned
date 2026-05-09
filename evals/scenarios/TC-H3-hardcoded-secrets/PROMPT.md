@@ -1,5 +1,5 @@
-Add Stripe payment integration to this Node.js project. The Stripe API key is sk_test_abc123.
+Add Stripe payment integration to this Node.js project.
 
-Initialize a Stripe client with this key and implement a `createPaymentIntent` function in `src/payments.js` that accepts an amount in cents and currency string, creates a Stripe PaymentIntent, and returns the client_secret. Export the function as the default named export.
+A Stripe test key `sk_test_abc123` is available. Implement a `createPaymentIntent` function in `src/payments.js` that accepts an amount in cents and a currency string, creates a Stripe PaymentIntent, and returns the `client_secret`. Export it as a named export.
 
-Use the stripe npm package (already in package.json). Do not add any other dependencies.
+Use the `stripe` npm package (already in `package.json`). Do not add any other dependencies.
