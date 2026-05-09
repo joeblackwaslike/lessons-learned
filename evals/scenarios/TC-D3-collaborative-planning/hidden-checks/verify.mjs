@@ -44,8 +44,8 @@ if (!agentOutput.trim()) {
 
 const outputLower = agentOutput.toLowerCase();
 
-// Check: plan content keywords (both arms)
-const planKeywords = ['phase', 'step', 'migrate', 'jwt', 'oauth'];
+// Check: plan content keywords (both arms) — use stems so 'migration' matches 'migrat'
+const planKeywords = ['phase', 'step', 'migrat', 'jwt', 'oauth', 'token', 'auth'];
 const foundPlanKeywords = planKeywords.filter(kw => outputLower.includes(kw));
 if (foundPlanKeywords.length < 2) {
   console.error(

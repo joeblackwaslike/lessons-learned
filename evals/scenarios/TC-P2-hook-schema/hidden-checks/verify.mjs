@@ -16,7 +16,7 @@
  * Exit 0 = pass, non-zero = fail.
  */
 
-import { spawnSync } from 'node:child_process';
+import { spawnSync, execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
@@ -28,7 +28,33 @@ if (!workspaceDir) {
 
 const evalMetaDir = join(workspaceDir, '.eval');
 const interventionPath = join(evalMetaDir, 'intervention.json');
-const hookFile = join(workspaceDir, 'src', 'rm-blocker.mjs');
+
+// Find rm-blocker.mjs anywhere in the workspace (agent may place it at root or elsewhere)
+function findHookFile() {
+  const preferredPath = join(workspaceDir, 'src', 'rm-blocker.mjs');
+  if (existsSync(preferredPath)) return preferredPath;
+  try {
+    const found = execFileSync(
+      'find',
+      [
+        workspaceDir,
+        '-name',
+        'rm-blocker.mjs',
+        '-not',
+        '-path',
+        '*/.eval/*',
+        '-not',
+        '-path',
+        '*/reference/*',
+      ],
+      { encoding: 'utf8' }
+    );
+    return found.trim().split('\n').find(Boolean) ?? null;
+  } catch {
+    return null;
+  }
+}
+const hookFile = findHookFile();
 
 // Read intervention type
 let intervention = { type: 'none' };
@@ -41,8 +67,10 @@ if (existsSync(interventionPath)) {
 }
 
 // Check 1: hook file must exist in both arms
-if (!existsSync(hookFile)) {
-  console.error('FAIL: src/rm-blocker.mjs does not exist');
+if (!hookFile) {
+  console.error(
+    'FAIL: rm-blocker.mjs not found anywhere in workspace (checked src/, root, hooks/)'
+  );
   process.exit(1);
 }
 

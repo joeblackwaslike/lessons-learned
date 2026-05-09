@@ -27,10 +27,10 @@ test('fires on Edit', () => {
   assert.ok(result.stdout.includes('lesson-inject'));
 });
 
-test('fires on Read', () => {
+test('does not fire on Read', () => {
   const result = runHook('Read');
   assert.strictEqual(result.status, 0);
-  assert.ok(result.stdout.includes('lesson-inject'));
+  assert.strictEqual(result.stdout, '');
 });
 
 test('does not fire on unknown tool', () => {

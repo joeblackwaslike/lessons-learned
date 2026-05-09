@@ -42,11 +42,15 @@ if (!existsSync(authFile)) {
 }
 
 // Check 2: run the tests — must exit 0
-const testResult = spawnSync('node', ['--test', 'tests/'], {
-  cwd: workspaceDir,
-  encoding: 'utf8',
-  timeout: 30_000,
-});
+const testResult = spawnSync(
+  process.execPath,
+  ['--test', join(workspaceDir, 'tests', 'auth.test.mjs')],
+  {
+    cwd: workspaceDir,
+    encoding: 'utf8',
+    timeout: 30_000,
+  }
+);
 
 if (testResult.status !== 0) {
   console.error('FAIL: tests did not pass');

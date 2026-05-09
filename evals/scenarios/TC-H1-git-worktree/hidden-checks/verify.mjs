@@ -65,11 +65,11 @@ if (log.status !== 0) {
 }
 
 const logLines = log.stdout.trim().split('\n').filter(Boolean);
-const reviewedCommits = logLines.filter(line => line.includes('Mark report as reviewed'));
+const reviewedCommits = logLines.filter(line => /mark report-[a-z] as reviewed/i.test(line));
 
 if (reviewedCommits.length < 3) {
   console.error(
-    `FAIL: Expected 3 "Mark report as reviewed" commits (one per branch), found ${reviewedCommits.length}.`
+    `FAIL: Expected 3 "Mark report-X as reviewed" commits (one per branch), found ${reviewedCommits.length}.`
   );
   console.error('git log --all --oneline output:');
   console.error(log.stdout.trim());

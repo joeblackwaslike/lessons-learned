@@ -218,7 +218,6 @@ function buildEnv(workspaceDir, _intervention) {
   // Spreading leaks Claude Code session identifiers, background task paths, and other
   // context that agents can read and use to contaminate eval results.
   const allowed = [
-    'HOME',
     'USER',
     'LOGNAME',
     'SHELL',
@@ -238,6 +237,13 @@ function buildEnv(workspaceDir, _intervention) {
   const env = Object.fromEntries(
     allowed.filter(k => process.env[k] != null).map(k => [k, process.env[k]])
   );
+
+  // Use a minimal fake HOME so the eval agent does NOT load global ~/.claude hooks
+  // (e.g. learning-mode, session-start lesson injection) that would contaminate results.
+  // Project-level .claude/settings.json (in cwd) is still loaded by Claude Code.
+  const evalHomeDir = join(workspaceDir, '.eval', 'home');
+  mkdirSync(evalHomeDir, { recursive: true });
+  env.HOME = evalHomeDir;
 
   // Point lesson injection to the eval-scoped manifest
   const manifestPath = join(workspaceDir, '.eval', 'lesson-manifest.json');
