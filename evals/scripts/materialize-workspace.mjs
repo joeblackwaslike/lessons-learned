@@ -64,6 +64,31 @@ writeFileSync(
   JSON.stringify({ ...intervention, scenarioId: scenarioDir.split('/').pop() }, null, 2)
 );
 
+// --- Hook shim installation -----------------------------------------------------
+// Install eval-hook-shim.mjs as a PreToolUse hook in the workspace .claude/settings.json.
+// The shim logs tool call events to .eval/hook-events.ndjson for trajectory analysis.
+
+const shimPath = resolve(__dirname, 'eval-hook-shim.mjs');
+const claudeDir = join(workspaceDir, '.claude');
+const settingsPath = join(claudeDir, 'settings.json');
+mkdirSync(claudeDir, { recursive: true });
+
+let workspaceSettings = {};
+if (existsSync(settingsPath)) {
+  try {
+    workspaceSettings = JSON.parse(readFileSync(settingsPath, 'utf8'));
+  } catch {
+    // use empty default
+  }
+}
+workspaceSettings.hooks ??= {};
+workspaceSettings.hooks.PreToolUse ??= [];
+workspaceSettings.hooks.PreToolUse.push({
+  matcher: 'Read|Edit|Write|Bash|Glob',
+  hooks: [{ type: 'command', command: `node "${shimPath}"`, timeout: 5 }],
+});
+writeFileSync(settingsPath, JSON.stringify(workspaceSettings, null, 2));
+
 // --- Helpers --------------------------------------------------------------------
 
 function buildInterventionManifest(intervention) {
