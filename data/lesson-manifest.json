@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-05-09T07:53:20.679Z",
+  "generatedAt": "2026-05-09T16:04:27.204Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -39,7 +39,7 @@
     },
     "01KNH2FRACBQMQWX29GPYE47D8": {
       "slug": "eval-on-user-supplied-command-strings-en-702a",
-      "type": "protocol",
+      "type": "guard",
       "priority": 10,
       "toolNames": [
         "Bash"
@@ -50,7 +50,7 @@
           "flags": ""
         }
       ],
-      "commandMatchTarget": "full",
+      "commandMatchTarget": "executable",
       "pathRegexSources": [],
       "tags": [
         "language:bash",
@@ -127,7 +127,7 @@
     },
     "01KNH2G0RB0SYRNZ560XN030GF": {
       "slug": "awk-code-injection-via-unvalidated-shell-cf5a",
-      "type": "hint",
+      "type": "guard",
       "priority": 9,
       "toolNames": [
         "Bash"
@@ -138,7 +138,7 @@
           "flags": ""
         }
       ],
-      "commandMatchTarget": "full",
+      "commandMatchTarget": "executable",
       "pathRegexSources": [],
       "tags": [
         "language:bash",
@@ -152,7 +152,7 @@
     },
     "01KNH2G6A4BCZMQKT5441HAJH2": {
       "slug": "jq-string-interpolation-of-shell-variabl-8803",
-      "type": "hint",
+      "type": "guard",
       "priority": 9,
       "toolNames": [
         "Bash"
@@ -163,7 +163,7 @@
           "flags": ""
         }
       ],
-      "commandMatchTarget": "full",
+      "commandMatchTarget": "executable",
       "pathRegexSources": [],
       "tags": [
         "tool:jq",
@@ -207,16 +207,17 @@
       "type": "hint",
       "priority": 9,
       "toolNames": [
-        "Bash"
+        "Edit",
+        "Write"
       ],
-      "commandRegexSources": [
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [
         {
-          "source": "\\bpython\\b|\\bpython3\\b",
-          "flags": ""
+          "source": ".*/[^/]*\\.py",
+          "flags": "i"
         }
       ],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
       "tags": [
         "lang:python",
         "lang:javascript",
@@ -264,10 +265,10 @@
         "severity:correctness"
       ],
       "scope": null,
-      "message": "## Lesson: Fetch exact-version docs before implementing — training-data sigs are stale\nLibrary APIs, CLI flags, and framework config schemas change between versions. Proceeding directly from memory without checking current documentation produces plans and code that fail on version-specific details — wrong method names, removed options, new required config keys. Training data has a knowledge cutoff and is routinely months or years behind.\n**Fix**: Before creating any implementation plan or writing code that involves a library, framework, CLI tool, or external API: use context7, Ref, or a web search to fetch current documentation. Verify actual API signatures, CLI flags, and config schemas match your assumptions before committing to a design. If documentation contradicts memory, trust the docs.",
+      "message": "## Lesson: Fetch exact-version docs before implementing — training-data sigs are stale\nLibrary APIs, CLI flags, and framework config schemas change between versions. Proceeding directly from memory without checking current documentation produces plans and code that fail on version-specific details — wrong method names, removed options, new required config keys. Training data has a knowledge cutoff and is routinely months or years behind.\n**Fix**: Before creating any implementation plan or writing code that involves a library, framework, CLI tool, or external API: (1) fetch current docs via context7 or web search — verify actual API signatures, CLI flags, and config schemas against the exact version in use; (2) search GitHub issues and Stack Overflow for known caveats, footguns, and breaking changes. External sources beat training data every time.",
       "summary": "Fetch exact-version docs before implementing — training-data sigs are stale",
       "problem": "Library APIs, CLI flags, and framework config schemas change between versions. Proceeding directly from memory without checking current documentation produces plans and code that fail on version-specific details — wrong method names, removed options, new required config keys. Training data has a knowledge cutoff and is routinely months or years behind.",
-      "solution": "Before creating any implementation plan or writing code that involves a library, framework, CLI tool, or external API: use context7, Ref, or a web search to fetch current documentation. Verify actual API signatures, CLI flags, and config schemas match your assumptions before committing to a design. If documentation contradicts memory, trust the docs."
+      "solution": "Before creating any implementation plan or writing code that involves a library, framework, CLI tool, or external API: (1) fetch current docs via context7 or web search — verify actual API signatures, CLI flags, and config schemas against the exact version in use; (2) search GitHub issues and Stack Overflow for known caveats, footguns, and breaking changes. External sources beat training data every time."
     },
     "01JQSEED00000000000000002": {
       "slug": "mock-patch-namespace-v3x8",
@@ -304,7 +305,7 @@
     },
     "01KMZ3BJKZHP5D15BD1CYPT54F": {
       "slug": "vitest-hangs-in-non-interactive-terminal-0c00",
-      "type": "hint",
+      "type": "guard",
       "priority": 8,
       "toolNames": [
         "Bash"
@@ -315,7 +316,7 @@
           "flags": ""
         }
       ],
-      "commandMatchTarget": "full",
+      "commandMatchTarget": "executable",
       "pathRegexSources": [],
       "tags": [
         "lang:javascript",
@@ -441,7 +442,7 @@
     },
     "01KNH2GQWE0E2693PZVJDBGB23": {
       "slug": "git-stderr-redirected-to-devnull-silentl-1ec9",
-      "type": "hint",
+      "type": "guard",
       "priority": 8,
       "toolNames": [
         "Bash"
@@ -452,7 +453,7 @@
           "flags": ""
         }
       ],
-      "commandMatchTarget": "full",
+      "commandMatchTarget": "executable",
       "pathRegexSources": [],
       "tags": [
         "tool:git",
@@ -495,16 +496,17 @@
       "type": "hint",
       "priority": 8,
       "toolNames": [
-        "Bash"
+        "Edit",
+        "Write"
       ],
-      "commandRegexSources": [
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [
         {
-          "source": "\\bpython\\b|\\bpython3\\b",
-          "flags": ""
+          "source": ".*/[^/]*\\.py",
+          "flags": "i"
         }
       ],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
       "tags": [
         "lang:python",
         "topic:async",
@@ -521,16 +523,17 @@
       "type": "hint",
       "priority": 8,
       "toolNames": [
-        "Bash"
+        "Edit",
+        "Write"
       ],
-      "commandRegexSources": [
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [
         {
-          "source": "\\bpython\\b|\\bpython3\\b",
-          "flags": ""
+          "source": ".*/[^/]*\\.py",
+          "flags": "i"
         }
       ],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
       "tags": [
         "lang:python",
         "topic:async",
@@ -627,7 +630,7 @@
     },
     "01JQSEED00000000000000003": {
       "slug": "git-stash-untracked-p4w1",
-      "type": "hint",
+      "type": "guard",
       "priority": 7,
       "toolNames": [
         "Bash"
@@ -638,7 +641,7 @@
           "flags": ""
         }
       ],
-      "commandMatchTarget": "full",
+      "commandMatchTarget": "executable",
       "pathRegexSources": [],
       "tags": [
         "tool:git",
@@ -863,16 +866,17 @@
       "type": "hint",
       "priority": 7,
       "toolNames": [
-        "Bash"
+        "Edit",
+        "Write"
       ],
-      "commandRegexSources": [
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [
         {
-          "source": "\\bpython\\b|\\bpython3\\b",
-          "flags": ""
+          "source": ".*/[^/]*\\.py",
+          "flags": "i"
         }
       ],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
       "tags": [
         "lang:python",
         "severity:silent-failure"
@@ -888,16 +892,17 @@
       "type": "hint",
       "priority": 7,
       "toolNames": [
-        "Bash"
+        "Edit",
+        "Write"
       ],
-      "commandRegexSources": [
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [
         {
-          "source": "\\bpython\\b|\\bpython3\\b",
-          "flags": ""
+          "source": ".*/[^/]*\\.py",
+          "flags": "i"
         }
       ],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
       "tags": [
         "lang:python",
         "severity:silent-failure"
