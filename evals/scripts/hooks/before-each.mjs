@@ -28,9 +28,39 @@ export async function beforeAll() {
   }
 }
 
+/** Resolve {{file://path}} template references in vars before Promptfoo sees them. */
+function resolveFileRefs(vars) {
+  const resolved = {};
+  for (const [key, val] of Object.entries(vars)) {
+    if (typeof val === 'string') {
+      const m = /^\{\{file:\/\/(.+?)\}\}$/.exec(val);
+      if (m) {
+        try {
+          resolved[key] = readFileSync(resolve(EVALS_ROOT, m[1]), 'utf8');
+          continue;
+        } catch {
+          // fall through — keep raw value if file unreadable
+        }
+      }
+    }
+    resolved[key] = val;
+  }
+  return resolved;
+}
+
 export async function beforeEach(context) {
   const intervention = context.test.vars?.intervention;
-  if (intervention?.type !== 'lesson' || !intervention.ids?.length) return;
+  const isLesson = intervention?.type === 'lesson' && intervention.ids?.length > 0;
+
+  if (!isLesson) {
+    // Control arm: resolve file refs so the provider receives actual file content.
+    const resolvedVars = resolveFileRefs(context.test.vars);
+    const hasFileRef = Object.values(context.test.vars).some(
+      v => typeof v === 'string' && v.startsWith('{{file://')
+    );
+    return hasFileRef ? { test: { vars: resolvedVars } } : undefined;
+  }
+
   if (!manifest) return;
 
   const targetSlug = intervention.ids[0];
@@ -38,26 +68,9 @@ export async function beforeEach(context) {
   const lesson = Object.values(lessons).find(l => l.slug === targetSlug || l.id === targetSlug);
   if (!lesson) return;
 
-  // Promptfoo resolves {{file://...}} vars AFTER beforeEach returns, but our spread
-  // would re-introduce unresolved file references, overriding Promptfoo's resolution.
-  // Resolve them ourselves so the returned vars are already fully expanded.
-  const resolvedVars = {};
-  for (const [key, val] of Object.entries(context.test.vars)) {
-    if (typeof val === 'string') {
-      const m = /^\{\{file:\/\/(.+?)\}\}$/.exec(val);
-      if (m) {
-        try {
-          resolvedVars[key] = readFileSync(resolve(EVALS_ROOT, m[1]), 'utf8');
-          continue;
-        } catch {
-          // fall through — keep raw value if file unreadable
-        }
-      }
-    }
-    resolvedVars[key] = val;
-  }
-
   return {
-    test: { vars: { ...resolvedVars, lessonSnapshot: JSON.stringify(lesson) } },
+    test: {
+      vars: { ...resolveFileRefs(context.test.vars), lessonSnapshot: JSON.stringify(lesson) },
+    },
   };
 }
