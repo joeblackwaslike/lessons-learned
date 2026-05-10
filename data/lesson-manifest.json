@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-05-10T23:23:36.496Z",
+  "generatedAt": "2026-05-10T23:53:03.795Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -1103,6 +1103,34 @@
       "problem": "When a task mentions future possibilities (\"we might need OAuth later\"), agents build abstract factory patterns, pluggable strategy interfaces, placeholder stubs, and extension points for requirements that do not yet exist. This adds complexity, maintenance burden, and often implements the wrong abstractions because future needs are unknown.",
       "solution": "Implement only what the current stated requirements need. If future extensibility is hinted, note what it would require in a comment — do not build it. YAGNI: You Aren't Gonna Need It. Three concrete implementations are better than one premature abstraction."
     },
+    "01KRA4XR2AW457Y4M71B4CY8D0": {
+      "slug": "osascript-heredoc-dollar-signs-are-expan-5765",
+      "type": "hint",
+      "priority": 7,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "\\bosascript\\b",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "tags": [
+        "tool:osascript",
+        "topic:heredoc",
+        "topic:quoting",
+        "severity:silent-failure",
+        "env:macos"
+      ],
+      "scope": null,
+      "message": "## Lesson: osascript heredoc dollar signs are expanded by bash unless delimiter is single-quoted\nUsing `osascript << EOF` with a double-quoted heredoc causes bash to expand $VARIABLE references before osascript receives the script. This silently corrupts AppleScript/JXA code that contains literal dollar signs or shell-variable patterns.\n**Fix**: Use a single-quoted heredoc delimiter to prevent expansion: `osascript <<'EOF' ... EOF`. If the heredoc needs some shell variable expansion, escape literal dollar signs as \\$.",
+      "summary": "osascript heredoc dollar signs are expanded by bash unless delimiter is single-quoted",
+      "problem": "Using `osascript << EOF` with a double-quoted heredoc causes bash to expand $VARIABLE references before osascript receives the script. This silently corrupts AppleScript/JXA code that contains literal dollar signs or shell-variable patterns.",
+      "solution": "Use a single-quoted heredoc delimiter to prevent expansion: `osascript <<'EOF' ... EOF`. If the heredoc needs some shell variable expansion, escape literal dollar signs as \\$."
+    },
     "01JQSEED00000000000000005": {
       "slug": "npm-link-peer-deps-r2f7",
       "type": "hint",
@@ -1601,6 +1629,40 @@
       "summary": "suppressOutput:true in hook JSON makes lesson injection invisible to the user",
       "problem": "suppressOutput:true in hook JSON suppresses not just the hook error label but the entire visual indicator in the Claude Code UI. Lesson injection becomes completely invisible to the user — the model receives context but the user never sees lessons firing, defeating the system purpose.",
       "solution": "Omit suppressOutput from PreToolUse hook output. Let CC show the collapsible details block with lesson content — that visibility is the whole point."
+    },
+    "01KRA4Y1H95MYTRRG3W2JCEPAX": {
+      "slug": "launchd-agents-do-not-inherit-shell-env-3142",
+      "type": "hint",
+      "priority": 6,
+      "toolNames": [
+        "Bash",
+        "Write"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "\\blaunchctl\\b",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [
+        {
+          "source": ".*/[^/]*\\.plist",
+          "flags": "i"
+        }
+      ],
+      "tags": [
+        "tool:launchctl",
+        "topic:env",
+        "topic:shell",
+        "severity:silent-failure",
+        "env:macos"
+      ],
+      "scope": null,
+      "message": "## Lesson: launchd agents do not inherit shell env; always set HOME in plist EnvironmentVariables\nLaunchAgent plist files run processes without the user's shell environment. $HOME, $PATH, and other vars are unset or minimal, causing tools that use nvm, pyenv, or $HOME to fail silently or with cryptic errors.\n**Fix**: Add EnvironmentVariables to the plist: <key>EnvironmentVariables</key><dict><key>HOME</key><string>/Users/USERNAME</string><key>PATH</key><string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string></dict>. Hardcode paths — do not use $HOME or $PATH inside the plist.",
+      "summary": "launchd agents do not inherit shell env; always set HOME in plist EnvironmentVariables",
+      "problem": "LaunchAgent plist files run processes without the user's shell environment. $HOME, $PATH, and other vars are unset or minimal, causing tools that use nvm, pyenv, or $HOME to fail silently or with cryptic errors.",
+      "solution": "Add EnvironmentVariables to the plist: <key>EnvironmentVariables</key><dict><key>HOME</key><string>/Users/USERNAME</string><key>PATH</key><string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string></dict>. Hardcode paths — do not use $HOME or $PATH inside the plist."
     },
     "01KMZ3CHGQMTYQA0AFPQRGCSEG": {
       "slug": "oh-my-zsh-nvm-plugin-outputs-warnings-in-df6f",
