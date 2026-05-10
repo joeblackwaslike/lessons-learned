@@ -76,7 +76,7 @@ cd evals && npx promptfoo view
 
 ## Notes
 
-- **Tier 3 judge**: requires `ANTHROPIC_API_KEY` in the environment. If absent, judge assertions will report SKIP (not fail).
+- **Tier 3 judge**: uses your existing `claude login` session via `claude --print` — no `ANTHROPIC_API_KEY` needed.
 - **Control arms run first**: `maxConcurrency: 1` in config guarantees control transcript files exist before treatment arms call the judge.
 - **Cache**: arm results are cached in `evals/results/cache/`. Treatment arms re-run if the lesson's problem or solution changes. Use `npm run eval:clean` to clear all caches.
 - **MCP access**: `npx promptfoo mcp` exposes eval history to AI agents (configured in `.mcp.json`).

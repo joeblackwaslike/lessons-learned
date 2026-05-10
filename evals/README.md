@@ -4,7 +4,7 @@ Lesson injection effectiveness evals built on [Promptfoo](https://promptfoo.dev)
 
 ## Architecture
 
-```
+```text
 evals/
 ├── promptfooconfig.yaml          # Single config: all scenarios + extensions
 ├── providers/
@@ -35,9 +35,8 @@ evals/
 | Tier   | What it checks                  | How                                                                          |
 | ------ | ------------------------------- | ---------------------------------------------------------------------------- |
 | Tier 1 | File system / command outcome   | `hidden-checks/verify.mjs` — exit 0 = pass                                   |
+| Tier 2 | Tool-call sequence              | `assert-trajectory.mjs` — declarative rules in `scenario.json`               |
 | Tier 3 | Did the lesson change behavior? | LLM judge (`judge.mjs`) — Form A (hint/guard) or Form B (protocol/directive) |
-
-> Tier 2 (trajectory assertions) is tracked in issue ll-19n and will be added separately.
 
 ## Running Evals
 
@@ -96,7 +95,7 @@ The judge (`scripts/judge.mjs`) runs inside `claude-agent.mjs` for treatment arm
 - `CONTROL_CORRECT` — control agent already avoids the mistake; check the trigger prompt first, archive second
 - `SKIP` — ambiguous or judge error
 
-**Prerequisites:** `ANTHROPIC_API_KEY` must be set. Control arms must run before treatment arms — guaranteed by `maxConcurrency: 1` in the config, with all controls listed before treatments.
+**Prerequisites:** No API key required — the judge spawns `claude --print` and reuses your existing `claude login` session. Control arms must run before treatment arms — guaranteed by `maxConcurrency: 1` in the config, with all controls listed before treatments.
 
 ## Cache Behavior
 
