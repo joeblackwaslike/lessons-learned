@@ -72,8 +72,9 @@ export async function judge({ lesson, controlTranscript, treatmentTranscript, fo
   }
 
   const envelope = JSON.parse(result.stdout);
-  // --output-format json: result may already be a parsed object (with --json-schema) or a string
-  const parsed = envelope.result;
+  // With --json-schema, the validated result lands in structured_output (not result).
+  // Without it, result contains the raw text string.
+  const parsed = envelope.structured_output ?? envelope.result;
   if (parsed !== null && typeof parsed === 'object') return parsed;
   const raw = String(parsed ?? '').trim();
   try {

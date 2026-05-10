@@ -74,7 +74,7 @@ export default class ClaudeAgentProvider {
     }
 
     const lesson = parseLessonSnapshot(vars, isControl);
-    const controlHash = computeControlHash(prompt, model);
+    const controlHash = computeControlHash(scenarioId, model);
     const controlTranscriptFile = join(CACHE_DIR, `control-${controlHash}.json`);
     const lessonContentHash = lesson ? computeLessonContentHash(lesson) : null;
     const cacheKey = computeCacheKey(scenarioDir, intervention, model, lessonContentHash);
@@ -369,8 +369,8 @@ function buildEnv(workspaceDir, _intervention) {
 // ── Cache key computation ──────────────────────────────────────────────────────
 
 /** sha256(prompt + ':' + model) — stable key for control transcript reuse across lessons */
-function computeControlHash(prompt, model) {
-  return createHash('sha256').update(prompt).update(':').update(model).digest('hex');
+function computeControlHash(scenarioId, model) {
+  return createHash('sha256').update(scenarioId).update(':').update(model).digest('hex');
 }
 
 /** sha256(problem + ':' + solution) — changes when lesson content is edited */

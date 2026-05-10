@@ -14,6 +14,7 @@ import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+const EVALS_ROOT = resolve(__dirname, '..', '..');
 const MANIFEST_PATH = resolve(__dirname, '..', '..', '..', 'data', 'lesson-manifest.json');
 
 let manifest = null;
@@ -37,7 +38,26 @@ export async function beforeEach(context) {
   const lesson = Object.values(lessons).find(l => l.slug === targetSlug || l.id === targetSlug);
   if (!lesson) return;
 
+  // Promptfoo resolves {{file://...}} vars AFTER beforeEach returns, but our spread
+  // would re-introduce unresolved file references, overriding Promptfoo's resolution.
+  // Resolve them ourselves so the returned vars are already fully expanded.
+  const resolvedVars = {};
+  for (const [key, val] of Object.entries(context.test.vars)) {
+    if (typeof val === 'string') {
+      const m = /^\{\{file:\/\/(.+?)\}\}$/.exec(val);
+      if (m) {
+        try {
+          resolvedVars[key] = readFileSync(resolve(EVALS_ROOT, m[1]), 'utf8');
+          continue;
+        } catch {
+          // fall through — keep raw value if file unreadable
+        }
+      }
+    }
+    resolvedVars[key] = val;
+  }
+
   return {
-    test: { vars: { lessonSnapshot: JSON.stringify(lesson) } },
+    test: { vars: { ...resolvedVars, lessonSnapshot: JSON.stringify(lesson) } },
   };
 }
