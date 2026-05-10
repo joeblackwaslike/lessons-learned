@@ -18,6 +18,7 @@ defaultTest:
 
 # Lifecycle extensions: inject lesson snapshot before each test, print judge summary after all
 extensions:
+  - file://scripts/hooks/before-each.mjs:beforeAll
   - file://scripts/hooks/before-each.mjs:beforeEach
   - file://scripts/hooks/after-all.mjs:afterAll
 
@@ -118,6 +119,8 @@ tests:
         value: "file://scripts/assert-hidden-check.mjs"
       - type: javascript
         value: "file://scripts/assert-judge.mjs"
+      - type: javascript
+        value: "file://scripts/assert-trajectory.mjs"
 
   - description: "TC-G1 pytest-hang [treatment]"
     vars:
@@ -132,6 +135,8 @@ tests:
         value: "file://scripts/assert-hidden-check.mjs"
       - type: javascript
         value: "file://scripts/assert-judge.mjs"
+      - type: javascript
+        value: "file://scripts/assert-trajectory.mjs"
 
   - description: "TC-H1 git-worktree [treatment]"
     vars:
@@ -146,6 +151,8 @@ tests:
         value: "file://scripts/assert-hidden-check.mjs"
       - type: javascript
         value: "file://scripts/assert-judge.mjs"
+      - type: javascript
+        value: "file://scripts/assert-trajectory.mjs"
 
   - description: "TC-H2 eval-injection [treatment]"
     vars:
@@ -160,6 +167,8 @@ tests:
         value: "file://scripts/assert-hidden-check.mjs"
       - type: javascript
         value: "file://scripts/assert-judge.mjs"
+      - type: javascript
+        value: "file://scripts/assert-trajectory.mjs"
 
   - description: "TC-P1 subagent-tools [treatment]"
     vars:
@@ -174,6 +183,8 @@ tests:
         value: "file://scripts/assert-hidden-check.mjs"
       - type: javascript
         value: "file://scripts/assert-judge.mjs"
+      - type: javascript
+        value: "file://scripts/assert-trajectory.mjs"
 
   - description: "TC-P2 hook-schema [treatment]"
     vars:
@@ -188,6 +199,8 @@ tests:
         value: "file://scripts/assert-hidden-check.mjs"
       - type: javascript
         value: "file://scripts/assert-judge.mjs"
+      - type: javascript
+        value: "file://scripts/assert-trajectory.mjs"
 
   - description: "TC-P3 overfitted-fix [treatment]"
     vars:
@@ -202,6 +215,8 @@ tests:
         value: "file://scripts/assert-hidden-check.mjs"
       - type: javascript
         value: "file://scripts/assert-judge.mjs"
+      - type: javascript
+        value: "file://scripts/assert-trajectory.mjs"
 
   - description: "TC-D1 speculative-abstractions [treatment]"
     vars:
@@ -216,6 +231,8 @@ tests:
         value: "file://scripts/assert-hidden-check.mjs"
       - type: javascript
         value: "file://scripts/assert-judge.mjs"
+      - type: javascript
+        value: "file://scripts/assert-trajectory.mjs"
 
   - description: "TC-D3 collaborative-planning [treatment]"
     vars:
@@ -230,6 +247,8 @@ tests:
         value: "file://scripts/assert-hidden-check.mjs"
       - type: javascript
         value: "file://scripts/assert-judge.mjs"
+      - type: javascript
+        value: "file://scripts/assert-trajectory.mjs"
 
 # Output
 outputPath: results/cache/latest-run.json

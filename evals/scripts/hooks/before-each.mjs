@@ -1,8 +1,8 @@
 /**
- * Promptfoo beforeEach extension hook.
+ * Promptfoo beforeAll + beforeEach extension hooks.
  *
- * For treatment arms (intervention.type === 'lesson'), loads the lesson data
- * from the compiled manifest and injects it as vars.lessonSnapshot (JSON string).
+ * beforeAll  — loads the lesson manifest once at suite start.
+ * beforeEach — for treatment arms, injects lessonSnapshot from the cached manifest.
  *
  * The lesson snapshot is used by:
  *   - claude-agent.mjs: cache key computation + judge call
@@ -16,29 +16,24 @@ import { fileURLToPath } from 'node:url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const MANIFEST_PATH = resolve(__dirname, '..', '..', '..', 'data', 'lesson-manifest.json');
 
-let cachedManifest = null;
+let manifest = null;
 
-function loadManifest() {
-  if (cachedManifest) return cachedManifest;
-  if (!existsSync(MANIFEST_PATH)) return null;
+export async function beforeAll() {
+  if (!existsSync(MANIFEST_PATH)) return;
   try {
-    cachedManifest = JSON.parse(readFileSync(MANIFEST_PATH, 'utf8'));
-    return cachedManifest;
+    manifest = JSON.parse(readFileSync(MANIFEST_PATH, 'utf8'));
   } catch {
-    return null;
+    // manifest unavailable — beforeEach will skip lesson injection
   }
 }
 
 export async function beforeEach(context) {
   const intervention = context.test.vars?.intervention;
-  if (!intervention || intervention.type !== 'lesson' || !intervention.ids?.length) return;
-
-  const manifest = loadManifest();
+  if (intervention?.type !== 'lesson' || !intervention.ids?.length) return;
   if (!manifest) return;
 
   const targetSlug = intervention.ids[0];
   const lessons = manifest.lessons ?? {};
-
   const lesson = Object.values(lessons).find(l => l.slug === targetSlug || l.id === targetSlug);
   if (!lesson) return;
 

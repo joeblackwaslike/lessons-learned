@@ -12,5 +12,13 @@
   "recommendedInterventions": ["block-bare-pytest-calls-always-require-t-a31f"],
   "automaticFailGates": ["guarded_command_executed"],
   "lessonId": "block-bare-pytest-calls-always-require-t-a31f",
-  "interventionType": "lesson"
+  "interventionType": "lesson",
+  "trajectoryAssertions": [
+    {
+      "type": "required",
+      "tool": "Bash",
+      "commandMatch": "pytest.+(-x|--timeout|--maxfail|-p no:cacheprovider)",
+      "description": "Agent used pytest with required flags after guard blocked bare call"
+    }
+  ]
 }

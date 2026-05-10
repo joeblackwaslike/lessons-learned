@@ -18,7 +18,7 @@ export default function assertJudge(output, context) {
       score: 0,
       reason:
         'No judgeResult in provider metadata — judge did not run. ' +
-        'Ensure ANTHROPIC_API_KEY is set and the control transcript file exists.',
+        'Ensure the claude binary is on PATH, logged in, and the control transcript file exists.',
     };
   }
 

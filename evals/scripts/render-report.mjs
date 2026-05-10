@@ -132,52 +132,54 @@ function formatResultRow(result) {
 
 function renderFailures(failures) {
   if (failures.length === 0) return [];
-  return [
-    '## Failures',
+  return ['## Failures', '', ...failures.flatMap(renderFailureBlock)];
+}
+
+function renderFailureBlock(f) {
+  const lines = [
+    `### ${f.scenarioId ?? 'unknown'} (${f.lessonType ?? '–'}) — FAILED`,
     '',
-    ...failures.flatMap(f => {
-      const judgeResult = f.judgeResult ?? null;
-      const lines = [
-        `### ${f.scenarioId ?? 'unknown'} (${f.lessonType ?? '–'}) — FAILED`,
-        '',
-        `Delta: ${typeof f.delta === 'number' ? f.delta.toFixed(2) : '–'} | Score: ${f.treatmentScore?.toFixed(2) ?? '–'}`,
-        '',
-      ];
-
-      if (judgeResult) {
-        if (judgeResult.outcome === 'CONTROL_CORRECT') {
-          lines.push(
-            '**CONTROL_CORRECT**: The control agent solved this without the lesson.',
-            '',
-            'Next steps (in order):',
-            '1. **Check the trigger prompt first.** Is it specific enough to reliably reproduce',
-            '   the failure mode? If not, refine it and re-run before drawing any conclusions.',
-            '2. **If the prompt is sound and control still passes**, the lesson may be injecting',
-            '   unnecessary noise. Consider archiving it.',
-            ''
-          );
-        } else {
-          if (judgeResult.reasoning) {
-            lines.push(`**Judge reasoning**: ${judgeResult.reasoning}`, '');
-          }
-          if (judgeResult.outcome === 'FAIL') {
-            lines.push(
-              '**Consider editing**: Make the solution more prescriptive about the exact action to take.',
-              ''
-            );
-          }
-          const ds = judgeResult.dimension_scores;
-          if (ds?.treatment) {
-            lines.push(...renderDimensionScores(ds));
-          }
-        }
-      } else if (f.failureReason) {
-        lines.push(`**Diagnosis:** ${f.failureReason}`, '');
-      }
-
-      return lines;
-    }),
+    `Delta: ${typeof f.delta === 'number' ? f.delta.toFixed(2) : '–'} | Score: ${f.treatmentScore?.toFixed(2) ?? '–'}`,
+    '',
   ];
+
+  lines.push(...renderJudgeBlock(f));
+
+  if (f.trajectoryResult?.pass === false) {
+    lines.push('**Tier 2 trajectory failure**:', '```', f.trajectoryResult.reason, '```', '');
+  }
+
+  return lines;
+}
+
+function renderJudgeBlock(f) {
+  const judgeResult = f.judgeResult ?? null;
+  if (!judgeResult) {
+    return f.failureReason ? [`**Diagnosis:** ${f.failureReason}`, ''] : [];
+  }
+  if (judgeResult.outcome === 'CONTROL_CORRECT') {
+    return [
+      '**CONTROL_CORRECT**: The control agent solved this without the lesson.',
+      '',
+      'Next steps (in order):',
+      '1. **Check the trigger prompt first.** Is it specific enough to reliably reproduce',
+      '   the failure mode? If not, refine it and re-run before drawing any conclusions.',
+      '2. **If the prompt is sound and control still passes**, the lesson may be injecting',
+      '   unnecessary noise. Consider archiving it.',
+      '',
+    ];
+  }
+  const lines = [];
+  if (judgeResult.reasoning) lines.push(`**Judge reasoning**: ${judgeResult.reasoning}`, '');
+  if (judgeResult.outcome === 'FAIL') {
+    lines.push(
+      '**Consider editing**: Make the solution more prescriptive about the exact action to take.',
+      ''
+    );
+  }
+  if (judgeResult.dimension_scores?.treatment)
+    lines.push(...renderDimensionScores(judgeResult.dimension_scores));
+  return lines;
 }
 
 const DIMENSION_LABELS = [
@@ -237,12 +239,18 @@ function buildScenarioResults(pfResults) {
         cacheHit: r.response?.metadata?.cacheHit ?? false,
       };
     } else {
+      const trajectoryComp = (r.gradingResult?.componentResults ?? []).find(c =>
+        c.assertion?.value?.includes?.('assert-trajectory')
+      );
       entry.treatment = {
         pass: armPass,
         score: r.score ?? 0,
         ids: r.vars?.intervention?.ids ?? [],
         cacheHit: r.response?.metadata?.cacheHit ?? false,
         failureReason: hiddenCheck.details ?? r.failureReason,
+        trajectoryResult: trajectoryComp
+          ? { pass: trajectoryComp.pass, reason: trajectoryComp.reason }
+          : null,
       };
     }
   }
@@ -264,6 +272,7 @@ function buildScenarioResults(pfResults) {
       regression: false,
       cacheHit: control?.cacheHit ?? false,
       failureReason: pass ? null : (treatment?.failureReason ?? null),
+      trajectoryResult: treatment?.trajectoryResult ?? null,
     };
   });
 }

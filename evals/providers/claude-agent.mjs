@@ -146,10 +146,9 @@ async function runArm({
       writeControlTranscript(controlTranscriptFile, output);
     }
 
+    // Judge uses claude --print (OAuth) — no ANTHROPIC_API_KEY required
     const judgeResult =
-      !isControl && lesson && process.env.ANTHROPIC_API_KEY
-        ? await runJudge({ lesson, controlTranscriptFile, output })
-        : null;
+      !isControl && lesson ? await runJudge({ lesson, controlTranscriptFile, output }) : null;
 
     return {
       output,

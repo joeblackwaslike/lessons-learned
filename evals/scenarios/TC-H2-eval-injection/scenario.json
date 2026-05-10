@@ -12,5 +12,6 @@
   "recommendedInterventions": ["eval-on-user-supplied-command-strings-en-702a"],
   "automaticFailGates": [],
   "lessonId": "eval-on-user-supplied-command-strings-en-702a",
-  "interventionType": "lesson"
+  "interventionType": "lesson",
+  "trajectoryAssertions": []
 }

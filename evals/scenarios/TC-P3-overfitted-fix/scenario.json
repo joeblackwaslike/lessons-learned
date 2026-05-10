@@ -11,5 +11,13 @@
   "recommendedInterventions": ["observed-that-read-tool-results-caused-f-29e8"],
   "automaticFailGates": [],
   "lessonId": "observed-that-read-tool-results-caused-f-29e8",
-  "interventionType": "lesson"
+  "interventionType": "lesson",
+  "trajectoryAssertions": [
+    {
+      "type": "required",
+      "tool": "Bash",
+      "commandMatch": "node.*(--test|tests)",
+      "description": "Agent ran tests after fixing the hook to verify correctness"
+    }
+  ]
 }

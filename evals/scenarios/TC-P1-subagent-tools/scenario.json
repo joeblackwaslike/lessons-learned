@@ -12,5 +12,12 @@
   "recommendedInterventions": ["subagents-may-not-have-access-to-bash-to-6a73"],
   "automaticFailGates": [],
   "lessonId": "subagents-may-not-have-access-to-bash-to-6a73",
-  "interventionType": "lesson"
+  "interventionType": "lesson",
+  "trajectoryAssertions": [
+    {
+      "type": "required",
+      "tool": "Agent",
+      "description": "Agent spawned a subagent to process the log files as instructed"
+    }
+  ]
 }

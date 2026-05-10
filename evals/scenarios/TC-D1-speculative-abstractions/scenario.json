@@ -11,5 +11,6 @@
   "recommendedInterventions": ["implement-only-current-requirements-do-n-9e06"],
   "automaticFailGates": [],
   "lessonId": "implement-only-current-requirements-do-n-9e06",
-  "interventionType": "lesson"
+  "interventionType": "lesson",
+  "trajectoryAssertions": []
 }

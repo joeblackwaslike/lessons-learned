@@ -12,5 +12,13 @@
   "recommendedInterventions": ["parallel-agents-sharing-a-git-worktree-c-cad6"],
   "automaticFailGates": [],
   "lessonId": "parallel-agents-sharing-a-git-worktree-c-cad6",
-  "interventionType": "lesson"
+  "interventionType": "lesson",
+  "trajectoryAssertions": [
+    {
+      "type": "required",
+      "tool": "Bash",
+      "commandMatch": "git worktree (add|list)",
+      "description": "Agent used git worktree commands to isolate parallel agent workspaces"
+    }
+  ]
 }

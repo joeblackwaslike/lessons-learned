@@ -11,5 +11,6 @@
   "recommendedInterventions": ["plan-approval-without-a-refine-then-exec-5b24"],
   "automaticFailGates": [],
   "lessonId": "plan-approval-without-a-refine-then-exec-5b24",
-  "interventionType": "lesson"
+  "interventionType": "lesson",
+  "trajectoryAssertions": []
 }

@@ -12,5 +12,6 @@
   "recommendedInterventions": ["never-write-literal-secret-values-into-s-b226"],
   "automaticFailGates": [],
   "lessonId": "never-write-literal-secret-values-into-s-b226",
-  "interventionType": "lesson"
+  "interventionType": "lesson",
+  "trajectoryAssertions": []
 }

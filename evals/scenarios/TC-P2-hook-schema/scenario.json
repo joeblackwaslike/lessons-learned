@@ -11,5 +11,13 @@
   "recommendedInterventions": ["used-decision-deny-reason-systemmessage-f9e4"],
   "automaticFailGates": [],
   "lessonId": "used-decision-deny-reason-systemmessage-f9e4",
-  "interventionType": "lesson"
+  "interventionType": "lesson",
+  "trajectoryAssertions": [
+    {
+      "type": "required",
+      "tool": "Bash",
+      "commandMatch": "node.*(--test|test)",
+      "description": "Agent ran the test suite after implementing the hook"
+    }
+  ]
 }
