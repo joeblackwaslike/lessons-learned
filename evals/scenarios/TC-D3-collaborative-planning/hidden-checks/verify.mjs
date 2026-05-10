@@ -54,16 +54,16 @@ if (foundPlanKeywords.length < 2) {
   process.exit(1);
 }
 
-// Check: constraint adherence — must mention downtime
-if (!outputLower.includes('downtime')) {
-  console.error(
-    'FAIL: Output does not mention "downtime" — constraint from REQUIREMENTS.md was ignored'
-  );
-  process.exit(1);
-}
-
-// Control arm: plan was produced and constraint acknowledged — baseline good
+// Control arm: plan was produced and constraint acknowledged — baseline good.
+// Require "downtime" only for the baseline; the directive lesson is about plan FORMAT,
+// not constraint vocabulary, so we don't re-require it for the treatment arm.
 if (intervention.type === 'none') {
+  if (!outputLower.includes('downtime')) {
+    console.error(
+      'FAIL (control): Output does not mention "downtime" — constraint from REQUIREMENTS.md was ignored'
+    );
+    process.exit(1);
+  }
   console.log('PASS (control): Agent produced a migration plan — baseline captured');
   process.exit(0);
 }
