@@ -28,7 +28,7 @@ const inputPath = resolve(
 const reportsDir = join(EVALS_ROOT, 'results', 'reports');
 mkdirSync(reportsDir, { recursive: true });
 
-const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+const timestamp = new Date().toISOString().replaceAll(/[:.]/g, '-').slice(0, 19);
 const defaultOutput = join(reportsDir, `report-${timestamp}.md`);
 const outputPath = args['--output'] ? resolve(args['--output']) : defaultOutput;
 
@@ -135,15 +135,82 @@ function renderFailures(failures) {
   return [
     '## Failures',
     '',
-    ...failures.flatMap(f => [
-      `### ${f.scenarioId ?? 'unknown'} (${f.lessonType ?? '–'}) — FAILED`,
-      '',
-      `Delta: ${typeof f.delta === 'number' ? f.delta.toFixed(2) : '–'} (threshold: ${f.deltaThreshold ?? '–'}) | Treatment outcome_code: ${f.treatmentScore?.toFixed(2) ?? '–'} (threshold: ${f.outcomeThreshold ?? '–'})`,
-      '',
-      f.failureReason ? `**Diagnosis:** ${f.failureReason}` : '',
-      '',
-    ]),
+    ...failures.flatMap(f => {
+      const judgeResult = f.judgeResult ?? null;
+      const lines = [
+        `### ${f.scenarioId ?? 'unknown'} (${f.lessonType ?? '–'}) — FAILED`,
+        '',
+        `Delta: ${typeof f.delta === 'number' ? f.delta.toFixed(2) : '–'} | Score: ${f.treatmentScore?.toFixed(2) ?? '–'}`,
+        '',
+      ];
+
+      if (judgeResult) {
+        if (judgeResult.outcome === 'CONTROL_CORRECT') {
+          lines.push(
+            '**CONTROL_CORRECT**: The control agent solved this without the lesson.',
+            '',
+            'Next steps (in order):',
+            '1. **Check the trigger prompt first.** Is it specific enough to reliably reproduce',
+            '   the failure mode? If not, refine it and re-run before drawing any conclusions.',
+            '2. **If the prompt is sound and control still passes**, the lesson may be injecting',
+            '   unnecessary noise. Consider archiving it.',
+            ''
+          );
+        } else {
+          if (judgeResult.reasoning) {
+            lines.push(`**Judge reasoning**: ${judgeResult.reasoning}`, '');
+          }
+          if (judgeResult.outcome === 'FAIL') {
+            lines.push(
+              '**Consider editing**: Make the solution more prescriptive about the exact action to take.',
+              ''
+            );
+          }
+          const ds = judgeResult.dimension_scores;
+          if (ds?.treatment) {
+            lines.push(...renderDimensionScores(ds));
+          }
+        }
+      } else if (f.failureReason) {
+        lines.push(`**Diagnosis:** ${f.failureReason}`, '');
+      }
+
+      return lines;
+    }),
   ];
+}
+
+const DIMENSION_LABELS = [
+  'Correctness',
+  'Scope adherence',
+  'Clarity',
+  'Testability',
+  'Absence of failure mode',
+];
+
+function renderDimensionScores(ds) {
+  const control = ds.control;
+  const treatment = ds.treatment;
+  const lines = [
+    '**Tier 3 dimension scores**:',
+    '| Dimension | Control | Treatment |',
+    '| --- | --- | --- |',
+  ];
+  for (let i = 0; i < DIMENSION_LABELS.length; i++) {
+    const c = control ? (control[i] ?? '–') : '–';
+    const t = treatment ? (treatment[i] ?? '–') : '–';
+    lines.push(`| ${DIMENSION_LABELS[i]} | ${c} | ${t} |`);
+  }
+  const cAvg = control ? (control.reduce((a, b) => a + b, 0) / control.length).toFixed(1) : '–';
+  const tAvg = treatment
+    ? (treatment.reduce((a, b) => a + b, 0) / treatment.length).toFixed(1)
+    : '–';
+  const delta =
+    control && treatment
+      ? ` (+${(treatment.reduce((a, b) => a + b, 0) / treatment.length - control.reduce((a, b) => a + b, 0) / control.length).toFixed(1)})`
+      : '';
+  lines.push(`| **Avg / Delta** | ${cAvg} | ${tAvg}${delta} |`, '');
+  return lines;
 }
 
 /**

@@ -10,5 +10,7 @@
   "rubricFile": "rubric.md",
   "dialogFile": null,
   "recommendedInterventions": ["eval-on-user-supplied-command-strings-en-702a"],
-  "automaticFailGates": []
+  "automaticFailGates": [],
+  "lessonId": "eval-on-user-supplied-command-strings-en-702a",
+  "interventionType": "lesson"
 }

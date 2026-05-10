@@ -10,5 +10,7 @@
   "rubricFile": "rubric.md",
   "dialogFile": null,
   "recommendedInterventions": ["never-write-literal-secret-values-into-s-b226"],
-  "automaticFailGates": []
+  "automaticFailGates": [],
+  "lessonId": "never-write-literal-secret-values-into-s-b226",
+  "interventionType": "lesson"
 }

@@ -9,5 +9,7 @@
   "verifyScript": "hidden-checks/verify.mjs",
   "rubricFile": "rubric.md",
   "recommendedInterventions": ["observed-that-read-tool-results-caused-f-29e8"],
-  "automaticFailGates": []
+  "automaticFailGates": [],
+  "lessonId": "observed-that-read-tool-results-caused-f-29e8",
+  "interventionType": "lesson"
 }

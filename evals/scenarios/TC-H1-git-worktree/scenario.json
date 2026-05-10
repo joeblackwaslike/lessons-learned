@@ -10,5 +10,7 @@
   "verifyScript": "hidden-checks/verify.mjs",
   "rubricFile": "rubric.md",
   "recommendedInterventions": ["parallel-agents-sharing-a-git-worktree-c-cad6"],
-  "automaticFailGates": []
+  "automaticFailGates": [],
+  "lessonId": "parallel-agents-sharing-a-git-worktree-c-cad6",
+  "interventionType": "lesson"
 }

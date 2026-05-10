@@ -6,10 +6,16 @@
  *
  * callApi contract:
  *   prompt  — task text (contents of scenario PROMPT.md)
- *   context — { vars: { scenarioId, intervention, dialogFile? } }
+ *   context — { vars: { scenarioId, intervention, lessonSnapshot?, dialogFile? } }
  *   options — { config: { model, timeout } }
  *
  * Returns: { output: string, metadata: EvalArmMetadata }
+ *
+ * Tier 3 judge integration:
+ *   - Control arms write transcript to results/cache/control-{controlHash}.json
+ *   - Treatment arms read control transcript and call judge.mjs → judgeResult in metadata
+ *   - controlHash = sha256(prompt + model)
+ *   - lessonContentHash = sha256(lesson.problem + lesson.solution) → included in cacheKey
  */
 
 import { spawnSync } from 'node:child_process';
@@ -33,6 +39,7 @@ const CACHE_DIR = join(EVALS_ROOT, 'results', 'cache');
 
 const MATERIALIZE_SCRIPT = join(EVALS_ROOT, 'scripts', 'materialize-workspace.mjs');
 const COLLECT_SCRIPT = join(EVALS_ROOT, 'scripts', 'collect-artifacts.mjs');
+const JUDGE_SCRIPT = join(EVALS_ROOT, 'scripts', 'judge.mjs');
 
 export default class ClaudeAgentProvider {
   constructor(options = {}) {
@@ -56,140 +63,242 @@ export default class ClaudeAgentProvider {
       throw new Error('Provider requires vars.scenarioId (non-empty string)');
     }
     const scenarioId = vars.scenarioId;
-    const { intervention = { type: 'none', ids: [] } } = vars;
+    const intervention = vars.intervention ?? { type: 'none', ids: [] };
     const model = options?.config?.model ?? this.model;
     const timeout = options?.config?.timeout ?? this.timeout;
-    const startMs = Date.now();
+    const isControl = (intervention.type ?? 'none') === 'none';
 
     const scenarioDir = join(EVALS_ROOT, 'scenarios', scenarioId);
     if (!existsSync(scenarioDir)) {
       throw new Error(`Scenario directory not found: ${scenarioDir}`);
     }
 
-    // Check arm cache before spinning up a workspace
-    const cacheKey = computeCacheKey(scenarioDir, intervention, model);
+    const lesson = parseLessonSnapshot(vars, isControl);
+    const controlHash = computeControlHash(prompt, model);
+    const controlTranscriptFile = join(CACHE_DIR, `control-${controlHash}.json`);
+    const lessonContentHash = lesson ? computeLessonContentHash(lesson) : null;
+    const cacheKey = computeCacheKey(scenarioDir, intervention, model, lessonContentHash);
     const cacheFile = join(CACHE_DIR, `${cacheKey}.json`);
-    if (existsSync(cacheFile)) {
-      try {
-        const cached = JSON.parse(readFileSync(cacheFile, 'utf8'));
-        return { ...cached, metadata: { ...cached.metadata, cacheHit: true } };
-      } catch {
-        // corrupt cache — fall through to fresh run
-      }
+
+    const cached = tryArmCache(cacheFile, isControl, controlTranscriptFile);
+    if (cached) return cached;
+
+    const armResult = await runArm({
+      prompt,
+      scenarioDir,
+      intervention,
+      model,
+      timeout,
+      isControl,
+      lesson,
+      controlTranscriptFile,
+      scenarioId,
+      cacheKey,
+      controlHash,
+      startMs: Date.now(),
+    });
+
+    if (armResult.metadata.exitCode === 0) {
+      mkdirSync(CACHE_DIR, { recursive: true });
+      writeFileSync(cacheFile, JSON.stringify(armResult, null, 2));
     }
 
-    const workspaceDir = mkdtempSync(join(tmpdir(), `eval-${scenarioId}-`));
+    return armResult;
+  }
+}
+
+// ── Arm execution ──────────────────────────────────────────────────────────────
+
+async function runArm({
+  prompt,
+  scenarioDir,
+  intervention,
+  model,
+  timeout,
+  isControl,
+  lesson,
+  controlTranscriptFile,
+  scenarioId,
+  cacheKey,
+  controlHash,
+  startMs,
+}) {
+  const workspaceDir = mkdtempSync(join(tmpdir(), `eval-${scenarioId}-`));
+  try {
+    materializeWorkspace(scenarioDir, workspaceDir, intervention);
+
+    const env = buildEnv(workspaceDir, intervention);
+    const claudeResult = spawnSync(
+      findClaudeBin(),
+      ['--print', '--dangerously-skip-permissions', '-p', prompt],
+      { cwd: workspaceDir, env, encoding: 'utf8', timeout, maxBuffer: 10 * 1024 * 1024 }
+    );
+
+    const output = claudeResult.stdout ?? '';
+    const evalMetaDir = join(workspaceDir, '.eval');
+    mkdirSync(evalMetaDir, { recursive: true });
+    writeFileSync(join(evalMetaDir, 'agent-output.txt'), output);
+
+    const hiddenCheck = runVerify(scenarioDir, workspaceDir);
+    const artifacts = collectArtifacts(workspaceDir, scenarioDir);
+
+    if (isControl && claudeResult.status === 0) {
+      writeControlTranscript(controlTranscriptFile, output);
+    }
+
+    const judgeResult =
+      !isControl && lesson && process.env.ANTHROPIC_API_KEY
+        ? await runJudge({ lesson, controlTranscriptFile, output })
+        : null;
+
+    return {
+      output,
+      metadata: {
+        scenarioId,
+        intervention,
+        model,
+        durationMs: Date.now() - startMs,
+        exitCode: claudeResult.status,
+        stderr: (claudeResult.stderr ?? '').slice(0, 2000),
+        hiddenCheck,
+        artifacts,
+        cacheHit: false,
+        cacheKey,
+        controlHash,
+        ...(judgeResult !== null && { judgeResult }),
+      },
+    };
+  } finally {
     try {
-      // Materialize workspace: copy seed → temp dir, inject lesson variant
-      const materializeResult = spawnSync(
-        process.execPath,
-        [
-          '--no-warnings',
-          MATERIALIZE_SCRIPT,
-          '--scenario',
-          scenarioDir,
-          '--workspace',
-          workspaceDir,
-          '--intervention',
-          JSON.stringify(intervention),
-        ],
-        { encoding: 'utf8', timeout: 30_000 }
-      );
-
-      if (materializeResult.status !== 0) {
-        throw new Error(`materialize-workspace failed:\n${materializeResult.stderr}`);
-      }
-
-      // Find the claude binary
-      const claudeBin = findClaudeBin();
-
-      // Run Claude Code non-interactively in the materialized workspace
-      const env = buildEnv(workspaceDir, intervention);
-      const claudeResult = spawnSync(
-        claudeBin,
-        ['--print', '--dangerously-skip-permissions', '-p', prompt],
-        {
-          cwd: workspaceDir,
-          env,
-          encoding: 'utf8',
-          timeout,
-          maxBuffer: 10 * 1024 * 1024,
-        }
-      );
-
-      const output = claudeResult.stdout ?? '';
-      const stderr = claudeResult.stderr ?? '';
-
-      // Write agent output for verify scripts and artifact collector
-      const evalMetaDir = join(workspaceDir, '.eval');
-      mkdirSync(evalMetaDir, { recursive: true });
-      writeFileSync(join(evalMetaDir, 'agent-output.txt'), output);
-
-      // Run hidden-checks/verify.mjs if present
-      const verifyScriptPath = join(scenarioDir, 'hidden-checks', 'verify.mjs');
-      let hiddenCheck = { pass: true, details: 'no verify script', skipped: true };
-      if (existsSync(verifyScriptPath)) {
-        const verifyResult = spawnSync(
-          process.execPath,
-          ['--no-warnings', verifyScriptPath, workspaceDir],
-          { encoding: 'utf8', timeout: 30_000 }
-        );
-        hiddenCheck = {
-          pass: verifyResult.status === 0,
-          details: (verifyResult.stdout + verifyResult.stderr).trim(),
-          exitCode: verifyResult.status,
-          skipped: false,
-        };
-      }
-
-      // Collect artifacts: hook events, workspace diff, tool trajectory
-      const artifactsResult = spawnSync(
-        process.execPath,
-        ['--no-warnings', COLLECT_SCRIPT, '--workspace', workspaceDir, '--scenario', scenarioDir],
-        { encoding: 'utf8', timeout: 10_000 }
-      );
-
-      let artifacts = {};
-      if (artifactsResult.status === 0 && artifactsResult.stdout) {
-        try {
-          artifacts = JSON.parse(artifactsResult.stdout);
-        } catch {
-          // non-fatal — graders work with what they get
-        }
-      }
-
-      const result = {
-        output,
-        metadata: {
-          scenarioId,
-          intervention,
-          model,
-          durationMs: Date.now() - startMs,
-          exitCode: claudeResult.status,
-          stderr: stderr.slice(0, 2000),
-          hiddenCheck,
-          artifacts,
-          cacheHit: false,
-          cacheKey,
-        },
-      };
-
-      // Write to cache for future runs (only cache successful agent completions)
-      if (claudeResult.status === 0) {
-        mkdirSync(CACHE_DIR, { recursive: true });
-        writeFileSync(cacheFile, JSON.stringify(result, null, 2));
-      }
-
-      return result;
-    } finally {
-      try {
-        rmSync(workspaceDir, { recursive: true, force: true });
-      } catch {
-        // best-effort cleanup
-      }
+      rmSync(workspaceDir, { recursive: true, force: true });
+    } catch {
+      /* best-effort */
     }
   }
 }
+
+function materializeWorkspace(scenarioDir, workspaceDir, intervention) {
+  const result = spawnSync(
+    process.execPath,
+    [
+      '--no-warnings',
+      MATERIALIZE_SCRIPT,
+      '--scenario',
+      scenarioDir,
+      '--workspace',
+      workspaceDir,
+      '--intervention',
+      JSON.stringify(intervention),
+    ],
+    { encoding: 'utf8', timeout: 30_000 }
+  );
+  if (result.status !== 0) {
+    throw new Error(`materialize-workspace failed:\n${result.stderr}`);
+  }
+}
+
+function runVerify(scenarioDir, workspaceDir) {
+  const verifyScriptPath = join(scenarioDir, 'hidden-checks', 'verify.mjs');
+  if (!existsSync(verifyScriptPath)) {
+    return { pass: true, details: 'no verify script', skipped: true };
+  }
+  const result = spawnSync(process.execPath, ['--no-warnings', verifyScriptPath, workspaceDir], {
+    encoding: 'utf8',
+    timeout: 30_000,
+  });
+  return {
+    pass: result.status === 0,
+    details: (result.stdout + result.stderr).trim(),
+    exitCode: result.status,
+    skipped: false,
+  };
+}
+
+function collectArtifacts(workspaceDir, scenarioDir) {
+  const result = spawnSync(
+    process.execPath,
+    ['--no-warnings', COLLECT_SCRIPT, '--workspace', workspaceDir, '--scenario', scenarioDir],
+    { encoding: 'utf8', timeout: 10_000 }
+  );
+  if (result.status === 0 && result.stdout) {
+    try {
+      return JSON.parse(result.stdout);
+    } catch {
+      /* fall through */
+    }
+  }
+  return {};
+}
+
+function writeControlTranscript(controlTranscriptFile, output) {
+  try {
+    mkdirSync(CACHE_DIR, { recursive: true });
+    writeFileSync(controlTranscriptFile, JSON.stringify({ output }, null, 2));
+  } catch {
+    /* best-effort */
+  }
+}
+
+function tryArmCache(cacheFile, isControl, controlTranscriptFile) {
+  if (!existsSync(cacheFile)) return null;
+  let cached;
+  try {
+    cached = JSON.parse(readFileSync(cacheFile, 'utf8'));
+  } catch {
+    return null;
+  }
+  if (isControl && cached.output && !existsSync(controlTranscriptFile)) {
+    writeControlTranscript(controlTranscriptFile, cached.output);
+  }
+  return { ...cached, metadata: { ...cached.metadata, cacheHit: true } };
+}
+
+function parseLessonSnapshot(vars, isControl) {
+  if (isControl || !vars.lessonSnapshot) return null;
+  try {
+    return JSON.parse(vars.lessonSnapshot);
+  } catch {
+    return null;
+  }
+}
+
+// ── Judge ──────────────────────────────────────────────────────────────────────
+
+async function runJudge({ lesson, controlTranscriptFile, output: treatmentTranscript }) {
+  const form = ['hint', 'guard'].includes(lesson.type) ? 'A' : 'B';
+
+  const controlTranscript = form === 'A' ? readControlTranscript(controlTranscriptFile) : null;
+  if (form === 'A' && controlTranscript === null) {
+    return skipResult('Control transcript not found — control arm must run before treatment arm.');
+  }
+
+  try {
+    const { judge } = await import(JUDGE_SCRIPT);
+    return await judge({ lesson, controlTranscript, treatmentTranscript, form });
+  } catch (err) {
+    return { ...skipResult(`Judge error: ${err.message}`), error: true };
+  }
+}
+
+function readControlTranscript(file) {
+  if (!existsSync(file)) return null;
+  try {
+    return JSON.parse(readFileSync(file, 'utf8')).output ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function skipResult(reasoning) {
+  return {
+    outcome: 'SKIP',
+    reasoning,
+    dimension_scores: { control: null, treatment: null },
+    delta: null,
+  };
+}
+
+// ── Environment & binary ───────────────────────────────────────────────────────
 
 function findClaudeBin() {
   const candidates = [
@@ -207,16 +316,13 @@ function findClaudeBin() {
     const which = spawnSync('which', ['claude'], { encoding: 'utf8' });
     if (which.status === 0) return which.stdout.trim();
   } catch {
-    // ignore
+    /* ignore */
   }
 
   throw new Error('claude binary not found. Set CLAUDE_BIN env var or ensure claude is on PATH.');
 }
 
 function buildEnv(workspaceDir, _intervention) {
-  // Use a strict allowlist instead of spreading process.env.
-  // Spreading leaks Claude Code session identifiers, background task paths, and other
-  // context that agents can read and use to contaminate eval results.
   const allowed = [
     'USER',
     'LOGNAME',
@@ -238,15 +344,11 @@ function buildEnv(workspaceDir, _intervention) {
     allowed.filter(k => process.env[k] != null).map(k => [k, process.env[k]])
   );
 
-  // Use a fake HOME to prevent global ~/.claude hooks from firing in eval agents
-  // (learning-mode injection, session-start lesson protocols, etc. contaminate results).
-  // Project-level .claude/settings.json (in cwd) is still loaded by Claude Code.
+  // Fake HOME prevents global ~/.claude hooks from contaminating eval results
   const evalHomeDir = join(workspaceDir, '.eval', 'home');
   mkdirSync(evalHomeDir, { recursive: true });
   env.HOME = evalHomeDir;
 
-  // Claude Code stores CLAUDE_CODE_OAUTH_TOKEN in ~/.claude/settings.json env section.
-  // With fake HOME that file doesn't exist, so we read and forward the token explicitly.
   if (!env.ANTHROPIC_API_KEY) {
     const realClaudeSettings = join(process.env.HOME ?? '', '.claude', 'settings.json');
     try {
@@ -254,41 +356,53 @@ function buildEnv(workspaceDir, _intervention) {
       const token = settings?.env?.CLAUDE_CODE_OAUTH_TOKEN;
       if (token) env.CLAUDE_CODE_OAUTH_TOKEN = token;
     } catch {
-      // No real settings file — fall through; auth may fail if ANTHROPIC_API_KEY also absent
+      /* no settings file */
     }
   }
 
-  // Point lesson injection to the eval-scoped manifest
   const manifestPath = join(workspaceDir, '.eval', 'lesson-manifest.json');
-  if (existsSync(manifestPath)) {
-    env.LESSONS_MANIFEST_PATH = manifestPath;
-  }
+  if (existsSync(manifestPath)) env.LESSONS_MANIFEST_PATH = manifestPath;
   env.LESSONS_DISABLE_SCAN = '1';
 
   return env;
 }
 
+// ── Cache key computation ──────────────────────────────────────────────────────
+
+/** sha256(prompt + ':' + model) — stable key for control transcript reuse across lessons */
+function computeControlHash(prompt, model) {
+  return createHash('sha256').update(prompt).update(':').update(model).digest('hex');
+}
+
+/** sha256(problem + ':' + solution) — changes when lesson content is edited */
+function computeLessonContentHash(lesson) {
+  return createHash('sha256')
+    .update(lesson.problem ?? '')
+    .update(':')
+    .update(lesson.solution ?? '')
+    .digest('hex');
+}
+
 /**
- * Compute a stable cache key for an arm run.
- * Key = sha256(scenarioContentHash : model : interventionJson)
+ * sha256(scenarioContentHash : model : interventionJson [: lessonContentHash])
  * Intervention ids are sorted so order doesn't affect the key.
+ * lessonContentHash is included for treatment arms so edits invalidate the cache.
  */
-function computeCacheKey(scenarioDir, intervention, model) {
-  const scenarioHash = hashDir(scenarioDir);
+function computeCacheKey(scenarioDir, intervention, model, lessonContentHash = null) {
   const sortedIntervention = {
     type: intervention.type ?? 'none',
     ids: [...(intervention.ids ?? [])].sort((a, b) => a.localeCompare(b)),
   };
-  return createHash('sha256')
-    .update(scenarioHash)
+  const hash = createHash('sha256')
+    .update(hashDir(scenarioDir))
     .update(':')
     .update(model)
     .update(':')
-    .update(JSON.stringify(sortedIntervention))
-    .digest('hex');
+    .update(JSON.stringify(sortedIntervention));
+  if (lessonContentHash) hash.update(':').update(lessonContentHash);
+  return hash.digest('hex');
 }
 
-/** sha256 of all file contents under dir, sorted by relative path for stability */
 function hashDir(dir) {
   const hash = createHash('sha256');
   for (const relPath of collectFiles(dir).sort()) {
@@ -302,14 +416,10 @@ function collectFiles(dir, base = '') {
   const results = [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const rel = base ? `${base}/${entry.name}` : entry.name;
-    const abs = join(dir, entry.name);
     if (entry.isDirectory()) {
-      results.push(...collectFiles(abs, rel));
-    } else if (entry.isFile()) {
-      // Skip node_modules and .git for hashing
-      if (!rel.startsWith('node_modules/') && !rel.startsWith('.git/')) {
-        results.push(rel);
-      }
+      results.push(...collectFiles(join(dir, entry.name), rel));
+    } else if (entry.isFile() && !rel.startsWith('node_modules/') && !rel.startsWith('.git/')) {
+      results.push(rel);
     }
   }
   return results;

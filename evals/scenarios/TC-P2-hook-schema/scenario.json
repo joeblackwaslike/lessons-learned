@@ -9,5 +9,7 @@
   "verifyScript": "hidden-checks/verify.mjs",
   "rubricFile": "rubric.md",
   "recommendedInterventions": ["used-decision-deny-reason-systemmessage-f9e4"],
-  "automaticFailGates": []
+  "automaticFailGates": [],
+  "lessonId": "used-decision-deny-reason-systemmessage-f9e4",
+  "interventionType": "lesson"
 }

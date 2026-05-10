@@ -10,5 +10,7 @@
   "rubricFile": "rubric.md",
   "dialogFile": null,
   "recommendedInterventions": ["subagents-may-not-have-access-to-bash-to-6a73"],
-  "automaticFailGates": []
+  "automaticFailGates": [],
+  "lessonId": "subagents-may-not-have-access-to-bash-to-6a73",
+  "interventionType": "lesson"
 }

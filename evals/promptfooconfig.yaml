@@ -8,24 +8,29 @@ providers:
       model: claude-sonnet-4-6
       timeout: 300000        # 5 min per arm
 
-# Judge providers are referenced inline in scenario assertions, not here.
-# This avoids API key validation on startup when no scenarios are loaded.
-# Phase 2: add assertions that reference anthropic:messages:claude-sonnet-4-6-20251022
-# and openai:chat:o4-mini by label.
-
-# Prompt template — each scenario test overrides this via vars.prompt or a file reference.
-# Phase 1 placeholder: real scenario prompts come from PROMPT.md files in Phase 2.
 prompts:
   - '{{prompt}}'
 
 defaultTest:
   options:
-    # All tests use the claude-code provider unless overridden
     provider: file://providers/claude-agent.mjs
     timeout: 300000
 
+# Lifecycle extensions: inject lesson snapshot before each test, print judge summary after all
+extensions:
+  - file://scripts/hooks/before-each.mjs:beforeEach
+  - file://scripts/hooks/after-all.mjs:afterAll
+
+evaluateOptions:
+  # maxConcurrency: 1 guarantees all control arms complete before treatment arms run,
+  # so control transcript files exist when the judge reads them.
+  maxConcurrency: 1
+
 tests:
-  # TC-H3: Hardcoded secrets — hint type
+  # ── Control arms (ALL controls first) ──────────────────────────────────────
+  # Running all controls before treatments ensures control-{hash}.json files
+  # exist when treatment arms call the Tier 3 judge.
+
   - description: "TC-H3 hardcoded-secrets [control]"
     vars:
       scenarioId: TC-H3-hardcoded-secrets
@@ -33,6 +38,72 @@ tests:
       intervention:
         type: none
         ids: []
+
+  - description: "TC-G1 pytest-hang [control]"
+    vars:
+      scenarioId: TC-G1-pytest-hang
+      prompt: "{{file://scenarios/TC-G1-pytest-hang/PROMPT.md}}"
+      intervention:
+        type: none
+        ids: []
+
+  - description: "TC-H1 git-worktree [control]"
+    vars:
+      scenarioId: TC-H1-git-worktree
+      prompt: "{{file://scenarios/TC-H1-git-worktree/PROMPT.md}}"
+      intervention:
+        type: none
+        ids: []
+
+  - description: "TC-H2 eval-injection [control]"
+    vars:
+      scenarioId: TC-H2-eval-injection
+      prompt: "{{file://scenarios/TC-H2-eval-injection/PROMPT.md}}"
+      intervention:
+        type: none
+        ids: []
+
+  - description: "TC-P1 subagent-tools [control]"
+    vars:
+      scenarioId: TC-P1-subagent-tools
+      prompt: "{{file://scenarios/TC-P1-subagent-tools/PROMPT.md}}"
+      intervention:
+        type: none
+        ids: []
+
+  - description: "TC-P2 hook-schema [control]"
+    vars:
+      scenarioId: TC-P2-hook-schema
+      prompt: "{{file://scenarios/TC-P2-hook-schema/PROMPT.md}}"
+      intervention:
+        type: none
+        ids: []
+
+  - description: "TC-P3 overfitted-fix [control]"
+    vars:
+      scenarioId: TC-P3-overfitted-fix
+      prompt: "{{file://scenarios/TC-P3-overfitted-fix/PROMPT.md}}"
+      intervention:
+        type: none
+        ids: []
+
+  - description: "TC-D1 speculative-abstractions [control]"
+    vars:
+      scenarioId: TC-D1-speculative-abstractions
+      prompt: "{{file://scenarios/TC-D1-speculative-abstractions/PROMPT.md}}"
+      intervention:
+        type: none
+        ids: []
+
+  - description: "TC-D3 collaborative-planning [control]"
+    vars:
+      scenarioId: TC-D3-collaborative-planning
+      prompt: "{{file://scenarios/TC-D3-collaborative-planning/PROMPT.md}}"
+      intervention:
+        type: none
+        ids: []
+
+  # ── Treatment arms (ALL treatments after all controls) ──────────────────────
 
   - description: "TC-H3 hardcoded-secrets [treatment]"
     vars:
@@ -45,15 +116,8 @@ tests:
     assert:
       - type: javascript
         value: "file://scripts/assert-hidden-check.mjs"
-
-  # TC-G1: Pytest hang prevention — guard type
-  - description: "TC-G1 pytest-hang [control]"
-    vars:
-      scenarioId: TC-G1-pytest-hang
-      prompt: "{{file://scenarios/TC-G1-pytest-hang/PROMPT.md}}"
-      intervention:
-        type: none
-        ids: []
+      - type: javascript
+        value: "file://scripts/assert-judge.mjs"
 
   - description: "TC-G1 pytest-hang [treatment]"
     vars:
@@ -66,15 +130,8 @@ tests:
     assert:
       - type: javascript
         value: "file://scripts/assert-hidden-check.mjs"
-
-  # TC-H1: Parallel git worktree — hint type
-  - description: "TC-H1 git-worktree [control]"
-    vars:
-      scenarioId: TC-H1-git-worktree
-      prompt: "{{file://scenarios/TC-H1-git-worktree/PROMPT.md}}"
-      intervention:
-        type: none
-        ids: []
+      - type: javascript
+        value: "file://scripts/assert-judge.mjs"
 
   - description: "TC-H1 git-worktree [treatment]"
     vars:
@@ -87,15 +144,8 @@ tests:
     assert:
       - type: javascript
         value: "file://scripts/assert-hidden-check.mjs"
-
-  # TC-H2: eval injection — hint type
-  - description: "TC-H2 eval-injection [control]"
-    vars:
-      scenarioId: TC-H2-eval-injection
-      prompt: "{{file://scenarios/TC-H2-eval-injection/PROMPT.md}}"
-      intervention:
-        type: none
-        ids: []
+      - type: javascript
+        value: "file://scripts/assert-judge.mjs"
 
   - description: "TC-H2 eval-injection [treatment]"
     vars:
@@ -108,15 +158,8 @@ tests:
     assert:
       - type: javascript
         value: "file://scripts/assert-hidden-check.mjs"
-
-  # TC-P1: Subagent tools — protocol type
-  - description: "TC-P1 subagent-tools [control]"
-    vars:
-      scenarioId: TC-P1-subagent-tools
-      prompt: "{{file://scenarios/TC-P1-subagent-tools/PROMPT.md}}"
-      intervention:
-        type: none
-        ids: []
+      - type: javascript
+        value: "file://scripts/assert-judge.mjs"
 
   - description: "TC-P1 subagent-tools [treatment]"
     vars:
@@ -129,15 +172,8 @@ tests:
     assert:
       - type: javascript
         value: "file://scripts/assert-hidden-check.mjs"
-
-  # TC-P2: Hook schema — protocol type
-  - description: "TC-P2 hook-schema [control]"
-    vars:
-      scenarioId: TC-P2-hook-schema
-      prompt: "{{file://scenarios/TC-P2-hook-schema/PROMPT.md}}"
-      intervention:
-        type: none
-        ids: []
+      - type: javascript
+        value: "file://scripts/assert-judge.mjs"
 
   - description: "TC-P2 hook-schema [treatment]"
     vars:
@@ -150,15 +186,8 @@ tests:
     assert:
       - type: javascript
         value: "file://scripts/assert-hidden-check.mjs"
-
-  # TC-P3: Overfitted fix — protocol type
-  - description: "TC-P3 overfitted-fix [control]"
-    vars:
-      scenarioId: TC-P3-overfitted-fix
-      prompt: "{{file://scenarios/TC-P3-overfitted-fix/PROMPT.md}}"
-      intervention:
-        type: none
-        ids: []
+      - type: javascript
+        value: "file://scripts/assert-judge.mjs"
 
   - description: "TC-P3 overfitted-fix [treatment]"
     vars:
@@ -171,15 +200,8 @@ tests:
     assert:
       - type: javascript
         value: "file://scripts/assert-hidden-check.mjs"
-
-  # TC-D1: Speculative abstractions — directive type
-  - description: "TC-D1 speculative-abstractions [control]"
-    vars:
-      scenarioId: TC-D1-speculative-abstractions
-      prompt: "{{file://scenarios/TC-D1-speculative-abstractions/PROMPT.md}}"
-      intervention:
-        type: none
-        ids: []
+      - type: javascript
+        value: "file://scripts/assert-judge.mjs"
 
   - description: "TC-D1 speculative-abstractions [treatment]"
     vars:
@@ -192,15 +214,8 @@ tests:
     assert:
       - type: javascript
         value: "file://scripts/assert-hidden-check.mjs"
-
-  # TC-D3: Collaborative planning — directive type
-  - description: "TC-D3 collaborative-planning [control]"
-    vars:
-      scenarioId: TC-D3-collaborative-planning
-      prompt: "{{file://scenarios/TC-D3-collaborative-planning/PROMPT.md}}"
-      intervention:
-        type: none
-        ids: []
+      - type: javascript
+        value: "file://scripts/assert-judge.mjs"
 
   - description: "TC-D3 collaborative-planning [treatment]"
     vars:
@@ -213,7 +228,9 @@ tests:
     assert:
       - type: javascript
         value: "file://scripts/assert-hidden-check.mjs"
+      - type: javascript
+        value: "file://scripts/assert-judge.mjs"
 
 # Output
-outputPath: results/cache/smoke-run.json
+outputPath: results/cache/latest-run.json
 sharing: false

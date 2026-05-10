@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "promptfoo": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["promptfoo", "mcp"]
+    }
+  }
+}
