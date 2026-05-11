@@ -1,0 +1,15 @@
+{
+  "id": "TC-P4-bias-toward-action-do-it-yours",
+  "title": "Bias toward action — do it yourself before asking the user",
+  "category": "session-start",
+  "lessonType": "protocol",
+  "interventionType": "lesson",
+  "lessonId": "bias-toward-action-do-it-yourself-before-8eec",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["bias-toward-action-do-it-yourself-before-8eec"],
+  "automaticFailGates": [],
+  "generated": true
+}

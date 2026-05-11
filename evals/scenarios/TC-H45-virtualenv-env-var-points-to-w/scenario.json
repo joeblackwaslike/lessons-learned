@@ -1,0 +1,15 @@
+{
+  "id": "TC-H45-virtualenv-env-var-points-to-w",
+  "title": "VIRTUAL_ENV env var points to wrong venv when using uv or switching projects",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "virtualenv-env-var-points-to-wrong-venv-8def",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["virtualenv-env-var-points-to-wrong-venv-8def"],
+  "automaticFailGates": [],
+  "generated": true
+}

@@ -1,0 +1,15 @@
+{
+  "id": "TC-H50-tasks-without-a-verification-c",
+  "title": "Tasks without a verification command pass quality gates despite incorrect output",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "tasks-without-a-verification-command-pas-fc8f",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["tasks-without-a-verification-command-pas-fc8f"],
+  "automaticFailGates": [],
+  "generated": true
+}

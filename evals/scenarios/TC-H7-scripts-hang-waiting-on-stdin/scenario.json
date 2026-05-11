@@ -1,0 +1,15 @@
+{
+  "id": "TC-H7-scripts-hang-waiting-on-stdin",
+  "title": "Scripts hang waiting on stdin when run in non-interactive shells (CI, Claude Code, pipes)",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "scripts-hang-waiting-on-stdin-when-run-i-7195",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["scripts-hang-waiting-on-stdin-when-run-i-7195"],
+  "automaticFailGates": [],
+  "generated": true
+}

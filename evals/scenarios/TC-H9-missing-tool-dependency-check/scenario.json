@@ -1,0 +1,15 @@
+{
+  "id": "TC-H9-missing-tool-dependency-check",
+  "title": "Missing tool dependency check silently disables safety-critical features",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "missing-tool-dependency-check-silently-d-4a39",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["missing-tool-dependency-check-silently-d-4a39"],
+  "automaticFailGates": [],
+  "generated": true
+}

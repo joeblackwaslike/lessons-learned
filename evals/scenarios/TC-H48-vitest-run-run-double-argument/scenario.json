@@ -1,0 +1,15 @@
+{
+  "id": "TC-H48-vitest-run-run-double-argument",
+  "title": "vitest run run double-argument treats second run as a test filter pattern",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "vitest-run-run-double-argument-treats-se-983e",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["vitest-run-run-double-argument-treats-se-983e"],
+  "automaticFailGates": [],
+  "generated": true
+}

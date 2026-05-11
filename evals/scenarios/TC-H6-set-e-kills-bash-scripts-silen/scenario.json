@@ -1,0 +1,15 @@
+{
+  "id": "TC-H6-set-e-kills-bash-scripts-silen",
+  "title": "set -e kills bash scripts silently on any non-critical command failure without an EXIT trap",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "set-e-kills-bash-scripts-silently-on-any-bf06",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["set-e-kills-bash-scripts-silently-on-any-bf06"],
+  "automaticFailGates": [],
+  "generated": true
+}

@@ -1,0 +1,1 @@
+I have a shell script that checks if a server's CPU usage exceeds a threshold — can you write a bash function that takes the current usage value and a max threshold as arguments and uses awk to exit with a non-zero status if the value is over the limit?

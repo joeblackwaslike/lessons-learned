@@ -1,0 +1,15 @@
+{
+  "id": "TC-P7-late-requirements-placed-mid-c",
+  "title": "Late requirements placed mid-context are silently missed; attention degrades past ~6000 chars",
+  "category": "session-start",
+  "lessonType": "protocol",
+  "interventionType": "lesson",
+  "lessonId": "late-requirements-placed-mid-context-are-871d",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["late-requirements-placed-mid-context-are-871d"],
+  "automaticFailGates": [],
+  "generated": true
+}

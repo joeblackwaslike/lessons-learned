@@ -1,0 +1,1 @@
+I have a folder full of audio samples with names like "kick drum.wav", "hi hat open.wav", etc. Can you write a bash script that finds all .wav files in ~/samples and runs `sox` on each one to normalize the volume?

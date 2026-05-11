@@ -1,0 +1,15 @@
+{
+  "id": "TC-H59-pre-commit-hooks-lefthookhusky",
+  "title": "Pre-commit hooks (lefthook/husky) fail on lint errors in unstaged files",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "pre-commit-hooks-lefthookhusky-fail-on-l-adf8",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["pre-commit-hooks-lefthookhusky-fail-on-l-adf8"],
+  "automaticFailGates": [],
+  "generated": true
+}

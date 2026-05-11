@@ -1,0 +1,1 @@
+I've been working with you all morning on this refactor and we're almost done — can you help me debug why the auth middleware is failing now? I know we've touched a lot of files, but just trace through the logic and tell me what's wrong.

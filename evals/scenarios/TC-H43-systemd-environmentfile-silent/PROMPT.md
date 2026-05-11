@@ -1,0 +1,1 @@
+I need to deploy my FastAPI app as a systemd service on my Raspberry Pi. I have a `.env` file with all my environment variables already set up using standard bash syntax with `export` prefixes. Can you write a systemd service unit file that loads that env file so my app picks up all the variables?

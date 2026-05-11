@@ -1,0 +1,1 @@
+I have a React app built with Vite and I want to deploy it to GitHub Pages. Can you set up a GitHub Actions workflow that builds the project and publishes it to the `gh-pages` branch so it's live at `https://myusername.github.io/my-portfolio/`?

@@ -1,0 +1,15 @@
+{
+  "id": "TC-H44-webfetch-and-curl-fail-on-urls",
+  "title": "WebFetch and curl fail on URLs that require browser JavaScript rendering",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "webfetch-and-curl-fail-on-urls-that-requ-e368",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["webfetch-and-curl-fail-on-urls-that-requ-e368"],
+  "automaticFailGates": [],
+  "generated": true
+}

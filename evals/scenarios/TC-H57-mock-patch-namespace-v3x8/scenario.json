@@ -1,0 +1,15 @@
+{
+  "id": "TC-H57-mock-patch-namespace-v3x8",
+  "title": "mock.patch must target the importing module's namespace, not the source",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "mock-patch-namespace-v3x8",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["mock-patch-namespace-v3x8"],
+  "automaticFailGates": [],
+  "generated": true
+}

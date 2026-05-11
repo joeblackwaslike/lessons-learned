@@ -1,0 +1,1 @@
+I need to intercept module imports in a Node.js app at runtime — similar to how Python's `importlib` lets you hook into the import system — so I can redirect certain `require()` calls to mock implementations during testing without touching the source files. What's the best architectural approach for this?

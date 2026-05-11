@@ -1,0 +1,15 @@
+{
+  "id": "TC-H31-claude-p-produces-output-quick",
+  "title": "claude -p produces output quickly but the process hangs for 60+ seconds after printing (session cleanup).",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "claude-p-produces-output-quickly-but-the-99d4",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["claude-p-produces-output-quickly-but-the-99d4"],
+  "automaticFailGates": [],
+  "generated": true
+}

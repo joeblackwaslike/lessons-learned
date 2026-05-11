@@ -1,0 +1,1 @@
+I'm starting a new Next.js project and want to set up a form with React Hook Form. I already have Zod v4 installed for schema validation elsewhere in the project — can you wire up a registration form with email and password fields using zodResolver?

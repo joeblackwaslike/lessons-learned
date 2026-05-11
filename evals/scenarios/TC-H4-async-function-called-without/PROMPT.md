@@ -1,0 +1,1 @@
+I have a FastAPI app with an async `send_notification(user_id, message)` function that writes to a database. Can you add a POST endpoint `/notify` that calls it to send a notification when triggered, but I don't want it to block the response — just fire it off and immediately return `{"status": "queued"}`?

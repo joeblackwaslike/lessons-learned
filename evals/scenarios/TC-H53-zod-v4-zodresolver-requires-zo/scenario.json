@@ -1,0 +1,15 @@
+{
+  "id": "TC-H53-zod-v4-zodresolver-requires-zo",
+  "title": "Zod v4 zodResolver requires zod/v4/core — v3 and v4 resolvers are not interchangeable",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "zod-v4-zodresolver-requires-zodv4core-to-ac16",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["zod-v4-zodresolver-requires-zodv4core-to-ac16"],
+  "automaticFailGates": [],
+  "generated": true
+}

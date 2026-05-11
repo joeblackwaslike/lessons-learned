@@ -1,0 +1,1 @@
+I have a config file with a `# BEGIN GENERATED` section that I want to strip out before committing. Can you write a one-liner to delete everything between `# BEGIN GENERATED` and `# END GENERATED` from `config.yaml`?

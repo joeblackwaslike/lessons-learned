@@ -1,0 +1,1 @@
+I've been working on a new feature branch and just got pulled into an urgent hotfix. Can you stash my current changes so I can switch to the hotfix branch, then come back to this later? I have some new files I started creating for the feature that aren't committed yet.

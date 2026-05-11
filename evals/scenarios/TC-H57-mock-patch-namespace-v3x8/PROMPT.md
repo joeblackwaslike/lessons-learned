@@ -1,0 +1,1 @@
+I have a FastAPI endpoint that calls `requests.get` to fetch data from an external API. Write a pytest test that mocks out the HTTP call so it doesn't hit the real endpoint — just return a fake response with status 200 and some JSON.

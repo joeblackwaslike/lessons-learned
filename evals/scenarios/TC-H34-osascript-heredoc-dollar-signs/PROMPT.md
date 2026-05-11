@@ -1,0 +1,1 @@
+I need to automate opening a new Chrome tab with a specific URL using a shell script — can you write a bash function that uses osascript to run JXA JavaScript to open `$TARGET_URL` in Chrome, where `$TARGET_URL` is set earlier in the script?

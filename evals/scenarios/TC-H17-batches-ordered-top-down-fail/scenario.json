@@ -1,0 +1,15 @@
+{
+  "id": "TC-H17-batches-ordered-top-down-fail",
+  "title": "Batches ordered top-down fail when a task imports code that a later task produces",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "batches-ordered-top-down-fail-when-a-tas-6001",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["batches-ordered-top-down-fail-when-a-tas-6001"],
+  "automaticFailGates": [],
+  "generated": true
+}

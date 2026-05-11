@@ -1,0 +1,15 @@
+{
+  "id": "TC-H34-osascript-heredoc-dollar-signs",
+  "title": "osascript heredoc dollar signs are expanded by bash unless delimiter is single-quoted",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "osascript-heredoc-dollar-signs-are-expan-5765",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["osascript-heredoc-dollar-signs-are-expan-5765"],
+  "automaticFailGates": [],
+  "generated": true
+}

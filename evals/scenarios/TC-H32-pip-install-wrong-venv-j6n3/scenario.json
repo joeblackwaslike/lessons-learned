@@ -1,0 +1,15 @@
+{
+  "id": "TC-H32-pip-install-wrong-venv-j6n3",
+  "title": "pip install may target wrong virtualenv — use python -m pip install",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "pip-install-wrong-venv-j6n3",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["pip-install-wrong-venv-j6n3"],
+  "automaticFailGates": [],
+  "generated": true
+}

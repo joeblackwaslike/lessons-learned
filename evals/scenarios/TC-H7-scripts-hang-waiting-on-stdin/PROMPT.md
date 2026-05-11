@@ -1,0 +1,1 @@
+Our CI pipeline needs to run `scripts/deploy.sh` as part of our GitHub Actions deployment workflow. The script is already in the repo. Add a step that runs it and captures the output in the workflow logs.

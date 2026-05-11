@@ -1,0 +1,1 @@
+I'm building a plugin system in Python where each plugin registers itself using a `@registry.register` decorator. I have a `plugins/` directory with several plugin files, and a `get_all_plugins()` function that returns `registry.plugins`. Why does `get_all_plugins()` always return an empty list even though I've decorated all my plugins correctly?

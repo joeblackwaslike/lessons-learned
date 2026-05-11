@@ -1,0 +1,15 @@
+{
+  "id": "TC-H51-suppressoutput-true-in-hook-js",
+  "title": "suppressOutput:true in hook JSON makes lesson injection invisible to the user",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "suppressoutput-true-in-hook-json-hides-t-c48e",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["suppressoutput-true-in-hook-json-hides-t-c48e"],
+  "automaticFailGates": [],
+  "generated": true
+}

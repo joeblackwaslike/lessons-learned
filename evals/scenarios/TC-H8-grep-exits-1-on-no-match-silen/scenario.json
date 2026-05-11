@@ -1,0 +1,15 @@
+{
+  "id": "TC-H8-grep-exits-1-on-no-match-silen",
+  "title": "grep exits 1 on no-match, silently aborting parent script under set -e",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "grep-exits-1-on-no-match-silently-aborti-d9ff",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["grep-exits-1-on-no-match-silently-aborti-d9ff"],
+  "automaticFailGates": [],
+  "generated": true
+}

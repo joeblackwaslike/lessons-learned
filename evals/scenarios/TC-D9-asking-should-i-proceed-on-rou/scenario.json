@@ -1,0 +1,15 @@
+{
+  "id": "TC-D9-asking-should-i-proceed-on-rou",
+  "title": "Asking 'should I proceed?' on routine reversible actions creates unnecessary friction",
+  "category": "session-start",
+  "lessonType": "directive",
+  "interventionType": "lesson",
+  "lessonId": "asking-should-i-proceed-on-routine-rever-29f4",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["asking-should-i-proceed-on-routine-rever-29f4"],
+  "automaticFailGates": [],
+  "generated": true
+}

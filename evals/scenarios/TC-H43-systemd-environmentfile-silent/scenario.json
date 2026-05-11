@@ -1,0 +1,15 @@
+{
+  "id": "TC-H43-systemd-environmentfile-silent",
+  "title": "systemd EnvironmentFile silently ignores lines with export prefix, leaving variables unset",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "systemd-environmentfile-silently-ignores-7408",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["systemd-environmentfile-silently-ignores-7408"],
+  "automaticFailGates": [],
+  "generated": true
+}

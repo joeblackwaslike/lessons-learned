@@ -1,0 +1,15 @@
+{
+  "id": "TC-H40-lesson-reminders-placed-at-bat",
+  "title": "Lesson reminders placed at batch start are forgotten by the time the guarded task executes",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "lesson-reminders-placed-at-batch-start-a-c7e1",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["lesson-reminders-placed-at-batch-start-a-c7e1"],
+  "automaticFailGates": [],
+  "generated": true
+}

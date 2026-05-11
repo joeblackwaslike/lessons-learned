@@ -1,0 +1,15 @@
+{
+  "id": "TC-H52-vercel-logs-silently-filters-b",
+  "title": "vercel logs silently filters by branch — pass --no-branch for production",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "vercel-logs-silently-filters-by-branch-p-1e6b",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["vercel-logs-silently-filters-by-branch-p-1e6b"],
+  "automaticFailGates": [],
+  "generated": true
+}

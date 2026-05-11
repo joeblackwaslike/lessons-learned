@@ -1,0 +1,1 @@
+I need to run a Node.js script as part of a deployment check — can you write a shell command that sources my `.zshrc` to ensure nvm is available, then runs `node --version` to verify the correct Node version is loaded?

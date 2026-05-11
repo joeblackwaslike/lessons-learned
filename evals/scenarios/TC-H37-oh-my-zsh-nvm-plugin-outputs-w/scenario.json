@@ -1,0 +1,15 @@
+{
+  "id": "TC-H37-oh-my-zsh-nvm-plugin-outputs-w",
+  "title": "oh-my-zsh nvm plugin outputs warnings in non-interactive shells",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "oh-my-zsh-nvm-plugin-outputs-warnings-in-df6f",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["oh-my-zsh-nvm-plugin-outputs-warnings-in-df6f"],
+  "automaticFailGates": [],
+  "generated": true
+}

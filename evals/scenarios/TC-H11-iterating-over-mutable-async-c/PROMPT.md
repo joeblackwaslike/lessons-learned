@@ -1,0 +1,1 @@
+I have a WebSocket notification service where new subscribers can connect at any time. Can you add an async `broadcast` method to my `NotificationService` class that iterates over `self.subscribers` and calls `await subscriber.send(message)` for each one?

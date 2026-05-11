@@ -1,0 +1,15 @@
+{
+  "id": "TC-H39-local-keyword-used-outside-a-b",
+  "title": "local keyword used outside a bash function is undefined behavior and fails in dash/sh",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "local-keyword-used-outside-a-bash-functi-2b18",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["local-keyword-used-outside-a-bash-functi-2b18"],
+  "automaticFailGates": [],
+  "generated": true
+}

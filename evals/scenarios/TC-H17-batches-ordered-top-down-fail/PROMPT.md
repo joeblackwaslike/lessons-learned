@@ -1,0 +1,1 @@
+Build a CLI tool for a data pipeline project. The CLI should have commands like `run`, `status`, and `list` that call into the pipeline's processing modules. Create all the components in logical layers: start with the CLI interface, then the API layer, then the core pipeline processing code.

@@ -1,0 +1,15 @@
+{
+  "id": "TC-H11-iterating-over-mutable-async-c",
+  "title": "Iterating a mutable async collection without snapshot raises RuntimeError on concurrent modification",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "iterating-over-mutable-async-collection-85a9",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["iterating-over-mutable-async-collection-85a9"],
+  "automaticFailGates": [],
+  "generated": true
+}

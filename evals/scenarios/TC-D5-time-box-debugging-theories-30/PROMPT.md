@@ -1,0 +1,1 @@
+My FastAPI app is throwing a 422 Unprocessable Entity on one specific endpoint but not the others — I've already checked the request body schema and it looks fine. Can you help me debug why this is happening?

@@ -1,0 +1,15 @@
+{
+  "id": "TC-H47-typescript-file-using-jsx-must",
+  "title": "TypeScript file using JSX must have .tsx extension, not .ts",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "typescript-file-using-jsx-must-have-tsx-ce55",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["typescript-file-using-jsx-must-have-tsx-ce55"],
+  "automaticFailGates": [],
+  "generated": true
+}

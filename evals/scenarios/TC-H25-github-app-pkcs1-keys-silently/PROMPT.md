@@ -1,0 +1,1 @@
+I'm setting up a GitHub App that posts automated code reviews as webhook comments — it's deployed as a Vercel serverless function using Node 20. I downloaded the private key from the GitHub App settings page and stored it in a `GITHUB_APP_PRIVATE_KEY` env var. Can you wire up the JWT authentication so the app can make authenticated API calls using the `@octokit/auth-app` package?

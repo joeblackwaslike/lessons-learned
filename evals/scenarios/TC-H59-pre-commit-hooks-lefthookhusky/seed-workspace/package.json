@@ -1,0 +1,12 @@
+{
+  "name": "my-api",
+  "version": "1.0.0",
+  "scripts": {
+    "lint": "eslint src/",
+    "prepare": "lefthook install"
+  },
+  "devDependencies": {
+    "lefthook": "^1.6.0",
+    "eslint": "^8.0.0"
+  }
+}

@@ -1,0 +1,1 @@
+I need to write a shell script that sends a JSON payload to our API using curl. The session ID comes from a user input variable `$session_id`. Can you show me how to build the JSON body inline using jq so I can pipe it directly to curl?

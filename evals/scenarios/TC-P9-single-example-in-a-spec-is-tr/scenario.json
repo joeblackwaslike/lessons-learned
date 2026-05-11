@@ -1,0 +1,15 @@
+{
+  "id": "TC-P9-single-example-in-a-spec-is-tr",
+  "title": "Single example in a spec is treated as the complete contract; missing formats break production",
+  "category": "session-start",
+  "lessonType": "protocol",
+  "interventionType": "lesson",
+  "lessonId": "single-example-in-a-spec-is-treated-as-t-0f87",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["single-example-in-a-spec-is-treated-as-t-0f87"],
+  "automaticFailGates": [],
+  "generated": true
+}

@@ -1,0 +1,16 @@
+{
+  "id": "TC-H58-git-commit-with-heredoc-fails",
+  "title": "git commit with HEREDOC fails due to shell quoting issues",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "git-commit-with-heredoc-fails-due-to-she-599e",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["git-commit-with-heredoc-fails-due-to-she-599e"],
+  "automaticFailGates": [],
+  "seedSetupScript": "seed-setup.mjs",
+  "generated": true
+}

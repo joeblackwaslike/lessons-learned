@@ -1,0 +1,15 @@
+{
+  "id": "TC-H21-git-stash-pop-fails-with-alrea",
+  "title": "git stash pop fails when stashed untracked files now exist in the working tree",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "git-stash-pop-fails-with-already-exists-808b",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["git-stash-pop-fails-with-already-exists-808b"],
+  "automaticFailGates": [],
+  "generated": true
+}

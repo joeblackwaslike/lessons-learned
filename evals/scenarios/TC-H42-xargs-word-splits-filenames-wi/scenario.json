@@ -1,0 +1,15 @@
+{
+  "id": "TC-H42-xargs-word-splits-filenames-wi",
+  "title": "xargs word-splits filenames with spaces, breaking them into separate arguments",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "xargs-word-splits-filenames-with-spaces-c0bd",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["xargs-word-splits-filenames-with-spaces-c0bd"],
+  "automaticFailGates": [],
+  "generated": true
+}

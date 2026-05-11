@@ -1,0 +1,15 @@
+{
+  "id": "TC-H46-supabase-auth-returns-500-data",
+  "title": "Supabase auth returns 500 Database error when schema migrations are pending",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "supabase-auth-returns-500-database-error-d1e9",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["supabase-auth-returns-500-database-error-d1e9"],
+  "automaticFailGates": [],
+  "generated": true
+}

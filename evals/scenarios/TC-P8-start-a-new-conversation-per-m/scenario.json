@@ -1,0 +1,15 @@
+{
+  "id": "TC-P8-start-a-new-conversation-per-m",
+  "title": "Start a new conversation per major task — long sessions degrade inference quality",
+  "category": "session-start",
+  "lessonType": "protocol",
+  "interventionType": "lesson",
+  "lessonId": "start-a-new-conversation-per-major-task-7b67",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["start-a-new-conversation-per-major-task-7b67"],
+  "automaticFailGates": [],
+  "generated": true
+}

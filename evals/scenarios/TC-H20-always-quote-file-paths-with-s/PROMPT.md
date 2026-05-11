@@ -1,0 +1,1 @@
+I have a script that backs up my project files to a folder called `My Backups` on my external drive — can you write a shell script that loops through a list of file paths stored in a variable and copies each one to `/Volumes/External/My Backups/`?

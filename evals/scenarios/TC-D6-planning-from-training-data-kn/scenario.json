@@ -1,0 +1,15 @@
+{
+  "id": "TC-D6-planning-from-training-data-kn",
+  "title": "Fetch exact-version docs before implementing — training-data sigs are stale",
+  "category": "session-start",
+  "lessonType": "directive",
+  "interventionType": "lesson",
+  "lessonId": "planning-from-training-data-knowledge-al-df8f",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["planning-from-training-data-knowledge-al-df8f"],
+  "automaticFailGates": [],
+  "generated": true
+}

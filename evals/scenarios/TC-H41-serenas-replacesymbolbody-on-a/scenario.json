@@ -1,0 +1,15 @@
+{
+  "id": "TC-H41-serenas-replacesymbolbody-on-a",
+  "title": "Serena replace_symbol_body on JS constants double-declares const, producing syntax error",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "serenas-replacesymbolbody-on-a-js-consta-9fb4",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["serenas-replacesymbolbody-on-a-js-consta-9fb4"],
+  "automaticFailGates": [],
+  "generated": true
+}

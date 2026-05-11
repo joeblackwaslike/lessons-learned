@@ -1,0 +1,15 @@
+{
+  "id": "TC-H24-hooks-without-timeout-field-cr",
+  "title": "Hooks without timeout field create zombie processes accumulating per tool call",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "hooks-without-timeout-field-create-zombi-195b",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["hooks-without-timeout-field-create-zombi-195b"],
+  "automaticFailGates": [],
+  "generated": true
+}

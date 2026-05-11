@@ -1,0 +1,15 @@
+{
+  "id": "TC-H4-async-function-called-without",
+  "title": "Async function called without await silently returns a coroutine that never executes",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "async-function-called-without-await-sile-3a80",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["async-function-called-without-await-sile-3a80"],
+  "automaticFailGates": [],
+  "generated": true
+}

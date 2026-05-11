@@ -1,0 +1,23 @@
+{
+  "id": "TC-G6-pytest-tty-hanging-k9m2",
+  "title": "pytest hangs in non-interactive envs due to TTY detection",
+  "category": "pretooluse",
+  "lessonType": "guard",
+  "interventionType": "lesson",
+  "lessonId": "pytest-tty-hanging-k9m2",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["pytest-tty-hanging-k9m2"],
+  "automaticFailGates": [],
+  "trajectoryAssertions": [
+    {
+      "type": "required",
+      "tool": "Bash",
+      "commandMatch": "pytest.*(--no-header|-p no:faulthandler|TERM=dumb)",
+      "description": "Agent ran pytest with TTY-safe flags after guard blocked bare invocation"
+    }
+  ],
+  "generated": true
+}

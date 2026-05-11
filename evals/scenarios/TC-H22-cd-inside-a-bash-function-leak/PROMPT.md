@@ -1,0 +1,1 @@
+I have a bash script that processes multiple project directories in sequence — can you write a `process_project` function that `cd`s into the given directory, runs `npm install && npm run build`, and then calls it for each directory in an array?

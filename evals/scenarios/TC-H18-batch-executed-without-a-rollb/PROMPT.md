@@ -1,0 +1,1 @@
+I need to add database support to my FastAPI app — can you run the Alembic migration, update the SQLAlchemy models to match the new schema, and wire up the new endpoints all in one go? The deadline is tight so let's just push through it as a single batch rather than committing between steps.

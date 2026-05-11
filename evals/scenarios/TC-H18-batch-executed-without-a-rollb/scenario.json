@@ -1,0 +1,15 @@
+{
+  "id": "TC-H18-batch-executed-without-a-rollb",
+  "title": "Batch executed without a rollback plan leaves partial state that is harder to debug than a clean revert",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "batch-executed-without-a-rollback-plan-l-19b8",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["batch-executed-without-a-rollback-plan-l-19b8"],
+  "automaticFailGates": [],
+  "generated": true
+}

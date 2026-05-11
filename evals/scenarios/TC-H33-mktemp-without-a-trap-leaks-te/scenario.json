@@ -1,0 +1,15 @@
+{
+  "id": "TC-H33-mktemp-without-a-trap-leaks-te",
+  "title": "mktemp without a trap leaks temp files on early exit under set -e",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "mktemp-without-a-trap-leaks-temp-files-o-b7f2",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["mktemp-without-a-trap-leaks-temp-files-o-b7f2"],
+  "automaticFailGates": [],
+  "generated": true
+}

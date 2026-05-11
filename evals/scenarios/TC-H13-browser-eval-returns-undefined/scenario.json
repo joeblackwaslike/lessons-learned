@@ -1,0 +1,15 @@
+{
+  "id": "TC-H13-browser-eval-returns-undefined",
+  "title": "Browser eval returns undefined for async/Promise code",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "browser-eval-returns-undefined-for-async-9cf3",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["browser-eval-returns-undefined-for-async-9cf3"],
+  "automaticFailGates": [],
+  "generated": true
+}

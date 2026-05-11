@@ -1,0 +1,15 @@
+{
+  "id": "TC-H22-cd-inside-a-bash-function-leak",
+  "title": "cd inside a bash function leaks the directory change to all subsequent code",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "cd-inside-a-bash-function-leaks-the-dire-9b4c",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["cd-inside-a-bash-function-leaks-the-dire-9b4c"],
+  "automaticFailGates": [],
+  "generated": true
+}

@@ -1,0 +1,15 @@
+{
+  "id": "TC-H27-jq-tonumber-crashes-on-non-num",
+  "title": "jq tonumber crashes on non-numeric input; add on empty array returns null not 0",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "jq-tonumber-crashes-on-non-numeric-input-0536",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["jq-tonumber-crashes-on-non-numeric-input-0536"],
+  "automaticFailGates": [],
+  "generated": true
+}

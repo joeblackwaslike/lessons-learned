@@ -1,0 +1,15 @@
+{
+  "id": "TC-H14-biome-2x-config-schema-is-inco",
+  "title": "Biome 2.x config schema is incompatible with Biome 1.x",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "biome-2x-config-schema-is-incompatible-w-3369",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["biome-2x-config-schema-is-incompatible-w-3369"],
+  "automaticFailGates": [],
+  "generated": true
+}

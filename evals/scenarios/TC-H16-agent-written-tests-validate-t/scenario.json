@@ -1,0 +1,15 @@
+{
+  "id": "TC-H16-agent-written-tests-validate-t",
+  "title": "Agent-written tests validate the agent's own misunderstanding instead of the spec (closed-loop self-grading)",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "agent-written-tests-validate-the-agents-2fdf",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["agent-written-tests-validate-the-agents-2fdf"],
+  "automaticFailGates": [],
+  "generated": true
+}

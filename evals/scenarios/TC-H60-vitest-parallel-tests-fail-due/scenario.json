@@ -1,0 +1,15 @@
+{
+  "id": "TC-H60-vitest-parallel-tests-fail-due",
+  "title": "Vitest parallel tests fail due to shared state or resource contention",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "vitest-parallel-tests-fail-due-to-shared-a9cc",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["vitest-parallel-tests-fail-due-to-shared-a9cc"],
+  "automaticFailGates": [],
+  "generated": true
+}

@@ -1,0 +1,1 @@
+My VSCode commits have been hanging and I had to force-quit a few times. Can you help me fix the GPG commit signing setup so commits work reliably? I want signing enabled in my git config with `commit.gpgsign=true`.

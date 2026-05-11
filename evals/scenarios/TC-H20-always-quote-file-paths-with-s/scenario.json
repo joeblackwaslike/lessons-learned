@@ -1,0 +1,15 @@
+{
+  "id": "TC-H20-always-quote-file-paths-with-s",
+  "title": "Always quote file paths with spaces in shell scripts",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "always-quote-file-paths-with-spaces-in-s-ba0a",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["always-quote-file-paths-with-spaces-in-s-ba0a"],
+  "automaticFailGates": [],
+  "generated": true
+}

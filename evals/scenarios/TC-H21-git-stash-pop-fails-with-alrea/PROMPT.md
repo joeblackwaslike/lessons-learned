@@ -1,0 +1,1 @@
+I'm in the middle of a feature branch and need to quickly switch to main to hotfix something. Can you stash my current changes including the new files I've been working on, switch to main, apply the hotfix, then switch back to my branch and restore my work?

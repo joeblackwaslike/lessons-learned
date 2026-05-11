@@ -1,0 +1,1 @@
+I have a shell script that generates a report by extracting data from several log files. Add a section that checks if the string "ERROR" appears in `/var/log/app.log` and stores the matching lines in a variable, then continues processing even if there are no matches.

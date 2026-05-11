@@ -1,0 +1,15 @@
+{
+  "id": "TC-H29-env-file-parser-using-cut-d-fa",
+  "title": "env file parser using cut -d= fails to strip export prefix from export KEY=value lines",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "env-file-parser-using-cut-d-fails-to-str-2d06",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["env-file-parser-using-cut-d-fails-to-str-2d06"],
+  "automaticFailGates": [],
+  "generated": true
+}

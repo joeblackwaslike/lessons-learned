@@ -1,0 +1,15 @@
+{
+  "id": "TC-G5-git-stderr-redirected-to-devnu",
+  "title": "git stderr redirected to /dev/null silently caches wrong content on failure",
+  "category": "pretooluse",
+  "lessonType": "guard",
+  "interventionType": "lesson",
+  "lessonId": "git-stderr-redirected-to-devnull-silentl-1ec9",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["git-stderr-redirected-to-devnull-silentl-1ec9"],
+  "automaticFailGates": [],
+  "generated": true
+}

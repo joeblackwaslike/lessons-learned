@@ -1,0 +1,15 @@
+{
+  "id": "TC-H54-vite-generates-absolute-asset",
+  "title": "Vite generates absolute asset paths (e.",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "vite-generates-absolute-asset-paths-e-f2a5",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["vite-generates-absolute-asset-paths-e-f2a5"],
+  "automaticFailGates": [],
+  "generated": true
+}

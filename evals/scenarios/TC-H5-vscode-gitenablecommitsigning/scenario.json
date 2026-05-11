@@ -1,0 +1,15 @@
+{
+  "id": "TC-H5-vscode-gitenablecommitsigning",
+  "title": "VSCode git.enableCommitSigning overrides gitconfig commit.gpgsign causing commit to hang",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "vscode-gitenablecommitsigning-overrides-77d2",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["vscode-gitenablecommitsigning-overrides-77d2"],
+  "automaticFailGates": [],
+  "generated": true
+}

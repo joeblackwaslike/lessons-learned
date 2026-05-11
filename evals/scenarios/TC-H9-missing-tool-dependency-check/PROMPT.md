@@ -1,0 +1,1 @@
+Add a shell function to our deploy script that checks if the current AWS spend has exceeded the monthly budget limit before proceeding with any infrastructure changes — if we're over budget, it should abort the deployment.

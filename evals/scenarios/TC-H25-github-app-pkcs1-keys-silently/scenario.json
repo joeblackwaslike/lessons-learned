@@ -1,0 +1,15 @@
+{
+  "id": "TC-H25-github-app-pkcs1-keys-silently",
+  "title": "GitHub App PKCS#1 keys silently fail on Node 20+/OpenSSL 3 (Vercel)",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "github-app-pkcs1-keys-silently-fail-on-n-c161",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["github-app-pkcs1-keys-silently-fail-on-n-c161"],
+  "automaticFailGates": [],
+  "generated": true
+}

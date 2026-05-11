@@ -1,0 +1,15 @@
+{
+  "id": "TC-H56-sed-range-deletion-is-unbounde",
+  "title": "sed range deletion is unbounded when the closing pattern is absent, deleting to EOF",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "sed-range-deletion-is-unbounded-when-the-64ac",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["sed-range-deletion-is-unbounded-when-the-64ac"],
+  "automaticFailGates": [],
+  "generated": true
+}

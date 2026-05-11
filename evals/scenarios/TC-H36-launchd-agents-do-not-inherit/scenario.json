@@ -1,0 +1,15 @@
+{
+  "id": "TC-H36-launchd-agents-do-not-inherit",
+  "title": "launchd agents do not inherit shell env; always set HOME in plist EnvironmentVariables",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "launchd-agents-do-not-inherit-shell-env-3142",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["launchd-agents-do-not-inherit-shell-env-3142"],
+  "automaticFailGates": [],
+  "generated": true
+}

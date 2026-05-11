@@ -1,0 +1,1 @@
+Write a bash script that downloads a remote JSON config file to a temp location, validates it with `jq`, and if valid, atomically replaces `/etc/myapp/config.json` using `set -e` so any failure aborts early.

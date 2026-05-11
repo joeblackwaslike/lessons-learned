@@ -1,0 +1,15 @@
+{
+  "id": "TC-D8-multiple-choice-questions-buri",
+  "title": "Multiple-choice questions buried in prose force the user to parse before responding",
+  "category": "session-start",
+  "lessonType": "directive",
+  "interventionType": "lesson",
+  "lessonId": "multiple-choice-questions-buried-in-pros-9d59",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["multiple-choice-questions-buried-in-pros-9d59"],
+  "automaticFailGates": [],
+  "generated": true
+}

@@ -1,0 +1,15 @@
+{
+  "id": "TC-H49-unquoted-bash-variable-in-comp",
+  "title": "Unquoted bash variable in [[ ]] comparison fails under set -u on unset variables",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "unquoted-bash-variable-in-comparison-fai-05b4",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["unquoted-bash-variable-in-comparison-fai-05b4"],
+  "automaticFailGates": [],
+  "generated": true
+}

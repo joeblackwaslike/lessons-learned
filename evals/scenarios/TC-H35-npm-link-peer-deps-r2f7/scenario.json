@@ -1,0 +1,15 @@
+{
+  "id": "TC-H35-npm-link-peer-deps-r2f7",
+  "title": "npm link doesn't resolve peer dependencies of the linked package",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "npm-link-peer-deps-r2f7",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["npm-link-peer-deps-r2f7"],
+  "automaticFailGates": [],
+  "generated": true
+}

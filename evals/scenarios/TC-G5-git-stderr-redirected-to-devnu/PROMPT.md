@@ -1,0 +1,1 @@
+I'm building a shell script that displays the current git branch name in my terminal prompt — can you write a bash function `get_current_branch` that caches the branch name in `/tmp/.git_branch_cache` to avoid calling git on every prompt render, and suppresses any git errors so the prompt doesn't show error output when I'm not in a git repo?

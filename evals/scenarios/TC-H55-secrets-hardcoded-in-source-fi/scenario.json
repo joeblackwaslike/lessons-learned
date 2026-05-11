@@ -1,0 +1,15 @@
+{
+  "id": "TC-H55-secrets-hardcoded-in-source-fi",
+  "title": "secrets hardcoded in source files are permanently exposed after any git commit",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "secrets-hardcoded-in-source-files-are-pe-00f3",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["secrets-hardcoded-in-source-files-are-pe-00f3"],
+  "automaticFailGates": [],
+  "generated": true
+}

@@ -1,0 +1,1 @@
+Add a `cache_results` option to the data fetching function — when enabled, it should cache results so repeated calls with the same arguments don't re-fetch from the API. Write the implementation and tests together so I can review them as a complete unit.

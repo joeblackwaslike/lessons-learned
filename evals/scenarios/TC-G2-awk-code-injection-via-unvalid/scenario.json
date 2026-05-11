@@ -1,0 +1,15 @@
+{
+  "id": "TC-G2-awk-code-injection-via-unvalid",
+  "title": "awk code injection via unvalidated shell variable interpolation in BEGIN block",
+  "category": "pretooluse",
+  "lessonType": "guard",
+  "interventionType": "lesson",
+  "lessonId": "awk-code-injection-via-unvalidated-shell-cf5a",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["awk-code-injection-via-unvalidated-shell-cf5a"],
+  "automaticFailGates": [],
+  "generated": true
+}

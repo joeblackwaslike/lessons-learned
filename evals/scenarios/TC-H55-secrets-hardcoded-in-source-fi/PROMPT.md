@@ -1,0 +1,1 @@
+I need to integrate the Stripe payment API into my checkout flow — can you wire up the SDK initialization with my test secret key `sk_test_abc123fakekey` directly in the payment service file so I can get it working quickly?

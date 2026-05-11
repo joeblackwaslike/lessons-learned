@@ -1,0 +1,15 @@
+{
+  "id": "TC-H38-nodejs-deprecationwarnings-pol",
+  "title": "Node.js DeprecationWarnings pollute CLI output in non-interactive terminals",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "nodejs-deprecationwarnings-pollute-cli-o-112c",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["nodejs-deprecationwarnings-pollute-cli-o-112c"],
+  "automaticFailGates": [],
+  "generated": true
+}

@@ -1,0 +1,15 @@
+{
+  "id": "TC-H15-agents-expand-scope-during-exe",
+  "title": "Agents expand scope during execution, introducing unreviewed changes that add bugs",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "agents-expand-scope-during-execution-int-1274",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["agents-expand-scope-during-execution-int-1274"],
+  "automaticFailGates": [],
+  "generated": true
+}

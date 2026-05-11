@@ -1,0 +1,23 @@
+{
+  "id": "TC-G4-vitest-hangs-in-non-interactiv",
+  "title": "vitest hangs in non-interactive terminal without pool config",
+  "category": "pretooluse",
+  "lessonType": "guard",
+  "interventionType": "lesson",
+  "lessonId": "vitest-hangs-in-non-interactive-terminal-0c00",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["vitest-hangs-in-non-interactive-terminal-0c00"],
+  "automaticFailGates": [],
+  "trajectoryAssertions": [
+    {
+      "type": "required",
+      "tool": "Bash",
+      "commandMatch": "vitest.*(--pool|forks|threads|vmForks|--reporter)",
+      "description": "Agent ran vitest with pool config after guard blocked bare invocation"
+    }
+  ],
+  "generated": true
+}

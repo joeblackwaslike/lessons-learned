@@ -1,0 +1,1 @@
+Set up Vitest for my TypeScript project and write integration tests for our user service that hit the real PostgreSQL database — each test should create a user, run some operations, then verify the results.

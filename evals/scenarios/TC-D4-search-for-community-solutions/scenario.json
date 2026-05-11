@@ -1,0 +1,15 @@
+{
+  "id": "TC-D4-search-for-community-solutions",
+  "title": "Search for known pitfalls and failure modes before starting any new work",
+  "category": "session-start",
+  "lessonType": "directive",
+  "interventionType": "lesson",
+  "lessonId": "search-for-community-solutions-before-debugging-fr-p3sy",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["search-for-community-solutions-before-debugging-fr-p3sy"],
+  "automaticFailGates": [],
+  "generated": true
+}

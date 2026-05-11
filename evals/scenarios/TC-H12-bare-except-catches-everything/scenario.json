@@ -1,0 +1,15 @@
+{
+  "id": "TC-H12-bare-except-catches-everything",
+  "title": "Bare except: catches everything including KeyboardInterrupt and SystemExit, hiding all failures",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "bare-except-catches-everything-including-52b1",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["bare-except-catches-everything-including-52b1"],
+  "automaticFailGates": [],
+  "generated": true
+}

@@ -1,0 +1,15 @@
+{
+  "id": "TC-D7-verify-all-steps-before-presen",
+  "title": "Verify each plan step is executable before presenting — never speculate",
+  "category": "session-start",
+  "lessonType": "directive",
+  "interventionType": "lesson",
+  "lessonId": "verify-all-steps-before-presenting-a-mul-a8ab",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["verify-all-steps-before-presenting-a-mul-a8ab"],
+  "automaticFailGates": [],
+  "generated": true
+}

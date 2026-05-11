@@ -1,0 +1,15 @@
+{
+  "id": "TC-P6-always-add-timeout-and-p-nocac",
+  "title": "Always add --timeout and -p no:cacheprovider when running pytest",
+  "category": "session-start",
+  "lessonType": "protocol",
+  "interventionType": "lesson",
+  "lessonId": "always-add-timeout-and-p-nocacheprovider-013f",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["always-add-timeout-and-p-nocacheprovider-013f"],
+  "automaticFailGates": [],
+  "generated": true
+}

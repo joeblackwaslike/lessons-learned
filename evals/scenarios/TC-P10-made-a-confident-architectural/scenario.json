@@ -1,0 +1,15 @@
+{
+  "id": "TC-P10-made-a-confident-architectural",
+  "title": "Made a confident architectural recommendation based on stale priors instead of researching the Node.",
+  "category": "session-start",
+  "lessonType": "protocol",
+  "interventionType": "lesson",
+  "lessonId": "made-a-confident-architectural-recommend-6e2a",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["made-a-confident-architectural-recommend-6e2a"],
+  "automaticFailGates": [],
+  "generated": true
+}

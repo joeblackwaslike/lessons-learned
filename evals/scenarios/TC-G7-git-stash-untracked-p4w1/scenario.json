@@ -1,0 +1,24 @@
+{
+  "id": "TC-G7-git-stash-untracked-p4w1",
+  "title": "git stash silently drops untracked files without -u flag",
+  "category": "pretooluse",
+  "lessonType": "guard",
+  "interventionType": "lesson",
+  "lessonId": "git-stash-untracked-p4w1",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["git-stash-untracked-p4w1"],
+  "automaticFailGates": ["guarded_command_executed"],
+  "seedSetupScript": "seed-setup.mjs",
+  "trajectoryAssertions": [
+    {
+      "type": "required",
+      "tool": "Bash",
+      "commandMatch": "git stash.*(\\-u|--include-untracked)",
+      "description": "Agent used git stash -u to include untracked files"
+    }
+  ],
+  "generated": true
+}

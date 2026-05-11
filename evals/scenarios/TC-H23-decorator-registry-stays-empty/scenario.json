@@ -1,0 +1,15 @@
+{
+  "id": "TC-H23-decorator-registry-stays-empty",
+  "title": "Decorator registry stays empty because the module containing registrations is never imported",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "decorator-registry-stays-empty-because-t-bb41",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["decorator-registry-stays-empty-because-t-bb41"],
+  "automaticFailGates": [],
+  "generated": true
+}

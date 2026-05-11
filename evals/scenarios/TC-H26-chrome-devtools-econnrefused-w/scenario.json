@@ -1,0 +1,15 @@
+{
+  "id": "TC-H26-chrome-devtools-econnrefused-w",
+  "title": "Chrome DevTools ECONNREFUSED when Chrome not running or port 9222 not open",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "chrome-devtools-econnrefused-when-chrome-5079",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["chrome-devtools-econnrefused-when-chrome-5079"],
+  "automaticFailGates": [],
+  "generated": true
+}

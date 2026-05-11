@@ -1,0 +1,15 @@
+{
+  "id": "TC-H19-batches-over-5-tasks-or-250-li",
+  "title": "Batches over 5 tasks or 250 lines produce subtle bugs in later tasks due to degraded context attention",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "batches-over-5-tasks-or-250-lines-produc-2f49",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["batches-over-5-tasks-or-250-lines-produc-2f49"],
+  "automaticFailGates": [],
+  "generated": true
+}

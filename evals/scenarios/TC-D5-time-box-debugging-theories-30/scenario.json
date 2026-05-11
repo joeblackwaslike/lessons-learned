@@ -1,0 +1,15 @@
+{
+  "id": "TC-D5-time-box-debugging-theories-30",
+  "title": "Time-box any single debugging theory to 30 minutes; pivot to web search if no measurable progress",
+  "category": "session-start",
+  "lessonType": "directive",
+  "interventionType": "lesson",
+  "lessonId": "time-box-debugging-theories-30-minutes-then-search-b1zn",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["time-box-debugging-theories-30-minutes-then-search-b1zn"],
+  "automaticFailGates": [],
+  "generated": true
+}

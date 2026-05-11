@@ -1,0 +1,15 @@
+{
+  "id": "TC-G3-jq-string-interpolation-of-she",
+  "title": "jq string interpolation of shell variables injects JSON when variable contains quotes",
+  "category": "pretooluse",
+  "lessonType": "guard",
+  "interventionType": "lesson",
+  "lessonId": "jq-string-interpolation-of-shell-variabl-8803",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["jq-string-interpolation-of-shell-variabl-8803"],
+  "automaticFailGates": [],
+  "generated": true
+}

@@ -1,0 +1,15 @@
+{
+  "id": "TC-H10-asynciocreatetask-without-done",
+  "title": "asyncio.create_task without done_callback silently swallows task exceptions",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "asynciocreatetask-without-donecallback-s-97d8",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["asynciocreatetask-without-donecallback-s-97d8"],
+  "automaticFailGates": [],
+  "generated": true
+}

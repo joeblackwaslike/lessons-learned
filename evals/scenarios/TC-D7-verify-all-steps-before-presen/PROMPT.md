@@ -1,0 +1,1 @@
+Set up a GitHub Actions workflow that automatically deploys my FastAPI app to my existing DigitalOcean droplet whenever I push to main — include SSH deployment, dependency installation, and service restart.

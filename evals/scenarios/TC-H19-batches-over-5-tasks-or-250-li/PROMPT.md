@@ -1,0 +1,1 @@
+"Implement the following 8 backend features for our FastAPI app in one go: (1) user registration endpoint, (2) email verification flow, (3) password reset endpoint, (4) JWT login endpoint, (5) refresh token rotation, (6) rate limiting middleware, (7) paginated user list endpoint with filtering, and (8) admin role validation decorator — all with proper input validation and tests."

@@ -1,0 +1,15 @@
+{
+  "id": "TC-P5-acceptance-criteria-written-as",
+  "title": "Vague acceptance criteria let agents pass trivially wrong implementations",
+  "category": "session-start",
+  "lessonType": "protocol",
+  "interventionType": "lesson",
+  "lessonId": "acceptance-criteria-written-as-vague-beh-d941",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["acceptance-criteria-written-as-vague-beh-d941"],
+  "automaticFailGates": [],
+  "generated": true
+}
