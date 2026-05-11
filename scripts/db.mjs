@@ -21,8 +21,10 @@ const DATA_DIR = process.env.LESSONS_DATA_DIR ?? join(PLUGIN_ROOT, 'data');
 
 export const DB_PATH = process.env.LESSONS_DB_PATH ?? join(DATA_DIR, 'lessons.db');
 
-// JSON columns that need parse/stringify on every row.
+// JSON columns that need parse/stringify on every row (arrays default to []).
 const JSON_COLUMNS = ['toolNames', 'commandPatterns', 'pathPatterns', 'tags', 'sourceSessionIds'];
+// JSON columns that are nullable objects (not arrays) — handled separately.
+const JSON_OBJECT_COLUMNS = ['duplicatedBy'];
 
 // ─── Schema ──────────────────────────────────────────────────────────
 
@@ -56,7 +58,8 @@ CREATE TABLE IF NOT EXISTS lessons (
   updatedAt        TEXT NOT NULL,
   reviewedAt       TEXT,
   archivedAt       TEXT,
-  archiveReason    TEXT
+  archiveReason    TEXT,
+  duplicatedBy     TEXT
 );
 
 CREATE INDEX IF NOT EXISTS idx_lessons_status          ON lessons(status);
@@ -242,6 +245,17 @@ function applyMigrations(db) {
     );
   }
 
+  // Migration: add duplicatedBy column (nullable JSON object: suppression/shim descriptor)
+  {
+    const cols = db
+      .prepare('PRAGMA table_info(lessons)')
+      .all()
+      .map(r => r.name);
+    if (!cols.includes('duplicatedBy')) {
+      db.exec(`ALTER TABLE lessons ADD COLUMN duplicatedBy TEXT`);
+    }
+  }
+
   // Migration: drop insight_seed_map table (replaced by structural pattern matching in patternScanFile)
   db.exec('DROP TABLE IF EXISTS insight_seed_map');
 
@@ -292,6 +306,17 @@ export function deserializeRow(row) {
       plain[col] = [];
     }
   }
+  for (const col of JSON_OBJECT_COLUMNS) {
+    if (typeof plain[col] === 'string') {
+      try {
+        plain[col] = JSON.parse(plain[col]);
+      } catch {
+        plain[col] = null;
+      }
+    } else if (plain[col] === undefined) {
+      plain[col] = null;
+    }
+  }
   return plain;
 }
 
@@ -299,6 +324,11 @@ function serializeRecord(record) {
   const out = { ...record };
   for (const col of JSON_COLUMNS) {
     if (Array.isArray(out[col])) {
+      out[col] = JSON.stringify(out[col]);
+    }
+  }
+  for (const col of JSON_OBJECT_COLUMNS) {
+    if (out[col] !== null && out[col] !== undefined && typeof out[col] === 'object') {
       out[col] = JSON.stringify(out[col]);
     }
   }
@@ -403,6 +433,7 @@ export function insertCandidate(db, record) {
     reviewedAt: record.reviewedAt ?? null,
     archivedAt: record.archivedAt ?? null,
     archiveReason: record.archiveReason ?? null,
+    duplicatedBy: record.duplicatedBy ?? null,
   });
 
   db.prepare(
@@ -412,13 +443,15 @@ export function insertCandidate(db, record) {
       toolNames, commandPatterns, pathPatterns,
       priority, confidence, tags, source,
       sourceSessionIds, occurrenceCount, sessionCount, projectCount,
-      contentHash, createdAt, updatedAt, reviewedAt, archivedAt, archiveReason
+      contentHash, createdAt, updatedAt, reviewedAt, archivedAt, archiveReason,
+      duplicatedBy
     ) VALUES (
       :id, :slug, :status, :type, :summary, :problem, :solution,
       :toolNames, :commandPatterns, :pathPatterns,
       :priority, :confidence, :tags, :source,
       :sourceSessionIds, :occurrenceCount, :sessionCount, :projectCount,
-      :contentHash, :createdAt, :updatedAt, :reviewedAt, :archivedAt, :archiveReason
+      :contentHash, :createdAt, :updatedAt, :reviewedAt, :archivedAt, :archiveReason,
+      :duplicatedBy
     )
   `
   ).run(row);
@@ -551,6 +584,7 @@ export function updateRecord(db, id, patch) {
     'priority',
     'confidence',
     'tags',
+    'duplicatedBy',
   ];
   const fields = Object.keys(patch).filter(k => PATCHABLE.includes(k));
   if (fields.length === 0) return null;
@@ -560,7 +594,8 @@ export function updateRecord(db, id, patch) {
   const values = { id, now };
   for (const f of fields) {
     const val = patch[f];
-    values[f] = Array.isArray(val) ? JSON.stringify(val) : val;
+    values[f] =
+      Array.isArray(val) || (val !== null && typeof val === 'object') ? JSON.stringify(val) : val;
   }
 
   db.prepare(`UPDATE lessons SET ${setClauses}, updatedAt = :now WHERE id = :id`).run(values);

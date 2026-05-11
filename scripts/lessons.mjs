@@ -20,7 +20,15 @@
  *   node scripts/lessons.mjs <subcommand> --help
  */
 
-import { readFileSync, writeFileSync, createReadStream, readdirSync, statSync } from 'node:fs';
+import {
+  readFileSync,
+  writeFileSync,
+  createReadStream,
+  readdirSync,
+  statSync,
+  existsSync,
+} from 'node:fs';
+import { execSync } from 'node:child_process';
 import {
   openDb,
   closeDb,
@@ -305,7 +313,14 @@ Options:
 
 Patchable fields:
   summary, problem, solution, type,
-  toolNames, commandPatterns, commandMatchTarget, pathPatterns, priority, confidence, tags
+  toolNames, commandPatterns, commandMatchTarget, pathPatterns, priority, confidence, tags,
+  duplicatedBy
+
+duplicatedBy shapes (JSON object or null to clear):
+  { "type": "plugin",       "name": "superpowers" }
+  { "type": "skill",        "name": "superpowers:brainstorming" }
+  { "type": "mcp-server",   "name": "github" }
+  { "type": "github-issue", "url": "https://github.com/org/repo/issues/N", "status": "open" }
 
 Notes:
   - Status is not changed — active lessons stay active, candidates stay candidates.
@@ -598,6 +613,72 @@ function loadConfig() {
   return { ...base, ...overrides };
 }
 
+// ─── Artifact detection (for duplicatedBy / requires) ────────────────
+
+const INSTALLED_PLUGINS_PATH = join(homedir(), '.claude', 'plugins', 'installed_plugins.json');
+const CLAUDE_SETTINGS_PATH = join(homedir(), '.claude', 'settings.json');
+
+function loadInstalledPlugins() {
+  try {
+    return JSON.parse(readFileSync(INSTALLED_PLUGINS_PATH, 'utf8')).plugins ?? {};
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * Check whether an artifact descriptor refers to something currently installed.
+ *
+ * Supported descriptor shapes:
+ *   { type: 'plugin',       name: 'superpowers' }
+ *   { type: 'skill',        name: 'superpowers:brainstorming' }
+ *   { type: 'mcp-server',   name: 'github' }
+ *   { type: 'github-issue', url: 'https://...', status: 'open'|'closed'|'fixed' }
+ *
+ * @param {{ type: string, name?: string, url?: string, status?: string }|null} descriptor
+ * @returns {boolean}
+ */
+function detectArtifact(descriptor) {
+  if (!descriptor || !descriptor.type) return false;
+  const { type, name } = descriptor;
+
+  if (type === 'plugin') {
+    const installed = loadInstalledPlugins();
+    return Object.entries(installed).some(
+      ([k, v]) => k.split('@')[0] === name && Array.isArray(v) && v.length > 0
+    );
+  }
+
+  if (type === 'skill') {
+    const [pluginName, skillName] = name?.includes(':') ? name.split(':', 2) : [null, name];
+    const installed = loadInstalledPlugins();
+    for (const [k, entries] of Object.entries(installed)) {
+      if (!Array.isArray(entries) || entries.length === 0) continue;
+      if (pluginName && k.split('@')[0] !== pluginName) continue;
+      const installPath = entries[0]?.installPath;
+      if (!installPath) continue;
+      if (skillName && existsSync(join(installPath, 'skills', skillName))) return true;
+      if (!skillName && existsSync(installPath)) return true;
+    }
+    return false;
+  }
+
+  if (type === 'mcp-server') {
+    try {
+      const settings = JSON.parse(readFileSync(CLAUDE_SETTINGS_PATH, 'utf8'));
+      return name in (settings.mcpServers ?? {});
+    } catch {
+      return false;
+    }
+  }
+
+  if (type === 'github-issue') {
+    return descriptor.status === 'fixed';
+  }
+
+  return false;
+}
+
 // ─── Manifest building ───────────────────────────────────────────────
 
 function buildManifest() {
@@ -622,6 +703,10 @@ function buildManifest() {
         continue;
       }
       if ((lesson.priority ?? 0) < minPriority) {
+        excluded++;
+        continue;
+      }
+      if (lesson.duplicatedBy && detectArtifact(lesson.duplicatedBy)) {
         excluded++;
         continue;
       }
@@ -753,6 +838,7 @@ function addLessonInternal(input) {
     reviewedAt: null,
     archivedAt: null,
     archiveReason: null,
+    duplicatedBy: input.duplicatedBy ?? null,
   };
 
   const db = openDb();
@@ -1612,6 +1698,20 @@ function auditLesson(lesson) {
       );
   }
 
+  // duplicated-by-invalid: malformed descriptor that will silently never suppress
+  if (lesson.duplicatedBy !== null && lesson.duplicatedBy !== undefined) {
+    const { type, name, url } = lesson.duplicatedBy ?? {};
+    const validTypes = ['plugin', 'skill', 'mcp-server', 'github-issue'];
+    if (!type || !validTypes.includes(type))
+      issues.push(
+        `duplicatedBy.type "${type}" is invalid — must be one of: ${validTypes.join(', ')}`
+      );
+    else if (type !== 'github-issue' && !name)
+      issues.push('duplicatedBy.name is required for plugin/skill/mcp-server types');
+    else if (type === 'github-issue' && !url)
+      issues.push('duplicatedBy.url is required for github-issue type');
+  }
+
   return issues;
 }
 
@@ -1631,7 +1731,62 @@ function auditStore(lessons) {
     }
   }
 
+  // upstream-issue-shims: report status of github-issue duplicatedBy lessons
+  const issueShims = lessons.filter(l => l.duplicatedBy?.type === 'github-issue');
+  for (const l of issueShims) {
+    const { url, status } = l.duplicatedBy;
+    if (status === 'fixed') {
+      warnings.push(
+        `upstream shim "${l.slug}" is marked fixed (${url}) — archive this lesson (excluded from manifest but still present)`
+      );
+    } else {
+      warnings.push(
+        `upstream shim "${l.slug}" tracking ${url ?? '(no url)'} (status: ${status ?? 'unknown'}) — run doctor --check=upstream to refresh`
+      );
+    }
+  }
+
   return warnings;
+}
+
+function refreshUpstreamIssues(db, lessons) {
+  const shims = lessons.filter(l => l.duplicatedBy?.type === 'github-issue' && l.duplicatedBy?.url);
+  if (shims.length === 0) {
+    console.log('No upstream issue shims found.');
+    return;
+  }
+  let updated = 0;
+  for (const l of shims) {
+    const { url, status: currentStatus } = l.duplicatedBy;
+    // Parse owner/repo/number from URL
+    const m = url.match(/github\.com\/([^/]+)\/([^/]+)\/(issues|pull)\/(\d+)/);
+    if (!m) {
+      console.warn(`  ⚠ ${l.slug}: cannot parse GitHub URL: ${url}`);
+      continue;
+    }
+    const [, owner, repo, , number] = m;
+    let issueData;
+    try {
+      issueData = JSON.parse(
+        execSync(`gh api repos/${owner}/${repo}/issues/${number} --jq '{state:.state}'`, {
+          encoding: 'utf8',
+        })
+      );
+    } catch {
+      console.warn(`  ⚠ ${l.slug}: gh api failed (gh not installed or not authenticated)`);
+      continue;
+    }
+    const newStatus = issueData.state === 'closed' ? 'closed' : 'open';
+    if (newStatus !== currentStatus) {
+      updateRecord(db, l.id, { duplicatedBy: { ...l.duplicatedBy, status: newStatus } });
+      console.log(`  ↻ ${l.slug}: status ${currentStatus ?? 'unknown'} → ${newStatus}`);
+      updated++;
+    } else {
+      console.log(`  ✓ ${l.slug}: status unchanged (${newStatus})`);
+    }
+  }
+  if (updated > 0) buildManifest();
+  console.log(`Updated ${updated}/${shims.length} upstream issue shims.`);
 }
 
 function cmdDoctor(args) {
@@ -1642,6 +1797,13 @@ function cmdDoctor(args) {
 
   const db = openDb();
   const lessons = getActiveRecords(db);
+
+  if (args.includes('--check=upstream')) {
+    refreshUpstreamIssues(db, lessons);
+    closeDb(db);
+    return;
+  }
+
   closeDb(db);
 
   const results = lessons.map(l => ({ lesson: l, issues: auditLesson(l) }));

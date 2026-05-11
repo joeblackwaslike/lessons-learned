@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-05-11T00:17:45.982Z",
+  "generatedAt": "2026-05-11T00:33:44.434Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -1131,6 +1131,33 @@
       "problem": "Using `osascript << EOF` with a double-quoted heredoc causes bash to expand $VARIABLE references before osascript receives the script. This silently corrupts AppleScript/JXA code that contains literal dollar signs or shell-variable patterns.",
       "solution": "Use a single-quoted heredoc delimiter to prevent expansion: `osascript <<'EOF' ... EOF`. If the heredoc needs some shell variable expansion, escape literal dollar signs as \\$."
     },
+    "01KRA6RK0PZGX736VTH6KNJDH1": {
+      "slug": "github-app-pkcs1-keys-silently-fail-on-n-c161",
+      "type": "hint",
+      "priority": 7,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "vercel\\s+(deploy|env)",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "tags": [
+        "tool:vercel",
+        "tool:openssl",
+        "topic:github-apps",
+        "severity:silent-failure"
+      ],
+      "scope": null,
+      "message": "## Lesson: GitHub App PKCS#1 keys silently fail on Node 20+/OpenSSL 3 (Vercel)\nGitHub App private keys download in PKCS#1 format (BEGIN RSA PRIVATE KEY). Node.js 20+/OpenSSL 3 environments (Vercel production) cannot load PKCS#1 keys — createPrivateKey() throws ERR_OSSL_UNSUPPORTED at JWT-signing time, which is async and after the HTTP 202 is already sent. The function appears healthy in GitHub delivery history while silently doing nothing: all webhooks accepted, zero reviews posted.\n**Fix**: Convert the key to PKCS#8 immediately after downloading from GitHub App settings: `openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in key.pem -out key.pkcs8.pem`. The result starts with BEGIN PRIVATE KEY (no RSA). Store only the PKCS#8 form in env vars. Add a startup guard: if GITHUB_APP_PRIVATE_KEY contains BEGIN RSA PRIVATE KEY, throw at boot rather than failing silently mid-request.",
+      "summary": "GitHub App PKCS#1 keys silently fail on Node 20+/OpenSSL 3 (Vercel)",
+      "problem": "GitHub App private keys download in PKCS#1 format (BEGIN RSA PRIVATE KEY). Node.js 20+/OpenSSL 3 environments (Vercel production) cannot load PKCS#1 keys — createPrivateKey() throws ERR_OSSL_UNSUPPORTED at JWT-signing time, which is async and after the HTTP 202 is already sent. The function appears healthy in GitHub delivery history while silently doing nothing: all webhooks accepted, zero reviews posted.",
+      "solution": "Convert the key to PKCS#8 immediately after downloading from GitHub App settings: `openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in key.pem -out key.pkcs8.pem`. The result starts with BEGIN PRIVATE KEY (no RSA). Store only the PKCS#8 form in env vars. Add a startup guard: if GITHUB_APP_PRIVATE_KEY contains BEGIN RSA PRIVATE KEY, throw at boot rather than failing silently mid-request."
+    },
     "01JQSEED00000000000000005": {
       "slug": "npm-link-peer-deps-r2f7",
       "type": "hint",
@@ -1663,6 +1690,32 @@
       "summary": "launchd agents do not inherit shell env; always set HOME in plist EnvironmentVariables",
       "problem": "LaunchAgent plist files run processes without the user's shell environment. $HOME, $PATH, and other vars are unset or minimal, causing tools that use nvm, pyenv, or $HOME to fail silently or with cryptic errors.",
       "solution": "Add EnvironmentVariables to the plist: <key>EnvironmentVariables</key><dict><key>HOME</key><string>/Users/USERNAME</string><key>PATH</key><string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string></dict>. Hardcode paths — do not use $HOME or $PATH inside the plist."
+    },
+    "01KRA6RT0NXM2J68ZXZ59XNT62": {
+      "slug": "vercel-logs-silently-filters-by-branch-p-1e6b",
+      "type": "hint",
+      "priority": 6,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "vercel\\s+logs",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "tags": [
+        "tool:vercel",
+        "topic:debugging",
+        "severity:silent-failure"
+      ],
+      "scope": null,
+      "message": "## Lesson: vercel logs silently filters by branch — pass --no-branch for production\nRunning `vercel logs --environment production` returns no output when an implicit branch filter is active. Logs from all deployments are only visible with the --no-branch flag. This masked a critical async error (ERR_OSSL_UNSUPPORTED) for multiple debugging sessions — the function appeared healthy because the error only surfaced after the 202 response was sent.\n**Fix**: Always use `vercel logs --no-branch` when debugging production issues. Full recommended invocation: `vercel logs --no-branch --since 10m --no-follow --expand`. Without --no-branch, the command may silently return empty output even when the function is actively throwing errors.",
+      "summary": "vercel logs silently filters by branch — pass --no-branch for production",
+      "problem": "Running `vercel logs --environment production` returns no output when an implicit branch filter is active. Logs from all deployments are only visible with the --no-branch flag. This masked a critical async error (ERR_OSSL_UNSUPPORTED) for multiple debugging sessions — the function appeared healthy because the error only surfaced after the 202 response was sent.",
+      "solution": "Always use `vercel logs --no-branch` when debugging production issues. Full recommended invocation: `vercel logs --no-branch --since 10m --no-follow --expand`. Without --no-branch, the command may silently return empty output even when the function is actively throwing errors."
     },
     "01KMZ3CHGQMTYQA0AFPQRGCSEG": {
       "slug": "oh-my-zsh-nvm-plugin-outputs-warnings-in-df6f",
