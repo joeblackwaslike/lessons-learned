@@ -314,13 +314,18 @@ Options:
 Patchable fields:
   summary, problem, solution, type,
   toolNames, commandPatterns, commandMatchTarget, pathPatterns, priority, confidence, tags,
-  duplicatedBy
+  duplicatedBy, requires
 
 duplicatedBy shapes (JSON object or null to clear):
   { "type": "plugin",       "name": "superpowers" }
   { "type": "skill",        "name": "superpowers:brainstorming" }
   { "type": "mcp-server",   "name": "github" }
   { "type": "github-issue", "url": "https://github.com/org/repo/issues/N", "status": "open" }
+
+requires shapes (JSON object or null to clear — lesson excluded unless artifact is installed):
+  { "type": "plugin",     "name": "superpowers" }
+  { "type": "skill",      "name": "superpowers:brainstorming" }
+  { "type": "mcp-server", "name": "github" }
 
 Notes:
   - Status is not changed — active lessons stay active, candidates stay candidates.
@@ -710,6 +715,10 @@ function buildManifest() {
         excluded++;
         continue;
       }
+      if (lesson.requires && !detectArtifact(lesson.requires)) {
+        excluded++;
+        continue;
+      }
     }
 
     const commandRegexSources = (lesson.commandPatterns ?? [])
@@ -839,6 +848,7 @@ function addLessonInternal(input) {
     archivedAt: null,
     archiveReason: null,
     duplicatedBy: input.duplicatedBy ?? null,
+    requires: input.requires ?? null,
   };
 
   const db = openDb();
@@ -1710,6 +1720,18 @@ function auditLesson(lesson) {
       issues.push('duplicatedBy.name is required for plugin/skill/mcp-server types');
     else if (type === 'github-issue' && !url)
       issues.push('duplicatedBy.url is required for github-issue type');
+  }
+
+  // requires-invalid: malformed descriptor that will silently never gate inclusion
+  if (lesson.requires !== null && lesson.requires !== undefined) {
+    const { type, name, url } = lesson.requires ?? {};
+    const validTypes = ['plugin', 'skill', 'mcp-server', 'github-issue'];
+    if (!type || !validTypes.includes(type))
+      issues.push(`requires.type "${type}" is invalid — must be one of: ${validTypes.join(', ')}`);
+    else if (type !== 'github-issue' && !name)
+      issues.push('requires.name is required for plugin/skill/mcp-server types');
+    else if (type === 'github-issue' && !url)
+      issues.push('requires.url is required for github-issue type');
   }
 
   return issues;

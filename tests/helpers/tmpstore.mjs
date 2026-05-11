@@ -39,7 +39,8 @@ CREATE TABLE IF NOT EXISTS lessons (
   occurrenceCount INTEGER NOT NULL DEFAULT 0, sessionCount INTEGER NOT NULL DEFAULT 0,
   projectCount INTEGER NOT NULL DEFAULT 0, contentHash TEXT NOT NULL,
   createdAt TEXT NOT NULL, updatedAt TEXT NOT NULL,
-  reviewedAt TEXT, archivedAt TEXT, archiveReason TEXT
+  reviewedAt TEXT, archivedAt TEXT, archiveReason TEXT,
+  duplicatedBy TEXT, requires TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_lessons_status ON lessons(status);
 CREATE INDEX IF NOT EXISTS idx_lessons_hash ON lessons(contentHash);

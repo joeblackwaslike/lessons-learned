@@ -24,7 +24,7 @@ export const DB_PATH = process.env.LESSONS_DB_PATH ?? join(DATA_DIR, 'lessons.db
 // JSON columns that need parse/stringify on every row (arrays default to []).
 const JSON_COLUMNS = ['toolNames', 'commandPatterns', 'pathPatterns', 'tags', 'sourceSessionIds'];
 // JSON columns that are nullable objects (not arrays) — handled separately.
-const JSON_OBJECT_COLUMNS = ['duplicatedBy'];
+const JSON_OBJECT_COLUMNS = ['duplicatedBy', 'requires'];
 
 // ─── Schema ──────────────────────────────────────────────────────────
 
@@ -256,6 +256,17 @@ function applyMigrations(db) {
     }
   }
 
+  // Migration: add requires column (nullable JSON object: inclusion guard descriptor)
+  {
+    const cols = db
+      .prepare('PRAGMA table_info(lessons)')
+      .all()
+      .map(r => r.name);
+    if (!cols.includes('requires')) {
+      db.exec(`ALTER TABLE lessons ADD COLUMN requires TEXT`);
+    }
+  }
+
   // Migration: drop insight_seed_map table (replaced by structural pattern matching in patternScanFile)
   db.exec('DROP TABLE IF EXISTS insight_seed_map');
 
@@ -434,6 +445,7 @@ export function insertCandidate(db, record) {
     archivedAt: record.archivedAt ?? null,
     archiveReason: record.archiveReason ?? null,
     duplicatedBy: record.duplicatedBy ?? null,
+    requires: record.requires ?? null,
   });
 
   db.prepare(
@@ -444,14 +456,14 @@ export function insertCandidate(db, record) {
       priority, confidence, tags, source,
       sourceSessionIds, occurrenceCount, sessionCount, projectCount,
       contentHash, createdAt, updatedAt, reviewedAt, archivedAt, archiveReason,
-      duplicatedBy
+      duplicatedBy, requires
     ) VALUES (
       :id, :slug, :status, :type, :summary, :problem, :solution,
       :toolNames, :commandPatterns, :pathPatterns,
       :priority, :confidence, :tags, :source,
       :sourceSessionIds, :occurrenceCount, :sessionCount, :projectCount,
       :contentHash, :createdAt, :updatedAt, :reviewedAt, :archivedAt, :archiveReason,
-      :duplicatedBy
+      :duplicatedBy, :requires
     )
   `
   ).run(row);
@@ -585,6 +597,7 @@ export function updateRecord(db, id, patch) {
     'confidence',
     'tags',
     'duplicatedBy',
+    'requires',
   ];
   const fields = Object.keys(patch).filter(k => PATCHABLE.includes(k));
   if (fields.length === 0) return null;

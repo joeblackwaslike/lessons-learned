@@ -54,6 +54,8 @@ function insertLesson(dbPath, overrides = {}) {
     contentHash: `sha256:test${Math.random().toString(36).slice(2)}`,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
+    duplicatedBy: null,
+    requires: null,
   };
   const row = { ...defaults, ...overrides };
   const db = new DatabaseSync(dbPath);
@@ -64,13 +66,13 @@ function insertLesson(dbPath, overrides = {}) {
       injectOn, toolNames, commandPatterns, pathPatterns, block,
       priority, confidence, tags, source, sourceSessionIds,
       occurrenceCount, sessionCount, projectCount, contentHash,
-      createdAt, updatedAt
+      createdAt, updatedAt, duplicatedBy, requires
     ) VALUES (
       :id, :slug, :status, :type, :summary, :problem, :solution, :injection,
       :injectOn, :toolNames, :commandPatterns, :pathPatterns, :block,
       :priority, :confidence, :tags, :source, :sourceSessionIds,
       :occurrenceCount, :sessionCount, :projectCount, :contentHash,
-      :createdAt, :updatedAt
+      :createdAt, :updatedAt, :duplicatedBy, :requires
     )
   `
   ).run(row);
@@ -385,5 +387,50 @@ describe('lessons doctor', () => {
     assert.match(stdout, /missing toolNames/);
     assert.match(stdout, /summary too long/);
     assert.match(stdout, /no commandPatterns or pathPatterns/);
+  });
+
+  it('flags requires with invalid type', async () => {
+    insertLesson(store.dbPath, {
+      requires: JSON.stringify({ type: 'unknown', name: 'foo' }),
+    });
+
+    const { exitCode, stdout } = await run(LESSONS_CLI, {
+      args: ['doctor'],
+      env: env(),
+    });
+    assert.equal(exitCode, 1);
+    assert.match(stdout, /requires\.type "unknown" is invalid/);
+  });
+
+  it('flags requires with missing name for plugin type', async () => {
+    insertLesson(store.dbPath, {
+      requires: JSON.stringify({ type: 'plugin' }),
+    });
+
+    const { exitCode, stdout } = await run(LESSONS_CLI, {
+      args: ['doctor'],
+      env: env(),
+    });
+    assert.equal(exitCode, 1);
+    assert.match(stdout, /requires\.name is required for plugin\/skill\/mcp-server types/);
+  });
+
+  it('excludes lesson from manifest when requires artifact is not installed', async () => {
+    insertLesson(store.dbPath, {
+      requires: JSON.stringify({ type: 'plugin', name: 'definitely-not-installed-xyzzy' }),
+    });
+
+    const { exitCode } = await run(LESSONS_CLI, {
+      args: ['build'],
+      env: env(),
+    });
+    assert.equal(exitCode, 0);
+
+    const { readFileSync } = await import('node:fs');
+    const { join } = await import('node:path');
+    const manifest = JSON.parse(readFileSync(join(store.dir, 'lesson-manifest.json'), 'utf8'));
+    const lessons = Object.values(manifest.lessons);
+    const found = lessons.some(l => l.slug?.startsWith('test-lesson-'));
+    assert.equal(found, false, 'lesson with unmet requires should be excluded from manifest');
   });
 });
