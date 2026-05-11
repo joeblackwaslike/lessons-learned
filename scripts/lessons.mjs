@@ -99,6 +99,7 @@ Subcommands:
   restore           Restore archived lessons back to active
   review            Review candidates from the DB against validation rules
   doctor            Audit active lessons for quality issues
+  preflight         Pre-PR gate: run all quality checks + manifest freshness check
   scan              Incrementally scan session logs for new candidates
   scan aggregate    List ranked candidates from the DB (for /lessons:review)
 
@@ -143,6 +144,21 @@ Usage:
 
 Options:
   --json   Output as { lessons: [...], store: [...] } JSON; exits 1 if any issues
+`.trim(),
+
+  preflight: `
+lessons preflight — Pre-PR quality gate. Runs all doctor checks plus manifest freshness.
+
+Exits 0 only when:
+  - All lessons pass every quality check (same as doctor)
+  - lesson-manifest.json is current with the DB (build was run after the last add/edit)
+
+Usage:
+  node scripts/lessons.mjs preflight
+  node scripts/lessons.mjs preflight --json
+
+Options:
+  --json   Output as { lessons: [...], store: [...], manifest: {...} } JSON; exits 1 on failure
 `.trim(),
 
   add: `
@@ -411,6 +427,8 @@ const TEMPLATE_PLACEHOLDER_RE =
 const PROSE_TRIGGER_RE =
   /^(explaining|implementing|registering|seeing|fixing|doing|using|running|working|writing|checking|adding|removing|creating|updating|building|testing|debugging|reviewing)\b/i;
 const MIN_FIELD_LENGTH = 20;
+const WEAK_SOLUTION_MIN_LENGTH = 60;
+const SOLUTION_RESTATE_THRESHOLD = 0.7;
 
 function validateLesson(input) {
   const errors = [];
@@ -429,6 +447,39 @@ function validateLesson(input) {
     errors.push(`solution too short (${input.solution.length} chars, min ${MIN_FIELD_LENGTH})`);
   if (input.trigger && PROSE_TRIGGER_RE.test(input.trigger.trim()))
     errors.push(`trigger "${input.trigger}" looks like prose, not a shell command`);
+
+  // directive/protocol + toolNames: toolNames are silently ignored for session-start types
+  const isSessionStart = input.type === 'directive' || input.type === 'protocol';
+  if (isSessionStart && input.tool)
+    errors.push(
+      `${input.type} type ignores toolNames — toolNames are silently ignored for session-start types; change type to "hint" if this should be trigger-scoped`
+    );
+
+  // dead trigger: hint/guard with patterns but no toolNames can never fire
+  const isInjectOnMatch = input.type === 'hint' || input.type === 'guard' || !input.type;
+  const hasPatterns =
+    (Array.isArray(input.commandPatterns) && input.commandPatterns.length > 0) ||
+    (Array.isArray(input.pathPatterns) && input.pathPatterns.length > 0) ||
+    !!input.trigger;
+  if (isInjectOnMatch && hasPatterns && !input.tool)
+    errors.push(
+      'hint/guard with commandPatterns or pathPatterns but no toolNames — lesson can never fire; set "tool" to at least one tool name (e.g. "Bash")'
+    );
+
+  // weak pair: solution too short or mostly restates the problem
+  if (input.solution && input.solution.length < WEAK_SOLUTION_MIN_LENGTH)
+    errors.push(
+      `solution too short (${input.solution.length} chars, min ${WEAK_SOLUTION_MIN_LENGTH}) — won't transfer knowledge`
+    );
+  if (
+    input.problem &&
+    input.solution &&
+    jaccardSimilarity(input.problem, input.solution) >= SOLUTION_RESTATE_THRESHOLD
+  )
+    errors.push(
+      `solution restates problem (Jaccard ${jaccardSimilarity(input.problem, input.solution).toFixed(2)}) — solution must add new information beyond describing the problem`
+    );
+
   return errors;
 }
 
@@ -1464,8 +1515,6 @@ async function cmdPromote(args) {
 // ─── Doctor subcommand ───────────────────────────────────────────────
 
 const SUMMARY_MAX_LENGTH = 80;
-const WEAK_SOLUTION_MIN_LENGTH = 60;
-const SOLUTION_RESTATE_THRESHOLD = 0.7;
 const OVERSPECIFIED_PATTERN_LENGTH = 40;
 const PRIORITY_HOMOGENEITY_THRESHOLD = 0.8;
 const CONTEXT_BLEED_RE =
@@ -1630,6 +1679,82 @@ function cmdDoctor(args) {
       console.log();
     }
     console.log(`To fix: node scripts/lessons.mjs edit --id <slug> --patch '{"field":"value"}'`);
+  }
+
+  process.exit(1);
+}
+
+// ─── Preflight subcommand ────────────────────────────────────────────
+
+function cmdPreflight(args) {
+  if (args.includes('--help') || args.includes('-h')) {
+    console.log(HELP.preflight);
+    return;
+  }
+
+  const db = openDb();
+  const lessons = getActiveRecords(db);
+  closeDb(db);
+
+  const results = lessons.map(l => ({ lesson: l, issues: auditLesson(l) }));
+  const storeWarnings = auditStore(lessons);
+  const failing = results.filter(r => r.issues.length > 0);
+
+  // manifest freshness: compare manifest mtime to DB mtime
+  let manifestStale = false;
+  let manifestNote = null;
+  try {
+    const dbMtime = statSync(join(DATA_DIR, 'lessons.db')).mtimeMs;
+    const manifestMtime = statSync(MANIFEST_PATH).mtimeMs;
+    if (dbMtime > manifestMtime) {
+      manifestStale = true;
+      manifestNote = 'lesson-manifest.json is stale — run `node scripts/lessons.mjs build` to sync';
+    }
+  } catch {
+    manifestStale = true;
+    manifestNote = 'could not read manifest or DB file for freshness check';
+  }
+
+  const hasIssues = failing.length > 0 || storeWarnings.length > 0 || manifestStale;
+
+  if (args.includes('--json')) {
+    const out = {
+      lessons: failing.map(r => ({ slug: r.lesson.slug, issues: r.issues })),
+      store: storeWarnings,
+      manifest: { stale: manifestStale, note: manifestNote },
+    };
+    console.log(JSON.stringify(out, null, 2));
+    if (hasIssues) process.exit(1);
+    return;
+  }
+
+  console.log('lessons preflight\n');
+
+  if (manifestStale) {
+    console.log(`  ✗ ${manifestNote}`);
+    console.log();
+  }
+
+  if (storeWarnings.length > 0) {
+    console.log('Store-level warnings:');
+    for (const w of storeWarnings) console.log(`  ⚠ ${w}`);
+    console.log();
+  }
+
+  if (failing.length > 0) {
+    console.log(`${failing.length} of ${lessons.length} lessons have quality issues:\n`);
+    for (const { lesson, issues } of failing) {
+      console.log(`  ${lesson.slug} [${lesson.type ?? 'hint'}]`);
+      console.log(`    ${lesson.summary}`);
+      for (const issue of issues) console.log(`    ✗ ${issue}`);
+      console.log();
+    }
+    console.log(`To fix: node scripts/lessons.mjs edit --id <slug> --patch '{"field":"value"}'`);
+  }
+
+  if (!hasIssues) {
+    console.log(`✓ preflight passed — ${lessons.length} lessons, manifest current`);
+    return;
   }
 
   process.exit(1);
@@ -2406,6 +2531,9 @@ async function main() {
       break;
     case 'doctor':
       cmdDoctor(rest);
+      break;
+    case 'preflight':
+      cmdPreflight(rest);
       break;
     case 'scan':
       await cmdScan(rest);
