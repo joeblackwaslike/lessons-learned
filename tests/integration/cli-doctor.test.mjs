@@ -340,7 +340,10 @@ describe('lessons doctor', () => {
       env: env(),
     });
     assert.equal(exitCode, 1);
-    assert.match(stdout, /solution references a version string/);
+    assert.match(
+      stdout,
+      /solution references a version string|problem references a version string/
+    );
   });
 
   it('flags context bleed in problem field', async () => {
@@ -511,5 +514,85 @@ describe('lessons doctor', () => {
     });
     assert.equal(exitCode, 1);
     assert.match(stdout, /have no tags/);
+  });
+
+  it('flags version string in problem field', async () => {
+    insertLesson(store.dbPath, {
+      problem:
+        'Since upgrading to @angular/core v17.2 the change detection strategy no longer fires automatically on async updates.',
+    });
+
+    const { exitCode, stdout } = await run(LESSONS_CLI, {
+      args: ['doctor'],
+      env: env(),
+    });
+    assert.equal(exitCode, 1);
+    assert.match(stdout, /problem references a version string/);
+  });
+
+  it('flags temporal language in solution field', async () => {
+    insertLesson(store.dbPath, {
+      solution:
+        'The --no-verify flag was deprecated in git 2.40; use --no-run-if-empty in the reflog config instead.',
+    });
+
+    const { exitCode, stdout } = await run(LESSONS_CLI, {
+      args: ['doctor'],
+      env: env(),
+    });
+    assert.equal(exitCode, 1);
+    assert.match(stdout, /time-anchored language/);
+    assert.match(stdout, /deprecated/);
+  });
+
+  it('flags temporal language in problem field', async () => {
+    insertLesson(store.dbPath, {
+      problem:
+        'The requests.get API was formerly a drop-in replacement for urllib but the httpx API diverged significantly.',
+    });
+
+    const { exitCode, stdout } = await run(LESSONS_CLI, {
+      args: ['doctor'],
+      env: env(),
+    });
+    assert.equal(exitCode, 1);
+    assert.match(stdout, /time-anchored language/);
+    assert.match(stdout, /formerly/);
+  });
+
+  it('does not flag normal guidance as temporal language', async () => {
+    insertLesson(store.dbPath, {
+      solution:
+        'Use git stash -u to include untracked files in every stash operation to avoid silent data loss.',
+    });
+
+    const { exitCode, stdout } = await run(LESSONS_CLI, {
+      args: ['doctor'],
+      env: env(),
+    });
+    assert.equal(exitCode, 0, `clean lesson should pass: ${stdout}`);
+  });
+
+  it('flags stale lesson when updatedAt is older than 180 days', async () => {
+    const oldDate = new Date(Date.now() - 181 * 86400000).toISOString();
+    insertLesson(store.dbPath, { updatedAt: oldDate });
+
+    const { exitCode, stdout } = await run(LESSONS_CLI, {
+      args: ['doctor'],
+      env: env(),
+    });
+    assert.equal(exitCode, 1);
+    assert.match(stdout, /lesson not updated in \d+ days/);
+  });
+
+  it('does not flag lesson updated within 180 days', async () => {
+    const recentDate = new Date(Date.now() - 90 * 86400000).toISOString();
+    insertLesson(store.dbPath, { updatedAt: recentDate });
+
+    const { stdout } = await run(LESSONS_CLI, {
+      args: ['doctor'],
+      env: env(),
+    });
+    assert.doesNotMatch(stdout, /lesson not updated in/);
   });
 });

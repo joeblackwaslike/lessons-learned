@@ -1622,6 +1622,9 @@ const UNTAGGED_MAJORITY_THRESHOLD = 0.3;
 const CONTEXT_BLEED_RE =
   /\bthis (repo|project|codebase)\b|\blast (session|week|tuesday|monday|wednesday|thursday|friday)\b|\bthe PR\b|\b I (ran|tried|found|noticed|saw|did|added|removed|wrote|used)\b/i;
 const VERSION_REF_RE = /[@v]\d+\.\d+|\bversion\s+\d|\bv\d+\b/i;
+const TEMPORAL_LANGUAGE_RE =
+  /\bdeprecat(ed|ion)\b|\bremoved in\b|\bformerly\b|\bwas renamed\b|\bno longer supported\b|\bas of \d{4}\b|\bin \d{4}\b|\bsince v\d/i;
+const STALE_LESSON_DAYS = 180;
 const PROJECTS_DIR = join(homedir(), '.claude', 'projects');
 
 function auditLesson(lesson) {
@@ -1685,11 +1688,32 @@ function auditLesson(lesson) {
       );
   }
 
-  // solution-staleness: references specific version strings
-  if (lesson.solution && VERSION_REF_RE.test(lesson.solution))
-    issues.push(
-      'solution references a version string — verify it is still current, or remove the version pin'
-    );
+  // solution-staleness: references specific version strings in either problem or solution
+  for (const field of ['problem', 'solution']) {
+    if (lesson[field] && VERSION_REF_RE.test(lesson[field]))
+      issues.push(
+        `${field} references a version string — verify it is still current, or remove the version pin`
+      );
+  }
+
+  // temporal-language: deprecation or time-anchored language that indicates the lesson may be stale
+  for (const field of ['problem', 'solution']) {
+    if (lesson[field] && TEMPORAL_LANGUAGE_RE.test(lesson[field])) {
+      const match = lesson[field].match(TEMPORAL_LANGUAGE_RE)?.[0] ?? '';
+      issues.push(
+        `${field} contains time-anchored language ("${match}") — verify the claim is still accurate or rewrite without the temporal reference`
+      );
+    }
+  }
+
+  // stale-lesson: lesson not edited in over 180 days; advice may have drifted
+  if (lesson.updatedAt) {
+    const ageDays = Math.floor((Date.now() - new Date(lesson.updatedAt).getTime()) / 86400000);
+    if (ageDays > STALE_LESSON_DAYS)
+      issues.push(
+        `lesson not updated in ${ageDays} days — review for accuracy and edit to dismiss (updatedAt bumps on any field change)`
+      );
+  }
 
   // context-bleed: session-specific language that is uninterpretable globally
   for (const field of ['problem', 'solution']) {
