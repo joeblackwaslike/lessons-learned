@@ -433,4 +433,83 @@ describe('lessons doctor', () => {
     const found = lessons.some(l => l.slug?.startsWith('test-lesson-'));
     assert.equal(found, false, 'lesson with unmet requires should be excluded from manifest');
   });
+
+  it('emits uncovered-tools warning when 10+ lessons all target same tool', async () => {
+    for (let i = 0; i < 10; i++)
+      insertLesson(store.dbPath, { toolNames: JSON.stringify(['Bash']) });
+
+    const { exitCode, stdout } = await run(LESSONS_CLI, {
+      args: ['doctor'],
+      env: env(),
+    });
+    assert.equal(exitCode, 1);
+    assert.match(stdout, /uncovered tools/);
+    assert.match(stdout, /WebFetch/);
+  });
+
+  it('suppresses uncovered-tools warning when corpus has fewer than 10 lessons', async () => {
+    // fixture seeds 1 Bash lesson, so 8 more = 9 total, which is below the 10-lesson threshold
+    for (let i = 0; i < 8; i++) insertLesson(store.dbPath, { toolNames: JSON.stringify(['Bash']) });
+
+    const { stdout } = await run(LESSONS_CLI, {
+      args: ['doctor'],
+      env: env(),
+    });
+    assert.doesNotMatch(stdout, /uncovered tools/);
+  });
+
+  it('emits tool-concentration warning when one tool exceeds 80% of hint/guard lessons', async () => {
+    // 7 Bash + 1 Read = 87.5% Bash, well above the 80% threshold
+    for (let i = 0; i < 7; i++) insertLesson(store.dbPath, { toolNames: JSON.stringify(['Bash']) });
+    insertLesson(store.dbPath, { toolNames: JSON.stringify(['Read']) });
+
+    const { exitCode, stdout } = await run(LESSONS_CLI, {
+      args: ['doctor'],
+      env: env(),
+    });
+    assert.equal(exitCode, 1);
+    assert.match(stdout, /tool concentration/);
+    assert.match(stdout, /"Bash"/);
+  });
+
+  it('emits blanket-bash warning when more than 3 hint/guard lessons target Bash with no commandPatterns', async () => {
+    for (let i = 0; i < 4; i++)
+      insertLesson(store.dbPath, {
+        toolNames: JSON.stringify(['Bash']),
+        commandPatterns: JSON.stringify([]),
+      });
+
+    const { exitCode, stdout } = await run(LESSONS_CLI, {
+      args: ['doctor'],
+      env: env(),
+    });
+    assert.equal(exitCode, 1);
+    assert.match(stdout, /hint\/guard lessons target Bash with no commandPatterns/);
+  });
+
+  it('suppresses blanket-bash warning when 3 or fewer such lessons exist', async () => {
+    for (let i = 0; i < 3; i++)
+      insertLesson(store.dbPath, {
+        toolNames: JSON.stringify(['Bash']),
+        commandPatterns: JSON.stringify([]),
+      });
+
+    const { stdout } = await run(LESSONS_CLI, {
+      args: ['doctor'],
+      env: env(),
+    });
+    assert.doesNotMatch(stdout, /hint\/guard lessons target Bash with no commandPatterns/);
+  });
+
+  it('emits untagged-majority warning when more than 30% of lessons have no tags', async () => {
+    // 5 lessons all with empty tags = 100% untagged, well above 30% threshold
+    for (let i = 0; i < 5; i++) insertLesson(store.dbPath, { tags: JSON.stringify([]) });
+
+    const { exitCode, stdout } = await run(LESSONS_CLI, {
+      args: ['doctor'],
+      env: env(),
+    });
+    assert.equal(exitCode, 1);
+    assert.match(stdout, /have no tags/);
+  });
 });

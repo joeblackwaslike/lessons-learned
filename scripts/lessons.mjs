@@ -1613,6 +1613,12 @@ async function cmdPromote(args) {
 const SUMMARY_MAX_LENGTH = 80;
 const OVERSPECIFIED_PATTERN_LENGTH = 40;
 const PRIORITY_HOMOGENEITY_THRESHOLD = 0.8;
+const COMMON_TOOLS = ['Bash', 'Read', 'Edit', 'Write', 'Agent', 'WebFetch', 'WebSearch'];
+const UNCOVERED_TOOLS_MIN_LESSONS = 10;
+const TOOL_CONCENTRATION_THRESHOLD = 0.8;
+const TOOL_CONCENTRATION_MIN_LESSONS = 8;
+const BLANKET_BASH_MAX = 3;
+const UNTAGGED_MAJORITY_THRESHOLD = 0.3;
 const CONTEXT_BLEED_RE =
   /\bthis (repo|project|codebase)\b|\blast (session|week|tuesday|monday|wednesday|thursday|friday)\b|\bthe PR\b|\b I (ran|tried|found|noticed|saw|did|added|removed|wrote|used)\b/i;
 const VERSION_REF_RE = /[@v]\d+\.\d+|\bversion\s+\d|\bv\d+\b/i;
@@ -1739,6 +1745,7 @@ function auditLesson(lesson) {
 
 function auditStore(lessons) {
   const warnings = [];
+  const injectOnMatch = lessons.filter(l => l.type === 'hint' || l.type === 'guard');
 
   // priority-homogeneity: if >80% of lessons share the same priority, ordering is arbitrary
   // Only meaningful with enough lessons to form a real distribution.
@@ -1766,6 +1773,46 @@ function auditStore(lessons) {
         `upstream shim "${l.slug}" tracking ${url ?? '(no url)'} (status: ${status ?? 'unknown'}) — run doctor --check=upstream to refresh`
       );
     }
+  }
+
+  // uncovered-tools: common tools with zero hint/guard lessons
+  if (lessons.length >= UNCOVERED_TOOLS_MIN_LESSONS) {
+    const covered = new Set(injectOnMatch.flatMap(l => l.toolNames));
+    const uncovered = COMMON_TOOLS.filter(t => !covered.has(t));
+    if (uncovered.length > 0)
+      warnings.push(
+        `uncovered tools: no hint/guard lessons cover ${uncovered.join(', ')} — consider whether common pitfalls are captured`
+      );
+  }
+
+  // tool-concentration: one tool dominates >80% of hint/guard lessons
+  if (injectOnMatch.length >= TOOL_CONCENTRATION_MIN_LESSONS) {
+    const counts = {};
+    for (const l of injectOnMatch) for (const t of l.toolNames) counts[t] = (counts[t] ?? 0) + 1;
+    for (const [tool, count] of Object.entries(counts)) {
+      if (count / injectOnMatch.length >= TOOL_CONCENTRATION_THRESHOLD)
+        warnings.push(
+          `tool concentration: ${count}/${injectOnMatch.length} hint/guard lessons target "${tool}" — review coverage for other tools`
+        );
+    }
+  }
+
+  // blanket-bash: hint/guard lessons with Bash in toolNames but no commandPatterns fire on every Bash call
+  const blanketBash = injectOnMatch.filter(
+    l => l.toolNames.includes('Bash') && l.commandPatterns.length === 0
+  );
+  if (blanketBash.length > BLANKET_BASH_MAX)
+    warnings.push(
+      `${blanketBash.length} hint/guard lessons target Bash with no commandPatterns — they fire on every Bash call; add commandPatterns or convert to directive`
+    );
+
+  // untagged-majority: >30% of active lessons have no tags
+  if (lessons.length >= 5) {
+    const untagged = lessons.filter(l => l.tags.length === 0);
+    if (untagged.length / lessons.length > UNTAGGED_MAJORITY_THRESHOLD)
+      warnings.push(
+        `${untagged.length}/${lessons.length} lessons (${Math.round((untagged.length / lessons.length) * 100)}%) have no tags — tags enable review grouping; consider tagging`
+      );
   }
 
   return warnings;
