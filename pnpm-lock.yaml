@@ -42,6 +42,9 @@ importers:
 
   evals:
     dependencies:
+      '@anthropic-ai/sdk':
+        specifier: ^0.54.0
+        version: 0.54.0
       js-yaml:
         specifier: ^4.1.0
         version: 4.1.1
@@ -122,6 +125,10 @@ packages:
     engines: {node: '>=18.0.0'}
     peerDependencies:
       zod: ^4.0.0
+
+  '@anthropic-ai/sdk@0.54.0':
+    resolution: {integrity: sha512-xyoCtHJnt/qg5GG6IgK+UJEndz8h8ljzt/caKXmq3LfBF81nC/BW6E4x2rOWCZcvsLyVW+e8U5mtIr6UCE/kJw==}
+    hasBin: true
 
   '@anthropic-ai/sdk@0.81.0':
     resolution: {integrity: sha512-D4K5PvEV6wPiRtVlVsJHIUhHAmOZ6IT/I9rKlTf84gR7GyyAurPJK7z9BOf/AZqC5d1DhYQGJNKRmV+q8dGhgw==}
@@ -4197,6 +4204,8 @@ snapshots:
       - '@cfworker/json-schema'
       - supports-color
     optional: true
+
+  '@anthropic-ai/sdk@0.54.0': {}
 
   '@anthropic-ai/sdk@0.81.0(zod@4.4.3)':
     dependencies:

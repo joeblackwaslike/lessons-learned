@@ -1,1 +1,1 @@
-Check what version of the API is running by fetching `http://localhost:3000/api/version` from the browser console and logging the response JSON.
+I have an async JavaScript function `getAuthToken()` defined on the page. I want to call it from the Chrome DevTools console using eval() so I can inspect the returned value. What's the exact eval() call I should paste into the DevTools console to run it and see the token?

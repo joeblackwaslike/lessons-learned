@@ -1,0 +1,463 @@
+
+========================================================================================================================
+⚠️ The current version of promptfoo 0.121.10 is lower than the latest available version 0.121.11.
+
+Please run npx promptfoo@latest or npm install -g promptfoo@latest to update.
+========================================================================================================================
+
+Starting evaluation eval-cGP-2026-05-12T13:25:39
+Running 46 test cases (up to 1 at a time)...
+
+── Tier 3 Judge Summary ──────────────────────────────────────
+  PASS: 0  FAIL: 0  CONTROL_CORRECT: 0  SKIP: 22
+──────────────────────────────────────────────────────────────
+
+Provider call failed during eval
+{
+  "providerId": "claude-agent",
+  "providerLabel": "claude-code",
+  "promptIdx": 0,
+  "testIdx": 44,
+  "error": {
+    "name": "Error",
+    "message": "materialize-workspace failed:\nseed-setup.mjs failed:\ngit commit -m initial commit failed:\nerror: gpg failed to sign the data:\ngpg: skipped \"5E56AD8F84871E18AB49869037D9D8E1C447CFA8\": No secret key\n[GNUPG:] INV_SGNR 9 5E56AD8F84871E18AB49869037D9D8E1C447CFA8\n[GNUPG:] FAILURE sign 17\ngpg: signing failed: No secret key\n\nfatal: failed to write commit object\n\n\n"
+  }
+}
+Provider call failed during eval
+{
+  "providerId": "claude-agent",
+  "providerLabel": "claude-code",
+  "promptIdx": 0,
+  "testIdx": 45,
+  "error": {
+    "name": "Error",
+    "message": "materialize-workspace failed:\nseed-setup.mjs failed:\ngit commit -m initial commit failed:\nerror: gpg failed to sign the data:\ngpg: skipped \"5E56AD8F84871E18AB49869037D9D8E1C447CFA8\": No secret key\n[GNUPG:] INV_SGNR 9 5E56AD8F84871E18AB49869037D9D8E1C447CFA8\n[GNUPG:] FAILURE sign 17\ngpg: signing failed: No secret key\n\nfatal: failed to write commit object\n\n\n"
+  }
+}
+
+┌────────────────────────┬────────────────────────┬────────────────────────┬────────────────────────┬────────────────────────┐
+│ intervention           │ lessonSnapshot         │ prompt                 │ scenarioId             │ [claude-code]          │
+│                        │                        │                        │                        │ {{prompt}}             │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ Build a CLI tool for a │ TC-H17-batches-ordere… │ [PASS] Everything      │
+│   "type": "none",      │                        │ data pipeline project. │                        │ works. Here's the      │
+│   "ids": []            │                        │ The CLI should have    │                        │ structure that was     │
+│ }                      │                        │ commands like `run`,   │                        │ built:                 │
+│                        │                        │ `status`, and `list`   │                        │ ```                    │
+│                        │                        │ that call into the     │                        │ .                      │
+│                        │                        │ pipeline's processing  │                        │ ├── cli.py          #  │
+│                        │                        │ modules. Create all    │                        │ CLI layer — click      │
+│                        │                        │ the components in      │                        │ commands (run, status, │
+│                        │                        │ logical layers: start  │                        │ list)                  │
+│                        │                        │ with the CLI           │                        │ ├── api.py          #  │
+│                        │                        │ interface, then the    │                        │ API layer —            │
+│                        │                        │ API l...               │                        │ PipelineAPI class      │
+│                        │                        │                        │                        │ ├── core/              │
+│                        │                        │                        │                        │ │   ├── processor.py   │
+│                        │                        │                        │                        │ # Stage classes +      │
+│                        │                        │                        │                        │ PIPELINES regi...      │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"batches-orde… │ Build a CLI tool for a │ TC-H17-batches-ordere… │ [PASS] Everything      │
+│   "type": "lesson",    │                        │ data pipeline project. │                        │ works. Here's the      │
+│   "ids": [             │                        │ The CLI should have    │                        │ project structure:     │
+│ "batches-ordered-top-… │                        │ commands like `run`,   │                        │ ```                    │
+│   ]                    │                        │ `status`, and `list`   │                        │ .                      │
+│ }                      │                        │ that call into the     │                        │ ├── cli.py             │
+│                        │                        │ pipeline's processing  │                        │ # CLI layer —          │
+│                        │                        │ modules. Create all    │                        │ argparse, subcommands, │
+│                        │                        │ the components in      │                        │ formatting             │
+│                        │                        │ logical layers: start  │                        │ ├── api.py             │
+│                        │                        │ with the CLI           │                        │ # API layer —          │
+│                        │                        │ interface, then the    │                        │ PipelineAPI with       │
+│                        │                        │ API l...               │                        │ run/status/list        │
+│                        │                        │                        │                        │ methods                │
+│                        │                        │                        │                        │ └── pipeline/          │
+│                        │                        │                        │                        │     ├── __init__.py    │
+│                        │                        │                        │                        │     ├──...             │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ "Implement the         │ TC-H19-batches-over-5… │ [PASS]                 │
+│   "type": "none",      │                        │ following 8 backend    │                        │                        │
+│   "ids": []            │                        │ features for our       │                        │                        │
+│ }                      │                        │ FastAPI app in one go: │                        │                        │
+│                        │                        │ (1) user registration  │                        │                        │
+│                        │                        │ endpoint, (2) email    │                        │                        │
+│                        │                        │ verification flow, (3) │                        │                        │
+│                        │                        │ password reset         │                        │                        │
+│                        │                        │ endpoint, (4) JWT      │                        │                        │
+│                        │                        │ login endpoint, (5)    │                        │                        │
+│                        │                        │ refresh token          │                        │                        │
+│                        │                        │ rotation, (6) rate     │                        │                        │
+│                        │                        │ limiting middleware,   │                        │                        │
+│                        │                        │ ...                    │                        │                        │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"batches-over… │ "Implement the         │ TC-H19-batches-over-5… │ [PASS]                 │
+│   "type": "lesson",    │                        │ following 8 backend    │                        │                        │
+│   "ids": [             │                        │ features for our       │                        │                        │
+│ "batches-over-5-tasks… │                        │ FastAPI app in one go: │                        │                        │
+│   ]                    │                        │ (1) user registration  │                        │                        │
+│ }                      │                        │ endpoint, (2) email    │                        │                        │
+│                        │                        │ verification flow, (3) │                        │                        │
+│                        │                        │ password reset         │                        │                        │
+│                        │                        │ endpoint, (4) JWT      │                        │                        │
+│                        │                        │ login endpoint, (5)    │                        │                        │
+│                        │                        │ refresh token          │                        │                        │
+│                        │                        │ rotation, (6) rate     │                        │                        │
+│                        │                        │ limiting middleware,   │                        │                        │
+│                        │                        │ ...                    │                        │                        │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ I have a JSON array of │ TC-H27-jq-tonumber-cr… │ [PASS] ```sh           │
+│   "type": "none",      │                        │ task objects where     │                        │ jq '{tasks:            │
+│   "ids": []            │                        │ each has a string      │                        │ sort_by(.task_id |     │
+│ }                      │                        │ `"task_id"` field      │                        │ tonumber),             │
+│                        │                        │ (values like `"1"`,    │                        │ total_points:          │
+│                        │                        │ `"2"`, etc.) and an    │                        │ (map(.points) | add)}' │
+│                        │                        │ integer `"points"`     │                        │ ```                    │
+│                        │                        │ field. Write a jq      │                        │ - `sort_by(.task_id |  │
+│                        │                        │ one-liner that outputs │                        │ tonumber)` — converts  │
+│                        │                        │ the array sorted by    │                        │ the string field to a  │
+│                        │                        │ `task_id` numerically  │                        │ number before          │
+│                        │                        │ and prints the total   │                        │ comparing, so `"9"`    │
+│                        │                        │ points...              │                        │ sorts before `"10"`    │
+│                        │                        │                        │                        │ (lexicographic order   │
+│                        │                        │                        │                        │ would flip them)...    │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"jq-tonumber-… │ I have a JSON array of │ TC-H27-jq-tonumber-cr… │ [PASS] ```sh           │
+│   "type": "lesson",    │                        │ task objects where     │                        │ jq '{sorted:           │
+│   "ids": [             │                        │ each has a string      │                        │ (sort_by(.task_id |    │
+│ "jq-tonumber-crashes-… │                        │ `"task_id"` field      │                        │ tonumber)),            │
+│   ]                    │                        │ (values like `"1"`,    │                        │ total_points:          │
+│ }                      │                        │ `"2"`, etc.) and an    │                        │ (map(.points) | add)}' │
+│                        │                        │ integer `"points"`     │                        │ ```                    │
+│                        │                        │ field. Write a jq      │                        │ This produces a single │
+│                        │                        │ one-liner that outputs │                        │ JSON object with both  │
+│                        │                        │ the array sorted by    │                        │ results:               │
+│                        │                        │ `task_id` numerically  │                        │ ```json                │
+│                        │                        │ and prints the total   │                        │ {                      │
+│                        │                        │ points...              │                        │   "sorted": [ ... ],   │
+│                        │                        │                        │                        │   "total_points": 42   │
+│                        │                        │                        │                        │ }                      │
+│                        │                        │                        │                        │ ```                    │
+│                        │                        │                        │                        │ **How it works:**      │
+│                        │                        │                        │                        │ - `sort_by(.task_id |  │
+│                        │                        │                        │                        │ ...                    │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ How many lines in my   │ TC-H28-grep-c-with-ec… │ [PASS] ```sh           │
+│   "type": "none",      │                        │ log file contain the   │                        │ grep -c "ERROR"        │
+│   "ids": []            │                        │ word "ERROR"? Show me  │                        │ logfile.log            │
+│ }                      │                        │ a one-liner shell      │                        │ ```                    │
+│                        │                        │ command I can run that │                        │ Replace `logfile.log`  │
+│                        │                        │ prints just the count, │                        │ with your actual       │
+│                        │                        │ and if there are no    │                        │ filename. `grep -c`    │
+│                        │                        │ matches it should      │                        │ prints the count of    │
+│                        │                        │ print 0 instead of     │                        │ matching lines         │
+│                        │                        │ nothing.               │                        │ directly — and         │
+│                        │                        │                        │                        │ importantly, it        │
+│                        │                        │                        │                        │ already prints `0`     │
+│                        │                        │                        │                        │ (not nothing) when     │
+│                        │                        │                        │                        │ there are no matches,  │
+│                        │                        │                        │                        │ so no extra `|| echo   │
+│                        │                        │                        │                        │ 0`...                  │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"grep-c-with-… │ How many lines in my   │ TC-H28-grep-c-with-ec… │ [PASS] ```sh           │
+│   "type": "lesson",    │                        │ log file contain the   │                        │ grep -c "ERROR"        │
+│   "ids": [             │                        │ word "ERROR"? Show me  │                        │ your_log_file.log      │
+│ "grep-c-with-echo-0-f… │                        │ a one-liner shell      │                        │ ```                    │
+│   ]                    │                        │ command I can run that │                        │ `grep -c` counts       │
+│ }                      │                        │ prints just the count, │                        │ matching lines and     │
+│                        │                        │ and if there are no    │                        │ already prints `0`     │
+│                        │                        │ matches it should      │                        │ when there are no      │
+│                        │                        │ print 0 instead of     │                        │ matches — that's       │
+│                        │                        │ nothing.               │                        │ likely the behavior    │
+│                        │                        │                        │                        │ you were worried       │
+│                        │                        │                        │                        │ about, which only      │
+│                        │                        │                        │                        │ happens with plain     │
+│                        │                        │                        │                        │ `grep` (which prints   │
+│                        │                        │                        │                        │ nothing when ther...   │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ I have an env file     │ TC-H29-env-file-parse… │ [PASS] ```bash         │
+│   "type": "none",      │                        │ that mixes regular     │                        │ grep -E                │
+│   "ids": []            │                        │ `KEY=value` lines and  │                        │ '^[[:space:]]*(export… │
+│ }                      │                        │ `export KEY=value`     │                        │ .env | cut -d= -f2-    │
+│                        │                        │ lines. Write me a      │                        │ ```                    │
+│                        │                        │ shell one-liner to     │                        │ - `grep -E             │
+│                        │                        │ extract the value of   │                        │ '^[[:space:]]*(export… │
+│                        │                        │ `DATABASE_URL` from    │                        │ — matches both         │
+│                        │                        │ it.                    │                        │ `DATABASE_URL=...` and │
+│                        │                        │                        │                        │ `export                │
+│                        │                        │                        │                        │ DATABASE_URL=...`      │
+│                        │                        │                        │                        │ (with optional leading │
+│                        │                        │                        │                        │ whitesp...             │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"env-file-par… │ I have an env file     │ TC-H29-env-file-parse… │ [PASS] ```bash         │
+│   "type": "lesson",    │                        │ that mixes regular     │                        │ grep -m1 '^\(export    │
+│   "ids": [             │                        │ `KEY=value` lines and  │                        │ \)\?DATABASE_URL='     │
+│ "env-file-parser-usin… │                        │ `export KEY=value`     │                        │ .env | cut -d= -f2-    │
+│   ]                    │                        │ lines. Write me a      │                        │ ```                    │
+│ }                      │                        │ shell one-liner to     │                        │ - `grep -m1` stops     │
+│                        │                        │ extract the value of   │                        │ after the first match  │
+│                        │                        │ `DATABASE_URL` from    │                        │ - `^\(export \)\?`     │
+│                        │                        │ it.                    │                        │ matches the optional   │
+│                        │                        │                        │                        │ `export ` prefix at    │
+│                        │                        │                        │                        │ line start             │
+│                        │                        │                        │                        │ - `cut -d= -f2-`       │
+│                        │                        │                        │                        │ splits on `=` and      │
+│                        │                        │                        │                        │ takes **everything     │
+│                        │                        │                        │                        │ from fiel...           │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ I need you to do two   │ TC-H30-file-reads-at-… │ [PASS] Both files are  │
+│   "type": "none",      │                        │ things: first, add a   │                        │ created:               │
+│   "ids": []            │                        │ new `/health` endpoint │                        │ **`src/api.py`** —     │
+│ }                      │                        │ to `src/api.py`, then  │                        │ Flask app with four    │
+│                        │                        │ update the frontend    │                        │ endpoints:             │
+│                        │                        │ `src/App.tsx` to call  │                        │ - `GET /health` —      │
+│                        │                        │ all currently          │                        │ returns `{"status":    │
+│                        │                        │ available API          │                        │ "ok"}`                 │
+│                        │                        │ endpoints listed in    │                        │ - `GET /users` —       │
+│                        │                        │ `src/api.py`.          │                        │ returns a list of      │
+│                        │                        │                        │                        │ users                  │
+│                        │                        │                        │                        │ - `GET /users/<id>` —  │
+│                        │                        │                        │                        │ returns a single user  │
+│                        │                        │                        │                        │ by ID                  │
+│                        │                        │                        │                        │ - `GET /items` —       │
+│                        │                        │                        │                        │ returns a list of i... │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"file-reads-a… │ I need you to do two   │ TC-H30-file-reads-at-… │ [PASS] The workspace   │
+│   "type": "lesson",    │                        │ things: first, add a   │                        │ is empty — neither     │
+│   "ids": [             │                        │ new `/health` endpoint │                        │ `src/api.py` nor       │
+│ "file-reads-at-batch-… │                        │ to `src/api.py`, then  │                        │ `src/App.tsx` exist. I │
+│   ]                    │                        │ update the frontend    │                        │ cannot add a `/health` │
+│ }                      │                        │ `src/App.tsx` to call  │                        │ endpoint to a          │
+│                        │                        │ all currently          │                        │ non-existent           │
+│                        │                        │ available API          │                        │ `src/api.py`, nor      │
+│                        │                        │ endpoints listed in    │                        │ update `src/App.tsx`   │
+│                        │                        │ `src/api.py`.          │                        │ to call endpoints from │
+│                        │                        │                        │                        │ it, since there are no │
+│                        │                        │                        │                        │ existing endpoints to  │
+│                        │                        │                        │                        │ reference.             │
+│                        │                        │                        │                        │ Could...               │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ I need to call `claude │ TC-H31-claude-p-produ… │ [PASS] ```python       │
+│   "type": "none",      │                        │ -p "summarize this     │                        │ import subprocess      │
+│   "ids": []            │                        │ file"` from a Python   │                        │ def run_claude(prompt: │
+│ }                      │                        │ script and capture its │                        │ str, timeout: int =    │
+│                        │                        │ output — can you write │                        │ 60) -> str:            │
+│                        │                        │ a helper function that │                        │     result =           │
+│                        │                        │ runs it with a         │                        │ subprocess.run(        │
+│                        │                        │ 60-second timeout so   │                        │         ["claude", "-… │
+│                        │                        │ it doesn't hang        │                        │ prompt],               │
+│                        │                        │ indefinitely?          │                        │         capture_outpu… │
+│                        │                        │                        │                        │         text=True,     │
+│                        │                        │                        │                        │         timeout=timeo… │
+│                        │                        │                        │                        │     )                  │
+│                        │                        │                        │                        │     result.check_ret.… │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"claude-p-pro… │ I need to call `claude │ TC-H31-claude-p-produ… │ [PASS] ```python       │
+│   "type": "lesson",    │                        │ -p "summarize this     │                        │ import subprocess      │
+│   "ids": [             │                        │ file"` from a Python   │                        │ def run_claude(prompt: │
+│ "claude-p-produces-ou… │                        │ script and capture its │                        │ str, timeout: int =    │
+│   ]                    │                        │ output — can you write │                        │ 60) -> str:            │
+│ }                      │                        │ a helper function that │                        │     result =           │
+│                        │                        │ runs it with a         │                        │ subprocess.run(        │
+│                        │                        │ 60-second timeout so   │                        │         ["claude", "-… │
+│                        │                        │ it doesn't hang        │                        │ prompt],               │
+│                        │                        │ indefinitely?          │                        │         capture_outpu… │
+│                        │                        │                        │                        │         text=True,     │
+│                        │                        │                        │                        │         timeout=timeo… │
+│                        │                        │                        │                        │     )                  │
+│                        │                        │                        │                        │     result.check_ret.… │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ I'm working on a       │ TC-H32-pip-install-wr… │ [PASS] Both packages   │
+│   "type": "none",      │                        │ FastAPI project and    │                        │ are installed and      │
+│   "ids": []            │                        │ need to add `httpx`    │                        │ confirmed importable   │
+│ }                      │                        │ and `python-dotenv` to │                        │ in the `.venv`         │
+│                        │                        │ my virtualenv — can    │                        │ virtualenv:            │
+│                        │                        │ you install those      │                        │ - `httpx` 0.28.1       │
+│                        │                        │ dependencies and       │                        │ - `python-dotenv`      │
+│                        │                        │ confirm they're        │                        │ 1.2.2                  │
+│                        │                        │ available?             │                        │ To use the virtualenv, │
+│                        │                        │                        │                        │ activate it with       │
+│                        │                        │                        │                        │ `source                │
+│                        │                        │                        │                        │ .venv/bin/activate`    │
+│                        │                        │                        │                        │ before running your    │
+│                        │                        │                        │                        │ FastAPI app, or point  │
+│                        │                        │                        │                        │ your IDE to `....      │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"pip-install-… │ I'm working on a       │ TC-H32-pip-install-wr… │ [PASS] Both packages   │
+│   "type": "lesson",    │                        │ FastAPI project and    │                        │ are installed and      │
+│   "ids": [             │                        │ need to add `httpx`    │                        │ confirmed working in   │
+│ "pip-install-wrong-ve… │                        │ and `python-dotenv` to │                        │ `.venv`:               │
+│   ]                    │                        │ my virtualenv — can    │                        │ - `httpx` 0.28.1       │
+│ }                      │                        │ you install those      │                        │ - `python-dotenv`      │
+│                        │                        │ dependencies and       │                        │ 1.2.2                  │
+│                        │                        │ confirm they're        │                        │ No virtualenv existed  │
+│                        │                        │ available?             │                        │ in the project         │
+│                        │                        │                        │                        │ directory, so I        │
+│                        │                        │                        │                        │ created one at         │
+│                        │                        │                        │                        │ `.venv`. To activate   │
+│                        │                        │                        │                        │ it in your shell:      │
+│                        │                        │                        │                        │ `source                │
+│                        │                        │                        │                        │ .venv/bin/activate`.   │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ Write a bash script    │ TC-H33-mktemp-without… │ [PASS] Here's what the │
+│   "type": "none",      │                        │ that downloads a       │                        │ script does and why    │
+│   "ids": []            │                        │ remote JSON config     │                        │ each choice was made:  │
+│ }                      │                        │ file to a temp         │                        │ **Atomicity** —        │
+│                        │                        │ location, validates it │                        │ `mktemp` creates the   │
+│                        │                        │ with `jq`, and if      │                        │ temp file inside       │
+│                        │                        │ valid, atomically      │                        │ `/etc/myapp/` (same    │
+│                        │                        │ replaces               │                        │ directory as the       │
+│                        │                        │ `/etc/myapp/config.js… │                        │ destination). Because  │
+│                        │                        │ using `set -e` so any  │                        │ source and destination │
+│                        │                        │ failure aborts early.  │                        │ are on the same        │
+│                        │                        │                        │                        │ filesystem, `mv`       │
+│                        │                        │                        │                        │ resolves to a singl... │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"mktemp-witho… │ Write a bash script    │ TC-H33-mktemp-without… │ [PASS] ```bash         │
+│   "type": "lesson",    │                        │ that downloads a       │                        │ #!/usr/bin/env bash    │
+│   "ids": [             │                        │ remote JSON config     │                        │ set -euo pipefail      │
+│ "mktemp-without-a-tra… │                        │ file to a temp         │                        │ CONFIG_URL="${1:?Usag… │
+│   ]                    │                        │ location, validates it │                        │ $0 <config-url>}"      │
+│ }                      │                        │ with `jq`, and if      │                        │ CONFIG_DIR="/etc/myap… │
+│                        │                        │ valid, atomically      │                        │ CONFIG_FILE="$CONFIG_… │
+│                        │                        │ replaces               │                        │ # Temp file in the     │
+│                        │                        │ `/etc/myapp/config.js… │                        │ same dir as target so  │
+│                        │                        │ using `set -e` so any  │                        │ mv is atomic (same     │
+│                        │                        │ failure aborts early.  │                        │ filesystem)            │
+│                        │                        │                        │                        │ TMP_FILE=$(mktemp      │
+│                        │                        │                        │                        │ "$CON...               │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ I need to automate     │ TC-H34-osascript-here… │ [PASS] Here's the      │
+│   "type": "none",      │                        │ opening a new Chrome   │                        │ function using the     │
+│   "ids": []            │                        │ tab with a specific    │                        │ argument-passing       │
+│ }                      │                        │ URL using a shell      │                        │ approach, which avoids │
+│                        │                        │ script — can you write │                        │ heredoc quoting        │
+│                        │                        │ a bash function that   │                        │ pitfalls entirely:     │
+│                        │                        │ uses osascript to run  │                        │ ```bash                │
+│                        │                        │ JXA JavaScript to open │                        │ TARGET_URL="https://e… │
+│                        │                        │ `$TARGET_URL` in       │                        │ open_chrome_tab() {    │
+│                        │                        │ Chrome, where          │                        │   osascript -l         │
+│                        │                        │ `$TARGET_URL` is set   │                        │ JavaScript -           │
+│                        │                        │ earlier in the script? │                        │ "$TARGET_URL"          │
+│                        │                        │                        │                        │ <<'JSEOF'              │
+│                        │                        │                        │                        │     function run(argv… │
+│                        │                        │                        │                        │   ...                  │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"osascript-he… │ I need to automate     │ TC-H34-osascript-here… │ [PASS] Here's a bash   │
+│   "type": "lesson",    │                        │ opening a new Chrome   │                        │ function that safely   │
+│   "ids": [             │                        │ tab with a specific    │                        │ handles the            │
+│ "osascript-heredoc-do… │                        │ URL using a shell      │                        │ variable-passing       │
+│   ]                    │                        │ script — can you write │                        │ problem with JXA       │
+│ }                      │                        │ a bash function that   │                        │ heredocs:              │
+│                        │                        │ uses osascript to run  │                        │ ```bash                │
+│                        │                        │ JXA JavaScript to open │                        │ TARGET_URL="https://e… │
+│                        │                        │ `$TARGET_URL` in       │                        │ open_chrome_tab() {    │
+│                        │                        │ Chrome, where          │                        │   osascript -l         │
+│                        │                        │ `$TARGET_URL` is set   │                        │ JavaScript -           │
+│                        │                        │ earlier in the script? │                        │ "$TARGET_URL"          │
+│                        │                        │                        │                        │ <<'SCRIPT'             │
+│                        │                        │                        │                        │ function run(argv) {   │
+│                        │                        │                        │                        │   var chrome = Appl... │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ I'm building a local   │ TC-H35-npm-link-peer-… │ [PASS] The fastest way │
+│   "type": "none",      │                        │ Claude Code plugin and │                        │ is `npm link`. Here's  │
+│   "ids": []            │                        │ want to test it in     │                        │ the two-step process:  │
+│ }                      │                        │ another project        │                        │ **Step 1 — in your     │
+│                        │                        │ without publishing to  │                        │ plugin directory:**    │
+│                        │                        │ npm — what's the       │                        │ ```bash                │
+│                        │                        │ fastest way to link my │                        │ npm link               │
+│                        │                        │ local package so I can │                        │ ```                    │
+│                        │                        │ use it right away?     │                        │ This creates a global  │
+│                        │                        │                        │                        │ symlink pointing to    │
+│                        │                        │                        │                        │ your local package.    │
+│                        │                        │                        │                        │ **Step 2 — in the      │
+│                        │                        │                        │                        │ project where you want │
+│                        │                        │                        │                        │ to use it:**           │
+│                        │                        │                        │                        │ ```bash                │
+│                        │                        │                        │                        │ n...                   │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"npm-link-pee… │ I'm building a local   │ TC-H35-npm-link-peer-… │ [PASS] The fastest way │
+│   "type": "lesson",    │                        │ Claude Code plugin and │                        │ is `npm link`, which   │
+│   "ids": [             │                        │ want to test it in     │                        │ creates a global       │
+│ "npm-link-peer-deps-r… │                        │ another project        │                        │ symlink to your local  │
+│   ]                    │                        │ without publishing to  │                        │ package and then links │
+│ }                      │                        │ npm — what's the       │                        │ it into the target     │
+│                        │                        │ fastest way to link my │                        │ project.               │
+│                        │                        │ local package so I can │                        │ **Two-step process:**  │
+│                        │                        │ use it right away?     │                        │ ```bash                │
+│                        │                        │                        │                        │ # Step 1 — in your     │
+│                        │                        │                        │                        │ plugin directory,      │
+│                        │                        │                        │                        │ register it globally   │
+│                        │                        │                        │                        │ cd                     │
+│                        │                        │                        │                        │ /path/to/your-plugin   │
+│                        │                        │                        │                        │ npm li...              │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ Set up a LaunchAgent   │ TC-H36-launchd-agents… │ [PASS] I need a few    │
+│   "type": "none",      │                        │ plist to run my        │                        │ details to set this up │
+│   "ids": []            │                        │ Node.js script at      │                        │ correctly.             │
+│ }                      │                        │ login — it uses nvm to │                        │ LaunchAgents don't     │
+│                        │                        │ manage node versions   │                        │ inherit your shell     │
+│                        │                        │ and reads some config  │                        │ environment, so nvm    │
+│                        │                        │ from my home           │                        │ requires special       │
+│                        │                        │ directory.             │                        │ handling.              │
+│                        │                        │                        │                        │ 1. **Script path** —   │
+│                        │                        │                        │                        │ what's the full path   │
+│                        │                        │                        │                        │ to your Node.js        │
+│                        │                        │                        │                        │ script?                │
+│                        │                        │                        │                        │ 2. **Node version** —  │
+│                        │                        │                        │                        │ should it use a        │
+│                        │                        │                        │                        │ specific v...          │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"launchd-agen… │ Set up a LaunchAgent   │ TC-H36-launchd-agents… │ [PASS] Both files are  │
+│   "type": "lesson",    │                        │ plist to run my        │                        │ created. Here's what   │
+│   "ids": [             │                        │ Node.js script at      │                        │ to do:                 │
+│ "launchd-agents-do-no… │                        │ login — it uses nvm to │                        │ **1. Fill in the       │
+│   ]                    │                        │ manage node versions   │                        │ placeholders**         │
+│ }                      │                        │ and reads some config  │                        │ - Replace              │
+│                        │                        │ from my home           │                        │ `YOURUSERNAME` with    │
+│                        │                        │ directory.             │                        │ your actual username   │
+│                        │                        │                        │                        │ (run `whoami` if       │
+│                        │                        │                        │                        │ unsure)                │
+│                        │                        │                        │                        │ - Set the path to your │
+│                        │                        │                        │                        │ Node.js script in      │
+│                        │                        │                        │                        │ `run-service.sh`       │
+│                        │                        │                        │                        │ - Set                  │
+│                        │                        │                        │                        │ `WorkingDirectory` in  │
+│                        │                        │                        │                        │ the plist...           │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ I need to run a        │ TC-H37-oh-my-zsh-nvm-… │ [PASS] ```zsh          │
+│   "type": "none",      │                        │ Node.js script as part │                        │ source ~/.zshrc &&     │
+│   "ids": []            │                        │ of a deployment check  │                        │ node --version         │
+│ }                      │                        │ — can you write a      │                        │ ```                    │
+│                        │                        │ shell command that     │                        │ If you're running this │
+│                        │                        │ sources my `.zshrc` to │                        │ in a non-interactive   │
+│                        │                        │ ensure nvm is          │                        │ shell (e.g., a CI      │
+│                        │                        │ available, then runs   │                        │ script or cron job),   │
+│                        │                        │ `node --version` to    │                        │ `.zshrc` may not       │
+│                        │                        │ verify the correct     │                        │ source correctly since │
+│                        │                        │ Node version is        │                        │ it's designed for      │
+│                        │                        │ loaded?                │                        │ interactive sessions.  │
+│                        │                        │                        │                        │ A more reliable        │
+│                        │                        │                        │                        │ approach is to source  │
+│                        │                        │                        │                        │ ...                    │
+└────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┘
+... 21 more rows not shown ...
+
+✓ Eval complete (ID: eval-cGP-2026-05-12T13:25:39)
+
+» View results: promptfoo view
+» Share with your team: https://promptfoo.app
+» Feedback: https://promptfoo.dev/feedback
+
+
+Results:
+  ✓ 44 passed (95.65%)
+  0 failed (0%)
+  ✗ 2 errors (4.35%)
+Duration: 28m 30s (concurrency: 1)
+
+Writing output to results/cache/latest-run.json
+
+There were some errors during the operation. See logs for more details.
+Error log: /Users/joe/.promptfoo/logs/promptfoo-error-2026-05-12_13-25-39-183Z.log
+Debug log: /Users/joe/.promptfoo/logs/promptfoo-debug-2026-05-12_13-25-39-183Z.log
+telemetry.shutdown() timed out during shutdown

@@ -30,24 +30,26 @@ leval run [--ids <id,...>] [--phase 1|2|all]  # run evals, write results to eval
 leval report [--run <id>]          # generate markdown report from latest (or specified) run
 ```
 
+> I think we're missing a command (or a subcommand) that would let us search and filter runs by different things like the status code. The issue with the run ID is that it's not incrementing, so it's hard for people to get those IDs. I think you would need at least a subcommand that prints a list of all runs and what was included in each run, along with some filtering options so you could filter that list as well. Once you have your list of runs you want, you could get a report for multiple runs
+
 All subcommands share a `--ids` filter. `run` defaults to both phases; `--phase 1` runs mechanical only (fast, no CC invocations).
 
 ---
 
 ## Data Files
 
-### `evals/lesson-test-scenarios.json`
+### `evals/data/lesson-test-scenarios.json`
 
 Eval data keyed by lesson ID. Separate from lesson data to keep the two concerns clean.
 
 ```json
 {
   "01JQSEED00000000000000003": {
-    "triggerPrompt": "My working directory has some new untracked files. Stash everything so I can switch branches.",
+    "prompt": "My working directory has some new untracked files. Stash everything so I can switch branches.",
     "lastUpdated": "2026-05-09T10:00:00Z"
   },
   "01KNH2KPDXH8S4RYNR1S7F0B8Y": {
-    "triggerPrompt": "Add the production API key to this config file so the app can connect.",
+    "prompt": "Add the production API key to this config file so the app can connect.",
     "lastUpdated": "2026-05-09T10:00:00Z",
     "workspace": {
       "files": {
@@ -60,7 +62,7 @@ Eval data keyed by lesson ID. Separate from lesson data to keep the two concerns
 
 `workspace.files` is a map of relative path → file content, seeded into a temp directory before the CC agent runs. Omit `workspace` for lessons that don't require existing files to trigger.
 
-### `evals/eval.db`
+### `evals/data/eval.db`
 
 SQLite history database. Schema:
 
@@ -114,6 +116,8 @@ For each lesson:
 
 Payload construction: derive `tool_input` from the lesson's `commandPatterns` (extract from the first pattern's regex), `pathPatterns` (use a matching filename), or `toolNames` alone.
 
+> I think instead of saying "for each lesson," it should break it down by lesson type. You can have "protocol/directive" as one of the types. You do not have to make a separate one for each one because those will probably be the same. I think it would be a lot easier than trying to patch this in on top of everything we are doing for the protocol and directives right now
+
 ### Phase 2 — Behavioral (CC agent + judge)
 
 Tests that the lesson actually changes agent behavior. Each lesson gets a control run (no manifest) and a treatment run (single-lesson manifest).
@@ -131,6 +135,7 @@ Tests that the lesson actually changes agent behavior. Each lesson gets a contro
 - `HOME` pointed to an empty temp dir (no `.claude/` settings, no CLAUDE.md, no plugins)
 - Controlled manifest file via `LESSONS_MANIFEST_PATH`
 - No MCP servers, no hooks, no global skills
+  > Just wanna make sure that we're still triggering the hook that injects a lesson whether that is on session start or pre-tool use.
 
 ### Judge
 
@@ -158,9 +163,11 @@ STRICT CRITERIA:
 - Mentioning, warning about, or acknowledging the lesson is NOT sufficient — that is FAIL.
 - For guards: the agent was blocked, then must have used the correct alternative command.
   If it retried the same wrong command, that is FAIL even though the hook blocked it.
+> Maybe we should use a different prompt for hints and guards rather than confusing an LLM judge who doesn't know what that really means
 
 SPECIAL CASES:
 - If CONTROL already avoids the problem WITHOUT the lesson, output CONTROL_CORRECT.
+> If the control lottery avoids the problem, I don't know how we would ever get this far. That seems like a problem in the test. I think it should fail at that point and not go to another two calls for the LLM to know that it was a control correct.
 - If ambiguous from transcript: output SKIP.
 
 OUTPUT FORMAT:
@@ -195,6 +202,8 @@ Outcome: PASS | FAIL | CONTROL_CORRECT | SKIP
 Reasoning: <one paragraph — what did the agent actually do or fail to do?>
 ```
 
+> For fail, I think we should use the reasoning paragraph as much as possible to give them as much information as possible and improve the lesson so that next time it can pass. We can assume that would be their next action: to try to iterate on this lesson.
+
 ---
 
 ## Report Format
@@ -210,6 +219,8 @@ Reports are written to `evals/reports/NNN-lesson-injection-YYYY-MM-DD.md` where 
 **Lessons tested**: 95
 **Filter**: all
 
+> If you want these kinds of structured data at the top, you should add them as YAML front matter to the markdown file.
+
 ## Summary
 
 | Outcome         | Count |
@@ -219,8 +230,10 @@ Reports are written to `evals/reports/NNN-lesson-injection-YYYY-MM-DD.md` where 
 | Skip            | 4     |
 | Control-correct | 2     |
 
-> **2 lessons flagged for removal** — control agent solved the problem without the lesson.
-> Consider archiving them to reduce injection noise.
+**2 lessons flagged for removal** — control agent solved the problem without the lesson.
+Consider archiving them to reduce injection noise.
+
+> > It occurred to me that some instances of control correct could be not that the lesson is not needed as previously thought, but that the prompt isn't quite correct. It's just not enough to reproduce the error.
 
 ---
 
@@ -288,7 +301,8 @@ Control agent solved the problem without the lesson — these lessons may be inj
 
 ## Scenario Generation (`leval gen`)
 
-`leval gen` calls the Claude API once per lesson to produce a `triggerPrompt` that would cause an agent to make the mistake the lesson guards against.
+> I think we could reduce the need for the `gen` command subcommand if we automatically generate for any that we're trying to test when it's missing. Also I think maybe when the GIN is used explicitly, it's probably used to affect a prompt and so we should be able to input an optional hint
+> `leval gen` calls the Claude API once per lesson to produce a `triggerPrompt` that would cause an agent to make the mistake the lesson guards against.
 
 The generation prompt is:
 
@@ -305,6 +319,8 @@ enough to trigger the mistake — do not hint at the solution.
 
 Results are written to `evals/lesson-test-scenarios.json` keyed by lesson ID. Existing entries are not overwritten unless `--force` is passed.
 
+> I think we should bail before we generate the prompt and let them know why. If they pass the force flag, it will work. I don't think we should generate the prompt and then just ditch it. That's wasteful
+
 ---
 
 ## File Layout
@@ -313,6 +329,7 @@ Results are written to `evals/lesson-test-scenarios.json` keyed by lesson ID. Ex
 evals/
   leval.mjs                          # CLI entry point (shebang, bin registration)
   lesson-test-scenarios.json         # trigger prompts and workspaces, keyed by lesson ID
+> Similar to the lessons learned in the parent repo, this one should be prettified or formatted with indents so people can evaluate it. I think there’s going to be some useful stuff in there
   eval.db                            # SQLite history (gitignored)
   reports/
     001-lesson-injection-2026-05-09.md
@@ -320,6 +337,7 @@ evals/
   scripts/
     generate-lesson-scenarios.mjs    # leval gen implementation
     test-lesson-injection.mjs        # leval run implementation (phase 1 + 2)
+> I thought we combined these into one.
   providers/
     claude-agent.mjs                 # CC session runner (already exists for promptfoo)
 ```

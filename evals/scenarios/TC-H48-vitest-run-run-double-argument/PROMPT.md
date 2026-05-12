@@ -1,1 +1,1 @@
-Run all the tests in my project using vitest and make sure nothing is filtering them — I just want the full test suite executed with the run flag so it doesn't start in watch mode.
+Run all the tests in this project using the vitest run subcommand. The `test` script in package.json just calls `vitest` (watch mode by default), so make sure to pass `run` as the subcommand to vitest so it executes once and exits instead of staying in watch mode. Pass the run subcommand explicitly.

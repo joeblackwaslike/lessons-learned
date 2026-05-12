@@ -30,8 +30,12 @@ docs/_backlog.md
 
 # OS artifacts
 .DS_Store
+._*
 *.swp
 *.swo
+
+# Tool state
+.clawhip/
 
 *.db-shm
 *.db-wal
