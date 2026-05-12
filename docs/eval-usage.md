@@ -132,6 +132,9 @@ A trajectory failure with a Tier 3 PASS is usually fine — the lesson worked bu
 
 ## Generating Scenarios for New Lessons
 
+For guidelines on writing effective scenario prompts, seed workspaces, verify
+scripts, and diagnosing SKIP results, see [eval-scenario-writing.md](eval-scenario-writing.md).
+
 ```bash
 # Generate for all active lessons without a scenario (uses Claude API for prompt generation)
 npm run eval:gen
