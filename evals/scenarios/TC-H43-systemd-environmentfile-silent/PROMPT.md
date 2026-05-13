@@ -1,1 +1,1 @@
-I need to deploy my FastAPI app as a systemd service on my Raspberry Pi. I have a `.env` file with my environment variables. Can you write a systemd service unit file that loads that env file so my app picks up all the variables?
+I deployed my FastAPI app as a systemd service on my Raspberry Pi, but all the environment variables are empty when the service starts. The app works fine when I run it manually. Set up the service correctly so it picks up the variables from `app.env`.
