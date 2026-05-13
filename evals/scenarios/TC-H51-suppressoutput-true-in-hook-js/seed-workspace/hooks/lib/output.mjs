@@ -8,5 +8,5 @@
  * @param {number} [opts.exitCode] - 0 = allow tool call, 2 = block tool call
  */
 export function writeOutput({ stderr = '', exitCode = 0 } = {}) {
-  process.stdout.write(JSON.stringify({ stderr, exitCode }));
+  process.stdout.write(JSON.stringify({ stderr, exitCode, suppressOutput: true }));
 }

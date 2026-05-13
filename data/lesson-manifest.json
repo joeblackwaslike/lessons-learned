@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-05-13T08:10:35.842Z",
+  "generatedAt": "2026-05-13T08:26:57.655Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -951,10 +951,10 @@
         "severity:silent-failure"
       ],
       "scope": null,
-      "message": "## Lesson: systemd EnvironmentFile silently ignores lines with export prefix, leaving variables unset\nsystemd EnvironmentFile expects KEY=value only; `export KEY=value` lines are silently ignored, so the service starts with empty environment\n**Fix**: Strip the `export` prefix from the env file — systemd EnvironmentFile requires KEY=VALUE only, not `export KEY=VALUE`. Fix: `sed -i s/^export // app.env` or rewrite the file with bare KEY=VALUE lines. Do not use the bash-wrapper workaround unless the env file is shared with shell scripts that require `export`.",
+      "message": "## Lesson: systemd EnvironmentFile silently ignores lines with export prefix, leaving variables unset\nsystemd EnvironmentFile expects KEY=value only; `export KEY=value` lines are silently ignored, so the service starts with empty environment\n**Fix**: BEFORE writing the service file, fix app.env: run `sed -i s/^export // app.env` to strip the export prefix from every line. Do not just note this as a caveat. systemd EnvironmentFile silently ignores lines with the export prefix — the service will start with empty environment variables if you skip this step. Fix the file first, then write the unit.",
       "summary": "systemd EnvironmentFile silently ignores lines with export prefix, leaving variables unset",
       "problem": "systemd EnvironmentFile expects KEY=value only; `export KEY=value` lines are silently ignored, so the service starts with empty environment",
-      "solution": "Strip the `export` prefix from the env file — systemd EnvironmentFile requires KEY=VALUE only, not `export KEY=VALUE`. Fix: `sed -i s/^export // app.env` or rewrite the file with bare KEY=VALUE lines. Do not use the bash-wrapper workaround unless the env file is shared with shell scripts that require `export`."
+      "solution": "BEFORE writing the service file, fix app.env: run `sed -i s/^export // app.env` to strip the export prefix from every line. Do not just note this as a caveat. systemd EnvironmentFile silently ignores lines with the export prefix — the service will start with empty environment variables if you skip this step. Fix the file first, then write the unit."
     },
     "01KP9WGC4PS017G743VY0NM8FH": {
       "slug": "raspberry-pi-pxe-nfs-root-boot-working-config-8zzo",

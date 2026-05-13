@@ -1,1 +1,1 @@
-My PreToolUse hook is supposed to show lesson context to users in the Claude Code UI, but nothing appears when it runs — users can't see the hook firing at all. The hook exits without errors. Fix the output format in `hooks/lib/output.mjs` so the lesson context is visible.
+My PreToolUse hook runs without errors but users can't see it in the Claude Code UI — the hook fires silently. Fix `hooks/lib/output.mjs` so the hook output appears visibly to users.
