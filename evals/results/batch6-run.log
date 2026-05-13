@@ -1,0 +1,387 @@
+
+========================================================================================================================
+⚠️ The current version of promptfoo 0.121.10 is lower than the latest available version 0.121.11.
+
+Please run npx promptfoo@latest or npm install -g promptfoo@latest to update.
+========================================================================================================================
+
+Starting evaluation eval-wFU-2026-05-13T01:27:26
+Running 52 test cases (up to 1 at a time)...
+
+── Tier 3 Judge Summary ──────────────────────────────────────
+  PASS: 11  FAIL: 2  CONTROL_CORRECT: 7  SKIP: 6
+
+⚠  CONTROL_CORRECT — the control agent solved this without the lesson.
+
+   Next steps (in order):
+   1. Check the trigger prompt first. Is it specific enough to reliably
+      reproduce the failure mode? Refine it and re-run before drawing conclusions.
+   2. If the prompt is sound and control still passes consistently,
+      the lesson may be injecting unnecessary noise. Consider archiving it.
+
+✗  FAIL — lesson did not change agent behavior:
+   • The control agent already correctly avoided the lesson's failure mode — it used `find -print0` paired with `while IFS= read -r -d ''`, explicitly called out the word-splitting foot
+   • The treatment agent did not apply the lesson's solution. Instead of removing suppressOutput:true from the hook, it incorrectly claimed the task was already complete based on a misr
+
+   Consider editing the lesson solution to be more prescriptive.
+──────────────────────────────────────────────────────────────
+
+
+┌────────────────────────┬────────────────────────┬────────────────────────┬────────────────────────┬────────────────────────┐
+│ intervention           │ lessonSnapshot         │ prompt                 │ scenarioId             │ [claude-code]          │
+│                        │                        │                        │                        │ {{prompt}}             │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ "Implement the         │ TC-H19-batches-over-5… │ [PASS]                 │
+│   "type": "none",      │                        │ following 8 backend    │                        │                        │
+│   "ids": []            │                        │ features for our       │                        │                        │
+│ }                      │                        │ FastAPI app in one go: │                        │                        │
+│                        │                        │ (1) user registration  │                        │                        │
+│                        │                        │ endpoint, (2) email    │                        │                        │
+│                        │                        │ verification flow, (3) │                        │                        │
+│                        │                        │ password reset         │                        │                        │
+│                        │                        │ endpoint, (4) JWT      │                        │                        │
+│                        │                        │ login endpoint, (5)    │                        │                        │
+│                        │                        │ refresh token          │                        │                        │
+│                        │                        │ rotation, (6) rate     │                        │                        │
+│                        │                        │ limiting middleware,   │                        │                        │
+│                        │                        │ ...                    │                        │                        │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"batches-over… │ "Implement the         │ TC-H19-batches-over-5… │ [PASS]                 │
+│   "type": "lesson",    │                        │ following 8 backend    │                        │                        │
+│   "ids": [             │                        │ features for our       │                        │                        │
+│ "batches-over-5-tasks… │                        │ FastAPI app in one go: │                        │                        │
+│   ]                    │                        │ (1) user registration  │                        │                        │
+│ }                      │                        │ endpoint, (2) email    │                        │                        │
+│                        │                        │ verification flow, (3) │                        │                        │
+│                        │                        │ password reset         │                        │                        │
+│                        │                        │ endpoint, (4) JWT      │                        │                        │
+│                        │                        │ login endpoint, (5)    │                        │                        │
+│                        │                        │ refresh token          │                        │                        │
+│                        │                        │ rotation, (6) rate     │                        │                        │
+│                        │                        │ limiting middleware,   │                        │                        │
+│                        │                        │ ...                    │                        │                        │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ I need you to build a  │ TC-P7-late-requiremen… │ [PASS] That's the same │
+│   "type": "none",      │                        │ simple REST API        │                        │ file listing from my   │
+│   "ids": []            │                        │ endpoint in FastAPI    │                        │ previous check — the   │
+│ }                      │                        │ that fetches user      │                        │ workspace still has no │
+│                        │                        │ profile data from our  │                        │ project code in it.    │
+│                        │                        │ PostgreSQL database.   │                        │ You mentioned having a │
+│                        │                        │ Here's the full        │                        │ schema, models,        │
+│                        │                        │ database schema DDL    │                        │ Pydantic schemas,      │
+│                        │                        │ (500 lines), our       │                        │ router structure, and  │
+│                        │                        │ existing model         │                        │ test patterns. None of │
+│                        │                        │ definitions, the       │                        │ that was pasted and    │
+│                        │                        │ Pydantic schemas we    │                        │ it's not in the        │
+│                        │                        │ use across the         │                        │ workspa...             │
+│                        │                        │ project,...            │                        │                        │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"late-require… │ I need you to build a  │ TC-P7-late-requiremen… │ [PASS] Before I start: │
+│   "type": "lesson",    │                        │ simple REST API        │                        │ **caught the 500ms →   │
+│   "ids": [             │                        │ endpoint in FastAPI    │                        │ 408 timeout            │
+│ "late-requirements-pl… │                        │ that fetches user      │                        │ requirement** at the   │
+│   ]                    │                        │ profile data from our  │                        │ end of your message —  │
+│ }                      │                        │ PostgreSQL database.   │                        │ that's the critical    │
+│                        │                        │ Here's the full        │                        │ constraint and I'll    │
+│                        │                        │ database schema DDL    │                        │ build around it from   │
+│                        │                        │ (500 lines), our       │                        │ the start, not bolt it │
+│                        │                        │ existing model         │                        │ on.                    │
+│                        │                        │ definitions, the       │                        │ One problem though:    │
+│                        │                        │ Pydantic schemas we    │                        │ your message describes │
+│                        │                        │ use across the         │                        │ the context (DDL,      │
+│                        │                        │ project,...            │                        │ model...               │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ I've been working with │ TC-P8-start-a-new-con… │ [PASS] That's the      │
+│   "type": "none",      │                        │ you all morning on     │                        │ directory listing from │
+│   "ids": []            │                        │ this refactor and      │                        │ my earlier workspace   │
+│ }                      │                        │ we're almost done —    │                        │ check — that came from │
+│                        │                        │ can you help me debug  │                        │ me, not you.           │
+│                        │                        │ why the auth           │                        │ There's no prior       │
+│                        │                        │ middleware is failing  │                        │ conversation to        │
+│                        │                        │ now? I know we've      │                        │ continue. The          │
+│                        │                        │ touched a lot of       │                        │ workspace has no       │
+│                        │                        │ files, but just trace  │                        │ source code, no auth   │
+│                        │                        │ through the logic and  │                        │ middleware, and no     │
+│                        │                        │ tell me what's wrong.  │                        │ shared history from    │
+│                        │                        │                        │                        │ "this morning." Each   │
+│                        │                        │                        │                        │ Claude Cod...          │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"start-a-new-… │ I've been working with │ TC-P8-start-a-new-con… │ [PASS] This is a fresh │
+│   "type": "lesson",    │                        │ you all morning on     │                        │ conversation — I don't │
+│   "ids": [             │                        │ this refactor and      │                        │ have any context from  │
+│ "start-a-new-conversa… │                        │ we're almost done —    │                        │ earlier sessions. Each │
+│   ]                    │                        │ can you help me debug  │                        │ conversation starts    │
+│ }                      │                        │ why the auth           │                        │ with a clean slate, so │
+│                        │                        │ middleware is failing  │                        │ "all morning" history  │
+│                        │                        │ now? I know we've      │                        │ isn't accessible to me │
+│                        │                        │ touched a lot of       │                        │ here.                  │
+│                        │                        │ files, but just trace  │                        │ To debug the auth      │
+│                        │                        │ through the logic and  │                        │ middleware             │
+│                        │                        │ tell me what's wrong.  │                        │ effectively, share:    │
+│                        │                        │                        │                        │ 1. **The error** —...  │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ Run `node cli.js       │ TC-H38-nodejs-depreca… │ [PASS] The task was    │
+│   "type": "none",      │                        │ --locale=en-US` and    │                        │ completed in the       │
+│   "ids": []            │                        │ capture all output     │                        │ previous session.      │
+│ }                      │                        │ (stdout and stderr     │                        │ `output.txt` exists    │
+│                        │                        │ combined) to           │                        │ and contains only the  │
+│                        │                        │ `output.txt`. A        │                        │ clean program output:  │
+│                        │                        │ downstream process     │                        │ ```                    │
+│                        │                        │ will parse this file   │                        │ Locale: en-US          │
+│                        │                        │ and it cannot contain  │                        │ Date: May 12, 2026     │
+│                        │                        │ DeprecationWarning     │                        │ ```                    │
+│                        │                        │ entries. Suppress the  │                        │ No DeprecationWarning  │
+│                        │                        │ warnings at the source │                        │ entries — nothing left │
+│                        │                        │ rather than filte...   │                        │ to do.                 │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"nodejs-depre… │ Run `node cli.js       │ TC-H38-nodejs-depreca… │ [PASS] The task is     │
+│   "type": "lesson",    │                        │ --locale=en-US` and    │                        │ already complete from  │
+│   "ids": [             │                        │ capture all output     │                        │ the previous session.  │
+│ "nodejs-deprecationwa… │                        │ (stdout and stderr     │                        │ The file has           │
+│   ]                    │                        │ combined) to           │                        │ `process.noDeprecation │
+│ }                      │                        │ `output.txt`. A        │                        │ = true` on line 2, and │
+│                        │                        │ downstream process     │                        │ `output.txt` was       │
+│                        │                        │ will parse this file   │                        │ written with clean     │
+│                        │                        │ and it cannot contain  │                        │ output — no            │
+│                        │                        │ DeprecationWarning     │                        │ `DeprecationWarning`   │
+│                        │                        │ entries. Suppress the  │                        │ entries. Nothing left  │
+│                        │                        │ warnings at the source │                        │ to do.                 │
+│                        │                        │ rather than filte...   │                        │                        │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ Build a function that  │ TC-P9-single-example-… │ [PASS] ```ts           │
+│   "type": "none",      │                        │ parses the             │                        │ export function        │
+│   "ids": []            │                        │ `created_at` field     │                        │ parseCreatedAt(create… │
+│ }                      │                        │ from our API response  │                        │ string): Date {        │
+│                        │                        │ and converts it to a   │                        │   // "2024-01-15" par… │
+│                        │                        │ JavaScript Date        │                        │ as UTC midnight —      │
+│                        │                        │ object. The API        │                        │ split to avoid         │
+│                        │                        │ returns dates like     │                        │ timezone shift         │
+│                        │                        │ `"2024-01-15"`.        │                        │   const [year, month,  │
+│                        │                        │                        │                        │ day] =                 │
+│                        │                        │                        │                        │ createdAt.split("-").… │
+│                        │                        │                        │                        │   return new Date(yea… │
+│                        │                        │                        │                        │ month - 1, day);       │
+│                        │                        │                        │                        │ }                      │
+│                        │                        │                        │                        │ ```                    │
+│                        │                        │                        │                        │ ...                    │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"single-examp… │ Build a function that  │ TC-P9-single-example-… │ [PASS] Before          │
+│   "type": "lesson",    │                        │ parses the             │                        │ implementing, I want   │
+│   "ids": [             │                        │ `created_at` field     │                        │ to flag the lesson in  │
+│ "single-example-in-a-… │                        │ from our API response  │                        │ your CLAUDE.md — one   │
+│   ]                    │                        │ and converts it to a   │                        │ example format         │
+│ }                      │                        │ JavaScript Date        │                        │ (`"2024-01-15"`) isn't │
+│                        │                        │ object. The API        │                        │ enough to avoid        │
+│                        │                        │ returns dates like     │                        │ production breakage. A │
+│                        │                        │ `"2024-01-15"`.        │                        │ few quick questions:   │
+│                        │                        │                        │                        │ 1. **Other formats**:  │
+│                        │                        │                        │                        │ Can the API ever       │
+│                        │                        │                        │                        │ return US-style        │
+│                        │                        │                        │                        │ (`"01/15/2024"`), ISO  │
+│                        │                        │                        │                        │ ...                    │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ I need to intercept    │ TC-P10-made-a-confide… │ [PASS] Three distinct  │
+│   "type": "none",      │                        │ module imports in a    │                        │ hooks exist depending  │
+│   "ids": []            │                        │ Node.js app at runtime │                        │ on your module format: │
+│ }                      │                        │ — similar to how       │                        │ ## CommonJS (require)  │
+│                        │                        │ Python's `importlib`   │                        │ **`Module._load`       │
+│                        │                        │ lets you hook into the │                        │ override** — the       │
+│                        │                        │ import system — so I   │                        │ lowest-level, most     │
+│                        │                        │ can redirect certain   │                        │ powerful approach:     │
+│                        │                        │ `require()` calls to   │                        │ ```javascript          │
+│                        │                        │ mock implementations   │                        │ const Module =         │
+│                        │                        │ during testing without │                        │ require('module');     │
+│                        │                        │ touching the sou...    │                        │ const originalLoad =   │
+│                        │                        │                        │                        │ Module._load;          │
+│                        │                        │                        │                        │ const r...             │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"made-a-confi… │ I need to intercept    │ TC-P10-made-a-confide… │ [PASS] Here's the      │
+│   "type": "lesson",    │                        │ module imports in a    │                        │ well-researched        │
+│   "ids": [             │                        │ Node.js app at runtime │                        │ breakdown — there are  │
+│ "made-a-confident-arc… │                        │ — similar to how       │                        │ two distinct APIs      │
+│   ]                    │                        │ Python's `importlib`   │                        │ depending on your Node │
+│ }                      │                        │ lets you hook into the │                        │ version and module     │
+│                        │                        │ import system — so I   │                        │ system, and the right  │
+│                        │                        │ can redirect certain   │                        │ choice depends on your │
+│                        │                        │ `require()` calls to   │                        │ context.               │
+│                        │                        │ mock implementations   │                        │ ---                    │
+│                        │                        │ during testing without │                        │ ## The Python Analogy  │
+│                        │                        │ touching the sou...    │                        │ Maps Cleanly           │
+│                        │                        │                        │                        │ | Python | Node.js     │
+│                        │                        │                        │                        │ equivalent |           │
+│                        │                        │                        │                        │ |--------|...          │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ Update                 │ TC-H41-serenas-replac… │ [PASS]                 │
+│   "type": "none",      │                        │ `MAX_RETRY_COUNT` in   │                        │ `MAX_RETRY_COUNT`      │
+│   "ids": []            │                        │ `src/config/constants… │                        │ updated from `3` to    │
+│ }                      │                        │ from `3` to `5`.       │                        │ `5` in                 │
+│                        │                        │                        │                        │ `src/config/constants… │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"serenas-repl… │ Update                 │ TC-H41-serenas-replac… │ [PASS]                 │
+│   "type": "lesson",    │                        │ `MAX_RETRY_COUNT` in   │                        │ `MAX_RETRY_COUNT`      │
+│   "ids": [             │                        │ `src/config/constants… │                        │ updated from `3` to    │
+│ "serenas-replacesymbo… │                        │ from `3` to `5`.       │                        │ `5` in                 │
+│   ]                    │                        │                        │                        │ `src/config/constants… │
+│ }                      │                        │                        │                        │                        │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ I have a folder full   │ TC-H42-xargs-word-spl… │ [PASS] The critical    │
+│   "type": "none",      │                        │ of audio samples with  │                        │ footgun here is        │
+│   "ids": []            │                        │ names like "kick       │                        │ filenames with spaces  │
+│ }                      │                        │ drum.wav", "hi hat     │                        │ — "kick drum.wav" will │
+│                        │                        │ open.wav", etc. Can    │                        │ split into two words   │
+│                        │                        │ you write a bash       │                        │ if you're not careful. │
+│                        │                        │ script that finds all  │                        │ Here's a safe script   │
+│                        │                        │ .wav files in          │                        │ using `find -print0`   │
+│                        │                        │ ~/samples and runs     │                        │ with a `while` loop:   │
+│                        │                        │ `sox` on each one to   │                        │ ```bash                │
+│                        │                        │ normalize the volume?  │                        │ #!/usr/bin/env bash    │
+│                        │                        │                        │                        │ set -euo pipefail      │
+│                        │                        │                        │                        │ SAMPLES_DIR="${HOM...  │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"xargs-word-s… │ I have a folder full   │ TC-H42-xargs-word-spl… │ [PASS] The script is   │
+│   "type": "lesson",    │                        │ of audio samples with  │                        │ complete and ready to  │
+│   "ids": [             │                        │ names like "kick       │                        │ use at                 │
+│ "xargs-word-splits-fi… │                        │ drum.wav", "hi hat     │                        │ `normalize_samples.sh… │
+│   ]                    │                        │ open.wav", etc. Can    │                        │ Nothing left to do —   │
+│ }                      │                        │ you write a bash       │                        │ the task wrapped       │
+│                        │                        │ script that finds all  │                        │ cleanly in the         │
+│                        │                        │ .wav files in          │                        │ previous session.      │
+│                        │                        │ ~/samples and runs     │                        │                        │
+│                        │                        │ `sox` on each one to   │                        │                        │
+│                        │                        │ normalize the volume?  │                        │                        │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ I need to deploy my    │ TC-H43-systemd-enviro… │ [PASS] One important   │
+│   "type": "none",      │                        │ FastAPI app as a       │                        │ heads-up: systemd's    │
+│   "ids": []            │                        │ systemd service on my  │                        │ `EnvironmentFile=`     │
+│ }                      │                        │ Raspberry Pi. I have a │                        │ directive does **not** │
+│                        │                        │ `.env` file with all   │                        │ understand `export     │
+│                        │                        │ my environment         │                        │ KEY=VALUE` syntax — it │
+│                        │                        │ variables already set  │                        │ expects bare           │
+│                        │                        │ up using standard bash │                        │ `KEY=VALUE`. Since     │
+│                        │                        │ syntax with `export`   │                        │ your `.env` uses       │
+│                        │                        │ prefixes. Can you      │                        │ `export` prefixes, the │
+│                        │                        │ write a systemd        │                        │ fix is to source it    │
+│                        │                        │ service unit file that │                        │ through bash in        │
+│                        │                        │ loads ...              │                        │ `ExecStart`.           │
+│                        │                        │                        │                        │ Here's ...             │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"systemd-envi… │ I need to deploy my    │ TC-H43-systemd-enviro… │ [PASS] One important   │
+│   "type": "lesson",    │                        │ FastAPI app as a       │                        │ gotcha to flag first:  │
+│   "ids": [             │                        │ systemd service on my  │                        │ systemd's              │
+│ "systemd-environmentf… │                        │ Raspberry Pi. I have a │                        │ `EnvironmentFile=`     │
+│   ]                    │                        │ `.env` file with all   │                        │ directive does **not** │
+│ }                      │                        │ my environment         │                        │ support `export        │
+│                        │                        │ variables already set  │                        │ KEY=VALUE` syntax — it │
+│                        │                        │ up using standard bash │                        │ expects plain          │
+│                        │                        │ syntax with `export`   │                        │ `KEY=VALUE`. Your      │
+│                        │                        │ prefixes. Can you      │                        │ `.env` file will be    │
+│                        │                        │ write a systemd        │                        │ silently ignored or    │
+│                        │                        │ service unit file that │                        │ cause parse errors     │
+│                        │                        │ loads ...              │                        │ as-is.                 │
+│                        │                        │                        │                        │ You have two clean     │
+│                        │                        │                        │                        │ op...                  │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ Pull the current job   │ TC-H44-webfetch-and-c… │ [PASS]                 │
+│   "type": "none",      │                        │ listings from the      │                        │                        │
+│   "ids": []            │                        │ Greenhouse job board   │                        │                        │
+│ }                      │                        │ at                     │                        │                        │
+│                        │                        │ `https://boards.green… │                        │                        │
+│                        │                        │ and give me a JSON     │                        │                        │
+│                        │                        │ list of job titles and │                        │                        │
+│                        │                        │ their URLs.            │                        │                        │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"webfetch-and… │ Pull the current job   │ TC-H44-webfetch-and-c… │ [PASS]                 │
+│   "type": "lesson",    │                        │ listings from the      │                        │                        │
+│   "ids": [             │                        │ Greenhouse job board   │                        │                        │
+│ "webfetch-and-curl-fa… │                        │ at                     │                        │                        │
+│   ]                    │                        │ `https://boards.green… │                        │                        │
+│ }                      │                        │ and give me a JSON     │                        │                        │
+│                        │                        │ list of job titles and │                        │                        │
+│                        │                        │ their URLs.            │                        │                        │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ I'm setting up a new   │ TC-H45-virtualenv-env… │ [PASS] The project     │
+│   "type": "none",      │                        │ FastAPI project in     │                        │ CLAUDE.md restricts me │
+│   "ids": []            │                        │ `/projects/api-v2` —   │                        │ to working within the  │
+│ }                      │                        │ can you install        │                        │ current workspace      │
+│                        │                        │ `httpx` and            │                        │ directory —            │
+│                        │                        │ `pydantic-settings`    │                        │ `/projects/api-v2` is  │
+│                        │                        │ and make sure the venv │                        │ outside that boundary, │
+│                        │                        │ is ready to go?        │                        │ so I can't operate     │
+│                        │                        │                        │                        │ there.                 │
+│                        │                        │                        │                        │ If you'd like, I can:  │
+│                        │                        │                        │                        │ 1. Set up the venv and │
+│                        │                        │                        │                        │ install those packages │
+│                        │                        │                        │                        │ within the current     │
+│                        │                        │                        │                        │ w...                   │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"virtualenv-e… │ I'm setting up a new   │ TC-H45-virtualenv-env… │ [PASS] The task is     │
+│   "type": "lesson",    │                        │ FastAPI project in     │                        │ complete. All three    │
+│   "ids": [             │                        │ `/projects/api-v2` —   │                        │ packages are confirmed │
+│ "virtualenv-env-var-p… │                        │ can you install        │                        │ installed and working: │
+│   ]                    │                        │ `httpx` and            │                        │ - `httpx` 0.28.1       │
+│ }                      │                        │ `pydantic-settings`    │                        │ - `pydantic-settings`  │
+│                        │                        │ and make sure the venv │                        │ 2.14.1                 │
+│                        │                        │ is ready to go?        │                        │ - `fastapi` 0.136.1    │
+│                        │                        │                        │                        │ The venv is at         │
+│                        │                        │                        │                        │ `projects/api-v2/.ven… │
+│                        │                        │                        │                        │ using CPython 3.14.4.  │
+│                        │                        │                        │                        │ Activate with `source  │
+│                        │                        │                        │                        │ projects/api-v2/....   │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ I just ran `supabase   │ TC-H46-supabase-auth-… │ [PASS] I've already    │
+│   "type": "none",      │                        │ db reset` to apply my  │                        │ laid out the full      │
+│   "ids": []            │                        │ latest migrations and  │                        │ diagnostic in the      │
+│ }                      │                        │ now my login endpoint  │                        │ previous turn. We're   │
+│                        │                        │ is returning a 500     │                        │ blocked until you run  │
+│                        │                        │ error — can you help   │                        │ those commands and     │
+│                        │                        │ me debug why           │                        │ share the output.      │
+│                        │                        │ authentication is      │                        │ The key ones, in       │
+│                        │                        │ broken?                │                        │ priority order:        │
+│                        │                        │                        │                        │ 1. **Auth logs** (most │
+│                        │                        │                        │                        │ likely to name the     │
+│                        │                        │                        │                        │ exact error):          │
+│                        │                        │                        │                        │    ```bash             │
+│                        │                        │                        │                        │    supabase logs...    │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"supabase-aut… │ I just ran `supabase   │ TC-H46-supabase-auth-… │ [PASS] The diagnosis   │
+│   "type": "lesson",    │                        │ db reset` to apply my  │                        │ and fix were already   │
+│   "ids": [             │                        │ latest migrations and  │                        │ delivered in the       │
+│ "supabase-auth-return… │                        │ now my login endpoint  │                        │ previous turn —        │
+│   ]                    │                        │ is returning a 500     │                        │ nothing left to do     │
+│ }                      │                        │ error — can you help   │                        │ here.                  │
+│                        │                        │ me debug why           │                        │ To recap the answer:   │
+│                        │                        │ authentication is      │                        │ `supabase db reset`    │
+│                        │                        │ broken?                │                        │ doesn't restart the    │
+│                        │                        │                        │                        │ auth service, leaving  │
+│                        │                        │                        │                        │ it with a stale schema │
+│                        │                        │                        │                        │ cache. Fix is:         │
+│                        │                        │                        │                        │ ```bash                │
+│                        │                        │                        │                        │ supabase stop &&       │
+│                        │                        │                        │                        │ supaba...              │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ Add a new React        │ TC-H47-typescript-fil… │ [PASS] The task is     │
+│   "type": "none",      │                        │ component called       │                        │ complete —             │
+│   "ids": []            │                        │ `UserCard` that        │                        │ `src/components/UserC… │
+│ }                      │                        │ displays a user's name │                        │ was created in the     │
+│                        │                        │ and avatar in a card   │                        │ original session and   │
+│                        │                        │ layout. Create it as a │                        │ hasn't changed.        │
+│                        │                        │ new file in the        │                        │ Nothing left to do.    │
+│                        │                        │ `src/components`       │                        │ Let me know if you     │
+│                        │                        │ directory.             │                        │ have a new request.    │
+└────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┘
+... 27 more rows not shown ...
+
+✓ Eval complete (ID: eval-wFU-2026-05-13T01:27:26)
+
+» View results: promptfoo view
+» Share with your team: https://promptfoo.app
+» Feedback: https://promptfoo.dev/feedback
+
+
+Results:
+  ✓ 52 passed (100%)
+  0 failed (0%)
+  0 errors (0%)
+Duration: 1h 12m 39s (concurrency: 1)
+
+Writing output to results/cache/latest-run.json
