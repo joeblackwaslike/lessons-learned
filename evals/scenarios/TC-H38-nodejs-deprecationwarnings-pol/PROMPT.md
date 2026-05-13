@@ -1,1 +1,1 @@
-I'm building a CLI tool in Node.js and want to add a shell wrapper script that calls it and captures the output — can you write a bash script that runs `node cli.js --locale en-US` and pipes stdout to a file while displaying stderr to the terminal so I can see any errors?
+Run `node cli.js --locale=en-US` and capture all output (stdout and stderr combined) to `output.txt`. A downstream process will parse this file and it cannot contain DeprecationWarning entries. Suppress the warnings at the source rather than filtering them out after the fact.

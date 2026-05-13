@@ -30,9 +30,7 @@
  * @returns {string}
  */
 function stripQuotedStrings(command) {
-  return command
-    .replace(/"(?:[^"\\]|\\.)*"/g, '""')
-    .replace(/'(?:[^'\\]|\\.)*'/g, "''");
+  return command.replace(/"(?:[^"\\]|\\.)*"/g, '""').replace(/'(?:[^'\\]|\\.)*'/g, "''");
 }
 
 export function matchLessons(lessons, toolName, command, filePath, projectId = null) {
@@ -51,9 +49,7 @@ export function matchLessons(lessons, toolName, command, filePath, projectId = n
 
     if (command && Array.isArray(lesson.commandRegexSources)) {
       const matchTarget =
-        lesson.commandMatchTarget === 'executable'
-          ? stripQuotedStrings(command)
-          : command;
+        lesson.commandMatchTarget === 'executable' ? stripQuotedStrings(command) : command;
 
       for (const regexDef of lesson.commandRegexSources) {
         try {
@@ -80,6 +76,12 @@ export function matchLessons(lessons, toolName, command, filePath, projectId = n
           // Invalid regex in manifest — skip
         }
       }
+    }
+
+    // Tool-name-only match: when a lesson has no command or path patterns,
+    // toolName match alone is sufficient (e.g. MCP tool lessons).
+    if (!matched && !lesson.commandRegexSources?.length && !lesson.pathRegexSources?.length) {
+      matched = true;
     }
 
     if (matched) {

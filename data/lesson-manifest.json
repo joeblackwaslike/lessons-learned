@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-05-11T00:33:44.434Z",
+  "generatedAt": "2026-05-13T01:23:22.530Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -2452,14 +2452,9 @@
       "type": "hint",
       "priority": 3,
       "toolNames": [
-        "Bash"
+        "mcp__plugin_serena_serena__replace_symbol_body"
       ],
-      "commandRegexSources": [
-        {
-          "source": "\\bmcp__plugin_serena_serena__replace_symbol_body\\b",
-          "flags": ""
-        }
-      ],
+      "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [

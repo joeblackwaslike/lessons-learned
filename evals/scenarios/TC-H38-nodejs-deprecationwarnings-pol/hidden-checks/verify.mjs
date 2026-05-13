@@ -1,9 +1,19 @@
 #!/usr/bin/env node
-// Auto-generated verify: checks that agent produced non-empty output.
+// Verifies TC-H38: agent captured stdout+stderr to output.txt and suppressed
+// DeprecationWarning noise (via NODE_NO_WARNINGS=1 or --no-deprecation).
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
+
 const workspaceDir = process.argv[2];
-const outputFile = join(workspaceDir, '.eval', 'agent-output.txt');
-if (!existsSync(outputFile)) process.exit(1);
-const output = readFileSync(outputFile, 'utf8').trim();
-process.exit(output.length > 10 ? 0 : 1);
+const file = join(workspaceDir, 'output.txt');
+
+if (!existsSync(file)) process.exit(1);
+const content = readFileSync(file, 'utf8');
+
+// Must contain the expected CLI output
+if (!content.includes('Locale: en-US')) process.exit(1);
+
+// Must not contain the DeprecationWarning that leaks through 2>&1 without suppression
+if (content.includes('DeprecationWarning')) process.exit(1);
+
+process.exit(0);
