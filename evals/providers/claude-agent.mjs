@@ -343,10 +343,12 @@ function buildEnv(workspaceDir, _intervention) {
     allowed.filter(k => process.env[k] != null).map(k => [k, process.env[k]])
   );
 
-  // Fake HOME prevents global ~/.claude hooks from contaminating eval results
+  // Fake HOME + CLAUDE_CONFIG_DIR prevent global ~/.claude from contaminating eval results
   const evalHomeDir = join(workspaceDir, '.eval', 'home');
-  mkdirSync(evalHomeDir, { recursive: true });
+  const evalClaudeDir = join(evalHomeDir, '.claude');
+  mkdirSync(evalClaudeDir, { recursive: true });
   env.HOME = evalHomeDir;
+  env.CLAUDE_CONFIG_DIR = evalClaudeDir;
 
   if (!env.ANTHROPIC_API_KEY) {
     const realClaudeSettings = join(process.env.HOME ?? '', '.claude', 'settings.json');
