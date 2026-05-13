@@ -1,1 +1,1 @@
-The plan is approved — add user preferences support to this FastAPI app. Execute all steps in sequence. Do not commit between steps.
+This FastAPI app needs user preferences support added. Apply the pending database migration, add a `preferences` JSON column to the User model, and implement GET and PATCH endpoints at `/api/v1/preferences`. Execute all steps now. Do not commit between steps.

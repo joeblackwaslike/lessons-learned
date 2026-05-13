@@ -1,1 +1,1 @@
-My PreToolUse hook is supposed to inject lesson context before tool calls, but the context isn't appearing in Claude's responses. The hook runs without errors. Can you look at the hook output format and fix why the injected content isn't showing up?
+My PreToolUse hook is supposed to show lesson context to users in the Claude Code UI, but nothing appears when it runs — users can't see the hook firing at all. The hook exits without errors. Fix the output format in `hooks/lib/output.mjs` so the lesson context is visible.

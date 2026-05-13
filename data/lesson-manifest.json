@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-05-13T06:51:54.924Z",
+  "generatedAt": "2026-05-13T08:10:35.842Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -951,10 +951,10 @@
         "severity:silent-failure"
       ],
       "scope": null,
-      "message": "## Lesson: systemd EnvironmentFile silently ignores lines with export prefix, leaving variables unset\nsystemd EnvironmentFile expects KEY=value only; `export KEY=value` lines are silently ignored, so the service starts with empty environment\n**Fix**: Either strip export from the env file, or use a bash wrapper: `ExecStart=/bin/bash -c '. ~/.env && exec /usr/bin/myapp'`",
+      "message": "## Lesson: systemd EnvironmentFile silently ignores lines with export prefix, leaving variables unset\nsystemd EnvironmentFile expects KEY=value only; `export KEY=value` lines are silently ignored, so the service starts with empty environment\n**Fix**: Strip the `export` prefix from the env file — systemd EnvironmentFile requires KEY=VALUE only, not `export KEY=VALUE`. Fix: `sed -i s/^export // app.env` or rewrite the file with bare KEY=VALUE lines. Do not use the bash-wrapper workaround unless the env file is shared with shell scripts that require `export`.",
       "summary": "systemd EnvironmentFile silently ignores lines with export prefix, leaving variables unset",
       "problem": "systemd EnvironmentFile expects KEY=value only; `export KEY=value` lines are silently ignored, so the service starts with empty environment",
-      "solution": "Either strip export from the env file, or use a bash wrapper: `ExecStart=/bin/bash -c '. ~/.env && exec /usr/bin/myapp'`"
+      "solution": "Strip the `export` prefix from the env file — systemd EnvironmentFile requires KEY=VALUE only, not `export KEY=VALUE`. Fix: `sed -i s/^export // app.env` or rewrite the file with bare KEY=VALUE lines. Do not use the bash-wrapper workaround unless the env file is shared with shell scripts that require `export`."
     },
     "01KP9WGC4PS017G743VY0NM8FH": {
       "slug": "raspberry-pi-pxe-nfs-root-boot-working-config-8zzo",
@@ -1657,10 +1657,10 @@
         "category:claude-code"
       ],
       "scope": null,
-      "message": "## Lesson: suppressOutput:true in hook JSON makes lesson injection invisible to the user\nsuppressOutput:true in hook JSON suppresses not just the hook error label but the entire visual indicator in the Claude Code UI. Lesson injection becomes completely invisible to the user — the model receives context but the user never sees lessons firing, defeating the system purpose.\n**Fix**: Never add `suppressOutput: true` to hook JSON output. Remove it if present. The hook should output `{ stderr, exitCode }` only — Claude Code renders stderr as a collapsible details block that shows lesson context to the user.",
+      "message": "## Lesson: suppressOutput:true in hook JSON makes lesson injection invisible to the user\nsuppressOutput:true in hook JSON suppresses not just the hook error label but the entire visual indicator in the Claude Code UI. Lesson injection becomes completely invisible to the user — the model receives context but the user never sees lessons firing, defeating the system purpose.\n**Fix**: STOP — do not add `suppressOutput: true`. Output only `{ stderr: \"...\", exitCode: 0 }`. That is the complete schema. `suppressOutput` makes the hook invisible in the Claude Code UI — the user cannot see lessons firing. The correct fix for invisible injection is to ensure `stderr` contains the context, not to toggle `suppressOutput`.",
       "summary": "suppressOutput:true in hook JSON makes lesson injection invisible to the user",
       "problem": "suppressOutput:true in hook JSON suppresses not just the hook error label but the entire visual indicator in the Claude Code UI. Lesson injection becomes completely invisible to the user — the model receives context but the user never sees lessons firing, defeating the system purpose.",
-      "solution": "Never add `suppressOutput: true` to hook JSON output. Remove it if present. The hook should output `{ stderr, exitCode }` only — Claude Code renders stderr as a collapsible details block that shows lesson context to the user."
+      "solution": "STOP — do not add `suppressOutput: true`. Output only `{ stderr: \"...\", exitCode: 0 }`. That is the complete schema. `suppressOutput` makes the hook invisible in the Claude Code UI — the user cannot see lessons firing. The correct fix for invisible injection is to ensure `stderr` contains the context, not to toggle `suppressOutput`."
     },
     "01KRA4Y1H95MYTRRG3W2JCEPAX": {
       "slug": "launchd-agents-do-not-inherit-shell-env-3142",
