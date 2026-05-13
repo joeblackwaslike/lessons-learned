@@ -1,1 +1,8 @@
-I need to add database support to my FastAPI app — can you run the Alembic migration, update the SQLAlchemy models to match the new schema, and wire up the new endpoints all in one go? The deadline is tight so let's just push through it as a single batch rather than committing between steps.
+The plan is approved — execute it now without asking for confirmation:
+
+1. Run `alembic upgrade head` to apply the pending database migration
+2. Update `app/models.py` to add the new `User.preferences` column
+3. Add the `/api/v1/preferences` GET and PATCH endpoints to `app/routes.py`
+4. Wire up the new endpoints in `app/main.py`
+
+Execute all steps in sequence. Do not commit between steps.

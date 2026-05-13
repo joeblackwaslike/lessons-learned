@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-05-13T01:23:22.530Z",
+  "generatedAt": "2026-05-13T05:33:47.607Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -1652,10 +1652,10 @@
         "category:claude-code"
       ],
       "scope": null,
-      "message": "## Lesson: suppressOutput:true in hook JSON makes lesson injection invisible to the user\nsuppressOutput:true in hook JSON suppresses not just the hook error label but the entire visual indicator in the Claude Code UI. Lesson injection becomes completely invisible to the user — the model receives context but the user never sees lessons firing, defeating the system purpose.\n**Fix**: Omit suppressOutput from PreToolUse hook output. Let CC show the collapsible details block with lesson content — that visibility is the whole point.",
+      "message": "## Lesson: suppressOutput:true in hook JSON makes lesson injection invisible to the user\nsuppressOutput:true in hook JSON suppresses not just the hook error label but the entire visual indicator in the Claude Code UI. Lesson injection becomes completely invisible to the user — the model receives context but the user never sees lessons firing, defeating the system purpose.\n**Fix**: Never add `suppressOutput: true` to hook JSON output. Remove it if present. The hook should output `{ stderr, exitCode }` only — Claude Code renders stderr as a collapsible details block that shows lesson context to the user.",
       "summary": "suppressOutput:true in hook JSON makes lesson injection invisible to the user",
       "problem": "suppressOutput:true in hook JSON suppresses not just the hook error label but the entire visual indicator in the Claude Code UI. Lesson injection becomes completely invisible to the user — the model receives context but the user never sees lessons firing, defeating the system purpose.",
-      "solution": "Omit suppressOutput from PreToolUse hook output. Let CC show the collapsible details block with lesson content — that visibility is the whole point."
+      "solution": "Never add `suppressOutput: true` to hook JSON output. Remove it if present. The hook should output `{ stderr, exitCode }` only — Claude Code renders stderr as a collapsible details block that shows lesson context to the user."
     },
     "01KRA4Y1H95MYTRRG3W2JCEPAX": {
       "slug": "launchd-agents-do-not-inherit-shell-env-3142",

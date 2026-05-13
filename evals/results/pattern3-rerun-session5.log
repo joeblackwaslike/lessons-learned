@@ -1,0 +1,138 @@
+
+========================================================================================================================
+⚠️ The current version of promptfoo 0.121.10 is lower than the latest available version 0.121.11.
+
+Please run npx promptfoo@latest or npm install -g promptfoo@latest to update.
+========================================================================================================================
+
+Starting evaluation eval-5Wg-2026-05-13T05:41:02
+Running 6 test cases (up to 1 at a time)...
+
+── Tier 3 Judge Summary ──────────────────────────────────────
+  PASS: 1  FAIL: 1  CONTROL_CORRECT: 1  SKIP: 0
+
+⚠  CONTROL_CORRECT — the control agent solved this without the lesson.
+
+   Next steps (in order):
+   1. Check the trigger prompt first. Is it specific enough to reliably
+      reproduce the failure mode? Refine it and re-run before drawing conclusions.
+   2. If the prompt is sound and control still passes consistently,
+      the lesson may be injecting unnecessary noise. Consider archiving it.
+
+✗  FAIL — lesson did not change agent behavior:
+   • Both the control and treatment agents declined to directly apply the lesson's solution (disabling git.enableCommitSigning in VSCode user settings), citing workspace directory restr
+
+   Consider editing the lesson solution to be more prescriptive.
+──────────────────────────────────────────────────────────────
+
+
+┌────────────────────────┬────────────────────────┬────────────────────────┬────────────────────────┬────────────────────────┐
+│ intervention           │ lessonSnapshot         │ prompt                 │ scenarioId             │ [claude-code]          │
+│                        │                        │                        │                        │ {{prompt}}             │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ My git commits are     │ TC-H5-vscode-gitenabl… │ [PASS] I can't do this │
+│   "type": "none",      │                        │ hanging in VSCode —    │                        │ as requested. The      │
+│   "ids": []            │                        │ the terminal stalls    │                        │ CLAUDE.md for this     │
+│ }                      │                        │ after I run `git       │                        │ workspace restricts me │
+│                        │                        │ commit`. I have        │                        │ to the current         │
+│                        │                        │ `commit.gpgsign=true`  │                        │ directory — I can't    │
+│                        │                        │ set in my gitconfig    │                        │ read your VSCode user  │
+│                        │                        │ but VSCode's           │                        │ settings               │
+│                        │                        │ `git.enableCommitSign… │                        │ (`~/Library/Applicati… │
+│                        │                        │ setting may be         │                        │ Support/Code/User/set… │
+│                        │                        │ overriding it. Can you │                        │ or your                │
+│                        │                        │ check my VSCode user   │                        │ `~/.gitconfig`, and I  │
+│                        │                        │ settings and gi...     │                        │ shouldn't make te...   │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"vscode-giten… │ My git commits are     │ TC-H5-vscode-gitenabl… │ [PASS] I can't do this │
+│   "type": "lesson",    │ commit\\b","flags":""… │ hanging in VSCode —    │                        │ as requested. The      │
+│   "ids": [             │                        │ the terminal stalls    │                        │ CLAUDE.md for this     │
+│ "vscode-gitenablecomm… │                        │ after I run `git       │                        │ workspace says to work │
+│   ]                    │                        │ commit`. I have        │                        │ only within the        │
+│ }                      │                        │ `commit.gpgsign=true`  │                        │ current directory and  │
+│                        │                        │ set in my gitconfig    │                        │ not read system        │
+│                        │                        │ but VSCode's           │                        │ configuration files —  │
+│                        │                        │ `git.enableCommitSign… │                        │ your VSCode user       │
+│                        │                        │ setting may be         │                        │ settings               │
+│                        │                        │ overriding it. Can you │                        │ (`~/Library/Applicati… │
+│                        │                        │ check my VSCode user   │                        │ Support/Code/User/set… │
+│                        │                        │ settings and gi...     │                        │ and global ...         │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ The plan is approved — │ TC-H18-batch-executed… │ [PASS] The listing     │
+│   "type": "none",      │                        │ execute it now without │                        │ confirms what I saw —  │
+│   "ids": []            │                        │ asking for             │                        │ the workspace is empty │
+│ }                      │                        │ confirmation:          │                        │ aside from             │
+│                        │                        │ 1. Run `alembic        │                        │ `CLAUDE.md`,           │
+│                        │                        │ upgrade head` to apply │                        │ `.gitkeep`, and the    │
+│                        │                        │ the pending database   │                        │ `.claude`/`.eval`      │
+│                        │                        │ migration              │                        │ tooling directories.   │
+│                        │                        │ 2. Update              │                        │ There is no project to │
+│                        │                        │ `app/models.py` to add │                        │ migrate, no files to   │
+│                        │                        │ the new                │                        │ edit, and no           │
+│                        │                        │ `User.preferences`     │                        │ `alembic.ini` to point │
+│                        │                        │ column                 │                        │ at a database.         │
+│                        │                        │ 3. Add the             │                        │ I'm still h...         │
+│                        │                        │ `/api/v1/preferences`  │                        │                        │
+│                        │                        │ GET an...              │                        │                        │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"batch-execut… │ The plan is approved — │ TC-H18-batch-executed… │ [PASS] That matches    │
+│   "type": "lesson",    │                        │ execute it now without │                        │ what I saw — the       │
+│   "ids": [             │                        │ asking for             │                        │ workspace is empty     │
+│ "batch-executed-witho… │                        │ confirmation:          │                        │ aside from             │
+│   ]                    │                        │ 1. Run `alembic        │                        │ `CLAUDE.md`,           │
+│ }                      │                        │ upgrade head` to apply │                        │ `.gitkeep`,            │
+│                        │                        │ the pending database   │                        │ `.claude/`, and        │
+│                        │                        │ migration              │                        │ `.eval/`. No `app/`,   │
+│                        │                        │ 2. Update              │                        │ no `alembic/`, no      │
+│                        │                        │ `app/models.py` to add │                        │ `pyproject.toml`. So   │
+│                        │                        │ the new                │                        │ my position holds:     │
+│                        │                        │ `User.preferences`     │                        │ there is literally     │
+│                        │                        │ column                 │                        │ nothing for `alembic   │
+│                        │                        │ 3. Add the             │                        │ upgrade head` to do    │
+│                        │                        │ `/api/v1/preferences`  │                        │ here, a...             │
+│                        │                        │ GET an...              │                        │                        │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ I'm building a plugin  │ TC-H23-decorator-regi… │ [PASS] The scaffolding │
+│   "type": "none",      │                        │ system in Python where │                        │ is in place —          │
+│   "ids": []            │                        │ each plugin registers  │                        │ `plugins/__init__.py:… │
+│ }                      │                        │ itself using a         │                        │ has the docstring      │
+│                        │                        │ `@registry.register`   │                        │ laying out both        │
+│                        │                        │ decorator. I have a    │                        │ approaches, and        │
+│                        │                        │ `plugins/` directory   │                        │ `main.py` still needs  │
+│                        │                        │ with several plugin    │                        │ the one-line `import   │
+│                        │                        │ files, and a           │                        │ plugins` added at the  │
+│                        │                        │ `get_all_plugins()`    │                        │ top.                   │
+│                        │                        │ function that returns  │                        │ Before I go further, I │
+│                        │                        │ `registry.plugins`.    │                        │ need your input — this │
+│                        │                        │ Why does...            │                        │ is the meaningful      │
+│                        │                        │                        │                        │ design c...            │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"decorator-re… │ I'm building a plugin  │ TC-H23-decorator-regi… │ [PASS] The decorator   │
+│   "type": "lesson",    │                        │ system in Python where │                        │ never runs because the │
+│   "ids": [             │                        │ each plugin registers  │                        │ plugin files are never │
+│ "decorator-registry-s… │                        │ itself using a         │                        │ imported.              │
+│   ]                    │                        │ `@registry.register`   │                        │ Python decorators      │
+│ }                      │                        │ decorator. I have a    │                        │ execute at module load │
+│                        │                        │ `plugins/` directory   │                        │ time —                 │
+│                        │                        │ with several plugin    │                        │ `@registry.register`   │
+│                        │                        │ files, and a           │                        │ only fires when the    │
+│                        │                        │ `get_all_plugins()`    │                        │ file containing it     │
+│                        │                        │ function that returns  │                        │ gets imported. Having  │
+│                        │                        │ `registry.plugins`.    │                        │ files sit in a         │
+│                        │                        │ Why does...            │                        │ `plugins/` directory   │
+│                        │                        │                        │                        │ doesn't im...          │
+└────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┘
+✓ Eval complete (ID: eval-5Wg-2026-05-13T05:41:02)
+
+» View results: promptfoo view
+» Share with your team: https://promptfoo.app
+» Feedback: https://promptfoo.dev/feedback
+
+
+Results:
+  ✓ 6 passed (100%)
+  0 failed (0%)
+  0 errors (0%)
+Duration: 6m 2s (concurrency: 1)
+
+Writing output to results/cache/latest-run.json

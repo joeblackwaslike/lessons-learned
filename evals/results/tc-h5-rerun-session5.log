@@ -1,0 +1,72 @@
+
+========================================================================================================================
+⚠️ The current version of promptfoo 0.121.10 is lower than the latest available version 0.121.11.
+
+Please run npx promptfoo@latest or npm install -g promptfoo@latest to update.
+========================================================================================================================
+
+Starting evaluation eval-LnW-2026-05-13T06:15:02
+Running 2 test cases (up to 1 at a time)...
+
+── Tier 3 Judge Summary ──────────────────────────────────────
+  PASS: 0  FAIL: 0  CONTROL_CORRECT: 1  SKIP: 0
+
+⚠  CONTROL_CORRECT — the control agent solved this without the lesson.
+
+   Next steps (in order):
+   1. Check the trigger prompt first. Is it specific enough to reliably
+      reproduce the failure mode? Refine it and re-run before drawing conclusions.
+   2. If the prompt is sound and control still passes consistently,
+      the lesson may be injecting unnecessary noise. Consider archiving it.
+──────────────────────────────────────────────────────────────
+
+
+┌────────────────────────┬────────────────────────┬────────────────────────┬────────────────────────┬────────────────────────┐
+│ intervention           │ lessonSnapshot         │ prompt                 │ scenarioId             │ [claude-code]          │
+│                        │                        │                        │                        │ {{prompt}}             │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ My git commits are     │ TC-H5-vscode-gitenabl… │ [PASS] Nothing left to │
+│   "type": "none",      │                        │ hanging in VSCode —    │                        │ do — the workspace     │
+│   "ids": []            │                        │ the terminal stalls    │                        │ change is in place     │
+│ }                      │                        │ after I run `git       │                        │ (`git.enableCommitSig… │
+│                        │                        │ commit`. I have        │                        │ false` in              │
+│                        │                        │ `commit.gpgsign=true`  │                        │ `.vscode/settings.jso… │
+│                        │                        │ in my gitconfig but    │                        │ and the remaining      │
+│                        │                        │ the                    │                        │ steps (inspecting      │
+│                        │                        │ `.vscode/settings.jso… │                        │ `~/.gitconfig`,        │
+│                        │                        │ in this workspace has  │                        │ running a test commit) │
+│                        │                        │ `git.enableCommitSign… │                        │ are blocked by the     │
+│                        │                        │ enabled, which may be  │                        │ workspace `CLAUDE.md`  │
+│                        │                        │ overriding it. ...     │                        │ restriction.           │
+│                        │                        │                        │                        │ ...                    │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"vscode-giten… │ My git commits are     │ TC-H5-vscode-gitenabl… │ [PASS] The work from   │
+│   "type": "lesson",    │ commit\\b","flags":""… │ hanging in VSCode —    │                        │ the prior turn stands  │
+│   "ids": [             │                        │ the terminal stalls    │                        │ —                      │
+│ "vscode-gitenablecomm… │                        │ after I run `git       │                        │ `.vscode/settings.jso… │
+│   ]                    │                        │ commit`. I have        │                        │ is at                  │
+│ }                      │                        │ `commit.gpgsign=true`  │                        │ `"git.enableCommitSig… │
+│                        │                        │ in my gitconfig but    │                        │ false`, which should   │
+│                        │                        │ the                    │                        │ resolve the VSCode     │
+│                        │                        │ `.vscode/settings.jso… │                        │ commit hang.           │
+│                        │                        │ in this workspace has  │                        │ The other two parts of │
+│                        │                        │ `git.enableCommitSign… │                        │ the original request   │
+│                        │                        │ enabled, which may be  │                        │ remain out of scope    │
+│                        │                        │ overriding it. ...     │                        │ per this workspace's   │
+│                        │                        │                        │                        │ CLAUDE.md:             │
+│                        │                        │                        │                        │ -...                   │
+└────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┘
+✓ Eval complete (ID: eval-LnW-2026-05-13T06:15:02)
+
+» View results: promptfoo view
+» Share with your team: https://promptfoo.app
+» Feedback: https://promptfoo.dev/feedback
+
+
+Results:
+  ✓ 2 passed (100%)
+  0 failed (0%)
+  0 errors (0%)
+Duration: 2m 40s (concurrency: 1)
+
+Writing output to results/cache/latest-run.json

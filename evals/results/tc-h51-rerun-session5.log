@@ -1,0 +1,69 @@
+
+========================================================================================================================
+⚠️ The current version of promptfoo 0.121.10 is lower than the latest available version 0.121.11.
+
+Please run npx promptfoo@latest or npm install -g promptfoo@latest to update.
+========================================================================================================================
+
+Starting evaluation eval-vY7-2026-05-13T05:37:57
+Running 2 test cases (up to 1 at a time)...
+
+── Tier 3 Judge Summary ──────────────────────────────────────
+  PASS: 0  FAIL: 0  CONTROL_CORRECT: 1  SKIP: 0
+
+⚠  CONTROL_CORRECT — the control agent solved this without the lesson.
+
+   Next steps (in order):
+   1. Check the trigger prompt first. Is it specific enough to reliably
+      reproduce the failure mode? Refine it and re-run before drawing conclusions.
+   2. If the prompt is sound and control still passes consistently,
+      the lesson may be injecting unnecessary noise. Consider archiving it.
+──────────────────────────────────────────────────────────────
+
+
+┌────────────────────────┬────────────────────────┬────────────────────────┬────────────────────────┬────────────────────────┐
+│ intervention           │ lessonSnapshot         │ prompt                 │ scenarioId             │ [claude-code]          │
+│                        │                        │                        │                        │ {{prompt}}             │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ I want my PreToolUse   │ TC-H51-suppressoutput… │ [PASS] Short answer:   │
+│   "type": "none",      │                        │ hook to silently       │                        │ `suppressOutput: true` │
+│   "ids": []            │                        │ inject context into    │                        │ won't do what you want │
+│ }                      │                        │ the model without      │                        │ for PreToolUse hooks   │
+│                        │                        │ cluttering the UI —    │                        │ injecting context.     │
+│                        │                        │ can you add            │                        │ Here's why:            │
+│                        │                        │ `suppressOutput: true` │                        │ - `suppressOutput`     │
+│                        │                        │ to the JSON output so  │                        │ only hides stdout from │
+│                        │                        │ the user doesn't see   │                        │ the **transcript UI**  │
+│                        │                        │ the hook firing?       │                        │ (the Ctrl-R view). It  │
+│                        │                        │                        │                        │ does not prevent the   │
+│                        │                        │                        │                        │ hook output from being │
+│                        │                        │                        │                        │ sen...                 │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"suppressoutp… │ I want my PreToolUse   │ TC-H51-suppressoutput… │ [PASS] Two things here │
+│   "type": "lesson",    │                        │ hook to silently       │                        │ that I want to push    │
+│   "ids": [             │                        │ inject context into    │                        │ back on before adding  │
+│ "suppressoutput-true-… │                        │ the model without      │                        │ anything:              │
+│   ]                    │                        │ cluttering the UI —    │                        │ **1. `suppressOutput:  │
+│ }                      │                        │ can you add            │                        │ true` doesn't do what  │
+│                        │                        │ `suppressOutput: true` │                        │ you think it does.**   │
+│                        │                        │ to the JSON output so  │                        │ It only hides stdout   │
+│                        │                        │ the user doesn't see   │                        │ in transcript mode     │
+│                        │                        │ the hook firing?       │                        │ (Ctrl-R). It doesn't   │
+│                        │                        │                        │                        │ hide the hook-firing   │
+│                        │                        │                        │                        │ indicator in the main  │
+│                        │                        │                        │                        │ UI, and ...            │
+└────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┘
+✓ Eval complete (ID: eval-vY7-2026-05-13T05:37:57)
+
+» View results: promptfoo view
+» Share with your team: https://promptfoo.app
+» Feedback: https://promptfoo.dev/feedback
+
+
+Results:
+  ✓ 2 passed (100%)
+  0 failed (0%)
+  0 errors (0%)
+Duration: 1m 1s (concurrency: 1)
+
+Writing output to results/cache/latest-run.json
