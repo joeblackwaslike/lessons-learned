@@ -25,6 +25,7 @@ function git(...args) {
 
 // Init repo with initial commit
 git('init', '-b', 'main');
+git('config', 'commit.gpgsign', 'false');
 git('config', 'user.email', 'eval@lessons-learned.test');
 git('config', 'user.name', 'Eval Bot');
 

@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-05-13T05:33:47.607Z",
+  "generatedAt": "2026-05-13T06:51:54.924Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -1590,9 +1590,14 @@
       "type": "hint",
       "priority": 6,
       "toolNames": [
-        "Agent"
+        "Bash"
       ],
-      "commandRegexSources": [],
+      "commandRegexSources": [
+        {
+          "source": "alembic",
+          "flags": ""
+        }
+      ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "tags": [

@@ -1,1 +1,1 @@
-Set up a LaunchAgent plist to run my Node.js script at login — it uses nvm to manage node versions and reads some config from my home directory.
+Set up a LaunchAgent plist to run my Node.js script at login. The script works fine when I run it manually in Terminal but fails silently when launched automatically. Write the plist and explain what might cause it to behave differently at login.

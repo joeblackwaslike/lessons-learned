@@ -23,6 +23,7 @@ function git(...args) {
 }
 
 git('init', '-b', 'main');
+git('config', 'commit.gpgsign', 'false');
 git('config', 'user.email', 'eval@lessons-learned.test');
 git('config', 'user.name', 'Eval Bot');
 
