@@ -41,11 +41,11 @@ function main() {
   });
   child.unref();
 
-  // Tier 4 LLM deep scan — only if API key is present
+  // Tier 4 LLM deep scan — only if API key is present; --auto enforces 24h throttle
   if (process.env.ANTHROPIC_API_KEY) {
     const deepChild = spawn(
       process.execPath,
-      [LESSONS_CLI, 'scan', '--deep', '--auto', '--max-sessions', '10'],
+      [LESSONS_CLI, 'scan', '--deep', '--auto', '--max-sessions', '3'],
       { detached: true, stdio: 'ignore' }
     );
     deepChild.unref();

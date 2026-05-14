@@ -117,15 +117,12 @@ export async function deepScanFile(db, filePath, opts = {}, projectId = null) {
   const client = new Anthropic({ apiKey });
   let rawOutput = '';
 
-  const message = await client.messages.create(
-    {
-      model: 'claude-sonnet-4-6',
-      max_tokens: 4096,
-      system: SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: `Session transcript:\n\n${transcript}` }],
-    },
-    { headers: { 'anthropic-beta': 'context-1m-2025-08-07' } }
-  );
+  const message = await client.messages.create({
+    model: process.env.DEEP_SCAN_MODEL ?? 'claude-haiku-4-5-20251001',
+    max_tokens: 2048,
+    system: SYSTEM_PROMPT,
+    messages: [{ role: 'user', content: `Session transcript:\n\n${transcript}` }],
+  });
 
   rawOutput = message.content
     .filter(b => b.type === 'text')
@@ -253,6 +250,10 @@ async function parseJSONL(filePath) {
 
 // ─── Transcript builder ───────────────────────────────────────────────
 
+const TRANSCRIPT_MAX_CHARS = 60_000;
+const TOOL_RESULT_MAX_CHARS = 300;
+const ASSISTANT_TEXT_MAX_CHARS = 800;
+
 function buildTranscript(turns) {
   const parts = [];
   for (const turn of turns) {
@@ -267,12 +268,15 @@ function buildTranscript(turns) {
           JSON.stringify(t.input).slice(0, 150);
         parts.push(`[tool:${t.name}] ${input}`);
       }
-      if (turn.text) parts.push(`[assistant] ${turn.text}`);
+      if (turn.text) parts.push(`[assistant] ${turn.text.slice(0, ASSISTANT_TEXT_MAX_CHARS)}`);
     } else if (turn.role === 'tool_result') {
-      parts.push(`[tool_result] ${turn.text}`);
+      parts.push(`[tool_result] ${(turn.text ?? '').slice(0, TOOL_RESULT_MAX_CHARS)}`);
     }
   }
-  return parts.join('\n\n');
+  const full = parts.join('\n\n');
+  return full.length > TRANSCRIPT_MAX_CHARS
+    ? full.slice(0, TRANSCRIPT_MAX_CHARS) + '\n…[truncated]'
+    : full;
 }
 
 // ─── DB record builder ────────────────────────────────────────────────

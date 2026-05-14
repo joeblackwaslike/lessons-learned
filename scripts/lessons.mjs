@@ -2317,7 +2317,7 @@ async function runDeepScan(args) {
 
   const maxIdx = args.indexOf('--max-sessions');
   const maxSessions =
-    maxIdx !== -1 && args[maxIdx + 1] ? parseInt(args[maxIdx + 1], 10) : isAuto ? 10 : Infinity;
+    maxIdx !== -1 && args[maxIdx + 1] ? parseInt(args[maxIdx + 1], 10) : isAuto ? 5 : Infinity;
 
   if (!process.env.ANTHROPIC_API_KEY) {
     if (!isAuto) console.error('ANTHROPIC_API_KEY is not set — deep scan requires it.');
@@ -2328,6 +2328,15 @@ async function runDeepScan(args) {
   const files = findJsonlFiles(scanPath);
   const state = loadScanState();
   const now = Date.now();
+
+  // In auto (background) mode, enforce the global scan interval so a deep scan
+  // doesn't fire on every session start. deepFull bypasses this throttle.
+  if (isAuto && !deepFull) {
+    const config = loadConfig();
+    const intervalMs = Number(config.autoScanIntervalHours ?? 24) * 60 * 60 * 1000;
+    const lastDeepAt = state.lastDeepScanAt ? new Date(state.lastDeepScanAt).getTime() : 0;
+    if (now - lastDeepAt < intervalMs) return;
+  }
 
   // Sort by most recently modified first so fresh sessions are processed first
   const sortedFiles = files
@@ -2382,6 +2391,7 @@ async function runDeepScan(args) {
   closeDb(db);
 
   if (!dryRun) {
+    state.lastDeepScanAt = new Date().toISOString();
     saveScanState(state);
   }
 

@@ -28,7 +28,7 @@ const STATE_PATH = process.env.LESSONS_DATA_DIR
 /**
  * Load persisted scan state from disk.
  *
- * @returns {{ files: Record<string, { offset: number, lastScanAt: string, fileSize: number }>, lastFullScanAt: string|null }}
+ * @returns {{ files: Record<string, { offset: number, lastScanAt: string, fileSize: number }>, lastFullScanAt: string|null, lastDeepScanAt?: string }}
  */
 export function loadScanState() {
   try {
