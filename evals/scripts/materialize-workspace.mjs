@@ -92,6 +92,7 @@ writeFileSync(
 // even when the eval agent runs with a fake HOME (no global ~/.claude/settings.json).
 
 const shimPath = resolve(__dirname, 'eval-hook-shim.mjs');
+const postShimPath = resolve(__dirname, 'eval-post-hook-shim.mjs');
 const lessonInjectPath = resolve(EVALS_ROOT, '..', 'hooks', 'pretooluse-lesson-inject.mjs');
 const claudeDir = join(workspaceDir, '.claude');
 const settingsPath = join(claudeDir, 'settings.json');
@@ -117,6 +118,11 @@ if (existsSync(lessonInjectPath)) {
     hooks: [{ type: 'command', command: `node "${lessonInjectPath}"`, timeout: 10 }],
   });
 }
+workspaceSettings.hooks.PostToolUse ??= [];
+workspaceSettings.hooks.PostToolUse.push({
+  matcher: 'Bash',
+  hooks: [{ type: 'command', command: `node "${postShimPath}"`, timeout: 5 }],
+});
 writeFileSync(settingsPath, JSON.stringify(workspaceSettings, null, 2));
 
 // --- Workspace scope directive --------------------------------------------------

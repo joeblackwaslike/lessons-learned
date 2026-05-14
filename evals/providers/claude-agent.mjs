@@ -141,14 +141,18 @@ async function runArm({
 
     const hiddenCheck = runVerify(scenarioDir, workspaceDir);
     const artifacts = collectArtifacts(workspaceDir, scenarioDir);
+    const toolCallLog = readToolCallLog(workspaceDir);
+    const enrichedOutput = toolCallLog ? `${output}\n\n${toolCallLog}` : output;
 
     if (isControl && claudeResult.status === 0) {
-      writeControlTranscript(controlTranscriptFile, output);
+      writeControlTranscript(controlTranscriptFile, enrichedOutput);
     }
 
     // Judge uses claude --print (OAuth) — no ANTHROPIC_API_KEY required
     const judgeResult =
-      !isControl && lesson ? await runJudge({ lesson, controlTranscriptFile, output }) : null;
+      !isControl && lesson
+        ? await runJudge({ lesson, controlTranscriptFile, output: enrichedOutput })
+        : null;
 
     return {
       output,
@@ -227,6 +231,29 @@ function collectArtifacts(workspaceDir, scenarioDir) {
     }
   }
   return {};
+}
+
+function readToolCallLog(workspaceDir) {
+  const logPath = join(workspaceDir, '.eval', 'tool-calls.jsonl');
+  if (!existsSync(logPath)) return null;
+  try {
+    const lines = readFileSync(logPath, 'utf8')
+      .split('\n')
+      .filter(Boolean)
+      .map(line => {
+        const rec = JSON.parse(line);
+        const input = rec.tool_input ?? {};
+        const summary =
+          rec.tool_name === 'Bash'
+            ? (input.command ?? '').slice(0, 200)
+            : JSON.stringify(input).slice(0, 200);
+        return `  [${rec.tool_name}] ${summary}`;
+      });
+    if (lines.length === 0) return null;
+    return `## TOOL CALL LOG\n${lines.join('\n')}`;
+  } catch {
+    return null;
+  }
 }
 
 function writeControlTranscript(controlTranscriptFile, output) {
