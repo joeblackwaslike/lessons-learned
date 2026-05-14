@@ -23,7 +23,31 @@ const SYSTEM =
 // multiple scenarios complete back-to-back. 3 s is enough for meridian/Claude Max.
 const JUDGE_DELAY_MS = 3_000;
 
+const API_ERROR_PATTERNS = [
+  'out of extra usage',
+  'API Error',
+  'Claude Code returned an error result',
+  /resets \d/,
+];
+
+function hasApiError(transcript) {
+  if (typeof transcript !== 'string') return false;
+  return API_ERROR_PATTERNS.some(p =>
+    typeof p === 'string' ? transcript.includes(p) : p.test(transcript)
+  );
+}
+
 export async function judge({ lesson, controlTranscript, treatmentTranscript, form }) {
+  if (hasApiError(treatmentTranscript) || hasApiError(controlTranscript)) {
+    return {
+      outcome: 'SKIP',
+      reasoning:
+        'Agent run produced API error output — quota exhausted or service unavailable. Re-run when quota resets.',
+      dimension_scores: { control: null, treatment: null },
+      delta: null,
+    };
+  }
+
   const client = new Anthropic();
 
   const userContent =
@@ -32,7 +56,7 @@ export async function judge({ lesson, controlTranscript, treatmentTranscript, fo
       : buildFormB(lesson, treatmentTranscript);
 
   const message = await client.messages.create({
-    model: 'claude-sonnet-4-6',
+    model: process.env.EVAL_JUDGE_MODEL ?? 'claude-sonnet-4-6',
     max_tokens: 1024,
     system: SYSTEM,
     messages: [{ role: 'user', content: userContent }],

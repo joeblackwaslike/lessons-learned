@@ -64,7 +64,7 @@ export default class ClaudeAgentProvider {
     }
     const scenarioId = vars.scenarioId;
     const intervention = vars.intervention ?? { type: 'none', ids: [] };
-    const model = options?.config?.model ?? this.model;
+    const model = process.env.EVAL_AGENT_MODEL ?? options?.config?.model ?? this.model;
     const timeout = options?.config?.timeout ?? this.timeout;
     const isControl = (intervention.type ?? 'none') === 'none';
 
