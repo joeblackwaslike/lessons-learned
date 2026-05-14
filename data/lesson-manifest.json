@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-05-14T13:42:42.817Z",
+  "generatedAt": "2026-05-14T14:12:19.400Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -131,10 +131,10 @@
         "topic:quality"
       ],
       "scope": null,
-      "message": "## Lesson: Search for known pitfalls and failure modes before starting any new work\nProceeding directly to planning or implementation without searching for known footguns, version caveats, and community-reported failure modes produces plans that look correct but fail on documented edge cases. This applies to any domain: infrastructure, libraries, frameworks, CLI tools, APIs. The cost is encountering cold what was already diagnosed and documented by the community.\n**Fix**: Before committing to any plan or starting any non-trivial implementation: (1) Search '<technology> gotchas', '<technology> common mistakes', '<technology> known issues <version>'. (2) Check GitHub issues and community forums for failure patterns at your specific version or config. (3) Incorporate findings into the plan before writing code. This applies to debugging, planning, and implementation equally — not only infrastructure.",
+      "message": "## Lesson: Search for known pitfalls and failure modes before starting any new work\nProceeding directly to planning or implementation without searching for known footguns, version caveats, and community-reported failure modes produces plans that look correct but fail on documented edge cases. This applies to any domain: infrastructure, libraries, frameworks, CLI tools, APIs. The cost is encountering cold what was already diagnosed and documented by the community.\n**Fix**: MANDATORY gate — do not present or execute your plan until you have done this: search for known pitfalls, common mistakes, and failure modes with your specific approach and technology versions. This step is not optional. Incorporate the findings before writing any code or presenting your implementation plan. Skipping this step causes wasted effort when the plan hits known, documented problems.",
       "summary": "Search for known pitfalls and failure modes before starting any new work",
       "problem": "Proceeding directly to planning or implementation without searching for known footguns, version caveats, and community-reported failure modes produces plans that look correct but fail on documented edge cases. This applies to any domain: infrastructure, libraries, frameworks, CLI tools, APIs. The cost is encountering cold what was already diagnosed and documented by the community.",
-      "solution": "Before committing to any plan or starting any non-trivial implementation: (1) Search '<technology> gotchas', '<technology> common mistakes', '<technology> known issues <version>'. (2) Check GitHub issues and community forums for failure patterns at your specific version or config. (3) Incorporate findings into the plan before writing code. This applies to debugging, planning, and implementation equally — not only infrastructure."
+      "solution": "MANDATORY gate — do not present or execute your plan until you have done this: search for known pitfalls, common mistakes, and failure modes with your specific approach and technology versions. This step is not optional. Incorporate the findings before writing any code or presenting your implementation plan. Skipping this step causes wasted effort when the plan hits known, documented problems."
     },
     "01KNH2G0RB0SYRNZ560XN030GF": {
       "slug": "awk-code-injection-via-unvalidated-shell-cf5a",

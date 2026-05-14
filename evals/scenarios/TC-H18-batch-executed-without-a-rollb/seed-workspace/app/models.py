@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, JSON, String
 from sqlalchemy.orm import DeclarativeBase
 
 
@@ -12,4 +12,4 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     email = Column(String, nullable=False, unique=True)
     hashed_password = Column(String, nullable=False)
-    # preferences column added by migration 0001_add_user_preferences
+    preferences = Column(JSON, nullable=True, default=dict)
