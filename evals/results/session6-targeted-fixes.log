@@ -1,0 +1,306 @@
+
+========================================================================================================================
+⚠️ The current version of promptfoo 0.121.10 is lower than the latest available version 0.121.11.
+
+Please run npx promptfoo@latest or npm install -g promptfoo@latest to update.
+========================================================================================================================
+
+Starting evaluation eval-wT7-2026-05-13T07:02:16
+Running 18 test cases (up to 1 at a time)...
+
+── Tier 3 Judge Summary ──────────────────────────────────────
+  PASS: 2  FAIL: 3  CONTROL_CORRECT: 1  SKIP: 3
+
+⚠  CONTROL_CORRECT — the control agent solved this without the lesson.
+
+   Next steps (in order):
+   1. Check the trigger prompt first. Is it specific enough to reliably
+      reproduce the failure mode? Refine it and re-run before drawing conclusions.
+   2. If the prompt is sound and control still passes consistently,
+      the lesson may be injecting unnecessary noise. Consider archiving it.
+
+✗  FAIL — lesson did not change agent behavior:
+   • Neither the control nor treatment transcript actually applied the lesson's solution. Both transcripts are in a waiting state, asking the user to choose between Option A and Option 
+   • The treatment agent explicitly described the lesson's failure mode (export prefix causing silent variable misbehavior) in a detailed table, and offered three options to address it 
+   • The treatment agent explicitly retained `suppressOutput: true` in its 'corrected' JSON schema for output.mjs (`hookSpecificOutput.additionalContext` + `suppressOutput: true` + `pro
+
+   Consider editing the lesson solution to be more prescriptive.
+──────────────────────────────────────────────────────────────
+
+
+┌────────────────────────┬────────────────────────┬────────────────────────┬────────────────────────┬────────────────────────┐
+│ intervention           │ lessonSnapshot         │ prompt                 │ scenarioId             │ [claude-code]          │
+│                        │                        │                        │                        │ {{prompt}}             │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ My git commits are     │ TC-H5-vscode-gitenabl… │ [PASS] Fix is in       │
+│   "type": "none",      │                        │ hanging in VSCode —    │                        │ place.                 │
+│   "ids": []            │                        │ the terminal stalls    │                        │ `git.enableCommitSign… │
+│ }                      │                        │ after I run `git       │                        │ is now `false` in the  │
+│                        │                        │ commit`. Works fine in │                        │ workspace's            │
+│                        │                        │ a regular terminal.    │                        │ `.vscode/settings.jso… │
+│                        │                        │ Can you figure out     │                        │ Your VSCode Source     │
+│                        │                        │ what's different about │                        │ Control commits will   │
+│                        │                        │ the VSCode environment │                        │ stop hanging because   │
+│                        │                        │ and fix it?            │                        │ git no longer invokes  │
+│                        │                        │                        │                        │ the signing toolchain  │
+│                        │                        │                        │                        │ that was blocking on   │
+│                        │                        │                        │                        │ pinentry without a ... │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"vscode-giten… │ My git commits are     │ TC-H5-vscode-gitenabl… │ [PASS] That matches    │
+│   "type": "lesson",    │ commit\\b","flags":""… │ hanging in VSCode —    │                        │ what I had. Nothing    │
+│   "ids": [             │                        │ the terminal stalls    │                        │ new in there — the     │
+│ "vscode-gitenablecomm… │                        │ after I run `git       │                        │ `.eval/` dir is        │
+│   ]                    │                        │ commit`. Works fine in │                        │ harness scaffolding,   │
+│ }                      │                        │ a regular terminal.    │                        │ not part of your       │
+│                        │                        │ Can you figure out     │                        │ project.               │
+│                        │                        │ what's different about │                        │ Still waiting on your  │
+│                        │                        │ the VSCode environment │                        │ call: flip             │
+│                        │                        │ and fix it?            │                        │ `git.enableCommitSign… │
+│                        │                        │                        │                        │ to `false` in this     │
+│                        │                        │                        │                        │ workspace, or leave it │
+│                        │                        │                        │                        │ and you'll try the     │
+│                        │                        │                        │                        │ GPG_TTY / p...         │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ The plan is approved — │ TC-H18-batch-executed… │ [PASS] Same situation  │
+│   "type": "none",      │                        │ add user preferences   │                        │ as before — that's a   │
+│   "ids": []            │                        │ support to this        │                        │ directory listing, not │
+│ }                      │                        │ FastAPI app. Execute   │                        │ a plan. I will not     │
+│                        │                        │ all steps in sequence. │                        │ execute fabricated     │
+│                        │                        │ Do not commit between  │                        │ steps.                 │
+│                        │                        │ steps.                 │                        │ I've stated my         │
+│                        │                        │                        │                        │ position three times   │
+│                        │                        │                        │                        │ now. Pasting terminal  │
+│                        │                        │                        │                        │ output back at me      │
+│                        │                        │                        │                        │ isn't going to change  │
+│                        │                        │                        │                        │ it. The only thing     │
+│                        │                        │                        │                        │ that will is:          │
+│                        │                        │                        │                        │ - The actu...          │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"batch-execut… │ The plan is approved — │ TC-H18-batch-executed… │ [PASS] Still waiting   │
+│   "type": "lesson",    │                        │ add user preferences   │                        │ on a plan or a choice  │
+│   "ids": [             │                        │ support to this        │                        │ between (a), (b), or   │
+│ "batch-executed-witho… │                        │ FastAPI app. Execute   │                        │ (c). Nothing to do     │
+│   ]                    │                        │ all steps in sequence. │                        │ until then.            │
+│ }                      │                        │ Do not commit between  │                        │                        │
+│                        │                        │ steps.                 │                        │                        │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ I'm building a plugin  │ TC-H23-decorator-regi… │ [PASS] That's the same │
+│   "type": "none",      │                        │ system — each plugin   │                        │ file contents I        │
+│   "ids": []            │                        │ file uses a decorator  │                        │ already read — no new  │
+│ }                      │                        │ to register itself.    │                        │ info there. I'm still  │
+│                        │                        │ When I call            │                        │ waiting on your call:  │
+│                        │                        │ `get_all_plugins()` it │                        │ **Option A** (explicit │
+│                        │                        │ always returns an      │                        │ `from . import         │
+│                        │                        │ empty list. What's     │                        │ plugin_a, plugin_b` in │
+│                        │                        │ wrong?                 │                        │ `plugins/__init__.py`  │
+│                        │                        │                        │                        │ + `import plugins` in  │
+│                        │                        │                        │                        │ `main.py`), or         │
+│                        │                        │                        │                        │ **Option B**           │
+│                        │                        │                        │                        │ (auto-discover ...     │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"decorator-re… │ I'm building a plugin  │ TC-H23-decorator-regi… │ [PASS] Picking up      │
+│   "type": "lesson",    │                        │ system — each plugin   │                        │ where we left off —    │
+│   "ids": [             │                        │ file uses a decorator  │                        │ I've explained the     │
+│ "decorator-registry-s… │                        │ to register itself.    │                        │ root cause and         │
+│   ]                    │                        │ When I call            │                        │ presented the design   │
+│ }                      │                        │ `get_all_plugins()` it │                        │ choice. Waiting on     │
+│                        │                        │ always returns an      │                        │ your call between      │
+│                        │                        │ empty list. What's     │                        │ Option A (explicit     │
+│                        │                        │ wrong?                 │                        │ imports) and Option B  │
+│                        │                        │                        │                        │ (`pkgutil`             │
+│                        │                        │                        │                        │ auto-discovery) before │
+│                        │                        │                        │                        │ I touch                │
+│                        │                        │                        │                        │ `plugins/__init__.py`. │
+│                        │                        │                        │                        │ Quick recap so yo...   │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ Set up a LaunchAgent   │ TC-H36-launchd-agents… │ [PASS] The plist is in │
+│   "type": "none",      │                        │ plist to run my        │                        │ place and the          │
+│   "ids": []            │                        │ Node.js script at      │                        │ explanation above      │
+│ }                      │                        │ login. The script      │                        │ covers the failure     │
+│                        │                        │ works fine when I run  │                        │ modes. Nothing further │
+│                        │                        │ it manually in         │                        │ to add unless you want │
+│                        │                        │ Terminal but fails     │                        │ me to:                 │
+│                        │                        │ silently when launched │                        │ - Tailor the plist to  │
+│                        │                        │ automatically. Write   │                        │ a specific Node        │
+│                        │                        │ the plist and explain  │                        │ version manager        │
+│                        │                        │ what might cause it to │                        │ (nvm/fnm/volta) — give │
+│                        │                        │ behave differently at  │                        │ me which one and I'll  │
+│                        │                        │ login.                 │                        │ adjust                 │
+│                        │                        │                        │                        │ `ProgramArguments`     │
+│                        │                        │                        │                        │ a...                   │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"launchd-agen… │ Set up a LaunchAgent   │ TC-H36-launchd-agents… │ [PASS] Everything is   │
+│   "type": "lesson",    │                        │ plist to run my        │                        │ staged. The next step  │
+│   "ids": [             │                        │ Node.js script at      │                        │ requires your input —  │
+│ "launchd-agents-do-no… │                        │ login. The script      │                        │ there isn't a useful   │
+│   ]                    │                        │ works fine when I run  │                        │ artifact I can produce │
+│ }                      │                        │ it manually in         │                        │ without it.            │
+│                        │                        │ Terminal but fails     │                        │ ## Current state       │
+│                        │                        │ silently when launched │                        │ -                      │
+│                        │                        │ automatically. Write   │                        │ `com.joeblack.myscrip… │
+│                        │                        │ the plist and explain  │                        │ — Option A, ready      │
+│                        │                        │ what might cause it to │                        │ except for 3           │
+│                        │                        │ behave differently at  │                        │ placeholders           │
+│                        │                        │ login.                 │                        │ -                      │
+│                        │                        │                        │                        │ `com.joeblack.myscrip… │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ I need to deploy my    │ TC-H43-systemd-enviro… │ [PASS] The unit file   │
+│   "type": "none",      │                        │ FastAPI app as a       │                        │ is in place at         │
+│   "ids": []            │                        │ systemd service on my  │                        │ `fastapi-app.service`  │
+│ }                      │                        │ Raspberry Pi. I have a │                        │ in your workspace, and │
+│                        │                        │ `.env` file with my    │                        │ I've already flagged   │
+│                        │                        │ environment variables. │                        │ the key silent-failure │
+│                        │                        │ Can you write a        │                        │ trap (systemd's        │
+│                        │                        │ systemd service unit   │                        │ stricter               │
+│                        │                        │ file that loads that   │                        │ `EnvironmentFile=`     │
+│                        │                        │ env file so my app     │                        │ parser vs. shell       │
+│                        │                        │ picks up all the       │                        │ `.env`).               │
+│                        │                        │ variables?             │                        │ To pick up where we    │
+│                        │                        │                        │                        │ left off, the open     │
+│                        │                        │                        │                        │ question is which d... │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"systemd-envi… │ I need to deploy my    │ TC-H43-systemd-enviro… │ [PASS] Here's the unit │
+│   "type": "lesson",    │                        │ FastAPI app as a       │                        │ file — but **stop      │
+│   "ids": [             │                        │ systemd service on my  │                        │ before you use it      │
+│ "systemd-environmentf… │                        │ Raspberry Pi. I have a │                        │ as-is**: systemd's     │
+│   ]                    │                        │ `.env` file with my    │                        │ `EnvironmentFile` is   │
+│ }                      │                        │ environment variables. │                        │ *not* a dotenv parser. │
+│                        │                        │ Can you write a        │                        │ If your `.env` was     │
+│                        │                        │ systemd service unit   │                        │ written for            │
+│                        │                        │ file that loads that   │                        │ python-dotenv,         │
+│                        │                        │ env file so my app     │                        │ docker-compose, or     │
+│                        │                        │ picks up all the       │                        │ `source`'d in bash,    │
+│                        │                        │ variables?             │                        │ several common         │
+│                        │                        │                        │                        │ patterns will silently │
+│                        │                        │                        │                        │ misbehave...           │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ After applying my      │ TC-H46-supabase-auth-… │ [PASS] That's the same │
+│   "type": "none",      │                        │ latest database        │                        │ directory listing I    │
+│   "ids": []            │                        │ migrations, my login   │                        │ already pulled — just  │
+│ }                      │                        │ endpoint is returning  │                        │ the empty workspace    │
+│                        │                        │ a 500 error.           │                        │ (`.gitkeep`,           │
+│                        │                        │ Authentication was     │                        │ `CLAUDE.md`, and the   │
+│                        │                        │ working before the     │                        │ harness folders). No   │
+│                        │                        │ migration. Can you     │                        │ project code,          │
+│                        │                        │ help me debug why it   │                        │ migrations, or logs in │
+│                        │                        │ broke?                 │                        │ there.                 │
+│                        │                        │                        │                        │ So I'm still blocked   │
+│                        │                        │                        │                        │ on the same four       │
+│                        │                        │                        │                        │ pieces of info. Looks  │
+│                        │                        │                        │                        │ like the ...           │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"supabase-aut… │ After applying my      │ TC-H46-supabase-auth-… │ [PASS] Got it — found  │
+│   "type": "lesson",    │                        │ latest database        │                        │ the root cause. The    │
+│   "ids": [             │                        │ migrations, my login   │                        │ 500 isn't from         │
+│ "supabase-auth-return… │                        │ endpoint is returning  │                        │ anything               │
+│   ]                    │                        │ a 500 error.           │                        │ auth-specific; it's a  │
+│ }                      │                        │ Authentication was     │                        │ database constraint    │
+│                        │                        │ working before the     │                        │ violation in a trigger │
+│                        │                        │ migration. Can you     │                        │ that fires when        │
+│                        │                        │ help me debug why it   │                        │ Supabase touches       │
+│                        │                        │ broke?                 │                        │ `auth.users`.          │
+│                        │                        │                        │                        │ ## Root cause          │
+│                        │                        │                        │                        │ Your migration added a │
+│                        │                        │                        │                        │ **NOT NULL** column    │
+│                        │                        │                        │                        │ with **no default...   │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ My PreToolUse hook is  │ TC-H51-suppressoutput… │ [PASS] The fix is in   │
+│   "type": "none",      │                        │ supposed to inject     │                        │ place. The helper at   │
+│   "ids": []            │                        │ lesson context before  │                        │ `hooks/lib/output.mjs… │
+│ }                      │                        │ tool calls, but the    │                        │ now emits              │
+│                        │                        │ context isn't          │                        │ `hookSpecificOutput.a… │
+│                        │                        │ appearing in Claude's  │                        │ instead of the         │
+│                        │                        │ responses. The hook    │                        │ unrecognized `{stderr, │
+│                        │                        │ runs without errors.   │                        │ exitCode}` shape, so   │
+│                        │                        │ Can you look at the    │                        │ injected lesson        │
+│                        │                        │ hook output format and │                        │ context will actually  │
+│                        │                        │ fix why the injected   │                        │ surface to Claude on   │
+│                        │                        │ content isn't showing  │                        │ the next PreTool...    │
+│                        │                        │ up?                    │                        │                        │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"suppressoutp… │ My PreToolUse hook is  │ TC-H51-suppressoutput… │ [PASS] State is in     │
+│   "type": "lesson",    │                        │ supposed to inject     │                        │ sync — `output.mjs`    │
+│   "ids": [             │                        │ lesson context before  │                        │ has the corrected JSON │
+│ "suppressoutput-true-… │                        │ tool calls, but the    │                        │ schema                 │
+│   ]                    │                        │ context isn't          │                        │ (`hookSpecificOutput.… │
+│ }                      │                        │ appearing in Claude's  │                        │ + `suppressOutput:     │
+│                        │                        │ responses. The hook    │                        │ true` +                │
+│                        │                        │ runs without errors.   │                        │ `process.exit`), and   │
+│                        │                        │ Can you look at the    │                        │ nothing else in the    │
+│                        │                        │ hook output format and │                        │ workspace needs to     │
+│                        │                        │ fix why the injected   │                        │ change.                │
+│                        │                        │ content isn't showing  │                        │ Open question still    │
+│                        │                        │ up?                    │                        │ pending: do you want   │
+│                        │                        │                        │                        │ the back...            │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ I've been working on a │ TC-G7-git-stash-untra… │ [PASS] Resumed. Your   │
+│   "type": "none",      │                        │ new feature branch and │                        │ state is unchanged     │
+│   "ids": []            │                        │ just got pulled into   │                        │ from where we left     │
+│ }                      │                        │ an urgent hotfix. Can  │                        │ off:                   │
+│                        │                        │ you stash my current   │                        │ - **Your feature       │
+│                        │                        │ changes so I can       │                        │ work** lives in        │
+│                        │                        │ switch to the hotfix   │                        │ `stash@{4}`            │
+│                        │                        │ branch, then come back │                        │ (`src/feature.js`,     │
+│                        │                        │ to this later? I have  │                        │ `src/dashboard/index.… │
+│                        │                        │ some new files I       │                        │ `src/dashboard/styles… │
+│                        │                        │ started creating for   │                        │ `CLAUDE.md`) —         │
+│                        │                        │ the feature that...    │                        │ verified intact.       │
+│                        │                        │                        │                        │ - **Working tree** has │
+│                        │                        │                        │                        │ only `.eval/` ha...    │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"git-stash-un… │ I've been working on a │ TC-G7-git-stash-untra… │ [PASS] The pasted      │
+│   "type": "lesson",    │                        │ new feature branch and │                        │ output confirms the    │
+│   "ids": [             │                        │ just got pulled into   │                        │ state I described —    │
+│ "git-stash-untracked-… │                        │ an urgent hotfix. Can  │                        │ your feature work is   │
+│   ]                    │                        │ you stash my current   │                        │ preserved in           │
+│ }                      │                        │ changes so I can       │                        │ `stash@{2}`, and the   │
+│                        │                        │ switch to the hotfix   │                        │ working tree is clean  │
+│                        │                        │ branch, then come back │                        │ enough to switch       │
+│                        │                        │ to this later? I have  │                        │ branches (only         │
+│                        │                        │ some new files I       │                        │ `.eval/` harness       │
+│                        │                        │ started creating for   │                        │ telemetry remains      │
+│                        │                        │ the feature that...    │                        │ untracked, which won't │
+│                        │                        │                        │                        │ follow you).           │
+│                        │                        │                        │                        │ Still waiting o...     │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ I need to make a git   │ TC-H58-git-commit-wit… │ [PASS] Nothing left to │
+│   "type": "none",      │                        │ commit with a detailed │                        │ do — the task is       │
+│   "ids": []            │                        │ message that includes  │                        │ complete. Re-stating   │
+│ }                      │                        │ backticks showing      │                        │ the final state from   │
+│                        │                        │ command examples, like │                        │ the output you pasted: │
+│                        │                        │ `git status` and `git  │                        │ - **Commit:**          │
+│                        │                        │ log --oneline`, along  │                        │ `9459759` on `main` —  │
+│                        │                        │ with some dollar signs │                        │ "Update CHANGELOG for  │
+│                        │                        │ for variable           │                        │ v1.2.0 release"        │
+│                        │                        │ references like $HOME  │                        │ - **Literal characters │
+│                        │                        │ and $PATH. Can you run │                        │ preserved:** `` `git   │
+│                        │                        │ the commit comm...     │                        │ status` `` and `` `git │
+│                        │                        │                        │                        │ log --o...             │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"git-commit-w… │ I need to make a git   │ TC-H58-git-commit-wit… │ [PASS] The task is     │
+│   "type": "lesson",    │                        │ commit with a detailed │                        │ complete — commit      │
+│   "ids": [             │                        │ message that includes  │                        │ `4af6c44` landed on    │
+│ "git-commit-with-here… │                        │ backticks showing      │                        │ `main` with all the    │
+│   ]                    │                        │ command examples, like │                        │ backticks and `$`      │
+│ }                      │                        │ `git status` and `git  │                        │ variables preserved as │
+│                        │                        │ log --oneline`, along  │                        │ literal text. No       │
+│                        │                        │ with some dollar signs │                        │ further action needed. │
+│                        │                        │ for variable           │                        │                        │
+│                        │                        │ references like $HOME  │                        │                        │
+│                        │                        │ and $PATH. Can you run │                        │                        │
+│                        │                        │ the commit comm...     │                        │                        │
+└────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┘
+✓ Eval complete (ID: eval-wT7-2026-05-13T07:02:16)
+
+» View results: promptfoo view
+» Share with your team: https://promptfoo.app
+» Feedback: https://promptfoo.dev/feedback
+
+
+Results:
+  ✓ 18 passed (100%)
+  0 failed (0%)
+  0 errors (0%)
+Duration: 34m 54s (concurrency: 1)
+
+Writing output to results/cache/latest-run.json

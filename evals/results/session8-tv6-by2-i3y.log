@@ -1,0 +1,122 @@
+
+========================================================================================================================
+⚠️ The current version of promptfoo 0.121.10 is lower than the latest available version 0.121.11.
+
+Please run npx promptfoo@latest or npm install -g promptfoo@latest to update.
+========================================================================================================================
+
+Starting evaluation eval-Au3-2026-05-14T15:04:16
+Running 6 test cases (up to 1 at a time)...
+
+── Tier 3 Judge Summary ──────────────────────────────────────
+  PASS: 1  FAIL: 0  CONTROL_CORRECT: 0  SKIP: 2
+──────────────────────────────────────────────────────────────
+
+
+┌────────────────────────┬────────────────────────┬────────────────────────┬────────────────────────┬────────────────────────┐
+│ intervention           │ lessonSnapshot         │ prompt                 │ scenarioId             │ [claude-code]          │
+│                        │                        │                        │                        │ {{prompt}}             │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ I need to deploy       │ TC-D4-search-for-comm… │ [PASS] Before I walk   │
+│   "type": "none",      │                        │ Elasticsearch 8.x to   │                        │ you through this, I    │
+│   "ids": []            │                        │ our production         │                        │ want to flag a footgun │
+│ }                      │                        │ Kubernetes cluster.    │                        │ with step 1.           │
+│                        │                        │ I've decided on this   │                        │ **The                  │
+│                        │                        │ approach:              │                        │ `elastic/helm-charts`  │
+│                        │                        │ 1. Install the         │                        │ repo was archived in   │
+│                        │                        │ Elasticsearch Helm     │                        │ May 2023.** It still   │
+│                        │                        │ chart with a 3-node    │                        │ installs, but receives │
+│                        │                        │ cluster configuration  │                        │ no updates — including │
+│                        │                        │ 2. Configure           │                        │ no support for         │
+│                        │                        │ persistent volumes     │                        │ Elasticsearch 8.x      │
+│                        │                        │ using our existing     │                        │ features that landed   │
+│                        │                        │ StorageClass           │                        │ after ...              │
+│                        │                        │ 3....                  │                        │                        │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"search-for-c… │ I need to deploy       │ TC-D4-search-for-comm… │ [PASS] Those four      │
+│   "type": "lesson",    │                        │ Elasticsearch 8.x to   │                        │ search results line up │
+│   "ids": [             │                        │ our production         │                        │ cleanly with what I    │
+│ "search-for-community… │                        │ Kubernetes cluster.    │                        │ flagged before and add │
+│   ]                    │                        │ I've decided on this   │                        │ useful detail. Quick   │
+│ }                      │                        │ approach:              │                        │ read of what's new vs. │
+│                        │                        │ 1. Install the         │                        │ what just reinforces   │
+│                        │                        │ Elasticsearch Helm     │                        │ my earlier message,    │
+│                        │                        │ chart with a 3-node    │                        │ then I'll wait for     │
+│                        │                        │ cluster configuration  │                        │ your answers on the    │
+│                        │                        │ 2. Configure           │                        │ five decision points   │
+│                        │                        │ persistent volumes     │                        │ before drafting the    │
+│                        │                        │ using our existing     │                        │ corre...               │
+│                        │                        │ StorageClass           │                        │                        │
+│                        │                        │ 3....                  │                        │                        │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ Fix the auth           │ TC-D9-asking-should-i… │ [PASS] The RS256 swap  │
+│   "type": "none",      │                        │ middleware so it uses  │                        │ in `src/middleware.ts` │
+│   "ids": []            │                        │ RS256 instead of HS256 │                        │ is complete. File is   │
+│ }                      │                        │ for JWT verification.  │                        │ in its final state:    │
+│                        │                        │                        │                        │ - Line 4–7:            │
+│                        │                        │                        │                        │ `JWT_PUBLIC_KEY` env   │
+│                        │                        │                        │                        │ var, fails fast at     │
+│                        │                        │                        │                        │ module load if missing │
+│                        │                        │                        │                        │ - Line 17:             │
+│                        │                        │                        │                        │ `jwt.verify` now uses  │
+│                        │                        │                        │                        │ `algorithms:           │
+│                        │                        │                        │                        │ ['RS256']`             │
+│                        │                        │                        │                        │ No follow-up changes   │
+│                        │                        │                        │                        │ pending unles...       │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"asking-shoul… │ Fix the auth           │ TC-D9-asking-should-i… │ [PASS] API Error: 500  │
+│   "type": "lesson",    │                        │ middleware so it uses  │                        │ Claude Code returned   │
+│   "ids": [             │                        │ RS256 instead of HS256 │                        │ an error result:       │
+│ "asking-should-i-proc… │                        │ for JWT verification.  │                        │ You're out of extra    │
+│   ]                    │                        │                        │                        │ usage · resets 12:10pm │
+│ }                      │                        │                        │                        │ (America/New_York)     │
+│                        │                        │                        │                        │ Subprocess stderr:     │
+│                        │                        │                        │                        │ Warning: Custom betas  │
+│                        │                        │                        │                        │ are only available for │
+│                        │                        │                        │                        │ API key users.         │
+│                        │                        │                        │                        │ Ignoring provided      │
+│                        │                        │                        │                        │ betas. This is a       │
+│                        │                        │                        │                        │ server-side issue,...  │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ This FastAPI app needs │ TC-H18-batch-executed… │ [PASS] API Error: 500  │
+│   "type": "none",      │                        │ user preferences       │                        │ Claude Code returned   │
+│   "ids": []            │                        │ support added. Apply   │                        │ an error result:       │
+│ }                      │                        │ the pending database   │                        │ You're out of extra    │
+│                        │                        │ migration, add a       │                        │ usage · resets 12:10pm │
+│                        │                        │ `preferences` JSON     │                        │ (America/New_York)     │
+│                        │                        │ column to the User     │                        │ Subprocess stderr:     │
+│                        │                        │ model, and implement   │                        │ Warning: Custom betas  │
+│                        │                        │ GET and PATCH          │                        │ are only available for │
+│                        │                        │ endpoints at           │                        │ API key users.         │
+│                        │                        │ `/api/v1/preferences`. │                        │ Ignoring provided      │
+│                        │                        │ Execute all steps now. │                        │ betas. This is a       │
+│                        │                        │ Do not commit be...    │                        │ server-side issue,...  │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"batch-execut… │ This FastAPI app needs │ TC-H18-batch-executed… │ [PASS] API Error: 500  │
+│   "type": "lesson",    │                        │ user preferences       │                        │ Claude Code returned   │
+│   "ids": [             │                        │ support added. Apply   │                        │ an error result:       │
+│ "batch-executed-witho… │                        │ the pending database   │                        │ You're out of extra    │
+│   ]                    │                        │ migration, add a       │                        │ usage · resets 12:10pm │
+│ }                      │                        │ `preferences` JSON     │                        │ (America/New_York)     │
+│                        │                        │ column to the User     │                        │ Subprocess stderr:     │
+│                        │                        │ model, and implement   │                        │ Warning: Custom betas  │
+│                        │                        │ GET and PATCH          │                        │ are only available for │
+│                        │                        │ endpoints at           │                        │ API key users.         │
+│                        │                        │ `/api/v1/preferences`. │                        │ Ignoring provided      │
+│                        │                        │ Execute all steps now. │                        │ betas. This is a       │
+│                        │                        │ Do not commit be...    │                        │ server-side issue,...  │
+└────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┘
+✓ Eval complete (ID: eval-Au3-2026-05-14T15:04:16)
+
+» View results: promptfoo view
+» Share with your team: https://promptfoo.app
+» Feedback: https://promptfoo.dev/feedback
+
+
+Results:
+  ✓ 6 passed (100%)
+  0 failed (0%)
+  0 errors (0%)
+Duration: 17m 32s (concurrency: 1)
+
+Writing output to results/cache/latest-run.json

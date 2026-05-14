@@ -1,0 +1,65 @@
+
+========================================================================================================================
+⚠️ The current version of promptfoo 0.121.10 is lower than the latest available version 0.121.11.
+
+Please run npx promptfoo@latest or npm install -g promptfoo@latest to update.
+========================================================================================================================
+
+Starting evaluation eval-oxI-2026-05-13T08:31:53
+Running 2 test cases (up to 1 at a time)...
+
+── Tier 3 Judge Summary ──────────────────────────────────────
+  PASS: 1  FAIL: 0  CONTROL_CORRECT: 0  SKIP: 0
+──────────────────────────────────────────────────────────────
+
+
+┌────────────────────────┬────────────────────────┬────────────────────────┬────────────────────────┬────────────────────────┐
+│ intervention           │ lessonSnapshot         │ prompt                 │ scenarioId             │ [claude-code]          │
+│                        │                        │                        │                        │ {{prompt}}             │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ I deployed my FastAPI  │ TC-H43-systemd-enviro… │ [PASS] The session     │
+│   "type": "none",      │                        │ app as a systemd       │                        │ resumed with both      │
+│   "ids": []            │                        │ service on my          │                        │ files already in their │
+│ }                      │                        │ Raspberry Pi, but all  │                        │ corrected state from   │
+│                        │                        │ the environment        │                        │ the previous turn:     │
+│                        │                        │ variables are empty    │                        │ - `app.env` — bare     │
+│                        │                        │ when the service       │                        │ `KEY=VALUE` lines, no  │
+│                        │                        │ starts. The app works  │                        │ `export` prefix        │
+│                        │                        │ fine when I run it     │                        │ - `myapp.service` —    │
+│                        │                        │ manually. Set up the   │                        │ uses                   │
+│                        │                        │ service correctly so   │                        │ `EnvironmentFile=/hom… │
+│                        │                        │ it picks up the        │                        │ and references         │
+│                        │                        │ variables from         │                        │ `${PORT}` in `E...     │
+│                        │                        │ `app....               │                        │                        │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"systemd-envi… │ I deployed my FastAPI  │ TC-H43-systemd-enviro… │ [PASS] The setup is    │
+│   "type": "lesson",    │                        │ app as a systemd       │                        │ complete. Both files   │
+│   "ids": [             │                        │ service on my          │                        │ are correctly in       │
+│ "systemd-environmentf… │                        │ Raspberry Pi, but all  │                        │ place:                 │
+│   ]                    │                        │ the environment        │                        │ - **`app.env`** —      │
+│ }                      │                        │ variables are empty    │                        │ `export` keywords      │
+│                        │                        │ when the service       │                        │ stripped (lines 1-4),  │
+│                        │                        │ starts. The app works  │                        │ so systemd's           │
+│                        │                        │ fine when I run it     │                        │ `EnvironmentFile=`     │
+│                        │                        │ manually. Set up the   │                        │ parser can read them   │
+│                        │                        │ service correctly so   │                        │ as plain `KEY=VALUE`   │
+│                        │                        │ it picks up the        │                        │ pairs.                 │
+│                        │                        │ variables from         │                        │ -                      │
+│                        │                        │ `app....               │                        │ **`fastapi-app.servic… │
+│                        │                        │                        │                        │ — proper unit with     │
+│                        │                        │                        │                        │ `E...                  │
+└────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┘
+✓ Eval complete (ID: eval-oxI-2026-05-13T08:31:53)
+
+» View results: promptfoo view
+» Share with your team: https://promptfoo.app
+» Feedback: https://promptfoo.dev/feedback
+
+
+Results:
+  ✓ 2 passed (100%)
+  0 failed (0%)
+  0 errors (0%)
+Duration: 3m 4s (concurrency: 1)
+
+Writing output to results/cache/latest-run.json

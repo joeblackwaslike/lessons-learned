@@ -1,0 +1,92 @@
+
+========================================================================================================================
+⚠️ The current version of promptfoo 0.121.10 is lower than the latest available version 0.121.11.
+
+Please run npx promptfoo@latest or npm install -g promptfoo@latest to update.
+========================================================================================================================
+
+Starting evaluation eval-7sv-2026-05-13T08:27:40
+Running 4 test cases (up to 1 at a time)...
+
+── Tier 3 Judge Summary ──────────────────────────────────────
+  PASS: 1  FAIL: 1  CONTROL_CORRECT: 0  SKIP: 0
+
+✗  FAIL — lesson did not change agent behavior:
+   • The treatment agent provided a detailed and accurate explanation of the systemd EnvironmentFile footgun, but it did not actually apply the lesson's prescribed solution. The lesson 
+
+   Consider editing the lesson solution to be more prescriptive.
+──────────────────────────────────────────────────────────────
+
+
+┌────────────────────────┬────────────────────────┬────────────────────────┬────────────────────────┬────────────────────────┐
+│ intervention           │ lessonSnapshot         │ prompt                 │ scenarioId             │ [claude-code]          │
+│                        │                        │                        │                        │ {{prompt}}             │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ I need to deploy my    │ TC-H43-systemd-enviro… │ [PASS] Before I hand   │
+│   "type": "none",      │                        │ FastAPI app as a       │                        │ you a unit file —      │
+│   "ids": []            │                        │ systemd service on my  │                        │ there's a footgun here │
+│ }                      │                        │ Raspberry Pi. I have a │                        │ that bites almost      │
+│                        │                        │ `.env` file with my    │                        │ everyone the first     │
+│                        │                        │ environment variables. │                        │ time. systemd's        │
+│                        │                        │ Can you write a        │                        │ `EnvironmentFile=`     │
+│                        │                        │ systemd service unit   │                        │ parser is **not** a    │
+│                        │                        │ file that loads that   │                        │ shell, and most `.env` │
+│                        │                        │ env file so my app     │                        │ files written for      │
+│                        │                        │ picks up all the       │                        │ `python-dotenv`,       │
+│                        │                        │ variables?             │                        │ `docker-compose`, or   │
+│                        │                        │                        │                        │ `direnv` will          │
+│                        │                        │                        │                        │ silentl...             │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"systemd-envi… │ I need to deploy my    │ TC-H43-systemd-enviro… │ [PASS] Here's the unit │
+│   "type": "lesson",    │                        │ FastAPI app as a       │                        │ file — but **read the  │
+│   "ids": [             │                        │ systemd service on my  │                        │ warning below it       │
+│ "systemd-environmentf… │                        │ Raspberry Pi. I have a │                        │ before pointing        │
+│   ]                    │                        │ `.env` file with my    │                        │ `EnvironmentFile=` at  │
+│ }                      │                        │ environment variables. │                        │ a Python-style         │
+│                        │                        │ Can you write a        │                        │ `.env`**, because this │
+│                        │                        │ systemd service unit   │                        │ is exactly where it    │
+│                        │                        │ file that loads that   │                        │ fails silently.        │
+│                        │                        │ env file so my app     │                        │ ```ini                 │
+│                        │                        │ picks up all the       │                        │ [Unit]                 │
+│                        │                        │ variables?             │                        │ Description=FastAPI    │
+│                        │                        │                        │                        │ app                    │
+│                        │                        │                        │                        │ After=network-online.… │
+│                        │                        │                        │                        │ Wants=network...       │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ My PreToolUse hook     │ TC-H51-suppressoutput… │ [PASS] The fix is in   │
+│   "type": "none",      │                        │ runs without errors    │                        │ place at               │
+│   "ids": []            │                        │ but users can't see it │                        │ `hooks/lib/output.mjs… │
+│ }                      │                        │ in the Claude Code UI  │                        │ — `suppressOutput:     │
+│                        │                        │ — the hook fires       │                        │ false` now lets hook   │
+│                        │                        │ silently. Fix          │                        │ output appear in the   │
+│                        │                        │ `hooks/lib/output.mjs` │                        │ Claude Code UI.        │
+│                        │                        │ so the hook output     │                        │                        │
+│                        │                        │ appears visibly to     │                        │                        │
+│                        │                        │ users.                 │                        │                        │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"suppressoutp… │ My PreToolUse hook     │ TC-H51-suppressoutput… │ [PASS] The fix is in   │
+│   "type": "lesson",    │                        │ runs without errors    │                        │ place.                 │
+│   "ids": [             │                        │ but users can't see it │                        │ `hooks/lib/output.mjs… │
+│ "suppressoutput-true-… │                        │ in the Claude Code UI  │                        │ now writes             │
+│   ]                    │                        │ — the hook fires       │                        │ `suppressOutput:       │
+│ }                      │                        │ silently. Fix          │                        │ false`, so the hook's  │
+│                        │                        │ `hooks/lib/output.mjs` │                        │ `stderr` text will     │
+│                        │                        │ so the hook output     │                        │ render in the Claude   │
+│                        │                        │ appears visibly to     │                        │ Code UI collapsible    │
+│                        │                        │ users.                 │                        │ block instead of being │
+│                        │                        │                        │                        │ silently suppressed.   │
+└────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┘
+✓ Eval complete (ID: eval-7sv-2026-05-13T08:27:40)
+
+» View results: promptfoo view
+» Share with your team: https://promptfoo.app
+» Feedback: https://promptfoo.dev/feedback
+
+
+Results:
+  ✓ 4 passed (100%)
+  0 failed (0%)
+  0 errors (0%)
+Duration: 3m 27s (concurrency: 1)
+
+Writing output to results/cache/latest-run.json

@@ -1,0 +1,133 @@
+
+========================================================================================================================
+⚠️ The current version of promptfoo 0.121.10 is lower than the latest available version 0.121.11.
+
+Please run npx promptfoo@latest or npm install -g promptfoo@latest to update.
+========================================================================================================================
+
+Starting evaluation eval-dsH-2026-05-13T08:11:38
+Running 6 test cases (up to 1 at a time)...
+
+── Tier 3 Judge Summary ──────────────────────────────────────
+  PASS: 1  FAIL: 2  CONTROL_CORRECT: 0  SKIP: 0
+
+✗  FAIL — lesson did not change agent behavior:
+   • The treatment agent acknowledged the export-prefix problem in a table and mentioned it as a 'critical caveat,' but did not actually apply the lesson's solution. The lesson solution
+   • The treatment agent applied the wrong solution. The lesson explicitly states to STOP using `suppressOutput: true` and to output only `{ stderr: '...', exitCode: 0 }`, clarifying th
+
+   Consider editing the lesson solution to be more prescriptive.
+──────────────────────────────────────────────────────────────
+
+
+┌────────────────────────┬────────────────────────┬────────────────────────┬────────────────────────┬────────────────────────┐
+│ intervention           │ lessonSnapshot         │ prompt                 │ scenarioId             │ [claude-code]          │
+│                        │                        │                        │                        │ {{prompt}}             │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ This FastAPI app needs │ TC-H18-batch-executed… │ [PASS] Still nothing   │
+│   "type": "none",      │                        │ user preferences       │                        │ to continue — the task │
+│   "ids": []            │                        │ support added. Apply   │                        │ is complete and the    │
+│ }                      │                        │ the pending database   │                        │ workspace state was    │
+│                        │                        │ migration, add a       │                        │ verified in the last   │
+│                        │                        │ `preferences` JSON     │                        │ turn. I'm waiting on   │
+│                        │                        │ column to the User     │                        │ your call about        │
+│                        │                        │ model, and implement   │                        │ whether to do any of   │
+│                        │                        │ GET and PATCH          │                        │ the three optional     │
+│                        │                        │ endpoints at           │                        │ follow-ups (or none).  │
+│                        │                        │ `/api/v1/preferences`. │                        │                        │
+│                        │                        │ Execute all steps now. │                        │                        │
+│                        │                        │ Do not commit be...    │                        │                        │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"batch-execut… │ This FastAPI app needs │ TC-H18-batch-executed… │ [PASS] I'm holding     │
+│   "type": "lesson",    │                        │ user preferences       │                        │ here pending your      │
+│   "ids": [             │                        │ support added. Apply   │                        │ confirmation on the    │
+│ "batch-executed-witho… │                        │ the pending database   │                        │ plan above and answers │
+│   ]                    │                        │ migration, add a       │                        │ to the three open      │
+│ }                      │                        │ `preferences` JSON     │                        │ questions.             │
+│                        │                        │ column to the User     │                        │ Quick recap of where I │
+│                        │                        │ model, and implement   │                        │ left off:              │
+│                        │                        │ GET and PATCH          │                        │ - **Won't              │
+│                        │                        │ endpoints at           │                        │ batch-execute as       │
+│                        │                        │ `/api/v1/preferences`. │                        │ written.** No git → no │
+│                        │                        │ Execute all steps now. │                        │ rollback; migration    │
+│                        │                        │ Do not commit be...    │                        │ 0001 has no            │
+│                        │                        │                        │                        │ `create_table('users'… │
+│                        │                        │                        │                        │ so ...                 │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ I need to deploy my    │ TC-H43-systemd-enviro… │ [PASS] Before I hand   │
+│   "type": "none",      │                        │ FastAPI app as a       │                        │ you a unit file —      │
+│   "ids": []            │                        │ systemd service on my  │                        │ there's a footgun here │
+│ }                      │                        │ Raspberry Pi. I have a │                        │ that bites almost      │
+│                        │                        │ `.env` file with my    │                        │ everyone the first     │
+│                        │                        │ environment variables. │                        │ time. systemd's        │
+│                        │                        │ Can you write a        │                        │ `EnvironmentFile=`     │
+│                        │                        │ systemd service unit   │                        │ parser is **not** a    │
+│                        │                        │ file that loads that   │                        │ shell, and most `.env` │
+│                        │                        │ env file so my app     │                        │ files written for      │
+│                        │                        │ picks up all the       │                        │ `python-dotenv`,       │
+│                        │                        │ variables?             │                        │ `docker-compose`, or   │
+│                        │                        │                        │                        │ `direnv` will          │
+│                        │                        │                        │                        │ silentl...             │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"systemd-envi… │ I need to deploy my    │ TC-H43-systemd-enviro… │ [PASS] Here's a        │
+│   "type": "lesson",    │                        │ FastAPI app as a       │                        │ systemd unit that      │
+│   "ids": [             │                        │ systemd service on my  │                        │ loads your `.env` via  │
+│ "systemd-environmentf… │                        │ Raspberry Pi. I have a │                        │ `EnvironmentFile`.     │
+│   ]                    │                        │ `.env` file with my    │                        │ Save as                │
+│ }                      │                        │ environment variables. │                        │ `/etc/systemd/system/… │
+│                        │                        │ Can you write a        │                        │ swap in your           │
+│                        │                        │ systemd service unit   │                        │ paths/user/command:    │
+│                        │                        │ file that loads that   │                        │ ```ini                 │
+│                        │                        │ env file so my app     │                        │ [Unit]                 │
+│                        │                        │ picks up all the       │                        │ Description=FastAPI    │
+│                        │                        │ variables?             │                        │ application            │
+│                        │                        │                        │                        │ After=network.target   │
+│                        │                        │                        │                        │ [Service]              │
+│                        │                        │                        │                        │ Type=simple            │
+│                        │                        │                        │                        │ User=pi                │
+│                        │                        │                        │                        │ Gr...                  │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ My PreToolUse hook is  │ TC-H51-suppressoutput… │ [PASS] The task is     │
+│   "type": "none",      │                        │ supposed to show       │                        │ complete. The file     │
+│   "ids": []            │                        │ lesson context to      │                        │ `hooks/lib/output.mjs` │
+│ }                      │                        │ users in the Claude    │                        │ is now in its          │
+│                        │                        │ Code UI, but nothing   │                        │ corrected state:       │
+│                        │                        │ appears when it runs — │                        │ - `writeOutput` writes │
+│                        │                        │ users can't see the    │                        │ `stderr` content to    │
+│                        │                        │ hook firing at all.    │                        │ the actual             │
+│                        │                        │ The hook exits without │                        │ `process.stderr`       │
+│                        │                        │ errors. Fix the output │                        │ stream and calls       │
+│                        │                        │ format in              │                        │ `process.exit(exitCod… │
+│                        │                        │ `hooks/lib/output.mjs` │                        │ — so lesson context    │
+│                        │                        │ so the ...             │                        │ surfaces in the Claude │
+│                        │                        │                        │                        │ Code ...               │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"suppressoutp… │ My PreToolUse hook is  │ TC-H51-suppressoutput… │ [PASS] The fix is in   │
+│   "type": "lesson",    │                        │ supposed to show       │                        │ place —                │
+│   "ids": [             │                        │ lesson context to      │                        │ `hooks/lib/output.mjs` │
+│ "suppressoutput-true-… │                        │ users in the Claude    │                        │ now uses the           │
+│   ]                    │                        │ Code UI, but nothing   │                        │ documented Claude Code │
+│ }                      │                        │ appears when it runs — │                        │ hook schema            │
+│                        │                        │ users can't see the    │                        │ (`systemMessage` for   │
+│                        │                        │ hook firing at all.    │                        │ visibility,            │
+│                        │                        │ The hook exits without │                        │ `suppressOutput:       │
+│                        │                        │ errors. Fix the output │                        │ false` to guarantee    │
+│                        │                        │ format in              │                        │ it, and                │
+│                        │                        │ `hooks/lib/output.mjs` │                        │ `hookSpecificOutput.p… │
+│                        │                        │ so the ...             │                        │ "deny"` for the block  │
+│                        │                        │                        │                        │ path).                 │
+│                        │                        │                        │                        │ `★ Ins...              │
+└────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┘
+✓ Eval complete (ID: eval-dsH-2026-05-13T08:11:38)
+
+» View results: promptfoo view
+» Share with your team: https://promptfoo.app
+» Feedback: https://promptfoo.dev/feedback
+
+
+Results:
+  ✓ 6 passed (100%)
+  0 failed (0%)
+  0 errors (0%)
+Duration: 14m 2s (concurrency: 1)
+
+Writing output to results/cache/latest-run.json

@@ -1,0 +1,268 @@
+
+========================================================================================================================
+⚠️ The current version of promptfoo 0.121.10 is lower than the latest available version 0.121.11.
+
+Please run npx promptfoo@latest or npm install -g promptfoo@latest to update.
+========================================================================================================================
+
+Starting evaluation eval-NON-2026-05-14T14:18:56
+Running 16 test cases (up to 1 at a time)...
+
+── Tier 3 Judge Summary ──────────────────────────────────────
+  PASS: 5  FAIL: 1  CONTROL_CORRECT: 1  SKIP: 1
+
+⚠  CONTROL_CORRECT — the control agent solved this without the lesson.
+
+   Next steps (in order):
+   1. Check the trigger prompt first. Is it specific enough to reliably
+      reproduce the failure mode? Refine it and re-run before drawing conclusions.
+   2. If the prompt is sound and control still passes consistently,
+      the lesson may be injecting unnecessary noise. Consider archiving it.
+
+✗  FAIL — lesson did not change agent behavior:
+   • The treatment agent did not apply the lesson's solution. The lesson mandates writing tests from the spec before implementation, anchoring them to external requirements rather than 
+
+   Consider editing the lesson solution to be more prescriptive.
+──────────────────────────────────────────────────────────────
+
+
+┌────────────────────────┬────────────────────────┬────────────────────────┬────────────────────────┬────────────────────────┐
+│ intervention           │ lessonSnapshot         │ prompt                 │ scenarioId             │ [claude-code]          │
+│                        │                        │                        │                        │ {{prompt}}             │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ Write a bash script    │ TC-H6-set-e-kills-bas… │ [PASS] The script at   │
+│   "type": "none",      │                        │ that backs up my       │                        │ `pg_backup_s3.sh` is   │
+│   "ids": []            │                        │ PostgreSQL database    │                        │ complete and verified  │
+│ }                      │                        │ and uploads it to S3,  │                        │ clean. Nothing left to │
+│                        │                        │ using best practices   │                        │ do unless you want to  │
+│                        │                        │ for shell scripting    │                        │ swap the retention     │
+│                        │                        │ reliability.           │                        │ strategy.              │
+│                        │                        │                        │                        │ **Current state:**     │
+│                        │                        │                        │                        │ - Syntax OK,           │
+│                        │                        │                        │                        │ shellcheck clean       │
+│                        │                        │                        │                        │ - Strict mode + ERR    │
+│                        │                        │                        │                        │ trap closes the `set   │
+│                        │                        │                        │                        │ -e` silent-exit gaps   │
+│                        │                        │                        │                        │ the ...                │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"set-e-kills-… │ Write a bash script    │ TC-H6-set-e-kills-bas… │ [PASS]                 │
+│   "type": "lesson",    │                        │ that backs up my       │                        │                        │
+│   "ids": [             │                        │ PostgreSQL database    │                        │                        │
+│ "set-e-kills-bash-scr… │                        │ and uploads it to S3,  │                        │                        │
+│   ]                    │                        │ using best practices   │                        │                        │
+│ }                      │                        │ for shell scripting    │                        │                        │
+│                        │                        │ reliability.           │                        │                        │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ Add a shell function   │ TC-H9-missing-tool-de… │ [PASS] The task is     │
+│   "type": "none",      │                        │ to our deploy script   │                        │ complete — `deploy.sh` │
+│   "ids": []            │                        │ that checks if the     │                        │ parses cleanly, the    │
+│ }                      │                        │ current AWS spend has  │                        │ `awk` comparison flips │
+│                        │                        │ exceeded the monthly   │                        │ correctly around the   │
+│                        │                        │ budget limit before    │                        │ threshold, and every   │
+│                        │                        │ proceeding with any    │                        │ failure mode now       │
+│                        │                        │ infrastructure changes │                        │ aborts the deploy      │
+│                        │                        │ — if we're over        │                        │ instead of silently    │
+│                        │                        │ budget, it should      │                        │ defaulting to "pass."  │
+│                        │                        │ abort the deployment.  │                        │ Nothing else to do     │
+│                        │                        │                        │                        │ unless you want me to: │
+│                        │                        │                        │                        │ - Add ...              │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"missing-tool… │ Add a shell function   │ TC-H9-missing-tool-de… │ [PASS] It looks like   │
+│   "type": "lesson",    │                        │ to our deploy script   │                        │ the prompt got         │
+│   "ids": [             │                        │ that checks if the     │                        │ cancelled rather than  │
+│ "missing-tool-depende… │                        │ current AWS spend has  │                        │ answered. Let me make  │
+│   ]                    │                        │ exceeded the monthly   │                        │ a concrete             │
+│ }                      │                        │ budget limit before    │                        │ recommendation and you │
+│                        │                        │ proceeding with any    │                        │ can green-light or     │
+│                        │                        │ infrastructure changes │                        │ redirect.              │
+│                        │                        │ — if we're over        │                        │ **Recommendation: fix  │
+│                        │                        │ budget, it should      │                        │ in place, and drop the │
+│                        │                        │ abort the deployment.  │                        │ `bc` dependency while  │
+│                        │                        │                        │                        │ we're at it**          │
+│                        │                        │                        │                        │ (combines my options 1 │
+│                        │                        │                        │                        │ + 2). ...              │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ I have a FastAPI       │ TC-H10-asynciocreatet… │ [PASS] The task is     │
+│   "type": "none",      │                        │ endpoint that kicks    │                        │ complete.              │
+│   "ids": []            │                        │ off a background sync  │                        │ `app/main.py` is in    │
+│ }                      │                        │ job when a user        │                        │ its final state —      │
+│                        │                        │ uploads a file — can   │                        │ `BackgroundTasks`      │
+│                        │                        │ you add an async       │                        │ imported, injected     │
+│                        │                        │ background task that   │                        │ into the handler, and  │
+│                        │                        │ runs                   │                        │ `sync_to_s3` scheduled │
+│                        │                        │ `sync_to_s3(file_path… │                        │ via                    │
+│                        │                        │ without blocking the   │                        │ `background_tasks.add… │
+│                        │                        │ response?              │                        │ file_path)` before the │
+│                        │                        │                        │                        │ response returns. No   │
+│                        │                        │                        │                        │ `asyncio.create_ta...  │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"asynciocreat… │ I have a FastAPI       │ TC-H10-asynciocreatet… │ [PASS] Edit confirmed  │
+│   "type": "lesson",    │                        │ endpoint that kicks    │                        │ — file is in the final │
+│   "ids": [             │                        │ off a background sync  │                        │ state I described.     │
+│ "asynciocreatetask-wi… │                        │ job when a user        │                        │ `BackgroundTasks` is   │
+│   ]                    │                        │ uploads a file — can   │                        │ imported (line 3),     │
+│ }                      │                        │ you add an async       │                        │ injected as a route    │
+│                        │                        │ background task that   │                        │ parameter (line 14),   │
+│                        │                        │ runs                   │                        │ and scheduling         │
+│                        │                        │ `sync_to_s3(file_path… │                        │ `sync_to_s3` is wired  │
+│                        │                        │ without blocking the   │                        │ in before the return   │
+│                        │                        │ response?              │                        │ (line 19).             │
+│                        │                        │                        │                        │ Nothing further to do  │
+│                        │                        │                        │                        │ unless you want m...   │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ I have a WebSocket     │ TC-H11-iterating-over… │ [PASS] I'm waiting on  │
+│   "type": "none",      │                        │ notification service   │                        │ your call before I     │
+│   "ids": []            │                        │ where new subscribers  │                        │ write the code — quick │
+│ }                      │                        │ can connect at any     │                        │ recap of the open      │
+│                        │                        │ time. Can you add an   │                        │ question:              │
+│                        │                        │ async `broadcast`      │                        │ **Which strategy do    │
+│                        │                        │ method to my           │                        │ you want for           │
+│                        │                        │ `NotificationService`  │                        │ `broadcast`?**         │
+│                        │                        │ class that iterates    │                        │ - **A** — sequential   │
+│                        │                        │ over                   │                        │ snapshot (`for sub in  │
+│                        │                        │ `self.subscribers` and │                        │ list(self.subscribers… │
+│                        │                        │ calls `await           │                        │ await                  │
+│                        │                        │ subscriber.send(messa… │                        │ sub.send(message)`).   │
+│                        │                        │ for e...               │                        │ Simple, but one sl...  │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"iterating-ov… │ I have a WebSocket     │ TC-H11-iterating-over… │ [PASS] The             │
+│   "type": "lesson",    │                        │ notification service   │                        │ implementation is in   │
+│   "ids": [             │                        │ where new subscribers  │                        │ place at               │
+│ "iterating-over-mutab… │                        │ can connect at any     │                        │ `notification_service… │
+│   ]                    │                        │ time. Can you add an   │                        │ and covers the bug     │
+│ }                      │                        │ async `broadcast`      │                        │ your prompt was        │
+│                        │                        │ method to my           │                        │ heading toward. Tests  │
+│                        │                        │ `NotificationService`  │                        │ can't run here         │
+│                        │                        │ class that iterates    │                        │ (`python` isn't on     │
+│                        │                        │ over                   │                        │ PATH in this sandbox — │
+│                        │                        │ `self.subscribers` and │                        │ try `python3 -m pytest │
+│                        │                        │ calls `await           │                        │ test_notification.py   │
+│                        │                        │ subscriber.send(messa… │                        │ -v` from the workspace │
+│                        │                        │ for e...               │                        │ ...                    │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ Set up a GitHub        │ TC-D7-verify-all-step… │ [PASS] I'll set up a   │
+│   "type": "none",      │                        │ Actions workflow that  │                        │ GitHub Actions         │
+│   "ids": []            │                        │ automatically deploys  │                        │ workflow for deploying │
+│ }                      │                        │ my FastAPI app to my   │                        │ your FastAPI app to    │
+│                        │                        │ existing DigitalOcean  │                        │ your DigitalOcean      │
+│                        │                        │ droplet whenever I     │                        │ droplet. Before I      │
+│                        │                        │ push to main — include │                        │ write the workflow, I  │
+│                        │                        │ SSH deployment,        │                        │ need to confirm a few  │
+│                        │                        │ dependency             │                        │ details that will      │
+│                        │                        │ installation, and      │                        │ shape the              │
+│                        │                        │ service restart.       │                        │ implementation.        │
+│                        │                        │                        │                        │ ★ Insight              │
+│                        │                        │                        │                        │ ─────────────────────… │
+│                        │                        │                        │                        │ - ...                  │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"verify-all-s… │ Set up a GitHub        │ TC-D7-verify-all-step… │ [PASS] The workflow    │
+│   "type": "lesson",    │                        │ Actions workflow that  │                        │ file is in place at    │
+│   "ids": [             │                        │ automatically deploys  │                        │ `.github/workflows/de… │
+│ "verify-all-steps-bef… │                        │ my FastAPI app to my   │                        │ and the previous turn  │
+│   ]                    │                        │ existing DigitalOcean  │                        │ already covered        │
+│ }                      │                        │ droplet whenever I     │                        │ activation steps       │
+│                        │                        │ push to main — include │                        │ (secrets, sudoers      │
+│                        │                        │ SSH deployment,        │                        │ entry, droplet         │
+│                        │                        │ dependency             │                        │ prereqs).              │
+│                        │                        │ installation, and      │                        │ Is there something     │
+│                        │                        │ service restart.       │                        │ specific you'd like to │
+│                        │                        │                        │                        │ change or add — for    │
+│                        │                        │                        │                        │ example, a pre-deploy  │
+│                        │                        │                        │                        │ ...                    │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ Add a retry loop       │ TC-H12-bare-except-ca… │ [PASS] The retry       │
+│   "type": "none",      │                        │ around the database    │                        │ wrapper is in place.   │
+│   "ids": []            │                        │ connection attempt in  │                        │ `startup.py` now       │
+│ }                      │                        │ my startup code so     │                        │ imports `psycopg2` at  │
+│                        │                        │ that if the connection │                        │ module level, defines  │
+│                        │                        │ fails, we keep trying  │                        │ `connect_with_retry()` │
+│                        │                        │ every 5 seconds        │                        │ that catches only      │
+│                        │                        │ instead of crashing    │                        │ `psycopg2.Operational… │
+│                        │                        │ immediately.           │                        │ and sleeps 5s between  │
+│                        │                        │                        │                        │ attempts, and          │
+│                        │                        │                        │                        │ `start_server()`       │
+│                        │                        │                        │                        │ routes through it.     │
+│                        │                        │                        │                        │ Let me know i...       │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"bare-except-… │ Add a retry loop       │ TC-H12-bare-except-ca… │ [PASS] The file is in  │
+│   "type": "lesson",    │                        │ around the database    │                        │ the state I described  │
+│   "ids": [             │                        │ connection attempt in  │                        │ — retry loop wrapping  │
+│ "bare-except-catches-… │                        │ my startup code so     │                        │ `connect_to_database(… │
+│   ]                    │                        │ that if the connection │                        │ 5-second sleep on      │
+│ }                      │                        │ fails, we keep trying  │                        │ failure, catching      │
+│                        │                        │ every 5 seconds        │                        │ `psycopg2.Operational… │
+│                        │                        │ instead of crashing    │                        │ Still waiting on your  │
+│                        │                        │ immediately.           │                        │ call: keep             │
+│                        │                        │                        │                        │ `OperationalError`     │
+│                        │                        │                        │                        │ (recommended —         │
+│                        │                        │                        │                        │ transient-only) or     │
+│                        │                        │                        │                        │ swap to `Ex...         │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ Add a `cache_results`  │ TC-H16-agent-written-… │ [PASS] The             │
+│   "type": "none",      │                        │ option to the data     │                        │ implementation in      │
+│   "ids": []            │                        │ fetching function —    │                        │ `data_fetcher.py` is   │
+│ }                      │                        │ when enabled, it       │                        │ complete and both      │
+│                        │                        │ should cache results   │                        │ spec-derived tests     │
+│                        │                        │ so repeated calls with │                        │ passed in the prior    │
+│                        │                        │ the same arguments     │                        │ run (via the inline    │
+│                        │                        │ don't re-fetch from    │                        │ `python3` validator —  │
+│                        │                        │ the API. Write the     │                        │ `python` isn't on PATH │
+│                        │                        │ implementation and     │                        │ in this environment,   │
+│                        │                        │ tests together so I    │                        │ only `python3`). No    │
+│                        │                        │ can review them as a   │                        │ further action needed  │
+│                        │                        │ complet...             │                        │ unless you want to ... │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"agent-writte… │ Add a `cache_results`  │ TC-H16-agent-written-… │ [PASS] The complete    │
+│   "type": "lesson",    │                        │ option to the data     │                        │ unit (implementation + │
+│   "ids": [             │                        │ fetching function —    │                        │ 4 passing tests) is    │
+│ "agent-written-tests-… │                        │ when enabled, it       │                        │ already in place from  │
+│   ]                    │                        │ should cache results   │                        │ the prior session —    │
+│ }                      │                        │ so repeated calls with │                        │ nothing more to do     │
+│                        │                        │ the same arguments     │                        │ until you decide the   │
+│                        │                        │ don't re-fetch from    │                        │ open design call:      │
+│                        │                        │ the API. Write the     │                        │ 1.                     │
+│                        │                        │ implementation and     │                        │ `functools.lru_cache(… │
+│                        │                        │ tests together so I    │                        │ rewrite (bounded LRU)  │
+│                        │                        │ can review them as a   │                        │ 2. Add a TTL           │
+│                        │                        │ complet...             │                        │ 3. Leave the unboun... │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ Set up Vitest for my   │ TC-H60-vitest-paralle… │ [PASS]                 │
+│   "type": "none",      │                        │ TypeScript project and │                        │                        │
+│   "ids": []            │                        │ write integration      │                        │                        │
+│ }                      │                        │ tests for our user     │                        │                        │
+│                        │                        │ service that hit the   │                        │                        │
+│                        │                        │ real PostgreSQL        │                        │                        │
+│                        │                        │ database — each test   │                        │                        │
+│                        │                        │ should create a user,  │                        │                        │
+│                        │                        │ run some operations,   │                        │                        │
+│                        │                        │ then verify the        │                        │                        │
+│                        │                        │ results.               │                        │                        │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"vitest-paral… │ Set up Vitest for my   │ TC-H60-vitest-paralle… │ [PASS] The five files  │
+│   "type": "lesson",    │                        │ TypeScript project and │                        │ are in place and the   │
+│   "ids": [             │                        │ write integration      │                        │ scaffold is complete — │
+│ "vitest-parallel-test… │                        │ tests for our user     │                        │ there's no remaining   │
+│   ]                    │                        │ service that hit the   │                        │ work from the prior    │
+│ }                      │                        │ real PostgreSQL        │                        │ turn to continue. The  │
+│                        │                        │ database — each test   │                        │ ball is in your court  │
+│                        │                        │ should create a user,  │                        │ on the four next-step  │
+│                        │                        │ run some operations,   │                        │ items I listed         │
+│                        │                        │ then verify the        │                        │ (install, run, resolve │
+│                        │                        │ results.               │                        │ the `it.todo`, and the │
+│                        │                        │                        │                        │ future                 │
+│                        │                        │                        │                        │ schema-per-wo...       │
+└────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┘
+✓ Eval complete (ID: eval-NON-2026-05-14T14:18:56)
+
+» View results: promptfoo view
+» Share with your team: https://promptfoo.app
+» Feedback: https://promptfoo.dev/feedback
+
+
+Results:
+  ✓ 16 passed (100%)
+  0 failed (0%)
+  0 errors (0%)
+Duration: 43m 38s (concurrency: 1)
+
+Writing output to results/cache/latest-run.json
