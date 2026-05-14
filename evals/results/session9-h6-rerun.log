@@ -1,0 +1,68 @@
+
+========================================================================================================================
+⚠️ The current version of promptfoo 0.121.10 is lower than the latest available version 0.121.11.
+
+Please run npx promptfoo@latest or npm install -g promptfoo@latest to update.
+========================================================================================================================
+
+Starting evaluation eval-XAx-2026-05-14T16:23:26
+Running 2 test cases (up to 1 at a time)...
+
+── Tier 3 Judge Summary ──────────────────────────────────────
+  PASS: 0  FAIL: 1  CONTROL_CORRECT: 0  SKIP: 0
+
+✗  FAIL — lesson did not change agent behavior:
+   • The control agent delivered a comprehensive bash script rewrite that proactively addressed every facet of the lesson's problem: an ERR trap reporting the failing line number, an EX
+
+   Consider editing the lesson solution to be more prescriptive.
+──────────────────────────────────────────────────────────────
+
+
+┌────────────────────────┬────────────────────────┬────────────────────────┬────────────────────────┬────────────────────────┐
+│ intervention           │ lessonSnapshot         │ prompt                 │ scenarioId             │ [claude-code]          │
+│                        │                        │                        │                        │ {{prompt}}             │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ Write a bash script    │ TC-H6-set-e-kills-bas… │ [PASS] The backup      │
+│   "type": "none",      │                        │ that backs up my       │                        │ script is complete and │
+│   "ids": []            │                        │ PostgreSQL database    │                        │ verified —             │
+│ }                      │                        │ and uploads it to S3.  │                        │ syntax-clean and       │
+│                        │                        │ The script should:     │                        │ shellcheck-clean. The  │
+│                        │                        │ - Dump the database    │                        │ task was a             │
+│                        │                        │ with pg_dump and       │                        │ single-deliverable     │
+│                        │                        │ compress it            │                        │ bash script, so        │
+│                        │                        │ - Upload to S3 with a  │                        │ TodoWrite tracking     │
+│                        │                        │ timestamped filename   │                        │ isn't applicable here. │
+│                        │                        │ - Clean up the local   │                        │ ## Current state       │
+│                        │                        │ dump file after upload │                        │ **Files in             │
+│                        │                        │ - Prune backu...       │                        │ workspace:**           │
+│                        │                        │                        │                        │ - `backup.sh` (5,793   │
+│                        │                        │                        │                        │ bytes, exec...         │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"set-e-kills-… │ Write a bash script    │ TC-H6-set-e-kills-bas… │ [PASS]                 │
+│   "type": "lesson",    │                        │ that backs up my       │                        │                        │
+│   "ids": [             │                        │ PostgreSQL database    │                        │                        │
+│ "set-e-kills-bash-scr… │                        │ and uploads it to S3.  │                        │                        │
+│   ]                    │                        │ The script should:     │                        │                        │
+│ }                      │                        │ - Dump the database    │                        │                        │
+│                        │                        │ with pg_dump and       │                        │                        │
+│                        │                        │ compress it            │                        │                        │
+│                        │                        │ - Upload to S3 with a  │                        │                        │
+│                        │                        │ timestamped filename   │                        │                        │
+│                        │                        │ - Clean up the local   │                        │                        │
+│                        │                        │ dump file after upload │                        │                        │
+│                        │                        │ - Prune backu...       │                        │                        │
+└────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┘
+✓ Eval complete (ID: eval-XAx-2026-05-14T16:23:26)
+
+» View results: promptfoo view
+» Share with your team: https://promptfoo.app
+» Feedback: https://promptfoo.dev/feedback
+
+
+Results:
+  ✓ 2 passed (100%)
+  0 failed (0%)
+  0 errors (0%)
+Duration: 9m 55s (concurrency: 1)
+
+Writing output to results/cache/latest-run.json

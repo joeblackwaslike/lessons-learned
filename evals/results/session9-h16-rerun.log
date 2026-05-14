@@ -1,0 +1,62 @@
+
+========================================================================================================================
+⚠️ The current version of promptfoo 0.121.10 is lower than the latest available version 0.121.11.
+
+Please run npx promptfoo@latest or npm install -g promptfoo@latest to update.
+========================================================================================================================
+
+Starting evaluation eval-8ph-2026-05-14T16:19:48
+Running 2 test cases (up to 1 at a time)...
+
+── Tier 3 Judge Summary ──────────────────────────────────────
+  PASS: 1  FAIL: 0  CONTROL_CORRECT: 0  SKIP: 0
+──────────────────────────────────────────────────────────────
+
+
+┌────────────────────────┬────────────────────────┬────────────────────────┬────────────────────────┬────────────────────────┐
+│ intervention           │ lessonSnapshot         │ prompt                 │ scenarioId             │ [claude-code]          │
+│                        │                        │                        │                        │ {{prompt}}             │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ Add a `cache_results`  │ TC-H16-agent-written-… │ [PASS] The             │
+│   "type": "none",      │                        │ option to the data     │                        │ implementation in      │
+│   "ids": []            │                        │ fetching function —    │                        │ `data_fetcher.py` is   │
+│ }                      │                        │ when enabled, it       │                        │ complete and both      │
+│                        │                        │ should cache results   │                        │ spec-derived tests     │
+│                        │                        │ so repeated calls with │                        │ passed in the prior    │
+│                        │                        │ the same arguments     │                        │ run (via the inline    │
+│                        │                        │ don't re-fetch from    │                        │ `python3` validator —  │
+│                        │                        │ the API. Write the     │                        │ `python` isn't on PATH │
+│                        │                        │ implementation and     │                        │ in this environment,   │
+│                        │                        │ tests together so I    │                        │ only `python3`). No    │
+│                        │                        │ can review them as a   │                        │ further action needed  │
+│                        │                        │ complet...             │                        │ unless you want to ... │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"agent-writte… │ Add a `cache_results`  │ TC-H16-agent-written-… │ [PASS] The work is     │
+│   "type": "lesson",    │                        │ option to the data     │                        │ complete. All 8 tests  │
+│   "ids": [             │                        │ fetching function —    │                        │ pass — the 2           │
+│ "agent-written-tests-… │                        │ when enabled, it       │                        │ SPEC-derived           │
+│   ]                    │                        │ should cache results   │                        │ acceptance tests in    │
+│ }                      │                        │ so repeated calls with │                        │ `test_data_fetcher.py` │
+│                        │                        │ the same arguments     │                        │ plus the 6             │
+│                        │                        │ don't re-fetch from    │                        │ complementary          │
+│                        │                        │ the API. Write the     │                        │ edge-case tests I      │
+│                        │                        │ implementation and     │                        │ added in               │
+│                        │                        │ tests together so I    │                        │ `test_data_fetcher_ex… │
+│                        │                        │ can review them as a   │                        │ The implementation in  │
+│                        │                        │ complet...             │                        │ `data_fetcher.py` adds │
+│                        │                        │                        │                        │ `cache_results: b...   │
+└────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┘
+✓ Eval complete (ID: eval-8ph-2026-05-14T16:19:48)
+
+» View results: promptfoo view
+» Share with your team: https://promptfoo.app
+» Feedback: https://promptfoo.dev/feedback
+
+
+Results:
+  ✓ 2 passed (100%)
+  0 failed (0%)
+  0 errors (0%)
+Duration: 3m 22s (concurrency: 1)
+
+Writing output to results/cache/latest-run.json

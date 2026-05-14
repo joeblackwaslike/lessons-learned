@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 # backup.sh — PostgreSQL database backup to S3
-# BUG: uses set -euo pipefail with no EXIT trap and no error wrappers
-# on non-critical commands, so any silent failure aborts the whole script.
 
 set -euo pipefail
 

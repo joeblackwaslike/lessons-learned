@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-05-14T14:12:19.400Z",
+  "generatedAt": "2026-05-14T16:19:10.516Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -1546,10 +1546,10 @@
         "category:specification-drift"
       ],
       "scope": null,
-      "message": "## Lesson: Agent-written tests validate the agent's own misunderstanding instead of the spec (closed-loop self-grading)\nAgent wrote implementation and tests together; misunderstood 'cache results' as per-request instead of persistent; tests confirmed the misunderstanding\n**Fix**: Write tests from the spec before implementation, quoting spec text literally. Tests must be anchored to an external requirement, not derived from the implementation.",
+      "message": "## Lesson: Agent-written tests validate the agent's own misunderstanding instead of the spec (closed-loop self-grading)\nAgent wrote implementation and tests together; misunderstood 'cache results' as per-request instead of persistent; tests confirmed the misunderstanding\n**Fix**: Before writing a single line of implementation, write ALL tests directly against the spec acceptance criteria. Each assertion must be anchored to a named spec requirement — not inferred from implementation that does not exist yet. Required patterns: assert object identity (result1 is result2) for cache hits, assert call_count == 1 to verify the network layer was not called again, assert call_count == 2 (or higher) to verify the no-cache path always fetches live. Only after all spec-anchored tests exist should you write the implementation.",
       "summary": "Agent-written tests validate the agent's own misunderstanding instead of the spec (closed-loop self-grading)",
       "problem": "Agent wrote implementation and tests together; misunderstood 'cache results' as per-request instead of persistent; tests confirmed the misunderstanding",
-      "solution": "Write tests from the spec before implementation, quoting spec text literally. Tests must be anchored to an external requirement, not derived from the implementation."
+      "solution": "Before writing a single line of implementation, write ALL tests directly against the spec acceptance criteria. Each assertion must be anchored to a named spec requirement — not inferred from implementation that does not exist yet. Required patterns: assert object identity (result1 is result2) for cache hits, assert call_count == 1 to verify the network layer was not called again, assert call_count == 2 (or higher) to verify the no-cache path always fetches live. Only after all spec-anchored tests exist should you write the implementation."
     },
     "01KNH36NCH76JR86ET2A8TANG4": {
       "slug": "file-reads-at-batch-start-become-stale-a-d847",

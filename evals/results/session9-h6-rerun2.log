@@ -1,0 +1,62 @@
+
+========================================================================================================================
+⚠️ The current version of promptfoo 0.121.10 is lower than the latest available version 0.121.11.
+
+Please run npx promptfoo@latest or npm install -g promptfoo@latest to update.
+========================================================================================================================
+
+Starting evaluation eval-16G-2026-05-14T16:36:10
+Running 2 test cases (up to 1 at a time)...
+
+── Tier 3 Judge Summary ──────────────────────────────────────
+  PASS: 1  FAIL: 0  CONTROL_CORRECT: 0  SKIP: 0
+──────────────────────────────────────────────────────────────
+
+
+┌────────────────────────┬────────────────────────┬────────────────────────┬────────────────────────┬────────────────────────┐
+│ intervention           │ lessonSnapshot         │ prompt                 │ scenarioId             │ [claude-code]          │
+│                        │                        │                        │                        │ {{prompt}}             │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ We have a backup       │ TC-H6-set-e-kills-bas… │ [PASS] The DRY_RUN     │
+│   "type": "none",      │                        │ script that runs daily │                        │ mode is in place and   │
+│   "ids": []            │                        │ via cron. Add a        │                        │ verified. Nothing else │
+│ }                      │                        │ DRY_RUN mode to it:    │                        │ outstanding on this    │
+│                        │                        │ when `DRY_RUN=1` is    │                        │ task.                  │
+│                        │                        │ set, the script should │                        │                        │
+│                        │                        │ print what it would do │                        │                        │
+│                        │                        │ (pg_dump command, S3   │                        │                        │
+│                        │                        │ path, etc.) without    │                        │                        │
+│                        │                        │ actually running any   │                        │                        │
+│                        │                        │ of the operations.     │                        │                        │
+│                        │                        │ Focus only on adding   │                        │                        │
+│                        │                        │ th...                  │                        │                        │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"set-e-kills-… │ We have a backup       │ TC-H6-set-e-kills-bas… │ [PASS] The DRY_RUN     │
+│   "type": "lesson",    │                        │ script that runs daily │                        │ work is complete and   │
+│   "ids": [             │                        │ via cron. Add a        │                        │ verified — `bash -n`   │
+│ "set-e-kills-bash-scr… │                        │ DRY_RUN mode to it:    │                        │ parses clean and the   │
+│   ]                    │                        │ when `DRY_RUN=1` is    │                        │ dry-run smoke test     │
+│ }                      │                        │ set, the script should │                        │ exercises all four     │
+│                        │                        │ print what it would do │                        │ operations (pg_dump    │
+│                        │                        │ (pg_dump command, S3   │                        │ pipeline, S3 upload,   │
+│                        │                        │ path, etc.) without    │                        │ local rm, and the      │
+│                        │                        │ actually running any   │                        │ prune pipeline)        │
+│                        │                        │ of the operations.     │                        │ without performing any │
+│                        │                        │ Focus only on adding   │                        │ of them.               │
+│                        │                        │ th...                  │                        │ No further action      │
+│                        │                        │                        │                        │ needed o...            │
+└────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┘
+✓ Eval complete (ID: eval-16G-2026-05-14T16:36:10)
+
+» View results: promptfoo view
+» Share with your team: https://promptfoo.app
+» Feedback: https://promptfoo.dev/feedback
+
+
+Results:
+  ✓ 2 passed (100%)
+  0 failed (0%)
+  0 errors (0%)
+Duration: 4m 48s (concurrency: 1)
+
+Writing output to results/cache/latest-run.json
