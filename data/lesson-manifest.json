@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-05-14T16:19:10.516Z",
+  "generatedAt": "2026-05-14T23:29:30.816Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -620,6 +620,24 @@
       "problem": "Pausing to ask \"Should I proceed?\", \"Want me to implement this?\", or \"Ready to start?\" on routine, low-risk, reversible actions (editing files, running tests, rebuilding manifests) interrupts flow without adding value. When the user assigns a task, authorization to complete it is implicit in the request. Exception: when the user's message is a question or exploratory prompt rather than a task directive, there is no implicit authorization — answering is the correct response, not taking action.",
       "solution": "Execute routine, reversible actions proactively without asking permission when the user has assigned a task. Reserve confirmation for: irreversible operations, large blast radius (deleting data, force-pushing), actions affecting shared systems, or actions clearly outside the original request. When in doubt, state what you are about to do in one sentence — then do it. Critical distinction: task directives (\"add X\", \"fix Y\", \"implement Z\") carry implicit authorization; questions and exploratory prompts (\"what would you do?\", \"how should we approach X?\") do not — respond with information, not action."
     },
+    "01KRMD5SNGHK18WHA62RNSNWFE": {
+      "slug": "activate-serena-project-at-session-start-9070",
+      "type": "directive",
+      "priority": 8,
+      "toolNames": [],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "tags": [
+        "tool:serena",
+        "category:session-setup"
+      ],
+      "scope": null,
+      "message": "## Lesson: Activate Serena project at session start before any code work\nSerena requires the project to be activated before symbol navigation works. Without activation, every Serena call returns 'No active project' and falls back to expensive Read calls, erasing the token savings Serena is designed to provide. This failure is silent — the agent just proceeds with Read instead.\n**Fix**: At the start of any session involving code work: call ToolSearch 'select:mcp__plugin_serena_serena__activate_project' to load the schema, then call activate_project with the absolute path of the current project root (use cwd or the working directory). This takes 2 seconds and enables all Serena navigation tools for the rest of the session, saving thousands of tokens.",
+      "summary": "Activate Serena project at session start before any code work",
+      "problem": "Serena requires the project to be activated before symbol navigation works. Without activation, every Serena call returns 'No active project' and falls back to expensive Read calls, erasing the token savings Serena is designed to provide. This failure is silent — the agent just proceeds with Read instead.",
+      "solution": "At the start of any session involving code work: call ToolSearch 'select:mcp__plugin_serena_serena__activate_project' to load the schema, then call activate_project with the absolute path of the current project root (use cwd or the working directory). This takes 2 seconds and enables all Serena navigation tools for the rest of the session, saving thousands of tokens."
+    },
     "01JQSEED00000000000000001": {
       "slug": "pytest-tty-hanging-k9m2",
       "type": "guard",
@@ -1164,6 +1182,64 @@
       "summary": "GitHub App PKCS#1 keys silently fail on Node 20+/OpenSSL 3 (Vercel)",
       "problem": "GitHub App private keys download in PKCS#1 format (BEGIN RSA PRIVATE KEY). Node.js 20+/OpenSSL 3 environments (Vercel production) cannot load PKCS#1 keys — createPrivateKey() throws ERR_OSSL_UNSUPPORTED at JWT-signing time, which is async and after the HTTP 202 is already sent. The function appears healthy in GitHub delivery history while silently doing nothing: all webhooks accepted, zero reviews posted.",
       "solution": "Convert the key to PKCS#8 immediately after downloading from GitHub App settings: `openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in key.pem -out key.pkcs8.pem`. The result starts with BEGIN PRIVATE KEY (no RSA). Store only the PKCS#8 form in env vars. Add a startup guard: if GITHUB_APP_PRIVATE_KEY contains BEGIN RSA PRIVATE KEY, throw at boot rather than failing silently mid-request."
+    },
+    "01KRMD5P2N3H1K613XYWA7B93K": {
+      "slug": "use-serena-getsymbolsoverview-or-findsym-2255",
+      "type": "hint",
+      "priority": 7,
+      "toolNames": [
+        "Read"
+      ],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [
+        {
+          "source": ".*/[^/]*\\.mjs",
+          "flags": "i"
+        },
+        {
+          "source": ".*/[^/]*\\.ts",
+          "flags": "i"
+        },
+        {
+          "source": ".*/[^/]*\\.tsx",
+          "flags": "i"
+        },
+        {
+          "source": ".*/[^/]*\\.js",
+          "flags": "i"
+        },
+        {
+          "source": ".*/[^/]*\\.jsx",
+          "flags": "i"
+        },
+        {
+          "source": ".*/[^/]*\\.py",
+          "flags": "i"
+        },
+        {
+          "source": ".*/[^/]*\\.sh",
+          "flags": "i"
+        },
+        {
+          "source": ".*/[^/]*\\.zsh",
+          "flags": "i"
+        },
+        {
+          "source": ".*/[^/]*\\.md",
+          "flags": "i"
+        }
+      ],
+      "tags": [
+        "tool:serena",
+        "category:token-efficiency",
+        "severity:cost"
+      ],
+      "scope": null,
+      "message": "## Lesson: Use Serena get_symbols_overview or find_symbol instead of reading whole code files\nReading entire code files with Read puts thousands of tokens into context permanently. A 300-line file costs ~8K chars of context; Serena's get_symbols_overview returns the same structural understanding in ~200 chars — a 40x reduction in token cost per code exploration.\n**Fix**: For code files, use Serena tools first: (1) ToolSearch 'select:mcp__plugin_serena_serena__activate_project,mcp__plugin_serena_serena__get_symbols_overview,mcp__plugin_serena_serena__find_symbol' to load schemas; (2) call activate_project(cwd) if not already activated; (3) get_symbols_overview for structure or find_symbol with include_body=true for a specific function. Fall back to Read only when Serena cannot locate the symbol.",
+      "summary": "Use Serena get_symbols_overview or find_symbol instead of reading whole code files",
+      "problem": "Reading entire code files with Read puts thousands of tokens into context permanently. A 300-line file costs ~8K chars of context; Serena's get_symbols_overview returns the same structural understanding in ~200 chars — a 40x reduction in token cost per code exploration.",
+      "solution": "For code files, use Serena tools first: (1) ToolSearch 'select:mcp__plugin_serena_serena__activate_project,mcp__plugin_serena_serena__get_symbols_overview,mcp__plugin_serena_serena__find_symbol' to load schemas; (2) call activate_project(cwd) if not already activated; (3) get_symbols_overview for structure or find_symbol with include_body=true for a specific function. Fall back to Read only when Serena cannot locate the symbol."
     },
     "01JQSEED00000000000000005": {
       "slug": "npm-link-peer-deps-r2f7",

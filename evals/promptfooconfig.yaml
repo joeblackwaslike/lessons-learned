@@ -1736,5 +1736,47 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
+  - description: TC-H61 serena-over-read [control]
+    vars:
+      scenarioId: TC-H61-serena-over-read
+      prompt: "{{file://scenarios/TC-H61-serena-over-read/PROMPT.md}}"
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H61 serena-over-read [treatment]
+    vars:
+      scenarioId: TC-H61-serena-over-read
+      prompt: "{{file://scenarios/TC-H61-serena-over-read/PROMPT.md}}"
+      intervention:
+        type: lesson
+        ids:
+          - use-serena-getsymbolsoverview-or-findsym-2255
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+      - type: javascript
+        value: file://scripts/assert-trajectory.mjs
+  - description: TC-D10 serena-activate [control]
+    vars:
+      scenarioId: TC-D10-serena-activate
+      prompt: "{{file://scenarios/TC-D10-serena-activate/PROMPT.md}}"
+      intervention:
+        type: none
+        ids: []
+  - description: TC-D10 serena-activate [treatment]
+    vars:
+      scenarioId: TC-D10-serena-activate
+      prompt: "{{file://scenarios/TC-D10-serena-activate/PROMPT.md}}"
+      intervention:
+        type: lesson
+        ids:
+          - activate-serena-project-at-session-start-9070
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
 outputPath: results/cache/latest-run.json
 sharing: false

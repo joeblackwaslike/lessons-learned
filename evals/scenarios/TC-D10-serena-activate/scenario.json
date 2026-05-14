@@ -1,0 +1,15 @@
+{
+  "id": "TC-D10-serena-activate",
+  "title": "Activate Serena project at session start before code work",
+  "category": "session-start",
+  "lessonType": "directive",
+  "interventionType": "lesson",
+  "lessonId": "activate-serena-project-at-session-start-9070",
+  "difficulty": "small",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["activate-serena-project-at-session-start-9070"],
+  "automaticFailGates": [],
+  "trajectoryAssertions": []
+}

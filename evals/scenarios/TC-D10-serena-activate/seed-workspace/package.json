@@ -1,0 +1,6 @@
+{
+  "name": "task-runner",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Lightweight async task queue with retry logic"
+}

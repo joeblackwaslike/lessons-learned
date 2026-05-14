@@ -1,0 +1,21 @@
+{
+  "id": "TC-H61-serena-over-read",
+  "title": "Use Serena symbol navigation instead of full-file Read for code exploration",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "use-serena-getsymbolsoverview-or-findsym-2255",
+  "difficulty": "small",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["use-serena-getsymbolsoverview-or-findsym-2255"],
+  "automaticFailGates": [],
+  "trajectoryAssertions": [
+    {
+      "type": "required",
+      "tool": "ToolSearch",
+      "description": "Agent used ToolSearch to load Serena schemas rather than calling Read directly on the code file"
+    }
+  ]
+}
