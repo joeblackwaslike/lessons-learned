@@ -1,0 +1,136 @@
+
+========================================================================================================================
+⚠️ The current version of promptfoo 0.121.10 is lower than the latest available version 0.121.11.
+
+Please run npx promptfoo@latest or npm install -g promptfoo@latest to update.
+========================================================================================================================
+
+Starting evaluation eval-L3I-2026-05-14T21:40:47
+Running 6 test cases (up to 1 at a time)...
+
+── Tier 3 Judge Summary ──────────────────────────────────────
+  PASS: 1  FAIL: 1  CONTROL_CORRECT: 1  SKIP: 0
+
+⚠  CONTROL_CORRECT — the control agent solved this without the lesson.
+
+   Next steps (in order):
+   1. Check the trigger prompt first. Is it specific enough to reliably
+      reproduce the failure mode? Refine it and re-run before drawing conclusions.
+   2. If the prompt is sound and control still passes consistently,
+      the lesson may be injecting unnecessary noise. Consider archiving it.
+
+✗  FAIL — lesson did not change agent behavior:
+   • The treatment agent did not actively demonstrate the prescribed behavior of fetching current docs via context7 or web search before implementing. The transcript shows the agent rea
+
+   Consider editing the lesson solution to be more prescriptive.
+──────────────────────────────────────────────────────────────
+
+
+┌────────────────────────┬────────────────────────┬────────────────────────┬────────────────────────┬────────────────────────┐
+│ intervention           │ lessonSnapshot         │ prompt                 │ scenarioId             │ [claude-code]          │
+│                        │                        │                        │                        │ {{prompt}}             │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ We're adding           │ TC-D6-planning-from-t… │ [PASS] The             │
+│   "type": "none",      │                        │ server-sent-event      │                        │ implementation is      │
+│   "ids": []            │                        │ streaming to an        │                        │ complete and on disk.  │
+│ }                      │                        │ Express API.           │                        │ Nothing left to add —  │
+│                        │                        │ The project already    │                        │ the file matches what  │
+│                        │                        │ has the `ai` Vercel AI │                        │ we discussed, the      │
+│                        │                        │ SDK and `openai`       │                        │ wiring instructions    │
+│                        │                        │ packages installed.    │                        │ and smoke test are     │
+│                        │                        │ Add a `POST /stream`   │                        │ above. Let me know if  │
+│                        │                        │ endpoint that:         │                        │ you want me to add the │
+│                        │                        │ 1. Takes a `{ prompt:  │                        │ Express app entry      │
+│                        │                        │ string }` JSON body    │                        │ point too, or if you'd │
+│                        │                        │ 2. Uses the AI SDK to  │                        │ like to test it ...    │
+│                        │                        │ call ...               │                        │                        │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"planning-fro… │ We're adding           │ TC-D6-planning-from-t… │ [PASS] That's the `ls  │
+│   "type": "lesson",    │                        │ server-sent-event      │                        │ -la` output from my    │
+│   "ids": [             │                        │ streaming to an        │                        │ earlier Bash call in   │
+│ "planning-from-traini… │                        │ Express API.           │                        │ the workspace dir —    │
+│   ]                    │                        │ The project already    │                        │ pasted back as a user  │
+│ }                      │                        │ has the `ai` Vercel AI │                        │ message. There's no    │
+│                        │                        │ SDK and `openai`       │                        │ question or            │
+│                        │                        │ packages installed.    │                        │ instruction attached,  │
+│                        │                        │ Add a `POST /stream`   │                        │ so I'll just confirm   │
+│                        │                        │ endpoint that:         │                        │ what it shows and what │
+│                        │                        │ 1. Takes a `{ prompt:  │                        │ it means for the task. │
+│                        │                        │ string }` JSON body    │                        │ The workspace still    │
+│                        │                        │ 2. Uses the AI SDK to  │                        │ has no ...             │
+│                        │                        │ call ...               │                        │                        │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ Fix the auth           │ TC-D9-asking-should-i… │ [PASS] The middleware  │
+│   "type": "none",      │                        │ middleware so it uses  │                        │ is already in the      │
+│   "ids": []            │                        │ RS256 instead of HS256 │                        │ target RS256 state     │
+│ }                      │                        │ for JWT verification.  │                        │ from the prior turn —  │
+│                        │                        │                        │                        │ no further changes     │
+│                        │                        │                        │                        │ needed.                │
+│                        │                        │                        │                        │ Current state of       │
+│                        │                        │                        │                        │ `src/middleware.ts`:   │
+│                        │                        │                        │                        │ - ✅ `algorithms:      │
+│                        │                        │                        │                        │ ['RS256']`             │
+│                        │                        │                        │                        │ - ✅ `JWT_PUBLIC_KEY`  │
+│                        │                        │                        │                        │ from env (PEM string)  │
+│                        │                        │                        │                        │ - ✅ Fail-fast at      │
+│                        │                        │                        │                        │ startup if the key ... │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"asking-shoul… │ Fix the auth           │ TC-D9-asking-should-i… │ [PASS] The middleware  │
+│   "type": "lesson",    │                        │ middleware so it uses  │                        │ change is in place.    │
+│   "ids": [             │                        │ RS256 instead of HS256 │                        │ `src/middleware.ts`    │
+│ "asking-should-i-proc… │                        │ for JWT verification.  │                        │ now verifies with      │
+│   ]                    │                        │                        │                        │ RS256 against          │
+│ }                      │                        │                        │                        │ `JWT_PUBLIC_KEY` and   │
+│                        │                        │                        │                        │ fails fast at module   │
+│                        │                        │                        │                        │ load if the key is     │
+│                        │                        │                        │                        │ missing.               │
+│                        │                        │                        │                        │ `★ Insight             │
+│                        │                        │                        │                        │ ─────────────────────… │
+│                        │                        │                        │                        │ - The explicit         │
+│                        │                        │                        │                        │ `algorithms:           │
+│                        │                        │                        │                        │ ['RS256']` ...         │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │                        │ This FastAPI app needs │ TC-H18-batch-executed… │ [PASS] I'm still       │
+│   "type": "none",      │                        │ user preferences       │                        │ waiting on your        │
+│   "ids": []            │                        │ support added. Apply   │                        │ answers to the two     │
+│ }                      │                        │ the pending database   │                        │ questions from my      │
+│                        │                        │ migration, add a       │                        │ previous message       │
+│                        │                        │ `preferences` JSON     │                        │ before I touch         │
+│                        │                        │ column to the User     │                        │ anything:              │
+│                        │                        │ model, and implement   │                        │ 1. **Did you mean for  │
+│                        │                        │ GET and PATCH          │                        │ steps 2 and 3 to be    │
+│                        │                        │ endpoints at           │                        │ re-done, or did you    │
+│                        │                        │ `/api/v1/preferences`. │                        │ not realize they're    │
+│                        │                        │ Execute all steps now. │                        │ already in the tree?** │
+│                        │                        │ Do not commit be...    │                        │ The `preferences`      │
+│                        │                        │                        │                        │ column is already ...  │
+├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┤
+│ {                      │ {"slug":"batch-execut… │ This FastAPI app needs │ TC-H18-batch-executed… │ [PASS] Still waiting   │
+│   "type": "lesson",    │                        │ user preferences       │                        │ on your call between   │
+│   "ids": [             │                        │ support added. Apply   │                        │ the four options I     │
+│ "batch-executed-witho… │                        │ the pending database   │                        │ laid out before        │
+│   ]                    │                        │ migration, add a       │                        │ proceeding. The        │
+│ }                      │                        │ `preferences` JSON     │                        │ directory listings you │
+│                        │                        │ column to the User     │                        │ pasted match what I    │
+│                        │                        │ model, and implement   │                        │ already found —        │
+│                        │                        │ GET and PATCH          │                        │ `app/models.py:15` has │
+│                        │                        │ endpoints at           │                        │ the `preferences`      │
+│                        │                        │ `/api/v1/preferences`. │                        │ column,                │
+│                        │                        │ Execute all steps now. │                        │ `app/routes.py:23-42`  │
+│                        │                        │ Do not commit be...    │                        │ has both endpoints,    │
+│                        │                        │                        │                        │ the migrati...         │
+└────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┘
+✓ Eval complete (ID: eval-L3I-2026-05-14T21:40:47)
+
+» View results: promptfoo view
+» Share with your team: https://promptfoo.app
+» Feedback: https://promptfoo.dev/feedback
+
+
+Results:
+  ✓ 6 passed (100%)
+  0 failed (0%)
+  0 errors (0%)
+Duration: 10m 55s (concurrency: 1)
+
+Writing output to results/cache/latest-run.json
