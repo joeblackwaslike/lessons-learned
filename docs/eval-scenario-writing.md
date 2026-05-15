@@ -214,3 +214,18 @@ A `directive` lesson injected at session start is a single injection point. In p
 A directive alone passes the TC-D10 eval (the agent follows it when the prompt is soft), but fails in adversarial real-world use where task urgency overrides session-start instructions.
 
 **Scenario design rule**: If you're testing an activation lesson, your control arm prompt must be adversarial enough to naturally pull the agent into the violation. "Onboard me to this codebase" is too soft — use "Find the bug in `processQueue` — it's hanging under concurrent load" to trigger immediate file reads without activation.
+
+**Community validation (2026-05-15)**: Serena maintainers independently documented the same regression in their Claude Code client docs: "Recent updates to Claude Code and the Opus line of models resulted in drastically reduced adherence to instructions pertaining to Serena's tools. The descriptions of CC's system tools take almost 16k tokens and introduce a very strong bias towards internal tools, making it almost impossible to convince Opus 4.7 to use Serena." Root cause is competing training priors, not lesson wording. Their solution: infrastructure-level hooks (`serena-hooks`) and a system prompt override, not more lesson text.
+
+### Guard lessons can be bypassed via Agent subagents
+
+When a PreToolUse guard blocks `Bash` or `Read`, the agent finds equivalent paths that don't trigger the guard:
+
+- **Agent subagents**: spawning an Explore or general-purpose subagent to read files — subagents run with their own tool call context and the parent's PreToolUse hooks do not apply.
+- **Equivalent commands**: `python3 -c "print(open('f').read())"`, `python3 -m json.tool`, `awk`, `less`, `head` — any command that isn't explicitly pattern-matched.
+
+**Root cause**: Guards are pattern-matched against specific tool names and command strings. The agent isn't "defying" the guard — it's pattern-matching toward the nearest unblocked path that accomplishes the goal. Guards that block `grep` don't block `python3 -c "import re; ..."`.
+
+**Implication for lesson design**: Guards work reliably only for commands with no common equivalent (e.g., a specific destructive CLI flag). For broad behavioral goals like "use Serena instead of grep," guards cannot provide exhaustive coverage and the correct solution is infrastructure-level enforcement (hooks that count consecutive violations and nudge, not block).
+
+**Observable in eval**: If you see a treatment arm passing the guard assertion but producing no Serena tool calls, check hook-events.ndjson for Agent subagent spawns — the agent may be outsourcing the file reads to a child process.

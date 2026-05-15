@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-05-15T09:26:26.412Z",
+  "generatedAt": "2026-05-15T12:01:38.324Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -280,126 +280,6 @@
       "summary": "Fetch exact-version docs before implementing — training-data sigs are stale",
       "problem": "Library APIs, CLI flags, and framework config schemas change between versions. Proceeding directly from memory without checking current documentation produces plans and code that fail on version-specific details — wrong method names, removed options, new required config keys. Training data has a knowledge cutoff and is routinely months or years behind.",
       "solution": "Before writing any code that uses a library, framework, or external API: call context7 MCP (resolve-library-id then query-docs) or WebSearch/WebFetch to verify current API signatures for the exact installed version. Do NOT write implementation from training-data memory — invoke one of these tools first, before opening any file or writing any code. Name the tool you used in your response."
-    },
-    "01KRN2S5B869QFPD6W7J7SQ40S": {
-      "slug": "read-on-code-file-before-serena-activati-09b9",
-      "type": "guard",
-      "priority": 9,
-      "toolNames": [
-        "Read"
-      ],
-      "commandRegexSources": [],
-      "commandMatchTarget": "executable",
-      "pathRegexSources": [
-        {
-          "source": ".*/[^/]*\\.js",
-          "flags": "i"
-        },
-        {
-          "source": ".*/[^/]*\\.mjs",
-          "flags": "i"
-        },
-        {
-          "source": ".*/[^/]*\\.ts",
-          "flags": "i"
-        },
-        {
-          "source": ".*/[^/]*\\.tsx",
-          "flags": "i"
-        },
-        {
-          "source": ".*/[^/]*\\.py",
-          "flags": "i"
-        }
-      ],
-      "tags": [
-        "tool:serena",
-        "category:session-setup",
-        "severity:token-efficiency"
-      ],
-      "scope": null,
-      "message": "## Lesson: Read on code file before Serena activation — activate first\nRead on a source file bypasses Serena symbol-level navigation and wastes tokens loading full file content.\n**Fix**: Use mcp__plugin_serena_serena__read_file instead of Read, or mcp__plugin_serena_serena__get_symbols_overview for a structural overview. If Serena is not yet activated, call mcp__plugin_serena_serena__activate_project with the project root first.",
-      "summary": "Read on code file before Serena activation — activate first",
-      "problem": "Read on a source file bypasses Serena symbol-level navigation and wastes tokens loading full file content.",
-      "solution": "Use mcp__plugin_serena_serena__read_file instead of Read, or mcp__plugin_serena_serena__get_symbols_overview for a structural overview. If Serena is not yet activated, call mcp__plugin_serena_serena__activate_project with the project root first."
-    },
-    "01KRNESJC9MN3W3MDSZPCDCSNS": {
-      "slug": "bash-cat-on-source-file-before-serena-us-c878",
-      "type": "guard",
-      "priority": 9,
-      "toolNames": [
-        "Bash"
-      ],
-      "commandRegexSources": [
-        {
-          "source": "\\bcat\\b.+\\.(js|mjs|ts|tsx|py)",
-          "flags": ""
-        }
-      ],
-      "commandMatchTarget": "executable",
-      "pathRegexSources": [],
-      "tags": [
-        "tool:serena",
-        "category:session-setup",
-        "severity:token-efficiency"
-      ],
-      "scope": null,
-      "message": "## Lesson: bash cat on source file before Serena — use read_file instead\ncat on a source file bypasses Serena and loads full file content via shell instead of the language server.\n**Fix**: Use mcp__plugin_serena_serena__read_file with the same file path instead of cat. If Serena is not yet activated, call mcp__plugin_serena_serena__activate_project with the project root first.",
-      "summary": "bash cat on source file before Serena — use read_file instead",
-      "problem": "cat on a source file bypasses Serena and loads full file content via shell instead of the language server.",
-      "solution": "Use mcp__plugin_serena_serena__read_file with the same file path instead of cat. If Serena is not yet activated, call mcp__plugin_serena_serena__activate_project with the project root first."
-    },
-    "01KRNET15D1KVQBRXK6TQZD5MQ": {
-      "slug": "bash-grep-on-source-files-before-serena-78ab",
-      "type": "guard",
-      "priority": 9,
-      "toolNames": [
-        "Bash"
-      ],
-      "commandRegexSources": [
-        {
-          "source": "\\bgrep\\b.+\\.(js|mjs|ts|tsx|py)",
-          "flags": ""
-        }
-      ],
-      "commandMatchTarget": "executable",
-      "pathRegexSources": [],
-      "tags": [
-        "tool:serena",
-        "category:session-setup",
-        "severity:token-efficiency"
-      ],
-      "scope": null,
-      "message": "## Lesson: bash grep on source files before Serena — use search_for_pattern instead\ngrep on source file paths shells out for pattern matching instead of using Serena indexing, missing symbol context and wasting tokens.\n**Fix**: Use mcp__plugin_serena_serena__search_for_pattern with your search pattern instead of grep. If Serena is not yet activated, call mcp__plugin_serena_serena__activate_project with the project root first.",
-      "summary": "bash grep on source files before Serena — use search_for_pattern instead",
-      "problem": "grep on source file paths shells out for pattern matching instead of using Serena indexing, missing symbol context and wasting tokens.",
-      "solution": "Use mcp__plugin_serena_serena__search_for_pattern with your search pattern instead of grep. If Serena is not yet activated, call mcp__plugin_serena_serena__activate_project with the project root first."
-    },
-    "01KRNET698PRQ8BFS3K2XY3PDM": {
-      "slug": "bash-find-on-source-files-before-serena-5a2e",
-      "type": "guard",
-      "priority": 9,
-      "toolNames": [
-        "Bash"
-      ],
-      "commandRegexSources": [
-        {
-          "source": "\\bfind\\b.+\\.(js|mjs|ts|tsx|py)",
-          "flags": ""
-        }
-      ],
-      "commandMatchTarget": "executable",
-      "pathRegexSources": [],
-      "tags": [
-        "tool:serena",
-        "category:session-setup",
-        "severity:token-efficiency"
-      ],
-      "scope": null,
-      "message": "## Lesson: bash find on source files before Serena — use find_file instead\nfind on source file extensions walks the filesystem without the language server index, missing symbol relationships and producing raw path results.\n**Fix**: Use mcp__plugin_serena_serena__find_file with your filename pattern instead of find. If Serena is not yet activated, call mcp__plugin_serena_serena__activate_project with the project root first.",
-      "summary": "bash find on source files before Serena — use find_file instead",
-      "problem": "find on source file extensions walks the filesystem without the language server index, missing symbol relationships and producing raw path results.",
-      "solution": "Use mcp__plugin_serena_serena__find_file with your filename pattern instead of find. If Serena is not yet activated, call mcp__plugin_serena_serena__activate_project with the project root first."
     },
     "01JQSEED00000000000000002": {
       "slug": "mock-patch-namespace-v3x8",
@@ -739,24 +619,6 @@
       "summary": "Asking 'should I proceed?' on routine reversible actions creates unnecessary friction",
       "problem": "Pausing to ask \"Should I proceed?\", \"Want me to implement this?\", or \"Ready to start?\" on routine, low-risk, reversible actions (editing files, running tests, rebuilding manifests) interrupts flow without adding value. When the user assigns a task, authorization to complete it is implicit in the request. Exception: when the user's message is a question or exploratory prompt rather than a task directive, there is no implicit authorization — answering is the correct response, not taking action.",
       "solution": "Execute routine, reversible actions proactively without asking permission when the user has assigned a task. Reserve confirmation for: irreversible operations, large blast radius (deleting data, force-pushing), actions affecting shared systems, or actions clearly outside the original request. When in doubt, state what you are about to do in one sentence — then do it. Critical distinction: task directives (\"add X\", \"fix Y\", \"implement Z\") carry implicit authorization; questions and exploratory prompts (\"what would you do?\", \"how should we approach X?\") do not — respond with information, not action."
-    },
-    "01KRMD5SNGHK18WHA62RNSNWFE": {
-      "slug": "activate-serena-project-at-session-start-9070",
-      "type": "directive",
-      "priority": 8,
-      "toolNames": [],
-      "commandRegexSources": [],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
-      "tags": [
-        "tool:serena",
-        "category:session-setup"
-      ],
-      "scope": null,
-      "message": "## Lesson: Activate Serena project at session start before any code work\nSerena requires the project to be activated before symbol navigation works. Without activation, every Serena call returns 'No active project' and falls back to expensive Read calls, erasing the token savings Serena is designed to provide. This failure is silent — the agent just proceeds with Read instead.\n**Fix**: Your very first action in any session that touches a codebase — including onboarding, summarization, exploration, and code review — must be: (1) call ToolSearch with query \"select:mcp__plugin_serena_serena__activate_project\" to load the schema, then (2) call mcp__plugin_serena_serena__activate_project with the absolute project root path. Do not start with ls, Glob, Read, or pwd. This is unconditional: if there is a codebase, activate Serena before anything else.",
-      "summary": "Activate Serena project at session start before any code work",
-      "problem": "Serena requires the project to be activated before symbol navigation works. Without activation, every Serena call returns 'No active project' and falls back to expensive Read calls, erasing the token savings Serena is designed to provide. This failure is silent — the agent just proceeds with Read instead.",
-      "solution": "Your very first action in any session that touches a codebase — including onboarding, summarization, exploration, and code review — must be: (1) call ToolSearch with query \"select:mcp__plugin_serena_serena__activate_project\" to load the schema, then (2) call mcp__plugin_serena_serena__activate_project with the absolute project root path. Do not start with ls, Glob, Read, or pwd. This is unconditional: if there is a codebase, activate Serena before anything else."
     },
     "01JQSEED00000000000000001": {
       "slug": "pytest-tty-hanging-k9m2",
