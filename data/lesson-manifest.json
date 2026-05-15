@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-05-15T05:47:32.678Z",
+  "generatedAt": "2026-05-15T09:05:42.699Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -283,13 +283,13 @@
     },
     "01KRN2S5B869QFPD6W7J7SQ40S": {
       "slug": "read-on-code-file-before-serena-activati-09b9",
-      "type": "hint",
+      "type": "guard",
       "priority": 9,
       "toolNames": [
         "Read"
       ],
       "commandRegexSources": [],
-      "commandMatchTarget": "full",
+      "commandMatchTarget": "executable",
       "pathRegexSources": [
         {
           "source": ".*/[^/]*\\.js",

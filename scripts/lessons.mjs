@@ -322,10 +322,11 @@ duplicatedBy shapes (JSON object or null to clear):
   { "type": "mcp-server",   "name": "github" }
   { "type": "github-issue", "url": "https://github.com/org/repo/issues/N", "status": "open" }
 
-requires shapes (JSON object or null to clear — lesson excluded unless artifact is installed):
+requires shapes (JSON object, array of objects, or null to clear — lesson excluded unless artifact is installed):
   { "type": "plugin",     "name": "superpowers" }
   { "type": "skill",      "name": "superpowers:brainstorming" }
   { "type": "mcp-server", "name": "github" }
+  [{"type":"plugin","name":"serena"},{"type":"mcp-server","name":"serena"}]  ← OR logic
 
 Notes:
   - Status is not changed — active lessons stay active, candidates stay candidates.
@@ -684,6 +685,11 @@ function detectArtifact(descriptor) {
   return false;
 }
 
+function satisfiesRequires(requires) {
+  if (Array.isArray(requires)) return requires.some(d => detectArtifact(d));
+  return detectArtifact(requires);
+}
+
 // ─── Manifest building ───────────────────────────────────────────────
 
 function buildManifest() {
@@ -715,7 +721,7 @@ function buildManifest() {
         excluded++;
         continue;
       }
-      if (lesson.requires && !detectArtifact(lesson.requires)) {
+      if (lesson.requires && !satisfiesRequires(lesson.requires)) {
         excluded++;
         continue;
       }
@@ -1754,14 +1760,18 @@ function auditLesson(lesson) {
 
   // requires-invalid: malformed descriptor that will silently never gate inclusion
   if (lesson.requires !== null && lesson.requires !== undefined) {
-    const { type, name, url } = lesson.requires ?? {};
+    const descriptors = Array.isArray(lesson.requires) ? lesson.requires : [lesson.requires];
     const validTypes = ['plugin', 'skill', 'mcp-server', 'github-issue'];
-    if (!type || !validTypes.includes(type))
-      issues.push(`requires.type "${type}" is invalid — must be one of: ${validTypes.join(', ')}`);
-    else if (type !== 'github-issue' && !name)
-      issues.push('requires.name is required for plugin/skill/mcp-server types');
-    else if (type === 'github-issue' && !url)
-      issues.push('requires.url is required for github-issue type');
+    for (const { type, name, url } of descriptors) {
+      if (!type || !validTypes.includes(type))
+        issues.push(
+          `requires.type "${type}" is invalid — must be one of: ${validTypes.join(', ')}`
+        );
+      else if (type !== 'github-issue' && !name)
+        issues.push('requires.name is required for plugin/skill/mcp-server types');
+      else if (type === 'github-issue' && !url)
+        issues.push('requires.url is required for github-issue type');
+    }
   }
 
   return issues;
