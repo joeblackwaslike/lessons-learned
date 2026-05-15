@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-05-15T09:05:42.699Z",
+  "generatedAt": "2026-05-15T09:17:22.098Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -318,14 +318,14 @@
         "severity:token-efficiency"
       ],
       "scope": null,
-      "message": "## Lesson: Read on code file before Serena activation — activate first\nCalling Read on a source file (.js, .mjs, .ts, .py, etc.) before activating Serena wastes tokens and bypasses symbol-level navigation. The session-start directive to activate Serena is often deprioritized under task pressure, so this PreToolUse check is the enforcement layer.\n**Fix**: Before this Read call: run ToolSearch with query select:mcp__plugin_serena_serena__activate_project then call activate_project with the project root. Takes 2 seconds. Once done, use find_symbol or get_symbols_overview instead of Read for the rest of the session.",
+      "message": "## Lesson: Read on code file before Serena activation — activate first\nCalling Read on a source file (.js, .mjs, .ts, .py, etc.) before activating Serena wastes tokens and bypasses symbol-level navigation. The session-start directive to activate Serena is often deprioritized under task pressure, so this PreToolUse check is the enforcement layer.\n**Fix**: Activate Serena first: call mcp__plugin_serena_serena__activate_project with the project root. Then use mcp__plugin_serena_serena__read_file instead of Read, or mcp__plugin_serena_serena__get_symbols_overview for a structural overview of the file.",
       "summary": "Read on code file before Serena activation — activate first",
       "problem": "Calling Read on a source file (.js, .mjs, .ts, .py, etc.) before activating Serena wastes tokens and bypasses symbol-level navigation. The session-start directive to activate Serena is often deprioritized under task pressure, so this PreToolUse check is the enforcement layer.",
-      "solution": "Before this Read call: run ToolSearch with query select:mcp__plugin_serena_serena__activate_project then call activate_project with the project root. Takes 2 seconds. Once done, use find_symbol or get_symbols_overview instead of Read for the rest of the session."
+      "solution": "Activate Serena first: call mcp__plugin_serena_serena__activate_project with the project root. Then use mcp__plugin_serena_serena__read_file instead of Read, or mcp__plugin_serena_serena__get_symbols_overview for a structural overview of the file."
     },
-    "01KRN2SZXR8S2GXBS5ZJQ46QXK": {
-      "slug": "bash-catgrep-on-code-files-before-serena-a7de",
-      "type": "hint",
+    "01KRNESJC9MN3W3MDSZPCDCSNS": {
+      "slug": "bash-cat-on-source-file-before-serena-us-c878",
+      "type": "guard",
       "priority": 9,
       "toolNames": [
         "Bash"
@@ -334,17 +334,9 @@
         {
           "source": "\\bcat\\b.+\\.(js|mjs|ts|tsx|py)",
           "flags": ""
-        },
-        {
-          "source": "\\bgrep\\b.+\\.(js|mjs|ts|tsx|py)",
-          "flags": ""
-        },
-        {
-          "source": "\\bfind\\b.+\\.(js|mjs|ts|tsx|py)",
-          "flags": ""
         }
       ],
-      "commandMatchTarget": "full",
+      "commandMatchTarget": "executable",
       "pathRegexSources": [],
       "tags": [
         "tool:serena",
@@ -352,10 +344,62 @@
         "severity:token-efficiency"
       ],
       "scope": null,
-      "message": "## Lesson: Bash cat/grep on code files before Serena activation — activate first\nRunning cat, grep, or find on source files before activating Serena is the same bypass pattern as Read — it uses the shell to read code that Serena could navigate symbolically. The session-start directive is routinely skipped under task pressure.\n**Fix**: Before catting or grepping source files: call ToolSearch with query select:mcp__plugin_serena_serena__activate_project then call activate_project with the project root. Then use serena find_symbol or search_for_pattern instead of grep, and get_symbols_overview instead of cat.",
-      "summary": "Bash cat/grep on code files before Serena activation — activate first",
-      "problem": "Running cat, grep, or find on source files before activating Serena is the same bypass pattern as Read — it uses the shell to read code that Serena could navigate symbolically. The session-start directive is routinely skipped under task pressure.",
-      "solution": "Before catting or grepping source files: call ToolSearch with query select:mcp__plugin_serena_serena__activate_project then call activate_project with the project root. Then use serena find_symbol or search_for_pattern instead of grep, and get_symbols_overview instead of cat."
+      "message": "## Lesson: bash cat on source file before Serena — use read_file instead\nRunning cat on a source file before activating Serena bypasses symbol-level navigation. The correct tool is mcp__plugin_serena_serena__read_file which routes through the language server.\n**Fix**: Activate Serena first: call mcp__plugin_serena_serena__activate_project with the project root. Then use mcp__plugin_serena_serena__read_file with the same file path instead of cat.",
+      "summary": "bash cat on source file before Serena — use read_file instead",
+      "problem": "Running cat on a source file before activating Serena bypasses symbol-level navigation. The correct tool is mcp__plugin_serena_serena__read_file which routes through the language server.",
+      "solution": "Activate Serena first: call mcp__plugin_serena_serena__activate_project with the project root. Then use mcp__plugin_serena_serena__read_file with the same file path instead of cat."
+    },
+    "01KRNET15D1KVQBRXK6TQZD5MQ": {
+      "slug": "bash-grep-on-source-files-before-serena-78ab",
+      "type": "guard",
+      "priority": 9,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "\\bgrep\\b.+\\.(js|mjs|ts|tsx|py)",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "executable",
+      "pathRegexSources": [],
+      "tags": [
+        "tool:serena",
+        "category:session-setup",
+        "severity:token-efficiency"
+      ],
+      "scope": null,
+      "message": "## Lesson: bash grep on source files before Serena — use search_for_pattern instead\ngrep on source file paths is an exploration shortcut that skips Serena indexing. mcp__plugin_serena_serena__search_for_pattern does the same search through the language server with symbol-aware results and no shell overhead.\n**Fix**: Activate Serena first: call mcp__plugin_serena_serena__activate_project with the project root. Then use mcp__plugin_serena_serena__search_for_pattern with your search pattern instead of grep.",
+      "summary": "bash grep on source files before Serena — use search_for_pattern instead",
+      "problem": "grep on source file paths is an exploration shortcut that skips Serena indexing. mcp__plugin_serena_serena__search_for_pattern does the same search through the language server with symbol-aware results and no shell overhead.",
+      "solution": "Activate Serena first: call mcp__plugin_serena_serena__activate_project with the project root. Then use mcp__plugin_serena_serena__search_for_pattern with your search pattern instead of grep."
+    },
+    "01KRNET698PRQ8BFS3K2XY3PDM": {
+      "slug": "bash-find-on-source-files-before-serena-5a2e",
+      "type": "guard",
+      "priority": 9,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "\\bfind\\b.+\\.(js|mjs|ts|tsx|py)",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "executable",
+      "pathRegexSources": [],
+      "tags": [
+        "tool:serena",
+        "category:session-setup",
+        "severity:token-efficiency"
+      ],
+      "scope": null,
+      "message": "## Lesson: bash find on source files before Serena — use find_file instead\nfind on source file extensions walks the filesystem without the language server index. mcp__plugin_serena_serena__find_file uses the indexed project tree, returning results faster and without spawning a shell process.\n**Fix**: Activate Serena first: call mcp__plugin_serena_serena__activate_project with the project root. Then use mcp__plugin_serena_serena__find_file with your filename pattern instead of find.",
+      "summary": "bash find on source files before Serena — use find_file instead",
+      "problem": "find on source file extensions walks the filesystem without the language server index. mcp__plugin_serena_serena__find_file uses the indexed project tree, returning results faster and without spawning a shell process.",
+      "solution": "Activate Serena first: call mcp__plugin_serena_serena__activate_project with the project root. Then use mcp__plugin_serena_serena__find_file with your filename pattern instead of find."
     },
     "01JQSEED00000000000000002": {
       "slug": "mock-patch-namespace-v3x8",

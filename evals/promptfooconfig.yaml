@@ -1774,7 +1774,9 @@ tests:
         ids:
           - activate-serena-project-at-session-start-9070
           - read-on-code-file-before-serena-activati-09b9
-          - bash-catgrep-on-code-files-before-serena-a7de
+          - bash-cat-on-source-file-before-serena-us-c878
+          - bash-grep-on-source-files-before-serena-78ab
+          - bash-find-on-source-files-before-serena-5a2e
     assert:
       - type: javascript
         value: file://scripts/assert-hidden-check.mjs
