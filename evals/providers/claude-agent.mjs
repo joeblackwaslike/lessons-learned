@@ -43,8 +43,8 @@ const JUDGE_SCRIPT = join(EVALS_ROOT, 'scripts', 'judge.mjs');
 
 export default class ClaudeAgentProvider {
   constructor(options = {}) {
-    this.model = options.model ?? 'claude-sonnet-4-6';
-    this.timeout = options.timeout ?? 300_000;
+    this.model = options.config?.model ?? options.model ?? 'claude-sonnet-4-6';
+    this.timeout = options.config?.timeout ?? options.timeout ?? 300_000;
   }
 
   id() {

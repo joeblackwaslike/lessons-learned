@@ -109,7 +109,7 @@ if (existsSync(settingsPath)) {
 workspaceSettings.hooks ??= {};
 workspaceSettings.hooks.PreToolUse ??= [];
 workspaceSettings.hooks.PreToolUse.push({
-  matcher: 'Read|Edit|Write|Bash|Glob',
+  matcher: '*',
   hooks: [{ type: 'command', command: `node "${shimPath}"`, timeout: 5 }],
 });
 if (existsSync(lessonInjectPath)) {
@@ -123,6 +123,24 @@ workspaceSettings.hooks.PostToolUse.push({
   matcher: 'Bash',
   hooks: [{ type: 'command', command: `node "${postShimPath}"`, timeout: 5 }],
 });
+if (intervention.type === 'hooks') {
+  // Use an eval-specific uv cache (not the user's personal cache) for isolation.
+  // This directory persists between runs for speed — delete evals/.uv-cache/ to force re-download.
+  const uvCache = join(EVALS_ROOT, '.uv-cache');
+  const serenaHooksCmd = `UV_CACHE_DIR="${uvCache}" uvx --from 'git+https://github.com/oraios/serena' serena-hooks`;
+  workspaceSettings.hooks.SessionStart ??= [];
+  workspaceSettings.hooks.SessionStart.push({
+    matcher: 'startup|resume',
+    hooks: [{ type: 'command', command: `${serenaHooksCmd} activate`, timeout: 30 }],
+  });
+  // No 'remind' hook — it fires per tool call and is too expensive for evals.
+  workspaceSettings.hooks.SessionEnd ??= [];
+  workspaceSettings.hooks.SessionEnd.push({
+    matcher: '.*',
+    hooks: [{ type: 'command', command: `${serenaHooksCmd} cleanup`, timeout: 15 }],
+  });
+}
+
 writeFileSync(settingsPath, JSON.stringify(workspaceSettings, null, 2));
 
 // --- Workspace scope directive --------------------------------------------------
@@ -155,8 +173,8 @@ writeFileSync(join(workspaceDir, 'CLAUDE.md'), claudeMdSections.join('\n') + '\n
 // --- Helpers --------------------------------------------------------------------
 
 function buildInterventionManifest(intervention) {
-  if (intervention.type === 'none') {
-    // Control arm: empty manifest — no lessons injected
+  if (intervention.type === 'none' || intervention.type === 'hooks') {
+    // Control arm or hooks-only arm: empty lesson manifest — no lessons injected
     return { lessons: [], version: 1, generatedAt: new Date().toISOString() };
   }
 

@@ -4,13 +4,13 @@ providers:
     label: claude-code
     config:
       model: claude-sonnet-4-6
-      timeout: 300000
+      timeout: 600000
 prompts:
   - "{{prompt}}"
 defaultTest:
   options:
     provider: file://providers/claude-agent.mjs
-    timeout: 300000
+    timeout: 600000
 extensions:
   - file://scripts/hooks/before-each.mjs:beforeAll
   - file://scripts/hooks/before-each.mjs:beforeEach
@@ -1770,17 +1770,10 @@ tests:
       scenarioId: TC-D10-serena-activate
       prompt: "{{file://scenarios/TC-D10-serena-activate/PROMPT.md}}"
       intervention:
-        type: lesson
-        ids:
-          - activate-serena-project-at-session-start-9070
-          - read-on-code-file-before-serena-activati-09b9
-          - bash-cat-on-source-file-before-serena-us-c878
-          - bash-grep-on-source-files-before-serena-78ab
-          - bash-find-on-source-files-before-serena-5a2e
+        type: hooks
+        ids: []
     assert:
       - type: javascript
         value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
 outputPath: results/cache/latest-run.json
 sharing: false

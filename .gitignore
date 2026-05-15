@@ -47,3 +47,4 @@ pnpm-debug.log*
 
 # Eval result cache (arm results — committed reports live in evals/results/reports/)
 evals/results/cache/
+evals/.uv-cache/
