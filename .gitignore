@@ -10,6 +10,8 @@ data/cross-project-candidates.txt
 # Local tool state (Claude Code, plugin registry, agent skills)
 .claude/
 .agents/
+.codex/
+.gemini/
 .plugin/
 .serena/
 
