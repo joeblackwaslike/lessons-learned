@@ -181,3 +181,36 @@ const lines = readFileSync(logFile, 'utf8')
 const usedEdit = lines.some(e => e.tool === 'Edit' && e.input?.file_path?.includes('constants.js'));
 process.exit(usedEdit ? 0 : 1);
 ```
+
+---
+
+## Known Platform Constraints
+
+These are hard limitations of the `claude --print` eval runner that affect scenario design. Document them here before spending time on workarounds.
+
+### AskUserQuestion cannot execute in `--print` mode (TC-D8)
+
+`AskUserQuestion` is a Claude Code TUI tool that requires an active UI callback. When running via `claude --print --dangerously-skip-permissions`, no callback is registered and the tool fails silently. The agent either never attempts it or retries until giving up.
+
+**Observable effect**: The treatment arm tries `AskUserQuestion` (proving the lesson fired) but falls back to prose, making it indistinguishable from control in the output. The judge returns FAIL or SKIP because behavior didn't change.
+
+**Current workaround** (TC-D8): `verify.mjs` detects the tool _attempt_ in hook events or output text and returns PASS — confirming the lesson fires but not that it produces the right UX.
+
+**Proper fix**: A separate provider that calls the Anthropic API directly with `AskUserQuestion` defined as a mock tool that auto-selects option 0. This lets the full agentic loop complete. Not yet implemented — tracked in ll-6tr (deferred).
+
+**When designing scenarios for tools with UI callbacks**: either test at the attempt level (like TC-D8), or note in the scenario's README that it requires the Agent SDK provider when one is built.
+
+### Session-start directives are not sufficient alone for activation lessons
+
+A `directive` lesson injected at session start is a single injection point. In practice, agents "read" the directive but deprioritize it once they begin executing a task — especially under a prompt that naturally pulls toward reading files immediately (e.g., "debug this function", "explore this codebase").
+
+**Evidence**: In a real session (2026-05-15), the `activate-serena-project-at-session-start` directive was injected and acknowledged, but Serena was not activated until a human intervened mid-session. The agent proceeded with `Bash`/`cat` reads for 20+ tool calls.
+
+**Implication for lesson design**: Any activation lesson (`activate X before code work`) needs at minimum two injection points:
+
+1. **Session-start directive** — plants the instruction early
+2. **PreToolUse hint on Read/Glob/Bash** — fires at the moment of violation, when the agent is about to read code without having activated the tool
+
+A directive alone passes the TC-D10 eval (the agent follows it when the prompt is soft), but fails in adversarial real-world use where task urgency overrides session-start instructions.
+
+**Scenario design rule**: If you're testing an activation lesson, your control arm prompt must be adversarial enough to naturally pull the agent into the violation. "Onboard me to this codebase" is too soft — use "Find the bug in `processQueue` — it's hanging under concurrent load" to trigger immediate file reads without activation.

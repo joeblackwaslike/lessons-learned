@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-05-15T05:15:11.419Z",
+  "generatedAt": "2026-05-15T05:47:32.678Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -280,6 +280,82 @@
       "summary": "Fetch exact-version docs before implementing — training-data sigs are stale",
       "problem": "Library APIs, CLI flags, and framework config schemas change between versions. Proceeding directly from memory without checking current documentation produces plans and code that fail on version-specific details — wrong method names, removed options, new required config keys. Training data has a knowledge cutoff and is routinely months or years behind.",
       "solution": "Before writing any code that uses a library, framework, or external API: call context7 MCP (resolve-library-id then query-docs) or WebSearch/WebFetch to verify current API signatures for the exact installed version. Do NOT write implementation from training-data memory — invoke one of these tools first, before opening any file or writing any code. Name the tool you used in your response."
+    },
+    "01KRN2S5B869QFPD6W7J7SQ40S": {
+      "slug": "read-on-code-file-before-serena-activati-09b9",
+      "type": "hint",
+      "priority": 9,
+      "toolNames": [
+        "Read"
+      ],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [
+        {
+          "source": ".*/[^/]*\\.js",
+          "flags": "i"
+        },
+        {
+          "source": ".*/[^/]*\\.mjs",
+          "flags": "i"
+        },
+        {
+          "source": ".*/[^/]*\\.ts",
+          "flags": "i"
+        },
+        {
+          "source": ".*/[^/]*\\.tsx",
+          "flags": "i"
+        },
+        {
+          "source": ".*/[^/]*\\.py",
+          "flags": "i"
+        }
+      ],
+      "tags": [
+        "tool:serena",
+        "category:session-setup",
+        "severity:token-efficiency"
+      ],
+      "scope": null,
+      "message": "## Lesson: Read on code file before Serena activation — activate first\nCalling Read on a source file (.js, .mjs, .ts, .py, etc.) before activating Serena wastes tokens and bypasses symbol-level navigation. The session-start directive to activate Serena is often deprioritized under task pressure, so this PreToolUse check is the enforcement layer.\n**Fix**: Before this Read call: run ToolSearch with query select:mcp__plugin_serena_serena__activate_project then call activate_project with the project root. Takes 2 seconds. Once done, use find_symbol or get_symbols_overview instead of Read for the rest of the session.",
+      "summary": "Read on code file before Serena activation — activate first",
+      "problem": "Calling Read on a source file (.js, .mjs, .ts, .py, etc.) before activating Serena wastes tokens and bypasses symbol-level navigation. The session-start directive to activate Serena is often deprioritized under task pressure, so this PreToolUse check is the enforcement layer.",
+      "solution": "Before this Read call: run ToolSearch with query select:mcp__plugin_serena_serena__activate_project then call activate_project with the project root. Takes 2 seconds. Once done, use find_symbol or get_symbols_overview instead of Read for the rest of the session."
+    },
+    "01KRN2SZXR8S2GXBS5ZJQ46QXK": {
+      "slug": "bash-catgrep-on-code-files-before-serena-a7de",
+      "type": "hint",
+      "priority": 9,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "\\bcat\\b.+\\.(js|mjs|ts|tsx|py)",
+          "flags": ""
+        },
+        {
+          "source": "\\bgrep\\b.+\\.(js|mjs|ts|tsx|py)",
+          "flags": ""
+        },
+        {
+          "source": "\\bfind\\b.+\\.(js|mjs|ts|tsx|py)",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "tags": [
+        "tool:serena",
+        "category:session-setup",
+        "severity:token-efficiency"
+      ],
+      "scope": null,
+      "message": "## Lesson: Bash cat/grep on code files before Serena activation — activate first\nRunning cat, grep, or find on source files before activating Serena is the same bypass pattern as Read — it uses the shell to read code that Serena could navigate symbolically. The session-start directive is routinely skipped under task pressure.\n**Fix**: Before catting or grepping source files: call ToolSearch with query select:mcp__plugin_serena_serena__activate_project then call activate_project with the project root. Then use serena find_symbol or search_for_pattern instead of grep, and get_symbols_overview instead of cat.",
+      "summary": "Bash cat/grep on code files before Serena activation — activate first",
+      "problem": "Running cat, grep, or find on source files before activating Serena is the same bypass pattern as Read — it uses the shell to read code that Serena could navigate symbolically. The session-start directive is routinely skipped under task pressure.",
+      "solution": "Before catting or grepping source files: call ToolSearch with query select:mcp__plugin_serena_serena__activate_project then call activate_project with the project root. Then use serena find_symbol or search_for_pattern instead of grep, and get_symbols_overview instead of cat."
     },
     "01JQSEED00000000000000002": {
       "slug": "mock-patch-namespace-v3x8",
