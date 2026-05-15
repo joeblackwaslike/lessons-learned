@@ -27,6 +27,7 @@ import {
   writeFileSync,
   readFileSync,
   readdirSync,
+  symlinkSync,
 } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { tmpdir } from 'node:os';
@@ -98,7 +99,9 @@ export default class ClaudeAgentProvider {
       startMs: Date.now(),
     });
 
-    if (armResult.metadata.exitCode === 0) {
+    const isSuccessfulRun =
+      armResult.metadata.exitCode === 0 && armResult.output !== 'Execution error';
+    if (isSuccessfulRun) {
       mkdirSync(CACHE_DIR, { recursive: true });
       writeFileSync(cacheFile, JSON.stringify(armResult, null, 2));
     }
@@ -376,6 +379,15 @@ function buildEnv(workspaceDir, _intervention) {
   mkdirSync(evalClaudeDir, { recursive: true });
   env.HOME = evalHomeDir;
   env.CLAUDE_CONFIG_DIR = evalClaudeDir;
+
+  // Symlink ~/.solidlsp → persistent cache so Serena's TypeScript LSP installs once
+  // rather than re-downloading on every eval run (pathlib.Path.home() / ".solidlsp").
+  const solidlspCache = join(EVALS_ROOT, '.solidlsp-cache');
+  mkdirSync(solidlspCache, { recursive: true });
+  const solidlspLink = join(evalHomeDir, '.solidlsp');
+  if (!existsSync(solidlspLink)) {
+    symlinkSync(solidlspCache, solidlspLink);
+  }
 
   if (!env.ANTHROPIC_API_KEY) {
     const realClaudeSettings = join(process.env.HOME ?? '', '.claude', 'settings.json');
