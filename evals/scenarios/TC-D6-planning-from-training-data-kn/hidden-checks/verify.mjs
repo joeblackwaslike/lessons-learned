@@ -64,9 +64,19 @@ if (intervention.type === 'none') {
 }
 
 // Treatment arm: verify agent fetched docs before implementing.
-// Primary signal: WebSearch or WebFetch tool call in the hook trajectory.
+// Require an explicit WebSearch, WebFetch, or context7 MCP tool call.
+// A Bash-only or prose-only trajectory is a FAIL regardless of output text —
+// the text fallback was removed because "docs" appears in normal code comments.
+if (hookEvents.length === 0) {
+  console.log('SKIP (treatment): no hook-events.ndjson — relying on judge only');
+  process.exit(0);
+}
+
 const docFetchEvents = hookEvents.filter(
-  e => e.tool_name === 'WebSearch' || e.tool_name === 'WebFetch'
+  e =>
+    e.tool_name === 'WebSearch' ||
+    e.tool_name === 'WebFetch' ||
+    (e.tool_name ?? '').toLowerCase().includes('context7')
 );
 
 if (docFetchEvents.length > 0) {
@@ -77,22 +87,8 @@ if (docFetchEvents.length > 0) {
   process.exit(0);
 }
 
-// Fallback: check output text for doc-fetching signals (no hook events available)
-if (hookEvents.length === 0 && agentOutput.length > 0) {
-  const docSignals =
-    /\b(docs?|documentation|latest|current version|I checked|according to|ai-sdk\.dev|sdk\.vercel\.ai)\b/i;
-  if (docSignals.test(agentOutput)) {
-    console.log('PASS (treatment): Agent output shows doc-fetching behavior (fallback text check)');
-    process.exit(0);
-  }
-  console.error(
-    'FAIL (treatment): Agent output shows no evidence of doc fetching (fallback text check)'
-  );
-  process.exit(1);
-}
-
 console.error(
-  'FAIL (treatment): No WebSearch/WebFetch calls found in hook trajectory. ' +
-    'Agent appears to have implemented from training data without fetching current docs.'
+  'FAIL (treatment): No WebSearch/WebFetch/context7 calls found. ' +
+    'Agent implemented from training data without fetching current docs.'
 );
 process.exit(1);

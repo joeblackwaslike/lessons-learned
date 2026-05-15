@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-05-15T05:09:17.710Z",
+  "generatedAt": "2026-05-15T05:15:11.419Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -276,10 +276,10 @@
         "severity:correctness"
       ],
       "scope": null,
-      "message": "## Lesson: Fetch exact-version docs before implementing — training-data sigs are stale\nLibrary APIs, CLI flags, and framework config schemas change between versions. Proceeding directly from memory without checking current documentation produces plans and code that fail on version-specific details — wrong method names, removed options, new required config keys. Training data has a knowledge cutoff and is routinely months or years behind.\n**Fix**: Before creating any implementation plan or writing code that involves a library, framework, CLI tool, or external API: (1) fetch current docs via context7 or web search — verify actual API signatures, CLI flags, and config schemas against the exact version in use; (2) search GitHub issues and Stack Overflow for known caveats, footguns, and breaking changes. External sources beat training data every time.",
+      "message": "## Lesson: Fetch exact-version docs before implementing — training-data sigs are stale\nLibrary APIs, CLI flags, and framework config schemas change between versions. Proceeding directly from memory without checking current documentation produces plans and code that fail on version-specific details — wrong method names, removed options, new required config keys. Training data has a knowledge cutoff and is routinely months or years behind.\n**Fix**: Before writing any code that uses a library, framework, or external API: call context7 MCP (resolve-library-id then query-docs) or WebSearch/WebFetch to verify current API signatures for the exact installed version. Do NOT write implementation from training-data memory — invoke one of these tools first, before opening any file or writing any code. Name the tool you used in your response.",
       "summary": "Fetch exact-version docs before implementing — training-data sigs are stale",
       "problem": "Library APIs, CLI flags, and framework config schemas change between versions. Proceeding directly from memory without checking current documentation produces plans and code that fail on version-specific details — wrong method names, removed options, new required config keys. Training data has a knowledge cutoff and is routinely months or years behind.",
-      "solution": "Before creating any implementation plan or writing code that involves a library, framework, CLI tool, or external API: (1) fetch current docs via context7 or web search — verify actual API signatures, CLI flags, and config schemas against the exact version in use; (2) search GitHub issues and Stack Overflow for known caveats, footguns, and breaking changes. External sources beat training data every time."
+      "solution": "Before writing any code that uses a library, framework, or external API: call context7 MCP (resolve-library-id then query-docs) or WebSearch/WebFetch to verify current API signatures for the exact installed version. Do NOT write implementation from training-data memory — invoke one of these tools first, before opening any file or writing any code. Name the tool you used in your response."
     },
     "01JQSEED00000000000000002": {
       "slug": "mock-patch-namespace-v3x8",
