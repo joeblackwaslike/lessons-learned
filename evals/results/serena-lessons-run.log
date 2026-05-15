@@ -1,0 +1,99 @@
+
+========================================================================================================================
+⚠️ The current version of promptfoo 0.121.10 is lower than the latest available version 0.121.11.
+
+Please run npx promptfoo@latest or npm install -g promptfoo@latest to update.
+========================================================================================================================
+
+Starting evaluation eval-gIy-2026-05-15T02:35:51
+Running 4 test cases (up to 1 at a time)...
+
+── Tier 3 Judge Summary ──────────────────────────────────────
+  PASS: 1  FAIL: 1  CONTROL_CORRECT: 0  SKIP: 0
+
+✗  FAIL — lesson did not change agent behavior:
+   • The treatment agent did not activate Serena at the start of the session before code work. The tool call log shows only two Bash commands (pwd and ls) but no call to activate_projec
+
+   Consider editing the lesson solution to be more prescriptive.
+──────────────────────────────────────────────────────────────
+
+
+[90m┌────────────────────────[39m[90m┬────────────────────────[39m[90m┬────────────────────────[39m[90m┬────────────────────────[39m[90m┬────────────────────────┐[39m
+[90m│[39m[1m[34m intervention           [39m[22m[90m│[39m[1m[34m lessonSnapshot         [39m[22m[90m│[39m[1m[34m prompt                 [39m[22m[90m│[39m[1m[34m scenarioId             [39m[22m[90m│[39m[1m[34m [claude-code]          [39m[22m[90m│[39m
+[90m│[39m[1m[34m                        [39m[22m[90m│[39m[1m[34m                        [39m[22m[90m│[39m[1m[34m                        [39m[22m[90m│[39m[1m[34m                        [39m[22m[90m│[39m[1m[34m {{prompt}}             [39m[22m[90m│[39m
+[90m├────────────────────────[39m[90m┼────────────────────────[39m[90m┼────────────────────────[39m[90m┼────────────────────────[39m[90m┼────────────────────────┤[39m
+[90m│[39m {                      [90m│[39m                        [90m│[39m I need to understand   [90m│[39m TC-H61-serena-over-re… [90m│[39m [PASS] That error came [90m│[39m
+[90m│[39m   "type": "none",      [90m│[39m                        [90m│[39m how the `processQueue` [90m│[39m                        [90m│[39m from a stale tool call [90m│[39m
+[90m│[39m   "ids": []            [90m│[39m                        [90m│[39m function works in this [90m│[39m                        [90m│[39m in the resumed session [90m│[39m
+[90m│[39m }                      [90m│[39m                        [90m│[39m codebase.              [90m│[39m                        [90m│[39m — no action needed     [90m│[39m
+[90m│[39m                        [90m│[39m                        [90m│[39m What does it do, what  [90m│[39m                        [90m│[39m from it. My previous   [90m│[39m
+[90m│[39m                        [90m│[39m                        [90m│[39m arguments does it      [90m│[39m                        [90m│[39m explanation of         [90m│[39m
+[90m│[39m                        [90m│[39m                        [90m│[39m accept, and what does  [90m│[39m                        [90m│[39m `processQueue` stands. [90m│[39m
+[90m│[39m                        [90m│[39m                        [90m│[39m it return? Walk me     [90m│[39m                        [90m│[39m To summarize where we  [90m│[39m
+[90m│[39m                        [90m│[39m                        [90m│[39m through its behavior   [90m│[39m                        [90m│[39m are: I walked through  [90m│[39m
+[90m│[39m                        [90m│[39m                        [90m│[39m including error        [90m│[39m                        [90m│[39m `processQueue` at      [90m│[39m
+[90m│[39m                        [90m│[39m                        [90m│[39m handling and any retry [90m│[39m                        [90m│[39m `src/queue.js:18-56`   [90m│[39m
+[90m│[39m                        [90m│[39m                        [90m│[39m logic.                 [90m│[39m                        [90m│[39m (signature, options,   [90m│[39m
+[90m│[39m                        [90m│[39m                        [90m│[39m                        [90m│[39m                        [90m│[39m re...                  [90m│[39m
+[90m├────────────────────────[39m[90m┼────────────────────────[39m[90m┼────────────────────────[39m[90m┼────────────────────────[39m[90m┼────────────────────────┤[39m
+[90m│[39m {                      [90m│[39m {"slug":"use-serena-g… [90m│[39m I need to understand   [90m│[39m TC-H61-serena-over-re… [90m│[39m [PASS] Here's how      [90m│[39m
+[90m│[39m   "type": "lesson",    [90m│[39m                        [90m│[39m how the `processQueue` [90m│[39m                        [90m│[39m `processQueue` works   [90m│[39m
+[90m│[39m   "ids": [             [90m│[39m                        [90m│[39m function works in this [90m│[39m                        [90m│[39m in `src/queue.js:18`.  [90m│[39m
+[90m│[39m "use-serena-getsymbol… [90m│[39m                        [90m│[39m codebase.              [90m│[39m                        [90m│[39m ## Signature           [90m│[39m
+[90m│[39m   ]                    [90m│[39m                        [90m│[39m What does it do, what  [90m│[39m                        [90m│[39m ```js                  [90m│[39m
+[90m│[39m }                      [90m│[39m                        [90m│[39m arguments does it      [90m│[39m                        [90m│[39m processQueue(tasks,    [90m│[39m
+[90m│[39m                        [90m│[39m                        [90m│[39m accept, and what does  [90m│[39m                        [90m│[39m handler, options = {}) [90m│[39m
+[90m│[39m                        [90m│[39m                        [90m│[39m it return? Walk me     [90m│[39m                        [90m│[39m ```                    [90m│[39m
+[90m│[39m                        [90m│[39m                        [90m│[39m through its behavior   [90m│[39m                        [90m│[39m - **`tasks`** — array  [90m│[39m
+[90m│[39m                        [90m│[39m                        [90m│[39m including error        [90m│[39m                        [90m│[39m of task objects. Each  [90m│[39m
+[90m│[39m                        [90m│[39m                        [90m│[39m handling and any retry [90m│[39m                        [90m│[39m should have an `id`,   [90m│[39m
+[90m│[39m                        [90m│[39m                        [90m│[39m logic.                 [90m│[39m                        [90m│[39m and optionally a       [90m│[39m
+[90m│[39m                        [90m│[39m                        [90m│[39m                        [90m│[39m                        [90m│[39m `priority` (default    [90m│[39m
+[90m│[39m                        [90m│[39m                        [90m│[39m                        [90m│[39m                        [90m│[39m 0).                    [90m│[39m
+[90m│[39m                        [90m│[39m                        [90m│[39m                        [90m│[39m                        [90m│[39m - **`handler`** — ...  [90m│[39m
+[90m├────────────────────────[39m[90m┼────────────────────────[39m[90m┼────────────────────────[39m[90m┼────────────────────────[39m[90m┼────────────────────────┤[39m
+[90m│[39m {                      [90m│[39m                        [90m│[39m I'm onboarding to this [90m│[39m TC-D10-serena-activate [90m│[39m [PASS] The summary I   [90m│[39m
+[90m│[39m   "type": "none",      [90m│[39m                        [90m│[39m codebase. Please       [90m│[39m                        [90m│[39m gave covers the        [90m│[39m
+[90m│[39m   "ids": []            [90m│[39m                        [90m│[39m explore it and give me [90m│[39m                        [90m│[39m project. To recap      [90m│[39m
+[90m│[39m }                      [90m│[39m                        [90m│[39m a high-level summary:  [90m│[39m                        [90m│[39m briefly:               [90m│[39m
+[90m│[39m                        [90m│[39m                        [90m│[39m what files exist, what [90m│[39m                        [90m│[39m - **`src/queue.js`** — [90m│[39m
+[90m│[39m                        [90m│[39m                        [90m│[39m each one does, and how [90m│[39m                        [90m│[39m `processQueue`         [90m│[39m
+[90m│[39m                        [90m│[39m                        [90m│[39m the modules fit        [90m│[39m                        [90m│[39m orchestrator +         [90m│[39m
+[90m│[39m                        [90m│[39m                        [90m│[39m together.              [90m│[39m                        [90m│[39m `Semaphore`,           [90m│[39m
+[90m│[39m                        [90m│[39m                        [90m│[39m                        [90m│[39m                        [90m│[39m `runWithRetry`,        [90m│[39m
+[90m│[39m                        [90m│[39m                        [90m│[39m                        [90m│[39m                        [90m│[39m `enqueue`/`dequeue`.   [90m│[39m
+[90m│[39m                        [90m│[39m                        [90m│[39m                        [90m│[39m                        [90m│[39m Depends on `utils.js`. [90m│[39m
+[90m│[39m                        [90m│[39m                        [90m│[39m                        [90m│[39m                        [90m│[39m - **`src/db.js`** —    [90m│[39m
+[90m│[39m                        [90m│[39m                        [90m│[39m                        [90m│[39m                        [90m│[39m mock connection layer  [90m│[39m
+[90m│[39m                        [90m│[39m                        [90m│[39m                        [90m│[39m                        [90m│[39m with                   [90m│[39m
+[90m│[39m                        [90m│[39m                        [90m│[39m                        [90m│[39m                        [90m│[39m `connect`/`query...    [90m│[39m
+[90m├────────────────────────[39m[90m┼────────────────────────[39m[90m┼────────────────────────[39m[90m┼────────────────────────[39m[90m┼────────────────────────┤[39m
+[90m│[39m {                      [90m│[39m {"slug":"activate-ser… [90m│[39m I'm onboarding to this [90m│[39m TC-D10-serena-activate [90m│[39m [PASS] That's the      [90m│[39m
+[90m│[39m   "type": "lesson",    [90m│[39m                        [90m│[39m codebase. Please       [90m│[39m                        [90m│[39m workspace root I       [90m│[39m
+[90m│[39m   "ids": [             [90m│[39m                        [90m│[39m explore it and give me [90m│[39m                        [90m│[39m covered above —        [90m│[39m
+[90m│[39m "activate-serena-proj… [90m│[39m                        [90m│[39m a high-level summary:  [90m│[39m                        [90m│[39m `CLAUDE.md`,           [90m│[39m
+[90m│[39m   ]                    [90m│[39m                        [90m│[39m what files exist, what [90m│[39m                        [90m│[39m `package.json`,        [90m│[39m
+[90m│[39m }                      [90m│[39m                        [90m│[39m each one does, and how [90m│[39m                        [90m│[39m `README.md`, and       [90m│[39m
+[90m│[39m                        [90m│[39m                        [90m│[39m the modules fit        [90m│[39m                        [90m│[39m `src/` (which holds    [90m│[39m
+[90m│[39m                        [90m│[39m                        [90m│[39m together.              [90m│[39m                        [90m│[39m `queue.js`, `db.js`,   [90m│[39m
+[90m│[39m                        [90m│[39m                        [90m│[39m                        [90m│[39m                        [90m│[39m `utils.js`).           [90m│[39m
+[90m│[39m                        [90m│[39m                        [90m│[39m                        [90m│[39m                        [90m│[39m Did you mean to attach [90m│[39m
+[90m│[39m                        [90m│[39m                        [90m│[39m                        [90m│[39m                        [90m│[39m a question with that?  [90m│[39m
+[90m│[39m                        [90m│[39m                        [90m│[39m                        [90m│[39m                        [90m│[39m Or want me to pick one [90m│[39m
+[90m│[39m                        [90m│[39m                        [90m│[39m                        [90m│[39m                        [90m│[39m of these to drill      [90m│[39m
+[90m│[39m                        [90m│[39m                        [90m│[39m                        [90m│[39m                        [90m│[39m into? Quick opti...    [90m│[39m
+[90m└────────────────────────[39m[90m┴────────────────────────[39m[90m┴────────────────────────[39m[90m┴────────────────────────[39m[90m┴────────────────────────┘[39m
+✓ Eval complete (ID: eval-gIy-2026-05-15T02:35:51)
+
+» View results: promptfoo view
+» Share with your team: https://promptfoo.app
+» Feedback: https://promptfoo.dev/feedback
+
+
+Results:
+  ✓ 4 passed (100%)
+  0 failed (0%)
+  0 errors (0%)
+Duration: 5m 31s (concurrency: 1)
+
+Writing output to results/cache/latest-run.json

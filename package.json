@@ -24,6 +24,7 @@
     "docs": "mkdocs serve",
     "docs:build": "mkdocs build -s",
     "prepare": "husky",
+    "jessify:audit": "node --no-warnings scripts/jessify/audit-lessons.mjs",
     "eval": "pnpm --filter @lessons-learned/evals eval",
     "eval:smoke": "pnpm --filter @lessons-learned/evals eval:smoke",
     "eval:report": "pnpm --filter @lessons-learned/evals eval:report",
