@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-05-14T23:29:30.816Z",
+  "generatedAt": "2026-05-15T05:09:17.710Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -633,10 +633,10 @@
         "category:session-setup"
       ],
       "scope": null,
-      "message": "## Lesson: Activate Serena project at session start before any code work\nSerena requires the project to be activated before symbol navigation works. Without activation, every Serena call returns 'No active project' and falls back to expensive Read calls, erasing the token savings Serena is designed to provide. This failure is silent — the agent just proceeds with Read instead.\n**Fix**: At the start of any session involving code work: call ToolSearch 'select:mcp__plugin_serena_serena__activate_project' to load the schema, then call activate_project with the absolute path of the current project root (use cwd or the working directory). This takes 2 seconds and enables all Serena navigation tools for the rest of the session, saving thousands of tokens.",
+      "message": "## Lesson: Activate Serena project at session start before any code work\nSerena requires the project to be activated before symbol navigation works. Without activation, every Serena call returns 'No active project' and falls back to expensive Read calls, erasing the token savings Serena is designed to provide. This failure is silent — the agent just proceeds with Read instead.\n**Fix**: Your very first action in any session that touches a codebase — including onboarding, summarization, exploration, and code review — must be: (1) call ToolSearch with query \"select:mcp__plugin_serena_serena__activate_project\" to load the schema, then (2) call mcp__plugin_serena_serena__activate_project with the absolute project root path. Do not start with ls, Glob, Read, or pwd. This is unconditional: if there is a codebase, activate Serena before anything else.",
       "summary": "Activate Serena project at session start before any code work",
       "problem": "Serena requires the project to be activated before symbol navigation works. Without activation, every Serena call returns 'No active project' and falls back to expensive Read calls, erasing the token savings Serena is designed to provide. This failure is silent — the agent just proceeds with Read instead.",
-      "solution": "At the start of any session involving code work: call ToolSearch 'select:mcp__plugin_serena_serena__activate_project' to load the schema, then call activate_project with the absolute path of the current project root (use cwd or the working directory). This takes 2 seconds and enables all Serena navigation tools for the rest of the session, saving thousands of tokens."
+      "solution": "Your very first action in any session that touches a codebase — including onboarding, summarization, exploration, and code review — must be: (1) call ToolSearch with query \"select:mcp__plugin_serena_serena__activate_project\" to load the schema, then (2) call mcp__plugin_serena_serena__activate_project with the absolute project root path. Do not start with ls, Glob, Read, or pwd. This is unconditional: if there is a codebase, activate Serena before anything else."
     },
     "01JQSEED00000000000000001": {
       "slug": "pytest-tty-hanging-k9m2",
