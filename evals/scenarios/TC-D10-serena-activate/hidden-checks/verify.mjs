@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 
 const workspaceDir = resolve(process.argv[2] ?? '');
@@ -35,8 +35,8 @@ if (!activatedViaHook && !activatedViaFs) {
 }
 
 // Phase 2: Serena used for code exploration
-// Primary: check hook-events for Serena code tool names
-// Fallback: .serena/cache/ populated (language server indexed code when Serena tools were called)
+// Hook-events only — .serena/cache/ is pre-seeded in the seed workspace and cannot
+// serve as a signal for actual tool usage.
 const serenaCodeTools = [
   'get_symbols_overview',
   'find_symbol',
@@ -57,19 +57,15 @@ const usedSerenaViaHook = events.some(e =>
   serenaCodeTools.some(t => (e.tool_name ?? '').toLowerCase().includes(t))
 );
 
-const serenaCache = join(serenaDir, 'cache');
-const usedSerenaViaFs = existsSync(serenaCache) && readdirSync(serenaCache).length > 0;
-
-if (!usedSerenaViaHook && !usedSerenaViaFs) {
+if (!usedSerenaViaHook) {
   console.error(
-    'FAIL: Phase 2 — Serena activated but no evidence of code exploration (no Serena tool calls and no .serena/cache/ files)'
+    'FAIL: Phase 2 — no Serena code tool calls in hook-events.ndjson (get_symbols_overview, find_symbol, etc.)'
   );
   process.exit(1);
 }
 
 const phase1Source = activatedViaHook ? 'hook event' : '.serena/project.yml';
-const phase2Source = usedSerenaViaHook ? 'hook event' : '.serena/cache/';
 console.log(
-  `PASS: Phase 1 (${phase1Source}) + Phase 2 (${phase2Source}) — Serena activated and used for code exploration`
+  `PASS: Phase 1 (${phase1Source}) + Phase 2 (hook event) — Serena activated and used for code exploration`
 );
 process.exit(0);
