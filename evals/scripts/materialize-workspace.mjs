@@ -106,6 +106,25 @@ if (existsSync(settingsPath)) {
     // use empty default
   }
 }
+const uvCacheForMcp = join(EVALS_ROOT, '.uv-cache');
+const serenaServerConfig = {
+  type: 'stdio',
+  command: 'uvx',
+  args: ['--from', 'git+https://github.com/oraios/serena', 'serena', 'start-mcp-server'],
+  env: { UV_CACHE_DIR: uvCacheForMcp },
+};
+
+// Write explicit MCP config file — passed via --mcp-config flag for non-control arms.
+// Project-level mcpServers in settings.json are NOT loaded in --print mode (CC limitation).
+writeFileSync(
+  join(evalMetaDir, 'mcp-config.json'),
+  JSON.stringify({ mcpServers: { serena: serenaServerConfig } }, null, 2)
+);
+
+// Keep in settings.json as belt-and-suspenders in case future CC versions load it.
+workspaceSettings.mcpServers ??= {};
+workspaceSettings.mcpServers['serena'] = serenaServerConfig;
+
 workspaceSettings.hooks ??= {};
 workspaceSettings.hooks.PreToolUse ??= [];
 workspaceSettings.hooks.PreToolUse.push({
@@ -165,6 +184,26 @@ if (protocolLessons.length > 0) {
     '',
     'The following protocols apply to this session. Follow them strictly before taking any actions.',
     ...protocolLessons.flatMap(l => ['', l.message ?? `## ${l.summary}`])
+  );
+}
+
+// For hooks intervention: inject Serena usage directive directly into CLAUDE.md.
+// SessionStart hooks do not fire in --print mode, so this is the only reliable injection point.
+if (intervention.type === 'hooks') {
+  claudeMdSections.push(
+    '',
+    '# Serena Code Intelligence Protocol',
+    '',
+    'This workspace uses **Serena** for code navigation and editing.',
+    'You MUST use Serena tools instead of native tools for all code work:',
+    '',
+    '1. Call `activate_project` first to initialize Serena for this workspace.',
+    '2. Use `get_symbols_overview` or `find_symbol` to explore code structure (not native Read).',
+    '3. Use `search_for_pattern` to search for patterns (not Bash grep).',
+    '4. Use `find_file` to locate files (not Bash find).',
+    '5. Use `replace_symbol_body` or `replace_content` to edit code (not native Edit/Write).',
+    '',
+    'Do not use native Read, Edit, Write, or Bash cat/grep/find on code files.'
   );
 }
 

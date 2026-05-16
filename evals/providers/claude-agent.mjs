@@ -131,11 +131,21 @@ async function runArm({
     materializeWorkspace(scenarioDir, workspaceDir, intervention);
 
     const env = buildEnv(workspaceDir, intervention);
-    const claudeResult = spawnSync(
-      findClaudeBin(),
-      ['--print', '--dangerously-skip-permissions', '-p', prompt],
-      { cwd: workspaceDir, env, encoding: 'utf8', timeout, maxBuffer: 10 * 1024 * 1024 }
-    );
+    const claudeArgs = ['--print', '--dangerously-skip-permissions', '--setting-sources=project'];
+    // Pass explicit MCP config for treatment arms so Serena loads in --print mode.
+    // Project-level mcpServers in settings.json are not loaded by CC in --print mode.
+    const mcpConfigPath = join(workspaceDir, '.eval', 'mcp-config.json');
+    if (!isControl && existsSync(mcpConfigPath)) {
+      claudeArgs.push('--mcp-config', mcpConfigPath);
+    }
+    claudeArgs.push('-p', prompt);
+    const claudeResult = spawnSync(findClaudeBin(), claudeArgs, {
+      cwd: workspaceDir,
+      env,
+      encoding: 'utf8',
+      timeout,
+      maxBuffer: 10 * 1024 * 1024,
+    });
 
     const output = claudeResult.stdout ?? '';
     const evalMetaDir = join(workspaceDir, '.eval');
@@ -352,6 +362,11 @@ function findClaudeBin() {
 }
 
 function buildEnv(workspaceDir, _intervention) {
+  // ANTHROPIC_API_KEY and ANTHROPIC_BASE_URL are intentionally excluded so the eval
+  // agent bypasses Meridian (which spawns a CC worker with full user settings and
+  // opus[1m], causing 20-minute timeouts). Without these vars, CC uses direct OAuth
+  // authentication against Anthropic, which respects --setting-sources=project and
+  // gives a small-context fast response via the user's subscription.
   const allowed = [
     'USER',
     'LOGNAME',
@@ -364,8 +379,6 @@ function buildEnv(workspaceDir, _intervention) {
     'LC_ALL',
     'LC_CTYPE',
     'NODE_PATH',
-    'ANTHROPIC_API_KEY',
-    'ANTHROPIC_BASE_URL',
     'XDG_RUNTIME_DIR',
   ];
 
@@ -389,15 +402,15 @@ function buildEnv(workspaceDir, _intervention) {
     symlinkSync(solidlspCache, solidlspLink);
   }
 
-  if (!env.ANTHROPIC_API_KEY) {
-    const realClaudeSettings = join(process.env.HOME ?? '', '.claude', 'settings.json');
-    try {
-      const settings = JSON.parse(readFileSync(realClaudeSettings, 'utf8'));
-      const token = settings?.env?.CLAUDE_CODE_OAUTH_TOKEN;
-      if (token) env.CLAUDE_CODE_OAUTH_TOKEN = token;
-    } catch {
-      /* no settings file */
-    }
+  // Always extract OAuth token from real user settings for direct Anthropic auth.
+  // process.env.HOME is the real user home (not the fake eval HOME in env.HOME).
+  const realClaudeSettings = join(process.env.HOME ?? '', '.claude', 'settings.json');
+  try {
+    const settings = JSON.parse(readFileSync(realClaudeSettings, 'utf8'));
+    const token = settings?.env?.CLAUDE_CODE_OAUTH_TOKEN;
+    if (token) env.CLAUDE_CODE_OAUTH_TOKEN = token;
+  } catch {
+    /* no settings file */
   }
 
   const manifestPath = join(workspaceDir, '.eval', 'lesson-manifest.json');

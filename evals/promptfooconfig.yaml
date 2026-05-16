@@ -4,13 +4,13 @@ providers:
     label: claude-code
     config:
       model: claude-sonnet-4-6
-      timeout: 600000
+      timeout: 1200000
 prompts:
   - "{{prompt}}"
 defaultTest:
   options:
     provider: file://providers/claude-agent.mjs
-    timeout: 600000
+    timeout: 1200000
 extensions:
   - file://scripts/hooks/before-each.mjs:beforeAll
   - file://scripts/hooks/before-each.mjs:beforeEach

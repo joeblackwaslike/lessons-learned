@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 
 const workspaceDir = resolve(process.argv[2] ?? '');
@@ -8,35 +8,63 @@ if (!workspaceDir) {
   process.exit(2);
 }
 
-// Phase 1: Serena activation
-// Primary: check hook-events.ndjson (works if PreToolUse fires for MCP tools)
-// Fallback: .serena/project.yml existence (Serena creates this on activate_project)
-let events = [];
-const eventsPath = join(workspaceDir, '.eval', 'hook-events.ndjson');
-if (existsSync(eventsPath)) {
-  events = readFileSync(eventsPath, 'utf8')
-    .split('\n')
-    .filter(Boolean)
-    .map(line => JSON.parse(line));
+// ── JSONL transcript parsing ───────────────────────────────────────────────────
+// MCP tool calls do NOT appear in hook-events.ndjson (PreToolUse hooks never fire
+// for MCP calls). Instead, parse the session JSONL which records all tool_use entries.
+
+function findTranscriptPath(dir) {
+  const projectsDir = join(dir, '.eval', 'home', '.claude', 'projects');
+  if (!existsSync(projectsDir)) return null;
+  for (const projId of readdirSync(projectsDir)) {
+    const projDir = join(projectsDir, projId);
+    try {
+      const files = readdirSync(projDir).filter(f => f.endsWith('.jsonl'));
+      if (files.length > 0) return join(projDir, files[0]);
+    } catch {
+      // skip unreadable dirs
+    }
+  }
+  return null;
 }
 
-const activatedViaHook = events.some(e =>
-  ['activate_project', 'activate'].some(t => (e.tool_name ?? '').toLowerCase().includes(t))
+function extractToolCalls(transcriptPath) {
+  if (!transcriptPath || !existsSync(transcriptPath)) return [];
+  const calls = [];
+  for (const line of readFileSync(transcriptPath, 'utf8').split('\n').filter(Boolean)) {
+    try {
+      const entry = JSON.parse(line);
+      if (entry.type !== 'assistant') continue;
+      for (const item of entry.message?.content ?? []) {
+        if (item.type === 'tool_use') calls.push((item.name ?? '').toLowerCase());
+      }
+    } catch {
+      // skip malformed lines
+    }
+  }
+  return calls;
+}
+
+const transcriptPath = findTranscriptPath(workspaceDir);
+const toolCalls = extractToolCalls(transcriptPath);
+
+// ── Phase 1: Serena activation ─────────────────────────────────────────────────
+// Accept either: agent called activate_project (JSONL), hook pre-activated it
+// (project.yml exists), or serena-hooks ran (project.local.yml exists).
+const activatedViaJSONL = toolCalls.some(
+  n => n.includes('activate_project') || n.includes('activate')
 );
 const serenaDir = join(workspaceDir, '.serena');
 const activatedViaFs =
   existsSync(join(serenaDir, 'project.yml')) || existsSync(join(serenaDir, 'project.local.yml'));
 
-if (!activatedViaHook && !activatedViaFs) {
+if (!activatedViaJSONL && !activatedViaFs) {
   console.error(
-    'FAIL: Phase 1 — Serena not activated (no activate_project in hooks and no .serena/project.yml)'
+    'FAIL: Phase 1 — Serena not activated (no activate_project in JSONL and no .serena/project.yml)'
   );
   process.exit(1);
 }
 
-// Phase 2: Serena used for code exploration
-// Hook-events only — .serena/cache/ is pre-seeded in the seed workspace and cannot
-// serve as a signal for actual tool usage.
+// ── Phase 2: Serena code exploration tools used ────────────────────────────────
 const serenaCodeTools = [
   'get_symbols_overview',
   'find_symbol',
@@ -53,19 +81,19 @@ const serenaCodeTools = [
   'rename_symbol',
   'safe_delete_symbol',
 ];
-const usedSerenaViaHook = events.some(e =>
-  serenaCodeTools.some(t => (e.tool_name ?? '').toLowerCase().includes(t))
-);
 
-if (!usedSerenaViaHook) {
+const usedSerenaForCode = toolCalls.some(name => serenaCodeTools.some(t => name.includes(t)));
+
+if (!usedSerenaForCode) {
   console.error(
-    'FAIL: Phase 2 — no Serena code tool calls in hook-events.ndjson (get_symbols_overview, find_symbol, etc.)'
+    'FAIL: Phase 2 — agent did not use Serena code exploration tools after activation\n' +
+      `  Tool calls seen: ${toolCalls.join(', ') || '(none)'}`
   );
   process.exit(1);
 }
 
-const phase1Source = activatedViaHook ? 'hook event' : '.serena/project.yml';
+const phase1Source = activatedViaJSONL ? 'JSONL tool_use' : '.serena/project.yml';
 console.log(
-  `PASS: Phase 1 (${phase1Source}) + Phase 2 (hook event) — Serena activated and used for code exploration`
+  `PASS: Phase 1 (${phase1Source}) + Phase 2 (JSONL tool_use) — Serena activated and used for code exploration`
 );
 process.exit(0);

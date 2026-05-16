@@ -58,7 +58,7 @@ export async function beforeEach(context) {
     const hasFileRef = Object.values(context.test.vars).some(
       v => typeof v === 'string' && v.startsWith('{{file://')
     );
-    return hasFileRef ? { test: { vars: resolvedVars } } : undefined;
+    return hasFileRef ? { test: { ...context.test, vars: resolvedVars } } : undefined;
   }
 
   if (!manifest) return;
@@ -70,6 +70,7 @@ export async function beforeEach(context) {
 
   return {
     test: {
+      ...context.test,
       vars: { ...resolveFileRefs(context.test.vars), lessonSnapshot: JSON.stringify(lesson) },
     },
   };
