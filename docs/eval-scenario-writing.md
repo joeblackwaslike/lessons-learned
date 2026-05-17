@@ -217,6 +217,16 @@ A directive alone passes the TC-D10 eval (the agent follows it when the prompt i
 
 **Community validation (2026-05-15)**: Serena maintainers independently documented the same regression in their Claude Code client docs: "Recent updates to Claude Code and the Opus line of models resulted in drastically reduced adherence to instructions pertaining to Serena's tools. The descriptions of CC's system tools take almost 16k tokens and introduce a very strong bias towards internal tools, making it almost impossible to convince Opus 4.7 to use Serena." Root cause is competing training priors, not lesson wording. Their solution: infrastructure-level hooks (`serena-hooks`) and a system prompt override, not more lesson text.
 
+### `mcpServers` in project `settings.json` are not loaded in `--print` mode
+
+Claude Code ignores `mcpServers` declared in the workspace `.claude/settings.json` when running non-interactively via `claude --print`. MCP servers simply never start — no child process, no tools available.
+
+**Fix**: Write a standalone MCP config file (e.g. `.eval/mcp-config.json`) and pass `--mcp-config <path>` explicitly on the claude command line. The flag works regardless of `--setting-sources`.
+
+**Corollary**: `SessionStart` hooks also do not fire in `--print` mode. If you need to inject instructions or activate a tool at session start, put them in `CLAUDE.md` — it is always loaded. The `claudemd` intervention type exists for exactly this: injecting a directive into the workspace `CLAUDE.md` rather than relying on hooks.
+
+---
+
 ### Guard lessons can be bypassed via Agent subagents
 
 When a PreToolUse guard blocks `Bash` or `Read`, the agent finds equivalent paths that don't trigger the guard:
@@ -229,3 +239,41 @@ When a PreToolUse guard blocks `Bash` or `Read`, the agent finds equivalent path
 **Implication for lesson design**: Guards work reliably only for commands with no common equivalent (e.g., a specific destructive CLI flag). For broad behavioral goals like "use Serena instead of grep," guards cannot provide exhaustive coverage and the correct solution is infrastructure-level enforcement (hooks that count consecutive violations and nudge, not block).
 
 **Observable in eval**: If you see a treatment arm passing the guard assertion but producing no Serena tool calls, check hook-events.ndjson for Agent subagent spawns — the agent may be outsourcing the file reads to a child process.
+
+---
+
+## Harness Gotchas
+
+Implementation-level traps in the eval harness itself. These are not scenario design issues — they affect all scenarios equally.
+
+### `before-each.mjs` returning a partial test object strips the `assert` field
+
+The promptfoo `beforeEach` extension hook receives `context.test` and can return a modified version. If you return `{ test: { vars: resolvedVars } }` — a partial object — promptfoo replaces `test` wholesale, discarding `assert`, `description`, and any other fields that weren't included. The result is "No assertions" for every affected arm, which scores as a trivial pass.
+
+**Always spread `context.test` when returning from `beforeEach`:**
+
+```js
+// Wrong — strips assert:
+return { test: { vars: resolvedVars } };
+
+// Correct — preserves all fields:
+return { test: { ...context.test, vars: resolvedVars } };
+```
+
+This applies to both the control-arm file-ref resolution path and the treatment-arm lesson injection path.
+
+### `--no-cache` does not clear the provider cache
+
+`npx promptfoo eval --no-cache` bypasses promptfoo's SQLite result database (`~/.promptfoo/promptfoo.db`) but does **not** touch the custom provider cache in `evals/results/cache/*.json`. If a stale arm result is cached there, the provider returns it directly and the agent never re-runs.
+
+**When you need a true cold re-run** (e.g. after fixing a bug in the harness or changing an intervention type):
+
+```bash
+# Delete a specific arm's cache file
+rm evals/results/cache/<hash>.json
+
+# Or wipe everything
+npm run eval:clean
+```
+
+The cache key includes `interventionJson`, so renaming an intervention type (e.g. `hooks` → `claudemd`) automatically invalidates old cached entries for that arm.
