@@ -1770,7 +1770,7 @@ tests:
       scenarioId: TC-D10-serena-activate
       prompt: "{{file://scenarios/TC-D10-serena-activate/PROMPT.md}}"
       intervention:
-        type: hooks
+        type: claudemd
         ids: []
     assert:
       - type: javascript

@@ -142,22 +142,9 @@ workspaceSettings.hooks.PostToolUse.push({
   matcher: 'Bash',
   hooks: [{ type: 'command', command: `node "${postShimPath}"`, timeout: 5 }],
 });
-if (intervention.type === 'hooks') {
-  // Use an eval-specific uv cache (not the user's personal cache) for isolation.
-  // This directory persists between runs for speed — delete evals/.uv-cache/ to force re-download.
-  const uvCache = join(EVALS_ROOT, '.uv-cache');
-  const serenaHooksCmd = `UV_CACHE_DIR="${uvCache}" uvx --from 'git+https://github.com/oraios/serena' serena-hooks`;
-  workspaceSettings.hooks.SessionStart ??= [];
-  workspaceSettings.hooks.SessionStart.push({
-    matcher: 'startup|resume',
-    hooks: [{ type: 'command', command: `${serenaHooksCmd} activate`, timeout: 30 }],
-  });
-  // No 'remind' hook — it fires per tool call and is too expensive for evals.
-  workspaceSettings.hooks.SessionEnd ??= [];
-  workspaceSettings.hooks.SessionEnd.push({
-    matcher: '.*',
-    hooks: [{ type: 'command', command: `${serenaHooksCmd} cleanup`, timeout: 15 }],
-  });
+if (intervention.type === 'claudemd') {
+  // claudemd intervention: Serena directive is injected into CLAUDE.md below.
+  // serena-hooks SessionStart/SessionEnd are intentionally omitted — they don't fire in --print mode.
 }
 
 writeFileSync(settingsPath, JSON.stringify(workspaceSettings, null, 2));
@@ -187,9 +174,9 @@ if (protocolLessons.length > 0) {
   );
 }
 
-// For hooks intervention: inject Serena usage directive directly into CLAUDE.md.
+// For claudemd intervention: inject Serena usage directive directly into CLAUDE.md.
 // SessionStart hooks do not fire in --print mode, so this is the only reliable injection point.
-if (intervention.type === 'hooks') {
+if (intervention.type === 'claudemd') {
   claudeMdSections.push(
     '',
     '# Serena Code Intelligence Protocol',
@@ -212,8 +199,8 @@ writeFileSync(join(workspaceDir, 'CLAUDE.md'), claudeMdSections.join('\n') + '\n
 // --- Helpers --------------------------------------------------------------------
 
 function buildInterventionManifest(intervention) {
-  if (intervention.type === 'none' || intervention.type === 'hooks') {
-    // Control arm or hooks-only arm: empty lesson manifest — no lessons injected
+  if (intervention.type === 'none' || intervention.type === 'claudemd') {
+    // Control arm or claudemd arm: empty lesson manifest — no lessons injected
     return { lessons: [], version: 1, generatedAt: new Date().toISOString() };
   }
 
