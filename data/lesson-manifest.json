@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-05-15T12:01:38.324Z",
+  "generatedAt": "2026-05-17T03:52:19.640Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -1164,64 +1164,6 @@
       "summary": "GitHub App PKCS#1 keys silently fail on Node 20+/OpenSSL 3 (Vercel)",
       "problem": "GitHub App private keys download in PKCS#1 format (BEGIN RSA PRIVATE KEY). Node.js 20+/OpenSSL 3 environments (Vercel production) cannot load PKCS#1 keys — createPrivateKey() throws ERR_OSSL_UNSUPPORTED at JWT-signing time, which is async and after the HTTP 202 is already sent. The function appears healthy in GitHub delivery history while silently doing nothing: all webhooks accepted, zero reviews posted.",
       "solution": "Convert the key to PKCS#8 immediately after downloading from GitHub App settings: `openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in key.pem -out key.pkcs8.pem`. The result starts with BEGIN PRIVATE KEY (no RSA). Store only the PKCS#8 form in env vars. Add a startup guard: if GITHUB_APP_PRIVATE_KEY contains BEGIN RSA PRIVATE KEY, throw at boot rather than failing silently mid-request."
-    },
-    "01KRMD5P2N3H1K613XYWA7B93K": {
-      "slug": "use-serena-getsymbolsoverview-or-findsym-2255",
-      "type": "hint",
-      "priority": 7,
-      "toolNames": [
-        "Read"
-      ],
-      "commandRegexSources": [],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [
-        {
-          "source": ".*/[^/]*\\.mjs",
-          "flags": "i"
-        },
-        {
-          "source": ".*/[^/]*\\.ts",
-          "flags": "i"
-        },
-        {
-          "source": ".*/[^/]*\\.tsx",
-          "flags": "i"
-        },
-        {
-          "source": ".*/[^/]*\\.js",
-          "flags": "i"
-        },
-        {
-          "source": ".*/[^/]*\\.jsx",
-          "flags": "i"
-        },
-        {
-          "source": ".*/[^/]*\\.py",
-          "flags": "i"
-        },
-        {
-          "source": ".*/[^/]*\\.sh",
-          "flags": "i"
-        },
-        {
-          "source": ".*/[^/]*\\.zsh",
-          "flags": "i"
-        },
-        {
-          "source": ".*/[^/]*\\.md",
-          "flags": "i"
-        }
-      ],
-      "tags": [
-        "tool:serena",
-        "category:token-efficiency",
-        "severity:cost"
-      ],
-      "scope": null,
-      "message": "## Lesson: Use Serena get_symbols_overview or find_symbol instead of reading whole code files\nReading entire code files with Read puts thousands of tokens into context permanently. A 300-line file costs ~8K chars of context; Serena's get_symbols_overview returns the same structural understanding in ~200 chars — a 40x reduction in token cost per code exploration.\n**Fix**: For code files, use Serena tools first: (1) ToolSearch 'select:mcp__plugin_serena_serena__activate_project,mcp__plugin_serena_serena__get_symbols_overview,mcp__plugin_serena_serena__find_symbol' to load schemas; (2) call activate_project(cwd) if not already activated; (3) get_symbols_overview for structure or find_symbol with include_body=true for a specific function. Fall back to Read only when Serena cannot locate the symbol.",
-      "summary": "Use Serena get_symbols_overview or find_symbol instead of reading whole code files",
-      "problem": "Reading entire code files with Read puts thousands of tokens into context permanently. A 300-line file costs ~8K chars of context; Serena's get_symbols_overview returns the same structural understanding in ~200 chars — a 40x reduction in token cost per code exploration.",
-      "solution": "For code files, use Serena tools first: (1) ToolSearch 'select:mcp__plugin_serena_serena__activate_project,mcp__plugin_serena_serena__get_symbols_overview,mcp__plugin_serena_serena__find_symbol' to load schemas; (2) call activate_project(cwd) if not already activated; (3) get_symbols_overview for structure or find_symbol with include_body=true for a specific function. Fall back to Read only when Serena cannot locate the symbol."
     },
     "01JQSEED00000000000000005": {
       "slug": "npm-link-peer-deps-r2f7",
@@ -2517,26 +2459,6 @@
       "summary": "Vite generates absolute asset paths (e.",
       "problem": "Vite generates absolute asset paths (e.g., `/assets/index.css`) by default. GitHub Pages serves from a subdirectory (`/repo-name/`), so all assets 404.",
       "solution": "Set `base: '/repo-name/'` in `vite.config.js` when deploying to GitHub Pages at a subdirectory URL."
-    },
-    "01KPT4RXXJZ9PK6Q3ZNDMF1MPS": {
-      "slug": "serenas-replacesymbolbody-on-a-js-consta-9fb4",
-      "type": "hint",
-      "priority": 3,
-      "toolNames": [
-        "mcp__plugin_serena_serena__replace_symbol_body"
-      ],
-      "commandRegexSources": [],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
-      "tags": [
-        "tool:serena",
-        "severity:syntax-error"
-      ],
-      "scope": null,
-      "message": "## Lesson: Serena replace_symbol_body on JS constants double-declares const, producing syntax error\nSerena's replace_symbol_body on a JS constant (not a function) prepends an extra `const` keyword, producing `const const FOO = ...` and a doubled semicolon. The body it receives already includes the `const` prefix, so the replacement double-declares it.\n**Fix**: Use Edit for constant value replacements; reserve replace_symbol_body for function/class bodies only.",
-      "summary": "Serena replace_symbol_body on JS constants double-declares const, producing syntax error",
-      "problem": "Serena's replace_symbol_body on a JS constant (not a function) prepends an extra `const` keyword, producing `const const FOO = ...` and a doubled semicolon. The body it receives already includes the `const` prefix, so the replacement double-declares it.",
-      "solution": "Use Edit for constant value replacements; reserve replace_symbol_body for function/class bodies only."
     }
   }
 }

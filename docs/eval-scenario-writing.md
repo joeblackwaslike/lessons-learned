@@ -223,7 +223,7 @@ Claude Code ignores `mcpServers` declared in the workspace `.claude/settings.jso
 
 **Fix**: Write a standalone MCP config file (e.g. `.eval/mcp-config.json`) and pass `--mcp-config <path>` explicitly on the claude command line. The flag works regardless of `--setting-sources`.
 
-**Corollary**: `SessionStart` hooks also do not fire in `--print` mode. If you need to inject instructions or activate a tool at session start, put them in `CLAUDE.md` — it is always loaded. The `claudemd` intervention type exists for exactly this: injecting a directive into the workspace `CLAUDE.md` rather than relying on hooks.
+**Note on SessionStart**: `SessionStart` hooks **do** fire in `--print` mode as long as CC is invoked with `cwd` set to the workspace directory (so it can find `.claude/settings.json`). The eval provider already does this. If a SessionStart hook appears not to fire, debug the hook command itself — not the invocation mode.
 
 ---
 
