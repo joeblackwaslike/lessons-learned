@@ -1,3 +1,6 @@
 node_modules/
 results/cache/
+results/*.log
 .uv-cache/
+.eval/
+.npm-cache/
