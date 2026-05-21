@@ -27,7 +27,7 @@ hooks/                          # Claude Code hook handlers
   pretooluse-lesson-inject.mjs  # Matches lessons against tool calls, injects context
   session-start-lesson-protocol.mjs  # Injects #lesson protocol + session-start lessons
   session-start-reset.mjs       # Clears per-session dedup state on reset
-  session-start-scan.mjs        # Fires background scan on startup
+  session-start-scan.mjs        # Fires background scan on startup (Tier 4 requires ANTHROPIC_API_KEY)
   precompact-handoff.mjs        # PreCompact hook: context banner or handoff generation
   subagent-start-lesson-protocol.mjs
   lib/                          # Hook shared utilities (dedup, output, matching)

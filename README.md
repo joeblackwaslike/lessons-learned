@@ -412,13 +412,14 @@ These are automatically picked up by the scanner on the next session start.
 
 ### Lesson discovery
 
-| Feature                                                                               | Status     |
-| ------------------------------------------------------------------------------------- | ---------- |
-| Tier 1 scanner — structured `#lesson` tag parsing; ~95% accuracy                      | ✅ Shipped |
-| Tier 2 scanner — heuristic sliding-window error→correction detection                  | ✅ Shipped |
-| Incremental scanning — byte-offset tracking; constant ~1 MB memory                    | ✅ Shipped |
-| Confidence + priority scoring — multi-session, multi-project, hang/correction signals | ✅ Shipped |
-| Background scan on startup                                                            | ✅ Shipped |
+| Feature                                                                                  | Status     |
+| ---------------------------------------------------------------------------------------- | ---------- |
+| Tier 1 scanner — structured `#lesson` tag parsing; ~95% accuracy                         | ✅ Shipped |
+| Tier 2 scanner — heuristic sliding-window error→correction detection                     | ✅ Shipped |
+| Tier 4 scanner — LLM deep scan; extracts lesson candidates from full session transcripts | ✅ Shipped |
+| Incremental scanning — byte-offset tracking; constant ~1 MB memory                       | ✅ Shipped |
+| Confidence + priority scoring — multi-session, multi-project, hang/correction signals    | ✅ Shipped |
+| Background scan on startup                                                               | ✅ Shipped |
 
 ### Planned
 
@@ -428,6 +429,21 @@ These are automatically picked up by the scanner on the next session start.
 | CLI tool intelligence aggregation — aggregate 5+ per-tool lessons into a skill file | 📋 Roadmap |
 | LLM-assisted Tier 2 candidate classification                                        | 📋 Roadmap |
 | Project stack detection — boost `lang:` lessons when relevant lockfiles detected    | 📋 Roadmap |
+
+### Tier 4 LLM deep scan
+
+The Tier 4 scanner uses a language model to extract lesson candidates from full session transcripts. It fires automatically at session start if `ANTHROPIC_API_KEY` is set.
+
+```bash
+export ANTHROPIC_API_KEY=sk-ant-...   # add to ~/.zshrc or ~/.bashrc
+```
+
+| Env var             | Default                     | Description                             |
+| ------------------- | --------------------------- | --------------------------------------- |
+| `ANTHROPIC_API_KEY` | _(required to enable)_      | Anthropic API key — scan skips if unset |
+| `DEEP_SCAN_MODEL`   | `claude-haiku-4-5-20251001` | Model used for transcript analysis      |
+
+**Cost:** ~$0.10–0.25/day at Haiku 4.5 rates (~120K input + 6K output tokens across 3 sessions per startup). The scan throttles to once per 24 hours by default (`autoScanIntervalHours`).
 
 ---
 
