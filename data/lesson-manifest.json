@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-05-17T03:52:19.640Z",
+  "generatedAt": "2026-05-17T04:32:57.000Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -39,7 +39,7 @@
     },
     "01KNH2FRACBQMQWX29GPYE47D8": {
       "slug": "eval-on-user-supplied-command-strings-en-702a",
-      "type": "protocol",
+      "type": "directive",
       "priority": 10,
       "toolNames": [
         "Bash",
@@ -1074,7 +1074,7 @@
     },
     "01KQ54QDEMHDF0KMWJH3KB5KK7": {
       "slug": "bias-toward-action-do-it-yourself-before-8eec",
-      "type": "protocol",
+      "type": "directive",
       "priority": 7,
       "toolNames": [],
       "commandRegexSources": [],
@@ -1785,7 +1785,7 @@
     },
     "01KMZ3ERT3Q1Q1CKMDSMZTY9DP": {
       "slug": "subagents-may-not-have-access-to-bash-to-6a73",
-      "type": "protocol",
+      "type": "directive",
       "priority": 5,
       "toolNames": [],
       "commandRegexSources": [],

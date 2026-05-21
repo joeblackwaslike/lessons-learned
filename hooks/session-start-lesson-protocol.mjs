@@ -67,17 +67,25 @@ Emit this tag naturally as part of your response whenever you:
 
 Do NOT force lesson tags where none apply. Only tag genuine problem→solution sequences.`;
 
-
 function main() {
+  let sessionType = '';
   try {
-    readFileSync(0, 'utf8'); // consume stdin
+    const stdin = readFileSync(0, 'utf8');
+    const data = JSON.parse(stdin);
+    sessionType = data.session_type ?? '';
   } catch {
-    // If stdin is empty or malformed, still inject the protocol
+    // If stdin is empty or malformed, treat as startup
   }
 
-  // Inject on all session events — startup, resume, clear, compact all need the protocol
-  // (clear and compact lose prior context, so re-injection is necessary)
+  // On compact: inject only the slim format reminder — full payload would re-trigger another compact.
+  // The compact summary already preserves directive context from prior conversation.
+  const isCompact = sessionType === 'compact';
+
   let output = LESSON_PROTOCOL;
+  if (isCompact) {
+    process.stdout.write(output);
+    return;
+  }
 
   // Append reasoning/meta lessons flagged for session-start injection
   try {
@@ -111,7 +119,8 @@ function main() {
     if (protocols.length > 0) {
       output += '\n\n---\n\n## Active Protocols\n\n';
       output += 'The following protocols capture hard-won coordination patterns. ';
-      output += 'Apply before starting work in the relevant context — they save time, tokens, and turmoil.\n';
+      output +=
+        'Apply before starting work in the relevant context — they save time, tokens, and turmoil.\n';
       const pGroups = groupByTag(protocols);
       const useHeaders = pGroups.length > 1;
       for (const [tag, group] of pGroups) {
