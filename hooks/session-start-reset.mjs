@@ -21,6 +21,10 @@ import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
+function reinjectStatePath(hash) {
+  return join(tmpdir(), `lessons-${hash}-reinject.json`);
+}
+
 const CONTEXT_CLEARING_EVENTS = new Set(['clear', 'compact']);
 
 function sessionHash(sessionId) {
@@ -37,7 +41,16 @@ function dedupPaths(sessionId) {
 }
 
 function clearAllDedupState(sessionId) {
+  const hash = sessionHash(sessionId);
   const { seenFile, claimDir } = dedupPaths(sessionId);
+
+  // Clear reinject threshold state so thresholds can fire again after context loss
+  try {
+    const rFile = reinjectStatePath(hash);
+    if (existsSync(rFile)) unlinkSync(rFile);
+  } catch {
+    /* ignore */
+  }
   let removedFiles = 0;
 
   // Remove session seen file
