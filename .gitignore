@@ -3,6 +3,7 @@
 node_modules/
 
 # Generated runtime state
+data/.api-key
 data/scan-state.json
 data/all-candidates.txt
 data/cross-project-candidates.txt

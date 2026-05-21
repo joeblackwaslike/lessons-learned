@@ -432,16 +432,20 @@ These are automatically picked up by the scanner on the next session start.
 
 ### Tier 4 LLM deep scan
 
-The Tier 4 scanner uses a language model to extract lesson candidates from full session transcripts. It fires automatically at session start if `ANTHROPIC_API_KEY` is set.
+The Tier 4 scanner uses a language model to extract lesson candidates from full session transcripts. It fires automatically at session start when an API key is available.
+
+**Scoped key file (recommended)** — keeps the key out of your shell environment entirely:
 
 ```bash
-export ANTHROPIC_API_KEY=sk-ant-...   # add to ~/.zshrc or ~/.bashrc
+echo "sk-ant-..." > data/.api-key   # gitignored; only read by the deep scan hook
 ```
 
-| Env var             | Default                     | Description                             |
-| ------------------- | --------------------------- | --------------------------------------- |
-| `ANTHROPIC_API_KEY` | _(required to enable)_      | Anthropic API key — scan skips if unset |
-| `DEEP_SCAN_MODEL`   | `claude-haiku-4-5-20251001` | Model used for transcript analysis      |
+**Shell env** — if `ANTHROPIC_API_KEY` is already set globally, the scan picks it up with no extra config.
+
+| Env var             | Default                     | Description                                          |
+| ------------------- | --------------------------- | ---------------------------------------------------- |
+| `ANTHROPIC_API_KEY` | _(falls back to key file)_  | API key — scan skips if unset and no key file exists |
+| `DEEP_SCAN_MODEL`   | `claude-haiku-4-5-20251001` | Model used for transcript analysis                   |
 
 **Cost:** ~$0.10–0.25/day at Haiku 4.5 rates (~120K input + 6K output tokens across 3 sessions per startup). The scan throttles to once per 24 hours by default (`autoScanIntervalHours`).
 

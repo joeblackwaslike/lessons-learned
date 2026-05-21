@@ -11,7 +11,7 @@
  * stdout: empty (background-only, no injection)
  */
 
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { spawn } from 'node:child_process';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -41,12 +41,17 @@ function main() {
   });
   child.unref();
 
-  // Tier 4 LLM deep scan — only if API key is present; --auto enforces 24h throttle
-  if (process.env.ANTHROPIC_API_KEY) {
+  // Tier 4 LLM deep scan — needs an API key; reads from env or data/.api-key file
+  const keyFile = join(PLUGIN_ROOT, 'data', '.api-key');
+  const scanApiKey =
+    process.env.ANTHROPIC_API_KEY ||
+    (existsSync(keyFile) ? readFileSync(keyFile, 'utf8').trim() : null);
+
+  if (scanApiKey) {
     const deepChild = spawn(
       process.execPath,
       [LESSONS_CLI, 'scan', '--deep', '--auto', '--max-sessions', '3'],
-      { detached: true, stdio: 'ignore' }
+      { detached: true, stdio: 'ignore', env: { ...process.env, ANTHROPIC_API_KEY: scanApiKey } }
     );
     deepChild.unref();
   }
