@@ -53,3 +53,6 @@ evals/.solidlsp-cache/
 
 # Eval workspace artifacts (written by materialize-workspace.mjs; must not land in repo root)
 .eval/
+
+# Git worktrees
+.worktrees/
