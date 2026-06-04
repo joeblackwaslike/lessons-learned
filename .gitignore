@@ -56,3 +56,7 @@ evals/.solidlsp-cache/
 
 # Git worktrees
 .worktrees/
+
+# Docusaurus build output (not tracked, prevents lint-staged from scanning minified JS)
+website/build/
+website/.docusaurus/
