@@ -1,468 +1,234 @@
 # lessons-learned
 
-A plugin that automatically captures coding mistakes from session logs and injects relevant lessons as context before tool calls — preventing the same mistakes from happening twice.
-
 [![CI](https://github.com/joeblackwaslike/lessons-learned/actions/workflows/ci.yml/badge.svg)](https://github.com/joeblackwaslike/lessons-learned/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D22.5-brightgreen)](package.json)
 
-## How it works
+> Stop repeating Claude's mistakes. Every session, automatically.
 
-**Capture** — Claude emits structured `#lesson` tags when it makes and corrects a mistake. A background scanner also detects error→correction patterns heuristically from session logs.
-
-**Inject** — Before every tool call, the `PreToolUse` hook matches the command or file path against the lesson store and injects up to 3 relevant lessons as `additionalContext`. At session start, the `#lesson` protocol is injected so the agent knows how to emit new lessons.
-
-**Loop** — New lessons flow from session logs back into the store via `lessons scan` and `lessons add`, tightening the feedback loop over time.
-
+```mermaid
+flowchart LR
+    A["Claude makes\na mistake"] --> B["Emits #lesson tag\nor scanner detects it"]
+    B --> C["Candidate in\nlessons.db"]
+    C --> D["Review and promote\nvia /lessons:review"]
+    D --> E["lesson-manifest.json\nrebuilt"]
+    E --> F["Next session:\nPreToolUse hook"]
+    F --> G{"Pattern\nmatches?"}
+    G -- Yes --> H["Warning injected\nbefore tool call"]
+    G -- No --> I["Silently skipped"]
+    H --> J["Mistake avoided"]
 ```
-Session log  ──scan──►  candidates  ──review──►  lesson store
-                                                       │
-                                                  lessons build
-                                                       │
-                                               lesson-manifest.json
-                                                       │
-tool call  ──PreToolUse hook──►  match  ──inject──►  additionalContext
-```
-
----
-
-## Installation
-
-### Claude Code (recommended)
-
-Install via the [agent-marketplace](https://github.com/joeblackwaslike/agent-marketplace):
 
 ```bash
-# Add the marketplace (once)
-claude plugin marketplace add joeblackwaslike/agent-marketplace
-
-# Install the plugin
-claude plugin install lessons-learned
+claude /plugin install lessons-learned@agent-marketplace
 ```
 
-Hooks are wired automatically. Skip to [CLI](#cli) to start managing lessons.
+- **Captures** mistakes from session logs — structured tags and heuristic scanning
+- **Injects** relevant warnings before tool calls at the exact moment they're needed
+- **Compounds** — every session adds to a persistent store that follows you across projects
 
 ---
 
-### Manual install
+## Why this exists
 
-**Requirements:** Node.js ≥ 22.5
+Claude is stateless. Every session forgets every correction, every footgun hit, every `git stash` that silently dropped untracked files. Over long agentic runs, the same class of mistake appears again and again — because nothing carries forward.
 
-```bash
-git clone https://github.com/joeblackwaslike/lessons-learned.git ~/lessons-learned
-cd ~/lessons-learned
-npm ci
-```
+lessons-learned creates a persistent, compounding memory of failure patterns. Mistakes are captured automatically from session logs. A background scanner extracts candidates, you promote the ones worth keeping, and the next time Claude is about to make the same move, a warning surfaces at the exact tool call where it matters.
 
-Then wire hooks manually in `~/.claude/settings.json`:
-
-### Claude Code
-
-Add to `~/.claude/settings.json`:
-
-```json
-{
-  "hooks": {
-    "SessionStart": [
-      {
-        "matcher": "startup|resume|clear|compact",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"/Users/you/lessons-learned/hooks/session-start-reset.mjs\""
-          },
-          {
-            "type": "command",
-            "command": "node \"/Users/you/lessons-learned/hooks/session-start-lesson-protocol.mjs\""
-          }
-        ]
-      },
-      {
-        "matcher": "startup",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"/Users/you/lessons-learned/hooks/session-start-scan.mjs\"",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "Read|Edit|Write|Bash|Glob",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"/Users/you/lessons-learned/hooks/pretooluse-lesson-inject.mjs\"",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
-    "SubagentStart": [
-      {
-        "matcher": ".+",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"/Users/you/lessons-learned/hooks/subagent-start-lesson-protocol.mjs\"",
-            "timeout": 5
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-Replace `/Users/you/lessons-learned` with your actual clone path. Restart Claude Code for hooks to take effect.
-
-> **Tip:** `echo $(pwd)` from inside the repo gives you the path to paste.
-
-#### Optional: Context Anti-Compact (beta) — deprecated here
-
-> **Moved:** Context Anti-Compact has been extracted to its own standalone plugin at [joeblackwaslike/anti-compact](https://github.com/joeblackwaslike/anti-compact). Install it from there. The version below still works but will not receive updates.
-
-Add this block to also enable the [Context Anti-Compact](docs/user-guide/anti-compact.md) beta feature, which intercepts `/compact` and generates a structured session handoff instead of allowing lossy built-in compression:
-
-```json
-"PreCompact": [
-  {
-    "matcher": "",
-    "hooks": [
-      {
-        "type": "command",
-        "command": "LESSONS_PRECOMPACT_HANDOFF=1 node \"/Users/you/lessons-learned/hooks/precompact-handoff.mjs\"",
-        "timeout": 60
-      }
-    ]
-  }
-]
-```
-
-The env var `LESSONS_PRECOMPACT_HANDOFF=1` is what enables the feature — the hook is a no-op without it, so you can also wire it unconditionally and toggle the env var in your shell profile.
+The feedback loop tightens over time. The more sessions, the stronger the prevention.
 
 ---
 
-### Gemini CLI
+## See it in action
 
-Set `LESSONS_AGENT_PLATFORM=gemini` so tool names are normalized correctly (`run_shell_command` → `Bash`, etc.).
-
-Add to your Gemini CLI config (typically `~/.gemini/settings.json`):
-
-```json
-{
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "run_shell_command|read_file|write_file|replace_in_file|find_files",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "LESSONS_AGENT_PLATFORM=gemini node \"/Users/you/lessons-learned/hooks/pretooluse-lesson-inject.mjs\"",
-            "timeout": 5
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-> **Note:** Gemini CLI's `BeforeTool` hook supports `additionalContext` injection in recent versions. Older versions may only support block decisions. Check your Gemini CLI version.
-
----
-
-### OpenAI Codex
-
-Set `LESSONS_AGENT_PLATFORM=codex` so tool names are normalized (`shell` → `Bash`, `apply_patch` → `Edit`, etc.).
-
-Add to your Codex config:
-
-```json
-{
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "shell|apply_patch|read_file|write_file|find_files",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "LESSONS_AGENT_PLATFORM=codex node \"/Users/you/lessons-learned/hooks/pretooluse-lesson-inject.mjs\"",
-            "timeout": 5
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
----
-
-### opencode
-
-opencode uses the same tool names as Claude Code (`Bash`, `Read`, `Edit`, `Write`, `Glob`). Add to `opencode.json` in your project or `~/.config/opencode/opencode.json` globally:
-
-```json
-{
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash|Read|Edit|Write|Glob",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"/Users/you/lessons-learned/hooks/pretooluse-lesson-inject.mjs\"",
-            "timeout": 5
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-> **Note:** If your version of opencode does not yet support `PreToolUse` hooks natively, add the lesson protocol as a standing instruction via `opencode.json` `instructions` field or in your project's `AGENTS.md` — see [Manual injection](#manual-injection-cursor-and-agents-without-hook-support) below.
-
----
-
-### Cursor
-
-Cursor does not expose a `PreToolUse` hook. Use the manual injection approach instead: add the lesson protocol and a summary of high-priority lessons to your `.cursorrules` file or project system prompt.
-
-Generate a snapshot of your current lessons for pasting:
-
-```bash
-node scripts/lessons.mjs list --format cursorrules > .cursorrules-lessons
-```
-
-Then include the output in your `.cursorrules` file. You'll need to regenerate this after adding or editing lessons.
-
-For richer integration, expose the lesson store via an MCP server and configure it in Cursor's MCP settings — see [MCP integration](#mcp-integration).
-
----
-
-### OpenClaw
-
-OpenClaw supports tool call interception via the Plugin SDK's `before_tool_call` hook. Create a plugin and register the hook:
-
-```js
-// lessons-learned-plugin/index.js
-import { execSync } from 'node:child_process';
-
-export default {
-  name: 'lessons-learned',
-  hooks: {
-    before_tool_call({ tool, input }) {
-      const payload = JSON.stringify({
-        tool_name: tool,
-        tool_input: input,
-        session_id: process.env.SESSION_ID ?? 'openclaw',
-      });
-      const result = execSync(
-        `echo '${payload}' | node /Users/you/lessons-learned/hooks/pretooluse-lesson-inject.mjs`,
-        { encoding: 'utf8' }
-      );
-      const out = JSON.parse(result);
-      if (out?.hookSpecificOutput?.additionalContext) {
-        // prepend lesson context to the tool input or system message
-      }
-    },
-  },
-};
-```
-
-Register the plugin in your OpenClaw config. See the [Plugin Architecture docs](https://docs.openclaw.ai) for full integration details.
-
----
-
-### Manual injection (Cursor and agents without hook support)
-
-For agents that don't support `PreToolUse` hooks, you can inject the lesson protocol and a high-priority lesson digest as a standing system prompt or rules file.
-
-**Step 1** — Export a lesson digest:
-
-```bash
-node scripts/lessons.mjs list --json | \
-  node -e "
-    const lessons = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
-    const top = lessons.filter(l => l.priority >= 7).slice(0, 15);
-    console.log('## Lessons — required reading\n');
-    top.forEach(l => console.log('- **' + l.summary + '**\n  Solution: ' + l.solution));
-  "
-```
-
-**Step 2** — Paste the output into your agent's system prompt, `.cursorrules`, or `AGENTS.md`.
-
-**Step 3** — Re-run after adding new high-priority lessons.
-
----
-
-### Tool name mapping
-
-| Canonical | Claude Code | Gemini CLI          | Codex         | opencode | OpenClaw     |
-| --------- | ----------- | ------------------- | ------------- | -------- | ------------ |
-| `Bash`    | `Bash`      | `run_shell_command` | `shell`       | `Bash`   | `bash`       |
-| `Read`    | `Read`      | `read_file`         | `read_file`   | `Read`   | `read_file`  |
-| `Edit`    | `Edit`      | `replace_in_file`   | `apply_patch` | `Edit`   | `edit_file`  |
-| `Write`   | `Write`     | `write_file`        | `write_file`  | `Write`  | `write_file` |
-| `Glob`    | `Glob`      | `find_files`        | `find_files`  | `Glob`   | `find_files` |
-
-Set `LESSONS_AGENT_PLATFORM` to normalize non-Claude-Code tool names automatically:
-
-| Platform     | `LESSONS_AGENT_PLATFORM` |
-| ------------ | ------------------------ |
-| Claude Code  | _(default, unset)_       |
-| Gemini CLI   | `gemini`                 |
-| OpenAI Codex | `codex`                  |
-| opencode     | _(same as Claude Code)_  |
-
----
-
-### MCP integration
-
-The lesson store can be exposed as an MCP tool server for agents that support MCP but not native hooks (e.g. Cursor, Windsurf):
-
-```bash
-# Coming soon — MCP server adapter
-# node scripts/lessons.mjs serve --mcp --port 3456
-```
-
-MCP adapter is on the roadmap. Until then, use [manual injection](#manual-injection-cursor-and-agents-without-hook-support).
-
----
-
-## CLI
-
-All management goes through a single entry point:
-
-```bash
-node scripts/lessons.mjs <subcommand> [options]
-```
-
-| Subcommand        | Purpose                                                           |
-| ----------------- | ----------------------------------------------------------------- |
-| `add`             | Add a new lesson interactively, from `--json`, `--file`, or stdin |
-| `build`           | Rebuild `data/lesson-manifest.json`                               |
-| `list`            | List all lessons with patterns and metadata                       |
-| `review`          | Review Tier 2 candidates against validation rules                 |
-| `scan`            | Incrementally scan session logs for new candidates                |
-| `scan candidates` | Full scan filtered to recurring cross-project patterns            |
-| `scan promote N`  | Promote candidate N into the lesson store                         |
-
-Run any subcommand with `--help` for full options. Shorthand: `npm run build`, `npm run scan`.
-
----
-
-## Emitting lessons
-
-When Claude encounters and recovers from a mistake, it emits a structured tag:
+**Step 1 — Claude makes a mistake and emits a lesson tag:**
 
 ```
 #lesson
 tool: Bash
 trigger: git stash
-problem: git stash silently drops untracked files without -u flag
-solution: Use `git stash -u` (or --include-untracked) to include untracked files
+problem: git stash silently omits untracked files — they stay in the working tree
+         and are not stashed. Running git stash with new files present loses them.
+solution: Use `git stash -u` (or `--include-untracked`) to capture all changes.
 tags: tool:git, severity:data-loss
 #/lesson
 ```
 
-These are automatically picked up by the scanner on the next session start.
+**Step 2 — Next session startup scans the log:**
+
+```
+$ node scripts/lessons.mjs scan --verbose
+[scan] Scanning ~/.claude/projects/ for new lessons...
+[scan] Processing session: abc123-2024-01-15.jsonl (42.3 KB)
+  → tier1: found 1 structured lesson tag (#lesson)
+  → tier2: found 1 heuristic pattern (error→correction)
+[scan] Processing session: def456-2024-01-16.jsonl (38.1 KB)
+  → tier1: no structured tags
+  → tier2: no patterns detected
+[scan] New candidates: 2 | Duplicates skipped: 0 | Total in DB: 47
+```
+
+**Step 3 — Review and promote:**
+
+```
+$ node scripts/lessons.mjs review --batch=1
+── tool:git (1) ──────────────────────────────────────────
+
+CANDIDATE: git-stash-untracked-files-a3f1
+  Tool: Bash  Priority: 7  Confidence: 0.92
+  Trigger: git stash
+  Problem: git stash silently omits untracked files, risking data loss
+  Solution: Use git stash -u to include untracked files
+
+  Validation: PASS (length ok, no placeholders, no duplicates)
+
+Promote? [y]es / [n]o / [s]kip / [q]uit: y
+✓ Promoted git-stash-untracked-files-a3f1 → active
+[build] Manifest rebuilt: 48 lessons included
+```
+
+**Step 4 — Warning fires before the next `git stash`:**
+
+```
+# Claude is about to run: git stash
+
+⚠ Lesson: git stash silently omits untracked files
+
+Problem: git stash silently omits untracked files, risking data loss.
+Running git stash when new/untracked files are present does NOT stash them.
+
+Fix: Use `git stash -u` (or `--include-untracked`) to capture all changes.
+```
 
 ---
 
-## Configuration
+## Install
 
-`data/config.json` controls injection and scanning behavior. Every field has a `LESSONS_*` environment variable equivalent that takes precedence.
+| Platform    | Install                                                                          |
+| ----------- | -------------------------------------------------------------------------------- |
+| Claude Code | `claude /plugin install lessons-learned@agent-marketplace`                       |
+| Codex CLI   | `codex plugin install lessons-learned@agent-marketplace`                         |
+| Gemini CLI  | Clone repo, run `LESSONS_AGENT_PLATFORM=gemini node scripts/lessons.mjs onboard` |
+| opencode    | Same as Claude Code — tool names match                                           |
+| Cursor      | `node scripts/lessons.mjs list --json > .cursorrules`                            |
+| Manual/MCP  | Coming soon (see Roadmap)                                                        |
 
-| Field                            | Default                   | Env var                                    |
-| -------------------------------- | ------------------------- | ------------------------------------------ |
-| `injectionBudgetBytes`           | `4096`                    | `LESSONS_INJECTION_BUDGET_BYTES`           |
-| `maxLessonsPerInjection`         | `3`                       | `LESSONS_MAX_LESSONS_PER_INJECTION`        |
-| `minConfidence`                  | `0.5`                     | `LESSONS_MIN_CONFIDENCE`                   |
-| `minPriority`                    | `1`                       | `LESSONS_MIN_PRIORITY`                     |
-| `compactionReinjectionThreshold` | `7`                       | `LESSONS_COMPACTION_REINJECTION_THRESHOLD` |
-| `scanPaths`                      | `["~/.claude/projects/"]` | `LESSONS_SCAN_PATHS` _(colon-separated)_   |
-| `autoScanIntervalHours`          | `24`                      | `LESSONS_AUTO_SCAN_INTERVAL_HOURS`         |
-| `maxCandidatesPerScan`           | `50`                      | `LESSONS_MAX_CANDIDATES_PER_SCAN`          |
+**Requirements:** Node.js ≥ 22.5
+
+For manual hook wiring and platform-specific config, see [docs/user-guide/install.md](docs/user-guide/install.md).
+
+---
+
+## How it works
+
+```mermaid
+graph LR
+    subgraph "Session Start"
+        SS1["Inject protocol\nand directives"]
+        SS2["Background scan\nTier 1/2/3/4"]
+        SS3["Reset dedup state"]
+    end
+    subgraph "Per Tool Call"
+        PT["matchLessons()\ntool + pattern + path"]
+        PO["Context monitor\nre-inject at 30/52/70%"]
+    end
+    subgraph "Data"
+        DB[(lessons.db)]
+        MF["lesson-manifest.json"]
+    end
+    SS2 --> DB
+    DB --> MF
+    PT --> MF
+    PO --> MF
+```
+
+1. **Capture** — Claude emits `#lesson` tags in responses; the background scanner processes previous session JSONL files on startup using up to 4 tiers (structured tags, heuristic patterns, structural insights, LLM deep scan)
+2. **Review** — Candidates land in `lessons.db`; `lessons review` validates and promotes them to active
+3. **Build** — `lessons build` pre-compiles regexes into `lesson-manifest.json` for zero-latency runtime lookup
+4. **Inject** — At each `PreToolUse` event, `matchLessons()` checks tool name + command patterns + file paths; matching lessons prepend as `additionalContext` before the tool runs
+
+---
+
+## Platforms
+
+| Platform    | Status      | Notes                                                 |
+| ----------- | ----------- | ----------------------------------------------------- |
+| Claude Code | First-class | `Bash`, `Read`, `Edit`, `Write`, `Glob`               |
+| Codex CLI   | Supported   | Same tool names as Claude Code                        |
+| Gemini CLI  | Supported   | Set `LESSONS_AGENT_PLATFORM=gemini`                   |
+| opencode    | Supported   | Same tool names as Claude Code                        |
+| Cursor      | Export only | `node scripts/lessons.mjs list --json > .cursorrules` |
+| MCP         | Roadmap     | Universal adapter planned                             |
 
 ---
 
 ## Features
 
-### Core pipeline
+| Feature                                         | Status     |
+| ----------------------------------------------- | ---------- |
+| PreToolUse lesson injection                     | ✅         |
+| Session-start protocol injection                | ✅         |
+| Guard lessons (block tool calls)                | ✅         |
+| 4-tier background scanning (T1/T2/T3/T4 LLM)    | ✅         |
+| Incremental scanning with byte offsets          | ✅         |
+| Confidence and priority scoring                 | ✅         |
+| 3-layer atomic dedup                            | ✅         |
+| Budget-aware injection (3 lessons / 4 KB)       | ✅         |
+| PostToolUse context re-injection at 30/52/70%   | ✅         |
+| PreCompact session handoff                      | 🚧 Beta    |
+| Subagent lesson protocol                        | ✅         |
+| Cross-platform (CC / Codex / Gemini / opencode) | ✅         |
+| MCP server adapter                              | 🗺 Roadmap |
+| LLM-assisted candidate classification           | 🗺 Roadmap |
+| Project stack auto-detection                    | 🗺 Roadmap |
 
-| Feature                                                                             | Status     |
-| ----------------------------------------------------------------------------------- | ---------- |
-| PreToolUse injection — 6-stage match→dedup→select→inject pipeline                   | ✅ Shipped |
-| Negative-lookahead patterns — suppress injection when fix is already applied        | ✅ Shipped |
-| Injection budget — configurable byte cap (default 4 KB) + lesson cap (default 3)    | ✅ Shipped |
-| Manifest pre-compilation — hot-path hook does zero file I/O beyond loading manifest | ✅ Shipped |
-| Tool call blocking — `block: true` denies the tool call entirely with a reason      | ✅ Shipped |
+---
 
-### Dedup and session management
+## Configuration
 
-| Feature                                                                                     | Status     |
-| ------------------------------------------------------------------------------------------- | ---------- |
-| 3-layer dedup — env var + session temp file + O_EXCL claim dir; once per session per lesson | ✅ Shipped |
-| Context compaction re-injection — high-priority lessons re-inject after `/compact`          | ✅ Shipped |
-| Session reset — all dedup state wiped on `clear` events                                     | ✅ Shipped |
+Edit `data/config.json` directly. Every field has a `LESSONS_*` env var equivalent that takes precedence.
 
-### Lesson discovery
+| Field                            | Default               | Description                           |
+| -------------------------------- | --------------------- | ------------------------------------- |
+| `injectionBudgetBytes`           | `4096`                | Max bytes per injection payload       |
+| `maxLessonsPerInjection`         | `3`                   | Max lessons per tool call             |
+| `minConfidence`                  | `0.5`                 | Exclude lessons below this confidence |
+| `minPriority`                    | `1`                   | Exclude lessons below this priority   |
+| `compactionReinjectionThreshold` | `7`                   | Re-inject after N tool calls          |
+| `scanPaths`                      | `~/.claude/projects/` | Where to find session JSONL files     |
 
-| Feature                                                                                  | Status     |
-| ---------------------------------------------------------------------------------------- | ---------- |
-| Tier 1 scanner — structured `#lesson` tag parsing; ~95% accuracy                         | ✅ Shipped |
-| Tier 2 scanner — heuristic sliding-window error→correction detection                     | ✅ Shipped |
-| Tier 4 scanner — LLM deep scan; extracts lesson candidates from full session transcripts | ✅ Shipped |
-| Incremental scanning — byte-offset tracking; constant ~1 MB memory                       | ✅ Shipped |
-| Confidence + priority scoring — multi-session, multi-project, hang/correction signals    | ✅ Shipped |
-| Background scan on startup                                                               | ✅ Shipped |
-
-### Planned
-
-| Feature                                                                             | Status     |
-| ----------------------------------------------------------------------------------- | ---------- |
-| MCP server adapter for Cursor / Windsurf / agents without hook support              | 📋 Roadmap |
-| CLI tool intelligence aggregation — aggregate 5+ per-tool lessons into a skill file | 📋 Roadmap |
-| LLM-assisted Tier 2 candidate classification                                        | 📋 Roadmap |
-| Project stack detection — boost `lang:` lessons when relevant lockfiles detected    | 📋 Roadmap |
-
-### Tier 4 LLM deep scan
-
-The Tier 4 scanner uses a language model to extract lesson candidates from full session transcripts. It fires automatically at session start when an API key is available.
-
-**Scoped key file (recommended)** — keeps the key out of your shell environment entirely:
+**Tier 4 LLM deep scan** fires automatically at session start when an API key is available:
 
 ```bash
-echo "sk-ant-..." > data/.api-key   # gitignored; only read by the deep scan hook
+echo "sk-ant-..." > data/.api-key   # gitignored; scoped to deep scan only
 ```
 
-**Shell env** — if `ANTHROPIC_API_KEY` is already set globally, the scan picks it up with no extra config.
-
-| Env var             | Default                     | Description                                          |
-| ------------------- | --------------------------- | ---------------------------------------------------- |
-| `ANTHROPIC_API_KEY` | _(falls back to key file)_  | API key — scan skips if unset and no key file exists |
-| `DEEP_SCAN_MODEL`   | `claude-haiku-4-5-20251001` | Model used for transcript analysis                   |
-
-**Cost:** ~$0.10–0.25/day at Haiku 4.5 rates (~120K input + 6K output tokens across 3 sessions per startup). The scan throttles to once per 24 hours by default (`autoScanIntervalHours`).
+Cost: ~$0.10–0.25/day at Haiku rates. Throttled to once per 24 hours.
 
 ---
 
 ## Development
 
 ```bash
-npm ci
-npm run lint        # ESLint
-npm run typecheck   # tsc --checkJs
-npm test            # all tests
-just --list         # all dev tasks
+npm test                  # all 175+ tests
+npm run test:unit         # unit tests only (fast)
+npm run test:integration  # integration tests
+npm run lint              # eslint
+npm run typecheck         # tsc --noEmit
 ```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the full workflow and [docs](https://joeblackwaslike.github.io/lessons-learned) for the complete reference.
+For evals (routes through meridian proxy):
+
+```bash
+cd evals
+ANTHROPIC_API_KEY=meridian ANTHROPIC_BASE_URL=http://127.0.0.1:3456 \
+  npx promptfoo eval --config promptfooconfig.yaml --filter-pattern "TC-H1"
+```
+
+See [docs](https://joeblackwaslike.github.io/lessons-learned) for the full reference and [CONTRIBUTING.md](CONTRIBUTING.md) for the dev workflow.
+
+---
 
 ## License
 
-[MIT](LICENSE)
+MIT © Joe Black
