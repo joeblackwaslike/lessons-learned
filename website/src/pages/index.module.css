@@ -1,0 +1,92 @@
+.heroBanner {
+  padding: 4rem 0;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+@media screen and (max-width: 996px) {
+  .heroBanner {
+    padding: 2rem;
+  }
+}
+
+.installCommand {
+  display: inline-block;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 6px;
+  padding: 0.6rem 1.4rem;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.95);
+  margin: 1.25rem auto 1.75rem;
+  letter-spacing: 0.015em;
+}
+
+.buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.buttonGhost {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.buttonGhost:hover {
+  color: #fff;
+  border-color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Platform section */
+.platformSection {
+  padding: 3rem 0;
+  background: var(--ifm-color-emphasis-100);
+  text-align: center;
+}
+
+.sectionTitle {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.sectionSubtitle {
+  color: var(--ifm-color-content-secondary);
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.platformGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.platformBadge {
+  background: var(--ifm-background-color);
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 20px;
+  padding: 0.4rem 1.1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--ifm-color-content);
+}
+
+/* How it works section */
+.howItWorksSection {
+  padding: 4rem 0;
+  text-align: center;
+}
+
+.mermaidContainer {
+  max-width: 800px;
+  margin: 2rem auto 0;
+  text-align: left;
+}
