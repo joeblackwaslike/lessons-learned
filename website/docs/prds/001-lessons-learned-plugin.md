@@ -53,7 +53,7 @@ These examples span the full development workflow — any developer using AI age
 2. **Structure lessons** with trigger patterns that enable proactive injection before the mistake recurs
 3. **Inject relevant lessons** into the agent's context at the exact moment they're useful — when the agent is about to call a tool in a way that historically causes problems
 4. **Support incremental discovery** — continuously learn from new sessions without re-processing old data
-5. **Be fast** — the hot-path hook must complete in <50ms to avoid degrading agent performance
+5. **Be fast** — the hot-path hook must complete in &lt;50ms to avoid degrading agent performance
 6. **Be cross-agent compatible** (V2) — core logic decoupled from any specific agent platform
 
 ### Non-Goals
@@ -232,14 +232,14 @@ When Claude Code is about to execute a tool (e.g., `Bash` with command `pytest -
 
 ### The Vercel Plugin's Six-Stage Pipeline
 
-| Stage                    | What it does                                                                                                                                                                                           | Perf |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---- |
-| **1. parseInput**        | Read stdin, extract tool_name, tool_input, session_id. Reject unsupported tools immediately.                                                                                                           | <1ms |
-| **2. loadSkills**        | Load `skill-manifest.json` — pre-compiled regex sources, summaries, injection text. Falls back to scanning SKILL.md files if manifest is missing.                                                      | <1ms |
-| **3. matchSkills**       | For file tools: test file_path against glob-derived regex. For Bash: test command against regex. Returns `MatchReason` objects with the matching pattern and type.                                     | <2ms |
-| **4. deduplicateSkills** | Merge 3 dedup sources (env var + session file + O_EXCL claim dir), filter already-seen, apply context-specific priority boosts, sort by effective priority.                                            | <2ms |
-| **5. injectSkills**      | Read SKILL.md content for matched skills. Budget enforcement: first skill always fits; subsequent checked against 18KB budget. Falls back to summary field if too large. Claims via O_EXCL atomically. | <3ms |
-| **6. formatOutput**      | Wrap in HTML comment markers (`<!-- skill:name -->`), embed metadata comment for debugging, write JSON to stdout.                                                                                      | <1ms |
+| Stage                    | What it does                                                                                                                                                                                           | Perf    |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- |
+| **1. parseInput**        | Read stdin, extract tool_name, tool_input, session_id. Reject unsupported tools immediately.                                                                                                           | &lt;1ms |
+| **2. loadSkills**        | Load `skill-manifest.json` — pre-compiled regex sources, summaries, injection text. Falls back to scanning SKILL.md files if manifest is missing.                                                      | &lt;1ms |
+| **3. matchSkills**       | For file tools: test file_path against glob-derived regex. For Bash: test command against regex. Returns `MatchReason` objects with the matching pattern and type.                                     | &lt;2ms |
+| **4. deduplicateSkills** | Merge 3 dedup sources (env var + session file + O_EXCL claim dir), filter already-seen, apply context-specific priority boosts, sort by effective priority.                                            | &lt;2ms |
+| **5. injectSkills**      | Read SKILL.md content for matched skills. Budget enforcement: first skill always fits; subsequent checked against 18KB budget. Falls back to summary field if too large. Claims via O_EXCL atomically. | &lt;3ms |
+| **6. formatOutput**      | Wrap in HTML comment markers (`<!-- skill:name -->`), embed metadata comment for debugging, write JSON to stdout.                                                                                      | &lt;1ms |
 
 **Total**: Consistently under 10ms, well within the 5-second hook timeout.
 
@@ -255,7 +255,7 @@ Read stdin JSON. Extract `tool_name`, `tool_input`, `session_id`, `agent_id`. If
 
 ### Stage 2: Load Manifest
 
-`readFileSync` of `data/lesson-manifest.json` (~15KB for 100 lessons, <1ms). Reconstruct `RegExp` objects from stored `regexSources`. Each hook invocation is a fresh process, but the file is small enough that cold-loading is negligible.
+`readFileSync` of `data/lesson-manifest.json` (~15KB for 100 lessons, &lt;1ms). Reconstruct `RegExp` objects from stored `regexSources`. Each hook invocation is a fresh process, but the file is small enough that cold-loading is negligible.
 
 **If manifest grows >50KB**: Pre-group lessons by `toolNames` into separate files and load only the relevant one.
 
@@ -599,7 +599,7 @@ Over time, as more sessions include the `#lesson` tag instruction, Tier 2 become
 3. **Compliance thresholds**:
    - **>80% compliance**: Proceed with Tier 1 as primary, Tier 2 as fallback
    - **50-80% compliance**: Use both tiers equally, investigate why compliance drops
-   - **<50% compliance**: Re-evaluate the injection strategy
+   - **&lt;50% compliance**: Re-evaluate the injection strategy
 
 4. **Known risks to compliance**:
    - **Context compaction**: After summarization, the `#lesson` instruction may be lost. Mitigation: the SessionStart hook re-injects on `compact` events.
@@ -813,7 +813,7 @@ lessons-learned/
 | Tags           | Datadog-style `category:value`                      | Enables category-aware scoring and CLI tool aggregation                          |
 | Pattern naming | `commandPatterns` (not `bashPatterns`)              | Agent-agnostic — applies to any shell/command tool                               |
 | Config         | `data/config.json` with JSON Schema                 | Single source of truth, IDE autocomplete via `$schema`                           |
-| Indexing       | Linear scan with pre-compiled RegExp                | <500 lessons expected; proven at 50+ skills in <5ms                              |
+| Indexing       | Linear scan with pre-compiled RegExp                | &lt;500 lessons expected; proven at 50+ skills in &lt;5ms                        |
 | Priority       | Composite score from configurable signals           | Transparent, reproducible, tunable                                               |
 | Scanner        | Node.js streaming JSONL, byte-offset tracking       | Constant memory, incremental, ~100MB/s                                           |
 | Self-reporting | `#lesson` structured tags injected via SessionStart | Deterministic scanning (grep) vs. NLP heuristics; requires compliance validation |
@@ -851,7 +851,7 @@ lessons-learned/
 
 | Risk                                           | Likelihood | Impact | Mitigation                                                                            |
 | ---------------------------------------------- | ---------- | ------ | ------------------------------------------------------------------------------------- |
-| Hook adds latency to every tool call           | Low        | Medium | <10ms measured; early exit for unmatched tools                                        |
+| Hook adds latency to every tool call           | Low        | Medium | &lt;10ms measured; early exit for unmatched tools                                     |
 | False positive injections (irrelevant lessons) | Medium     | Low    | Negative lookahead patterns; confidence threshold; dedup prevents repeat              |
 | Scanner produces too much noise                | Medium     | Low    | Confidence scoring; `needsReview` flag; manual curation via `/scan-lessons`           |
 | Session JSONL format changes                   | Low        | High   | Version-check JSONL structure; fail gracefully on unknown formats                     |
