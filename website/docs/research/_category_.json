@@ -1,0 +1,9 @@
+{
+  "label": "Research",
+  "position": 7,
+  "collapsed": true,
+  "link": {
+    "type": "generated-index",
+    "description": "Research and analysis supporting design decisions."
+  }
+}

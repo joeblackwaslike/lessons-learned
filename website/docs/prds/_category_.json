@@ -1,0 +1,9 @@
+{
+  "label": "PRDs",
+  "position": 6,
+  "collapsed": true,
+  "link": {
+    "type": "generated-index",
+    "description": "Product Requirements Documents — design specifications for each major feature."
+  }
+}
