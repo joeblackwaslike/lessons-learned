@@ -8,7 +8,7 @@ description: Complete reference for all 7 Claude Code hooks — event, trigger c
 
 Hook wiring and I/O contracts for all hooks in the plugin.
 
-Hook configuration lives in `hooks/hooks.json`. For manual installation (without the plugin registry), see [Installation](../installation.md).
+Hook configuration lives in `hooks/hooks.json`. For manual installation (without the plugin registry), see [Installation](../user-guide/installation.md).
 
 ---
 

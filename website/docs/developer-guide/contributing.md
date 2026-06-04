@@ -108,7 +108,7 @@ See [Adapters](adapters.md) for the full guide. The short version:
 1. Add tool name mappings to `hooks/lib/normalize-tool.mjs`
 2. Add a branch in `pretooluse-lesson-inject.mjs` for the new `LESSONS_AGENT_PLATFORM` value — or write a standalone adapter script
 3. Add E2E tests in `tests/e2e/` for the new platform
-4. Update [Installation](../installation.md) with the hook config for the new platform
+4. Update [Installation](../user-guide/installation.md) with the hook config for the new platform
 
 ---
 
