@@ -1,6 +1,5 @@
 ---
 sidebar_position: 1
-title: Get Started
 description: Install lessons-learned and capture your first mistake in 2 minutes.
 ---
 
@@ -8,43 +7,145 @@ description: Install lessons-learned and capture your first mistake in 2 minutes
 
 **lessons-learned** automatically captures Claude's mistakes from session logs and injects relevant warnings before the same mistake repeats. No manual curation needed.
 
-## Install
+## Prerequisites
+
+- **Node.js ≥ 22.5**
+- **Claude Code** (any recent version)
+- A Unix-like shell (macOS, Linux, WSL)
+
+## Step 1 — Clone the repo
 
 ```bash
-# Claude Code (recommended)
-claude /plugin install lessons-learned@agent-marketplace
+git clone https://github.com/joeblackwaslike/lessons-learned.git ~/lessons-learned
+cd ~/lessons-learned
+npm ci
 ```
 
-Other platforms: [see Installation →](./user-guide/slash-commands)
+`npm ci` installs dependencies and registers pre-commit hooks.
 
-## Verify it's working
+## Step 2 — Wire the hooks
 
-1. Start a Claude Code session
-2. Make a mistake — or emit a test lesson manually:
+Open `~/.claude/settings.json` in your editor and add the `hooks` section. If the file doesn't exist yet, create it.
 
+```json
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"/Users/you/lessons-learned/hooks/session-start-reset.mjs\""
+          },
+          {
+            "type": "command",
+            "command": "node \"/Users/you/lessons-learned/hooks/session-start-lesson-protocol.mjs\""
+          }
+        ]
+      },
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"/Users/you/lessons-learned/hooks/session-start-scan.mjs\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Read|Edit|Write|Bash|Glob",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"/Users/you/lessons-learned/hooks/pretooluse-lesson-inject.mjs\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "matcher": ".+",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"/Users/you/lessons-learned/hooks/subagent-start-lesson-protocol.mjs\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
 ```
-#lesson
-tool: Bash
-trigger: git stash
-problem: git stash silently omits untracked files, risking data loss
-solution: Use git stash -u to include untracked files
-tags: tool:git, severity:data-loss
-#/lesson
+
+:::warning Use absolute paths
+Replace `/Users/you/lessons-learned` with your actual clone path — e.g. `/home/alice/lessons-learned`.
+Tilde expansion (`~/lessons-learned`) is not supported in `settings.json` hook commands.
+:::
+
+## Step 3 — Verify injection is working
+
+Start a new Claude Code session (restart required for hooks to load), then ask Claude to run any command that matches one of the seed lessons:
+
+```text
+Ask Claude: "run pytest tests/"
 ```
 
-3. In the next session, Claude will warn you before running `git stash`
-
-## Scan & build
+If injection is working, Claude will receive a context block before running the command. You can also verify by checking that the hook script runs without errors:
 
 ```bash
-node scripts/lessons.mjs scan       # scan session logs for new candidates
-node scripts/lessons.mjs review     # review candidates for quality
-node scripts/lessons.mjs build      # rebuild the lesson manifest
+echo '{"tool_name":"Bash","tool_input":{"command":"pytest tests/"},"session_id":"test"}' | \
+  node ~/lessons-learned/hooks/pretooluse-lesson-inject.mjs
 ```
+
+Expected output (trimmed):
+
+```json
+{ "hookSpecificOutput": { "additionalContext": "## REQUIRED: pytest flags..." } }
+```
+
+An empty `{}` means no lesson matched — which is correct for commands that don't match any trigger.
+
+## Step 4 — Add your first lesson
+
+The fastest way to add a lesson is the interactive CLI:
+
+```bash
+cd ~/lessons-learned
+node scripts/lessons.mjs add
+```
+
+Or use the slash command from within Claude Code:
+
+```text
+/lessons:add
+```
+
+Claude will ask you five questions — what went wrong, how to fix it, what command triggers it, a summary, and optional tags/priority. The lesson is validated and written to `data/lessons.db`.
+
+## Step 5 — Build the manifest
+
+After adding a lesson (or editing the store directly), rebuild the manifest:
+
+```bash
+node scripts/lessons.mjs build
+```
+
+The manifest is what the injection hook reads at runtime. You need to rebuild it after any change to lessons.
+
+---
 
 ## What's next
 
-- [How it works](./user-guide/how-it-works) — understand the capture → inject loop
-- [Writing lessons](./user-guide/emitting-lessons) — the `#lesson` tag format
-- [Configuration](./user-guide/configuration) — tune injection budget and thresholds
+- [How it works](./user-guide/how-it-works.md) — understand the capture → inject loop end-to-end
+- [Working with lessons](./user-guide/lessons.md) — anatomy, triggers, and lesson types
+- [Emitting lessons](./user-guide/emitting-lessons.md) — the `#lesson` tag format
+- [Scanning & discovery](./user-guide/scanning.md) — automatic candidate discovery from session logs
+- [Slash commands](./user-guide/slash-commands.md) — conversational interface to manage lessons
+- [Configuration](./user-guide/configuration.md) — tune injection budget and thresholds
 - [Interactive visualization](pathname:///how-it-works.html) — explore the system architecture
