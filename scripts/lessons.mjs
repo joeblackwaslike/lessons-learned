@@ -481,10 +481,11 @@ function validateLesson(input) {
   const hasPatterns =
     (Array.isArray(input.commandPatterns) && input.commandPatterns.length > 0) ||
     (Array.isArray(input.pathPatterns) && input.pathPatterns.length > 0) ||
+    (Array.isArray(input.modelPatterns) && input.modelPatterns.length > 0) ||
     !!input.trigger;
   if (isInjectOnMatch && hasPatterns && !input.tool)
     errors.push(
-      'hint/guard with commandPatterns or pathPatterns but no toolNames — lesson can never fire; set "tool" to at least one tool name (e.g. "Bash")'
+      'hint/guard with commandPatterns, pathPatterns, or modelPatterns but no toolNames — lesson can never fire; set "tool" to at least one tool name (e.g. "Bash")'
     );
 
   // weak pair: solution too short or mostly restates the problem
@@ -752,6 +753,18 @@ function buildManifest() {
       })
       .filter(Boolean);
 
+    const modelRegexSources = (lesson.modelPatterns ?? [])
+      .map(p => {
+        try {
+          new RegExp(p);
+          return { source: p, flags: 'i' };
+        } catch {
+          console.warn(`  Warning: invalid model pattern in ${lesson.slug}: ${p}`);
+          return null;
+        }
+      })
+      .filter(Boolean);
+
     const lessonType = lesson.type ?? 'hint';
     const commandMatchTarget =
       lesson.commandMatchTarget ?? (lessonType === 'guard' ? 'executable' : 'full');
@@ -764,6 +777,7 @@ function buildManifest() {
       commandRegexSources,
       commandMatchTarget,
       pathRegexSources,
+      modelRegexSources,
       tags: lesson.tags ?? [],
       scope: lesson.scope ?? null,
       message: buildInjection(lesson),
@@ -835,6 +849,7 @@ function addLessonInternal(input) {
     toolNames: triggers.toolNames ?? [],
     commandPatterns,
     pathPatterns: triggers.pathPatterns ?? [],
+    modelPatterns: input.modelPatterns ?? [],
     priority: input.priority ?? 5,
     confidence,
     tags: input.tags ?? [],

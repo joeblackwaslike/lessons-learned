@@ -84,6 +84,26 @@ export function matchLessons(lessons, toolName, command, filePath, projectId = n
       matched = true;
     }
 
+    // modelRegexSources is an AND gate: if non-empty, at least one must match
+    // the command OR file path. This gates model-specific lessons to contexts
+    // where the target model is actually referenced.
+    if (matched && lesson.modelRegexSources?.length) {
+      const modelTarget = command || filePath;
+      let modelMatched = false;
+      for (const regexDef of lesson.modelRegexSources) {
+        try {
+          const re = new RegExp(regexDef.source, regexDef.flags ?? '');
+          if (re.test(modelTarget)) {
+            modelMatched = true;
+            break;
+          }
+        } catch {
+          // Invalid regex in manifest — skip
+        }
+      }
+      if (!modelMatched) matched = false;
+    }
+
     if (matched) {
       matches.push({
         id,

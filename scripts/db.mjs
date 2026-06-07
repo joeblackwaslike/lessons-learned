@@ -22,7 +22,14 @@ const DATA_DIR = process.env.LESSONS_DATA_DIR ?? join(PLUGIN_ROOT, 'data');
 export const DB_PATH = process.env.LESSONS_DB_PATH ?? join(DATA_DIR, 'lessons.db');
 
 // JSON columns that need parse/stringify on every row (arrays default to []).
-const JSON_COLUMNS = ['toolNames', 'commandPatterns', 'pathPatterns', 'tags', 'sourceSessionIds'];
+const JSON_COLUMNS = [
+  'toolNames',
+  'commandPatterns',
+  'pathPatterns',
+  'modelPatterns',
+  'tags',
+  'sourceSessionIds',
+];
 // JSON columns that are nullable objects (not arrays) — handled separately.
 const JSON_OBJECT_COLUMNS = ['duplicatedBy', 'requires'];
 
@@ -267,6 +274,17 @@ function applyMigrations(db) {
     }
   }
 
+  // Migration: add modelPatterns column (JSON array of regex strings matched against command + file path)
+  {
+    const cols = db
+      .prepare('PRAGMA table_info(lessons)')
+      .all()
+      .map(r => r.name);
+    if (!cols.includes('modelPatterns')) {
+      db.exec(`ALTER TABLE lessons ADD COLUMN modelPatterns TEXT NOT NULL DEFAULT '[]'`);
+    }
+  }
+
   // Migration: drop insight_seed_map table (replaced by structural pattern matching in patternScanFile)
   db.exec('DROP TABLE IF EXISTS insight_seed_map');
 
@@ -430,6 +448,7 @@ export function insertCandidate(db, record) {
     toolNames: record.toolNames ?? [],
     commandPatterns: record.commandPatterns ?? [],
     pathPatterns: record.pathPatterns ?? [],
+    modelPatterns: record.modelPatterns ?? [],
     priority: record.priority ?? 5,
     confidence: record.confidence ?? 0.8,
     tags: record.tags ?? [],
@@ -452,14 +471,14 @@ export function insertCandidate(db, record) {
     `
     INSERT INTO lessons (
       id, slug, status, type, summary, problem, solution,
-      toolNames, commandPatterns, pathPatterns,
+      toolNames, commandPatterns, pathPatterns, modelPatterns,
       priority, confidence, tags, source,
       sourceSessionIds, occurrenceCount, sessionCount, projectCount,
       contentHash, createdAt, updatedAt, reviewedAt, archivedAt, archiveReason,
       duplicatedBy, requires
     ) VALUES (
       :id, :slug, :status, :type, :summary, :problem, :solution,
-      :toolNames, :commandPatterns, :pathPatterns,
+      :toolNames, :commandPatterns, :pathPatterns, :modelPatterns,
       :priority, :confidence, :tags, :source,
       :sourceSessionIds, :occurrenceCount, :sessionCount, :projectCount,
       :contentHash, :createdAt, :updatedAt, :reviewedAt, :archivedAt, :archiveReason,
@@ -531,6 +550,7 @@ export function promoteToActive(db, ids, patches = {}) {
           'type',
           'commandPatterns',
           'pathPatterns',
+          'modelPatterns',
           'priority',
           'confidence',
           'tags',
@@ -593,6 +613,7 @@ export function updateRecord(db, id, patch) {
     'commandPatterns',
     'commandMatchTarget',
     'pathPatterns',
+    'modelPatterns',
     'priority',
     'confidence',
     'tags',

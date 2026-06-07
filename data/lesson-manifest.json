@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-06-07T14:12:02.967Z",
+  "generatedAt": "2026-06-07T14:20:40.816Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -1590,6 +1590,33 @@
       "problem": "Agents charge ahead on ambiguous requests, picking one interpretation without stating assumptions or asking for clarification. Work gets done toward the wrong goal.",
       "solution": "Before writing code: (1) state assumptions explicitly, (2) ask if the request is ambiguous rather than guessing, (3) convert vague goals to verifiable targets (\"add validation\" becomes \"write failing tests for invalid inputs, then make them pass\") before starting."
     },
+    "01KTH79WM038BQMQZYVED6ZR6K": {
+      "slug": "verify-base-branch-is-synced-with-remote-c325",
+      "type": "hint",
+      "priority": 8,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "\\bgh pr create\\b",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "tool:git",
+        "severity:data-loss",
+        "category:protocol"
+      ],
+      "scope": null,
+      "message": "## Lesson: Verify base branch is synced with remote before creating a PR\nIf the local base branch has commits that were never pushed, GitHub compares the PR branch against the remote state of the base — making all unpushed commits appear as new. This caused a PR to show the entire repo as changed (85 background commits from a local feat/memtree-v1 that was never pushed before branching).\n**Fix**: Before running `gh pr create`, verify the local base is in sync with remote:\ngit fetch origin\ngit log origin/<BASE>..<BASE> --oneline   # must be empty\ngit log <BASE>..origin/<BASE> --oneline   # must be empty\ngit log origin/<BASE>..HEAD --oneline | wc -l  # should equal expected commit count\n\nIf local base is ahead of remote, push it first.",
+      "summary": "Verify base branch is synced with remote before creating a PR",
+      "problem": "If the local base branch has commits that were never pushed, GitHub compares the PR branch against the remote state of the base — making all unpushed commits appear as new. This caused a PR to show the entire repo as changed (85 background commits from a local feat/memtree-v1 that was never pushed before branching).",
+      "solution": "Before running `gh pr create`, verify the local base is in sync with remote:\ngit fetch origin\ngit log origin/<BASE>..<BASE> --oneline   # must be empty\ngit log <BASE>..origin/<BASE> --oneline   # must be empty\ngit log origin/<BASE>..HEAD --oneline | wc -l  # should equal expected commit count\n\nIf local base is ahead of remote, push it first."
+    },
     "01JQSEED00000000000000001": {
       "slug": "pytest-tty-hanging-k9m2",
       "type": "guard",
@@ -2841,6 +2868,33 @@
       "summary": "Only change what the task requires — do not improve neighboring code",
       "problem": "Agents routinely touch code adjacent to the requested change: reformatting files, adding type hints elsewhere, refactoring what was not broken. Every changed line should trace back to the task.",
       "solution": "Only change what the task requires. Do not fix, reformat, or refactor code that was not part of the request. If you notice something worth fixing, mention it — do not change it."
+    },
+    "01KTH7A3F4P6G02DDD63GXP67Y": {
+      "slug": "check-git-status-before-staging-to-catch-7b6b",
+      "type": "hint",
+      "priority": 7,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "\\bgit add\\b",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "tool:git",
+        "severity:data-loss",
+        "category:hygiene"
+      ],
+      "scope": null,
+      "message": "## Lesson: Check git status before staging to catch unignored build artifacts\nA .gitignore listed individual filenames (media/ui.html) instead of the whole output directory (media/). Running `git add packages/ctx-tree-vscode/` swept up a 280KB build artifact (media/d3.min.js) that was not listed. Staging a whole directory with `git add <dir>/` is risky for the same reason.\n**Fix**: Before any `git add`, run `git status` and review what will be staged. Gitignore output directories wholesale (e.g. `media/`) rather than individual filenames. Prefer `git add <specific-file>` over `git add <dir>/`.",
+      "summary": "Check git status before staging to catch unignored build artifacts",
+      "problem": "A .gitignore listed individual filenames (media/ui.html) instead of the whole output directory (media/). Running `git add packages/ctx-tree-vscode/` swept up a 280KB build artifact (media/d3.min.js) that was not listed. Staging a whole directory with `git add <dir>/` is risky for the same reason.",
+      "solution": "Before any `git add`, run `git status` and review what will be staged. Gitignore output directories wholesale (e.g. `media/`) rather than individual filenames. Prefer `git add <specific-file>` over `git add <dir>/`."
     },
     "01JQSEED00000000000000005": {
       "slug": "npm-link-peer-deps-r2f7",
