@@ -5,7 +5,7 @@ allowed-tools: ['Bash']
 ---
 
 You are running `/lessons:doctor` — a QA audit of the lesson store.
-Work through all 8 checks below in order. Do not ask questions before completing all checks — gather all findings first, then present the full report and offer fixes.
+Work through all 10 checks below in order. Do not ask questions before completing all checks — gather all findings first, then present the full report and offer fixes.
 
 ---
 
@@ -189,9 +189,65 @@ For each pair: review both summaries. Recommend merging (archive one, enrich the
 
 ---
 
+## Check 9: Hint lessons that should be guards
+
+A hint with `severity:data-loss`, `severity:security`, or `severity:hang` AND a negative-lookahead commandPattern (`(?!`) is almost certainly a guard masquerading as a hint. The negative lookahead already encodes "fire unless the safe form is present" — the lesson was written as a guard and miscategorized.
+
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/lessons.mjs list --json | node -e "
+const l = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
+const candidates = l.filter(x =>
+  x.type === 'hint' &&
+  x.commandPatterns?.length &&
+  (x.tags||[]).some(t => /severity:(data-loss|security|hang)/.test(t)) &&
+  x.commandPatterns.some(p => p.includes('(?!'))
+);
+console.log(JSON.stringify(candidates.map(x=>({id:x.id,slug:x.slug,tags:x.tags,commandPatterns:x.commandPatterns,summary:x.summary})),null,2));
+"
+```
+
+For each: propose converting to `type: "guard"` and adding `commandMatchTarget: "executable"`. Guards are the most powerful lesson type — they block the bad command before it executes. Any hint that already encodes a negative lookahead should be a guard.
+
+---
+
+## Check 10: Bare runtime commandPatterns (wrong trigger type)
+
+Lessons with `commandPatterns` matching only bare runtime names (`\bpython\b`, `\bnode\b`, etc.) and a `lang:` tag are almost certainly about **code patterns**, not command-line behavior. They fire when the agent runs `python script.py` — not when it writes Python code — which is the wrong moment.
+
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/lessons.mjs list --json | node -e "
+const RUNTIMES = new Set(['python','python3','node','ruby','go','java','php','perl','deno']);
+function isBareRuntime(p) {
+  return p.split('|').map(s => s.replace(/\\\\b/g,'').trim()).every(s => RUNTIMES.has(s));
+}
+const l = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
+const broad = l.filter(x =>
+  x.commandPatterns?.length &&
+  (x.toolNames||[]).includes('Bash') &&
+  x.commandPatterns.every(isBareRuntime) &&
+  (x.tags||[]).some(t => /^lang:/.test(t))
+);
+console.log(JSON.stringify(broad.map(x=>({id:x.id,slug:x.slug,commandPatterns:x.commandPatterns,tags:x.tags,summary:x.summary})),null,2));
+"
+```
+
+For each: fix by removing `commandPatterns`, setting `toolNames: ["Edit","Write"]`, and adding `pathPatterns` for the appropriate file extension(s):
+
+| Runtime          | Path pattern                     |
+| ---------------- | -------------------------------- |
+| python / python3 | `**/*.py`                        |
+| node / deno      | `**/*.js`, `**/*.ts`, `**/*.mjs` |
+| ruby             | `**/*.rb`                        |
+| go               | `**/*.go`                        |
+| java             | `**/*.java`                      |
+| php              | `**/*.php`                       |
+| perl             | `**/*.pl`                        |
+
+---
+
 ## Final Report
 
-After all 8 checks, present this summary table:
+After all 10 checks, present this summary table:
 
 | Check | Issue                         | Found | Severity |
 | ----- | ----------------------------- | ----- | -------- |
@@ -203,13 +259,15 @@ After all 8 checks, present this summary table:
 | 6     | Long summaries (>80 chars)    | N     | low      |
 | 7     | Invalid toolNames casing      | N     | high     |
 | 8     | Near-duplicate lessons (>40%) | N     | medium   |
+| 9     | Hints that should be guards   | N     | high     |
+| 10    | Bare runtime commandPatterns  | N     | high     |
 
 Then ask:
 
-> "Apply all high-confidence mechanical fixes automatically (checks 1, 2, 4, 5, 7), review judgment calls (checks 3, 6, 8) interactively, or handle everything manually?"
+> "Apply all high-confidence mechanical fixes automatically (checks 1, 2, 4, 5, 7, 10), review judgment calls (checks 3, 6, 8, 9) interactively, or handle everything manually?"
 
-**Automatic fixes** (checks 1, 2, 4, 5, 7): apply with `node ${CLAUDE_PLUGIN_ROOT}/scripts/lessons.mjs edit --id <id> --patch '<json>'` for each, confirm count when done.
+**Automatic fixes** (checks 1, 2, 4, 5, 7, 10): apply with `node ${CLAUDE_PLUGIN_ROOT}/scripts/lessons.mjs edit --id <id> --patch '<json>'` for each, confirm count when done.
 
-**Interactive review** (checks 3, 6, 8): present each proposed change one at a time with the current value, proposed value, and reason. Ask "apply, skip, or edit?" for each.
+**Interactive review** (checks 3, 6, 8, 9): present each proposed change one at a time with the current value, proposed value, and reason. Ask "apply, skip, or edit?" for each.
 
 After completing the report, mention: "Run `/lessons:scope` to find lessons that should only inject in the current project."
