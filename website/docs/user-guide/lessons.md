@@ -58,7 +58,7 @@ A lesson is a structured record of a mistake and its fix, annotated with trigger
 | `toolNames`          | Exact tool name match             | Broad reminders for any use of a tool                      |
 | `sessionStart: true` | Session startup                   | Cross-cutting reasoning reminders with no specific trigger |
 
-:::tip Use negative lookahead to suppress when fix is applied
+::: tip Use negative lookahead to suppress when fix is applied
 
 ```json
 "commandPatterns": ["\\bpytest\\b(?!.*(--no-header|-p no:faulthandler))"]
@@ -66,6 +66,53 @@ A lesson is a structured record of a mistake and its fix, annotated with trigger
 
 This pattern fires on `pytest tests/` but not on `pytest --no-header tests/` — suppressing injection once the fix is already in place.
 :::
+
+### Advanced fields
+
+These fields give you finer control over when a lesson fires and whether it appears in the manifest at all.
+
+#### `modelPatterns`
+
+An array of regexes tested against the command or file path as an AND gate. When non-empty, the lesson only fires if at least one pattern matches. Use this to restrict a lesson to a specific model or provider.
+
+```json
+{
+  "modelPatterns": ["o3", "o4-mini", "reasoning_effort"]
+}
+```
+
+Pair with tags like `model-version:o3` or `provider:openai` to make the intent explicit.
+
+#### `requires`
+
+Excludes a lesson from the manifest unless a specific artifact (plugin, MCP server, or skill) is installed. Accepts a single object or an array (OR logic — any match satisfies the requirement).
+
+```json
+{ "requires": { "type": "plugin", "name": "serena" } }
+```
+
+```json
+{
+  "requires": [
+    { "type": "plugin", "name": "serena" },
+    { "type": "mcp-server", "name": "serena" }
+  ]
+}
+```
+
+Valid shapes: `{"type":"plugin","name":"..."}`, `{"type":"mcp-server","name":"..."}`, `{"type":"skill","name":"..."}`.
+
+Use `requires` when a lesson only makes sense if the referenced tool is present — for example, a lesson about Serena's `replace_content` is useless if Serena isn't installed.
+
+#### `duplicatedBy`
+
+The inverse of `requires`. Excludes a lesson from the manifest **when** the named artifact IS installed. Accepts a single object (not an array).
+
+```json
+{ "duplicatedBy": { "type": "plugin", "name": "serena" } }
+```
+
+Use this to suppress a workaround lesson once the real fix (the plugin that makes it unnecessary) is installed.
 
 ### Priority guide
 
@@ -95,6 +142,22 @@ message: 'pytest without --no-header hangs. Rerun as: {command} --no-header -p n
 ```
 
 Use guard sparingly — only for commands with known data-loss or irreversible consequences.
+
+### Mid-session re-injection
+
+`directive` and `protocol` lessons are injected once at session start, but their influence fades as the context window fills. To counteract this, a PostToolUse hook monitors context usage and re-injects them automatically at three thresholds:
+
+| Injection | Threshold | Rationale                                              |
+| --------- | --------- | ------------------------------------------------------ |
+| First     | 30%       | Pre-degradation — model is maximally receptive         |
+| Second    | 52%       | Early rot zone — catch drift before it compounds       |
+| Third     | 70%       | Deep rot — last refresh before auto-compaction at ~80% |
+
+When a threshold is crossed you'll see a `## [lessons-learned] Directive & Protocol Refresh` block appear in context, formatted identically to the session-start injection. Each threshold fires at most once per session.
+
+**Fallback**: if context percentage isn't available, the hook fires every 20 tool calls instead.
+
+Both values are configurable — see [Configuration → Re-injection settings](../reference/configuration.md#re-injection-settings) for `LESSONS_REINJECT_THRESHOLDS` and `LESSONS_REINJECT_TOOL_COUNT`.
 
 ---
 

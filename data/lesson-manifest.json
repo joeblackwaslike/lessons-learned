@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-05-17T04:32:57.000Z",
+  "generatedAt": "2026-06-07T14:12:02.967Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -26,6 +26,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "tool:git",
         "severity:data-loss",
@@ -63,6 +64,7 @@
           "flags": "i"
         }
       ],
+      "modelRegexSources": [],
       "tags": [
         "language:bash",
         "severity:security"
@@ -106,6 +108,7 @@
           "flags": "i"
         }
       ],
+      "modelRegexSources": [],
       "tags": [
         "severity:security",
         "topic:secrets"
@@ -124,6 +127,7 @@
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "topic:research",
         "topic:planning",
@@ -151,6 +155,7 @@
       ],
       "commandMatchTarget": "executable",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "language:bash",
         "severity:security"
@@ -176,6 +181,7 @@
       ],
       "commandMatchTarget": "executable",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "tool:jq",
         "language:bash",
@@ -202,6 +208,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "tool:sed",
         "language:bash",
@@ -229,6 +236,7 @@
           "flags": "i"
         }
       ],
+      "modelRegexSources": [],
       "tags": [
         "lang:python",
         "lang:javascript",
@@ -249,6 +257,7 @@
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "topic:debugging",
         "topic:time-management",
@@ -269,6 +278,7 @@
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "topic:research",
         "topic:planning",
@@ -280,6 +290,77 @@
       "summary": "Fetch exact-version docs before implementing — training-data sigs are stale",
       "problem": "Library APIs, CLI flags, and framework config schemas change between versions. Proceeding directly from memory without checking current documentation produces plans and code that fail on version-specific details — wrong method names, removed options, new required config keys. Training data has a knowledge cutoff and is routinely months or years behind.",
       "solution": "Before writing any code that uses a library, framework, or external API: call context7 MCP (resolve-library-id then query-docs) or WebSearch/WebFetch to verify current API signatures for the exact installed version. Do NOT write implementation from training-data memory — invoke one of these tools first, before opening any file or writing any code. Name the tool you used in your response."
+    },
+    "01KS4PREY1TPCAHNE0JKN6Z3RJ": {
+      "slug": "never-use-clientid-as-clientsecret-in-oa-feff",
+      "type": "hint",
+      "priority": 9,
+      "toolNames": [
+        "Edit",
+        "Write"
+      ],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [
+        {
+          "source": ".*/[^/]*\\.ts",
+          "flags": "i"
+        },
+        {
+          "source": ".*/[^/]*\\.js",
+          "flags": "i"
+        }
+      ],
+      "modelRegexSources": [],
+      "tags": [
+        "source:deep-scan",
+        "tool:oauth",
+        "severity:auth-failure",
+        "security:credentials"
+      ],
+      "scope": "Users-joe-github-joeblackwaslike-ai-listings",
+      "message": "## Lesson: Never use clientId as clientSecret in OAuth2 token refresh\nPassing client_id as both the client_id and client_secret in an OAuth2 token request causes silent auth failures — token endpoints validate client_secret separately and reject requests where the two values are identical.\n**Fix**: Store client_id and client_secret as separate credentials. Never substitute one for the other. If client_secret is missing, surface an explicit error rather than using client_id as a fallback.",
+      "summary": "Never use clientId as clientSecret in OAuth2 token refresh",
+      "problem": "Passing client_id as both the client_id and client_secret in an OAuth2 token request causes silent auth failures — token endpoints validate client_secret separately and reject requests where the two values are identical.",
+      "solution": "Store client_id and client_secret as separate credentials. Never substitute one for the other. If client_secret is missing, surface an explicit error rather than using client_id as a fallback."
+    },
+    "01KS4PT6QZWR87TJ5V2DCR2TS9": {
+      "slug": "webhook-signature-verification-skipped-w-c1a8",
+      "type": "guard",
+      "priority": 9,
+      "toolNames": [
+        "Edit",
+        "Write"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "src/app/api/webhooks/.+/route\\.(ts|js)$",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "executable",
+      "pathRegexSources": [
+        {
+          "source": ".*/webhooks/.*",
+          "flags": "i"
+        },
+        {
+          "source": ".*/api/.*",
+          "flags": "i"
+        }
+      ],
+      "modelRegexSources": [],
+      "tags": [
+        "source:deep-scan",
+        "security:webhook",
+        "severity:security-bypass",
+        "security:auth-failure"
+      ],
+      "scope": "Users-joe-github-joeblackwaslike-ai-listings",
+      "message": "## Lesson: Webhook signature verification skipped when secret is unset\nThe Etsy webhook handler skips signature verification when ETSY_WEBHOOK_SECRET is undefined or empty. The guard condition `if (ETSY_WEBHOOK_SECRET && !verifyEtsySignature(...))` allows requests through without validation when the secret is missing, creating a security bypass that permits spoofed events.\n**Fix**: Invert the logic to require valid signature verification before processing any webhook. Fail fast with 401/403 if the secret is missing or signature verification fails, rather than logging a warning after processing begins.",
+      "summary": "Webhook signature verification skipped when secret is unset",
+      "problem": "The Etsy webhook handler skips signature verification when ETSY_WEBHOOK_SECRET is undefined or empty. The guard condition `if (ETSY_WEBHOOK_SECRET && !verifyEtsySignature(...))` allows requests through without validation when the secret is missing, creating a security bypass that permits spoofed events.",
+      "solution": "Invert the logic to require valid signature verification before processing any webhook. Fail fast with 401/403 if the secret is missing or signature verification fails, rather than logging a warning after processing begins."
     },
     "01JQSEED00000000000000002": {
       "slug": "mock-patch-namespace-v3x8",
@@ -303,6 +384,7 @@
           "flags": "i"
         }
       ],
+      "modelRegexSources": [],
       "tags": [
         "lang:python",
         "tool:unittest",
@@ -329,6 +411,7 @@
       ],
       "commandMatchTarget": "executable",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "lang:javascript",
         "tool:vitest",
@@ -360,6 +443,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "tool:git",
         "severity:hang",
@@ -394,6 +478,7 @@
           "flags": "i"
         }
       ],
+      "modelRegexSources": [],
       "tags": [
         "language:bash",
         "severity:blocker",
@@ -420,6 +505,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "language:bash",
         "tool:ci",
@@ -447,6 +533,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "tool:grep",
         "language:bash",
@@ -473,6 +560,7 @@
       ],
       "commandMatchTarget": "executable",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "tool:git",
         "language:bash",
@@ -499,6 +587,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "language:bash",
         "severity:blocker"
@@ -525,6 +614,7 @@
           "flags": "i"
         }
       ],
+      "modelRegexSources": [],
       "tags": [
         "lang:python",
         "topic:async",
@@ -552,6 +642,7 @@
           "flags": "i"
         }
       ],
+      "modelRegexSources": [],
       "tags": [
         "lang:python",
         "topic:async",
@@ -571,6 +662,7 @@
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "topic:planning",
         "behavior:discipline",
@@ -590,6 +682,7 @@
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "topic:ux",
         "topic:interaction",
@@ -609,6 +702,7 @@
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "topic:autonomy",
         "topic:ux",
@@ -619,6 +713,882 @@
       "summary": "Asking 'should I proceed?' on routine reversible actions creates unnecessary friction",
       "problem": "Pausing to ask \"Should I proceed?\", \"Want me to implement this?\", or \"Ready to start?\" on routine, low-risk, reversible actions (editing files, running tests, rebuilding manifests) interrupts flow without adding value. When the user assigns a task, authorization to complete it is implicit in the request. Exception: when the user's message is a question or exploratory prompt rather than a task directive, there is no implicit authorization — answering is the correct response, not taking action.",
       "solution": "Execute routine, reversible actions proactively without asking permission when the user has assigned a task. Reserve confirmation for: irreversible operations, large blast radius (deleting data, force-pushing), actions affecting shared systems, or actions clearly outside the original request. When in doubt, state what you are about to do in one sentence — then do it. Critical distinction: task directives (\"add X\", \"fix Y\", \"implement Z\") carry implicit authorization; questions and exploratory prompts (\"what would you do?\", \"how should we approach X?\") do not — respond with information, not action."
+    },
+    "01KS4PE99M2SR27AS3YW1D0TD7": {
+      "slug": "vercel-free-tier-enforces-maxduration-80-273f",
+      "type": "hint",
+      "priority": 8,
+      "toolNames": [
+        "Edit",
+        "Write",
+        "mcp__plugin_serena_serena__replace_content",
+        "mcp__plugin_serena_serena__replace_symbol_body",
+        "mcp__plugin_serena_serena__insert_after_symbol",
+        "mcp__plugin_serena_serena__insert_before_symbol"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "npx vercel --prod",
+          "flags": ""
+        },
+        {
+          "source": "vercel deploy",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [
+        {
+          "source": ".*/vercel\\.json",
+          "flags": "i"
+        }
+      ],
+      "modelRegexSources": [],
+      "tags": [
+        "source:deep-scan",
+        "tool:vercel",
+        "severity:deployment-failure"
+      ],
+      "scope": null,
+      "message": "## Lesson: Vercel free tier enforces maxDuration ≤ 800s; pro tier allows up to 900s\nWhen deploying a Vercel function to a free-tier project with `maxDuration: 900`, deployment fails with \"must be between 1 second and 800 seconds\". This is a free-tier-specific constraint; pro accounts allow 900s.\n**Fix**: For free-tier Vercel deployments, use `maxDuration: 800` or lower. For pro/enterprise tiers, 900s is permitted. Check your Vercel plan before setting maxDuration in vercel.json.",
+      "summary": "Vercel free tier enforces maxDuration ≤ 800s; pro tier allows up to 900s",
+      "problem": "When deploying a Vercel function to a free-tier project with `maxDuration: 900`, deployment fails with \"must be between 1 second and 800 seconds\". This is a free-tier-specific constraint; pro accounts allow 900s.",
+      "solution": "For free-tier Vercel deployments, use `maxDuration: 800` or lower. For pro/enterprise tiers, 900s is permitted. Check your Vercel plan before setting maxDuration in vercel.json."
+    },
+    "01KS4PE99RV2N8NFG2AKF4K4N5": {
+      "slug": "openssl-key-conversion-pkcs1-rsa-keys-ne-599d",
+      "type": "hint",
+      "priority": 8,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "openssl",
+          "flags": ""
+        },
+        {
+          "source": "BEGIN RSA PRIVATE KEY",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "source:deep-scan",
+        "tool:openssl",
+        "tool:github",
+        "severity:hard-failure"
+      ],
+      "scope": null,
+      "message": "## Lesson: OpenSSL key conversion: PKCS#1 RSA keys need conversion to PKCS#8 for Node.js li\nGitHub App private keys download as PKCS#1 (`-----BEGIN RSA PRIVATE KEY-----`), but Node.js JWT/crypto libraries require PKCS#8 (`-----BEGIN PRIVATE KEY-----`). Using the wrong format silently breaks JWT signing.\n**Fix**: Check the header: `BEGIN RSA PRIVATE KEY` = PKCS#1, needs conversion; `BEGIN PRIVATE KEY` = PKCS#8, ready to use.\nConvert with: `openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt < key.pem > key-pkcs8.pem`",
+      "summary": "OpenSSL key conversion: PKCS#1 RSA keys need conversion to PKCS#8 for Node.js li",
+      "problem": "GitHub App private keys download as PKCS#1 (`-----BEGIN RSA PRIVATE KEY-----`), but Node.js JWT/crypto libraries require PKCS#8 (`-----BEGIN PRIVATE KEY-----`). Using the wrong format silently breaks JWT signing.",
+      "solution": "Check the header: `BEGIN RSA PRIVATE KEY` = PKCS#1, needs conversion; `BEGIN PRIVATE KEY` = PKCS#8, ready to use.\nConvert with: `openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt < key.pem > key-pkcs8.pem`"
+    },
+    "01KS4PEMW3QN43HK9YZ8EYTVR0": {
+      "slug": "never-use-rm-rf-outside-project-cwd-clau-1683",
+      "type": "guard",
+      "priority": 8,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "rm -rf ~/",
+          "flags": ""
+        },
+        {
+          "source": "rm -rf /Users",
+          "flags": ""
+        },
+        {
+          "source": "rm -rf ~/\\.",
+          "flags": ""
+        },
+        {
+          "source": "rm -rf ~$",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "executable",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "source:deep-scan",
+        "tool:bash",
+        "severity:data-loss",
+        "promotion_risk:high"
+      ],
+      "scope": "Users-joe-github-joeblackwaslike-agent-skills",
+      "message": "## Lesson: Never use rm -rf outside project cwd; Claude Code safety net blocks destructive \nRunning `rm -rf` on system or home directories outside the project CWD (e.g. ~/.*, /opt/, /usr/) is blocked by Claude Code's safety net and should never be attempted by the agent.\n**Fix**: Never issue destructive operations outside the project repository. If the user needs files removed from system directories, surface the exact command and ask them to run it manually. For tracked files within the repo, use `git rm` instead — it stages the deletion properly and avoids absolute-path safety net blocks.",
+      "summary": "Never use rm -rf outside project cwd; Claude Code safety net blocks destructive ",
+      "problem": "Running `rm -rf` on system or home directories outside the project CWD (e.g. ~/.*, /opt/, /usr/) is blocked by Claude Code's safety net and should never be attempted by the agent.",
+      "solution": "Never issue destructive operations outside the project repository. If the user needs files removed from system directories, surface the exact command and ask them to run it manually. For tracked files within the repo, use `git rm` instead — it stages the deletion properly and avoids absolute-path safety net blocks."
+    },
+    "01KS4PF1BEWPVQKHS79QGVSJ9Y": {
+      "slug": "gh-graphql-mutations-require-variables-d-d03e",
+      "type": "hint",
+      "priority": 8,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "gh api graphql",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "source:deep-scan",
+        "tool:gh",
+        "tool:graphql",
+        "severity:silent-failure"
+      ],
+      "scope": null,
+      "message": "## Lesson: gh GraphQL mutations require variables; direct string interpolation fails silent\nWhen using `gh api graphql` with mutations containing string variables, directly interpolating shell variables into the query string causes the mutation to fail without clear error output. The GraphQL parser doesn't interpret the interpolated values.\n**Fix**: Pass query and variables separately using `-f query='...'` with a parameterized mutation (`$var`), then use `-f varname='value'` flags. This ensures proper GraphQL variable substitution.",
+      "summary": "gh GraphQL mutations require variables; direct string interpolation fails silent",
+      "problem": "When using `gh api graphql` with mutations containing string variables, directly interpolating shell variables into the query string causes the mutation to fail without clear error output. The GraphQL parser doesn't interpret the interpolated values.",
+      "solution": "Pass query and variables separately using `-f query='...'` with a parameterized mutation (`$var`), then use `-f varname='value'` flags. This ensures proper GraphQL variable substitution."
+    },
+    "01KS4PF1BGAQ7SFGRP0AHYHNKW": {
+      "slug": "git-worktree-unlock-before-remove-force-4048",
+      "type": "guard",
+      "priority": 8,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "git worktree remove --force",
+          "flags": ""
+        },
+        {
+          "source": "git worktree remove -f",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "executable",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "source:deep-scan",
+        "tool:git",
+        "severity:data-loss"
+      ],
+      "scope": null,
+      "message": "## Lesson: git worktree unlock before remove; --force causes data loss warnings\nLocked git worktrees cannot be removed with `git worktree remove` even if the directory is clean. Using `--force` to bypass the lock triggers safety hooks.\n**Fix**: Run `git worktree unlock <path>` first, then `git worktree remove <path>` without --force.",
+      "summary": "git worktree unlock before remove; --force causes data loss warnings",
+      "problem": "Locked git worktrees cannot be removed with `git worktree remove` even if the directory is clean. Using `--force` to bypass the lock triggers safety hooks.",
+      "solution": "Run `git worktree unlock <path>` first, then `git worktree remove <path>` without --force."
+    },
+    "01KS4PF1BHXSB5R6062HP3CFDZ": {
+      "slug": "clean-serena-dirs-from-worktrees-before-f65b",
+      "type": "hint",
+      "priority": 8,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "git worktree remove",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "source:deep-scan",
+        "tool:git",
+        "tool:serena",
+        "severity:workflow-blocker"
+      ],
+      "scope": null,
+      "message": "## Lesson: Clean .serena dirs from worktrees before git worktree remove\nTool state directories (.serena, .claude, .codex, .gemini) left in a worktree appear as untracked files to git. Running `git worktree remove` on such a worktree fails with 'contains modified or untracked files' even when the actual repo state is clean.\n**Fix**: Before removing a worktree, delete all tool state directories: `rm -rf <worktree>/{.serena,.claude,.codex,.gemini}`",
+      "summary": "Clean .serena dirs from worktrees before git worktree remove",
+      "problem": "Tool state directories (.serena, .claude, .codex, .gemini) left in a worktree appear as untracked files to git. Running `git worktree remove` on such a worktree fails with 'contains modified or untracked files' even when the actual repo state is clean.",
+      "solution": "Before removing a worktree, delete all tool state directories: `rm -rf <worktree>/{.serena,.claude,.codex,.gemini}`"
+    },
+    "01KS4PF9WNMAGKY1F22ETG603K": {
+      "slug": "dockerfile-did-not-copy-workspace-packag-676d",
+      "type": "hint",
+      "priority": 8,
+      "toolNames": [
+        "Edit",
+        "Write"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "npm ci",
+          "flags": ""
+        },
+        {
+          "source": "docker build",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [
+        {
+          "source": ".*/Dockerfile",
+          "flags": "i"
+        },
+        {
+          "source": ".*/Dockerfile\\.[^/]*",
+          "flags": "i"
+        }
+      ],
+      "modelRegexSources": [],
+      "tags": [
+        "source:deep-scan",
+        "tool:docker",
+        "tool:npm",
+        "severity:build-failure"
+      ],
+      "scope": "Users-joe-github-joeblackwaslike-ai-listings",
+      "message": "## Lesson: Dockerfile did not copy workspace package.json files before npm ci\nWhen npm workspaces are added to a monorepo, the Dockerfile must copy workspace package.json files (e.g., packages/*/package.json) before running npm ci. If only the root package.json and package-lock.json are copied, npm ci will fail because the lockfile references workspace packages that don't exist in the container.\n**Fix**: Update the Dockerfile deps stage to copy workspace package.json files alongside root package.json. Example: COPY package.json package-lock.json ./ && COPY packages/*/package.json packages/",
+      "summary": "Dockerfile did not copy workspace package.json files before npm ci",
+      "problem": "When npm workspaces are added to a monorepo, the Dockerfile must copy workspace package.json files (e.g., packages/*/package.json) before running npm ci. If only the root package.json and package-lock.json are copied, npm ci will fail because the lockfile references workspace packages that don't exist in the container.",
+      "solution": "Update the Dockerfile deps stage to copy workspace package.json files alongside root package.json. Example: COPY package.json package-lock.json ./ && COPY packages/*/package.json packages/"
+    },
+    "01KS4PFZKQJ68PBKAN4QR1A4S7": {
+      "slug": "verify-supabase-migrations-applied-befor-a940",
+      "type": "hint",
+      "priority": 8,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "supabase.*deploy",
+          "flags": ""
+        },
+        {
+          "source": "supabase db push",
+          "flags": ""
+        },
+        {
+          "source": "kubectl.*apply",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [
+        {
+          "source": ".*/supabase/migrations/.*",
+          "flags": "i"
+        }
+      ],
+      "modelRegexSources": [],
+      "tags": [
+        "tool:supabase",
+        "severity:deployment-failure",
+        "workflow:database"
+      ],
+      "scope": "Users-joe-github-joeblackwaslike-ai-listings",
+      "message": "## Lesson: Run supabase db push before deploying — unsynced migrations cause prod failures\nThe project uses Supabase migrations (0001, 0002, 0003) stored in supabase/migrations/. If a newer migration (e.g., 0003_photos_confirmed.sql) has not been applied to the K8s Supabase instance, the deployed app may fail when it queries or writes to those columns.\n**Fix**: Before redeploying, verify all migrations in supabase/migrations/ have been applied to the K8s Supabase instance. Use Supabase CLI or K8s job to run `supabase db push` or equivalent. Check git log for recent schema changes and confirm they are in prod.",
+      "summary": "Run supabase db push before deploying — unsynced migrations cause prod failures",
+      "problem": "The project uses Supabase migrations (0001, 0002, 0003) stored in supabase/migrations/. If a newer migration (e.g., 0003_photos_confirmed.sql) has not been applied to the K8s Supabase instance, the deployed app may fail when it queries or writes to those columns.",
+      "solution": "Before redeploying, verify all migrations in supabase/migrations/ have been applied to the K8s Supabase instance. Use Supabase CLI or K8s job to run `supabase db push` or equivalent. Check git log for recent schema changes and confirm they are in prod."
+    },
+    "01KS4PH724EMYYYPKB1PJ0K60C": {
+      "slug": "xargs-with-shell-c-blocked-by-safety-net-bf72",
+      "type": "guard",
+      "priority": 8,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "xargs.*sh -c",
+          "flags": ""
+        },
+        {
+          "source": "xargs.*bash -c",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "executable",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "source:deep-scan",
+        "tool:bash",
+        "tool:xargs",
+        "security:injection"
+      ],
+      "scope": null,
+      "message": "## Lesson: xargs with shell -c blocked by safety net for dynamic input\nUsing `xargs -I {} sh -c` to execute commands from dynamic input is blocked by Claude Code's PreToolUse safety net — piping dynamic data into `sh -c` enables arbitrary command injection.\n**Fix**: Use safer alternatives:\n  (1) find with -exec: `find . -name \"*.txt\" -exec cmd {} \\;`\n  (2) A while-read loop: `some_cmd | while IFS= read -r line; do ...; done`\n  (3) A dedicated script with explicit argument handling.",
+      "summary": "xargs with shell -c blocked by safety net for dynamic input",
+      "problem": "Using `xargs -I {} sh -c` to execute commands from dynamic input is blocked by Claude Code's PreToolUse safety net — piping dynamic data into `sh -c` enables arbitrary command injection.",
+      "solution": "Use safer alternatives:\n  (1) find with -exec: `find . -name \"*.txt\" -exec cmd {} \\;`\n  (2) A while-read loop: `some_cmd | while IFS= read -r line; do ...; done`\n  (3) A dedicated script with explicit argument handling."
+    },
+    "01KS4PJ0YDK2C4DQAJ3GY7JHFY": {
+      "slug": "drop-constraint-without-if-exists-fails-80d4",
+      "type": "hint",
+      "priority": 8,
+      "toolNames": [
+        "Bash",
+        "Edit",
+        "Write"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "psql",
+          "flags": ""
+        },
+        {
+          "source": "flyway",
+          "flags": ""
+        },
+        {
+          "source": "alembic",
+          "flags": ""
+        },
+        {
+          "source": "migrate",
+          "flags": ""
+        },
+        {
+          "source": "prisma.*migrate",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [
+        {
+          "source": ".*/migrations/.*",
+          "flags": "i"
+        },
+        {
+          "source": ".*/[^/]*\\.sql",
+          "flags": "i"
+        }
+      ],
+      "modelRegexSources": [],
+      "tags": [
+        "tool:sql",
+        "severity:migration-failure",
+        "workflow:database"
+      ],
+      "scope": null,
+      "message": "## Lesson: SQL DROP CONSTRAINT without IF EXISTS breaks idempotent migrations\nSQL migrations that drop constraints will fail if run a second time (e.g., during testing or recovery). The initial migration used bare `DROP CONSTRAINT` statements, which throw an error if the constraint doesn't exist, breaking idempotency.\n**Fix**: Always use `DROP CONSTRAINT IF EXISTS` in SQL migrations. This allows the migration to be re-applied safely without failing on subsequent runs. Idempotency is critical for database migrations in production environments.",
+      "summary": "SQL DROP CONSTRAINT without IF EXISTS breaks idempotent migrations",
+      "problem": "SQL migrations that drop constraints will fail if run a second time (e.g., during testing or recovery). The initial migration used bare `DROP CONSTRAINT` statements, which throw an error if the constraint doesn't exist, breaking idempotency.",
+      "solution": "Always use `DROP CONSTRAINT IF EXISTS` in SQL migrations. This allows the migration to be re-applied safely without failing on subsequent runs. Idempotency is critical for database migrations in production environments."
+    },
+    "01KS4PJ0YKJ8665MYXK32BN1X3": {
+      "slug": "guard-api-calls-against-missing-credenti-ab4a",
+      "type": "hint",
+      "priority": 8,
+      "toolNames": [
+        "Edit",
+        "Write",
+        "mcp__plugin_serena_serena__replace_content",
+        "mcp__plugin_serena_serena__replace_symbol_body",
+        "mcp__plugin_serena_serena__insert_after_symbol",
+        "mcp__plugin_serena_serena__insert_before_symbol"
+      ],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "source:deep-scan",
+        "severity:silent-failure",
+        "tool:typescript"
+      ],
+      "scope": null,
+      "message": "## Lesson: Guard API calls against missing credentials at all call sites\nGuards inside a function only block within it — the call site still invokes and gets a silent empty result. Guard at the call site.\n**Fix**: Guard each external API call at the call site before dispatching. Use `(credA && credB) ? callFunction(...) : fallback`. A guard inside the callee is not sufficient.",
+      "summary": "Guard API calls against missing credentials at all call sites",
+      "problem": "Guards inside a function only block within it — the call site still invokes and gets a silent empty result. Guard at the call site.",
+      "solution": "Guard each external API call at the call site before dispatching. Use `(credA && credB) ? callFunction(...) : fallback`. A guard inside the callee is not sufficient."
+    },
+    "01KS4PJY6TMFBAA4MQX3E3R5GZ": {
+      "slug": "dont-assume-worktree-is-safe-to-prune-ba-8ac3",
+      "type": "guard",
+      "priority": 8,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "git worktree (prune|remove|delete)",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "executable",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "tool:git",
+        "severity:data-loss",
+        "workflow:worktree"
+      ],
+      "scope": null,
+      "message": "## Lesson: Verify worktree has no unique commits or changes before pruning\ngit worktree list --porcelain reports status but does not clearly indicate if a worktree is locked, abandoned, or safe to remove. An agent might assume a clean status means safe to delete without verifying the lock or checking if any uncommitted work exists.\n**Fix**: Always run git worktree status, inspect the lock file (if present), verify no uncommitted changes with git status, and confirm the branch has no unique commits before pruning.",
+      "summary": "Verify worktree has no unique commits or changes before pruning",
+      "problem": "git worktree list --porcelain reports status but does not clearly indicate if a worktree is locked, abandoned, or safe to remove. An agent might assume a clean status means safe to delete without verifying the lock or checking if any uncommitted work exists.",
+      "solution": "Always run git worktree status, inspect the lock file (if present), verify no uncommitted changes with git status, and confirm the branch has no unique commits before pruning."
+    },
+    "01KS4PKF655DJCAK419NFSN1XN": {
+      "slug": "github-graphql-rate-limit-exhaustion-pre-c5ee",
+      "type": "hint",
+      "priority": 8,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "gh api graphql",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "source:deep-scan",
+        "tool:gh",
+        "tool:graphql",
+        "severity:hard-failure"
+      ],
+      "scope": null,
+      "message": "## Lesson: GitHub GraphQL rate limit exhaustion prevents subsequent queries\nWhen the GitHub GraphQL rate limit is exhausted (remaining: 0), all subsequent queries fail with RATE_LIMIT errors. The check query itself consumes quota — running `gh api rate-limit` then immediately firing a complex query can still fail if the check left remaining at 0.\n**Fix**: Run `gh api rate-limit` before expensive GraphQL operations and inspect the `remaining` field in the response. Only proceed if remaining > 0. If remaining is 0, report the reset timestamp and halt — do not attempt the query.",
+      "summary": "GitHub GraphQL rate limit exhaustion prevents subsequent queries",
+      "problem": "When the GitHub GraphQL rate limit is exhausted (remaining: 0), all subsequent queries fail with RATE_LIMIT errors. The check query itself consumes quota — running `gh api rate-limit` then immediately firing a complex query can still fail if the check left remaining at 0.",
+      "solution": "Run `gh api rate-limit` before expensive GraphQL operations and inspect the `remaining` field in the response. Only proceed if remaining > 0. If remaining is 0, report the reset timestamp and halt — do not attempt the query."
+    },
+    "01KS4PKY2B857KK018WP54FAXT": {
+      "slug": "character-length-and-byte-length-are-dif-5415",
+      "type": "hint",
+      "priority": 8,
+      "toolNames": [
+        "Edit",
+        "Write",
+        "mcp__plugin_serena_serena__replace_content",
+        "mcp__plugin_serena_serena__replace_symbol_body",
+        "mcp__plugin_serena_serena__insert_after_symbol",
+        "mcp__plugin_serena_serena__insert_before_symbol"
+      ],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "source:deep-scan",
+        "severity:silent-failure",
+        "tool:typescript",
+        "tool:nodejs"
+      ],
+      "scope": null,
+      "message": "## Lesson: Character length and byte length are different; cap bytes, not characters\nTruncating by character count (`string.length`) does not enforce byte budgets — multi-byte UTF-8 characters can silently overflow the limit.\n**Fix**: Measure with `Buffer.byteLength(str, 'utf8')`, not `str.length`. For truncation, binary-search or enumerate bytes until you are under the limit.",
+      "summary": "Character length and byte length are different; cap bytes, not characters",
+      "problem": "Truncating by character count (`string.length`) does not enforce byte budgets — multi-byte UTF-8 characters can silently overflow the limit.",
+      "solution": "Measure with `Buffer.byteLength(str, 'utf8')`, not `str.length`. For truncation, binary-search or enumerate bytes until you are under the limit."
+    },
+    "01KS4PKY2GSRDEXWQQSZA4TJCD": {
+      "slug": "cache-keys-must-include-enough-context-t-8430",
+      "type": "hint",
+      "priority": 8,
+      "toolNames": [
+        "Edit",
+        "Write"
+      ],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [
+        {
+          "source": ".*/[^/]*cache[^/]*",
+          "flags": "i"
+        },
+        {
+          "source": ".*/[^/]*Cache[^/]*",
+          "flags": "i"
+        },
+        {
+          "source": ".*/[^/]*memo[^/]*",
+          "flags": "i"
+        },
+        {
+          "source": ".*/[^/]*Memo[^/]*",
+          "flags": "i"
+        }
+      ],
+      "modelRegexSources": [],
+      "tags": [
+        "tool:typescript",
+        "workflow:caching",
+        "severity:test-isolation"
+      ],
+      "scope": null,
+      "message": "## Lesson: Cache keys without full context cause cross-run cache pollution\nCaching results with a single key (e.g., model name) causes cache hits across test runs with different databases or configurations. The cached stale result from one test affects another test's outcome.\n**Fix**: Include all context in the cache key. If caching per-database, use a `WeakMap<Database, Value>` keyed on the actual DB instance, not its name. This ensures isolation.",
+      "summary": "Cache keys without full context cause cross-run cache pollution",
+      "problem": "Caching results with a single key (e.g., model name) causes cache hits across test runs with different databases or configurations. The cached stale result from one test affects another test's outcome.",
+      "solution": "Include all context in the cache key. If caching per-database, use a `WeakMap<Database, Value>` keyed on the actual DB instance, not its name. This ensures isolation."
+    },
+    "01KS4PKY2JGVPT8BS14HNYZRJ0": {
+      "slug": "persist-db-inserts-before-side-effects-r-a82f",
+      "type": "hint",
+      "priority": 8,
+      "toolNames": [
+        "Edit",
+        "Write"
+      ],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [
+        {
+          "source": ".*/db/.*",
+          "flags": "i"
+        },
+        {
+          "source": ".*/[^/]*repo[^/]*",
+          "flags": "i"
+        },
+        {
+          "source": ".*/[^/]*service[^/]*",
+          "flags": "i"
+        },
+        {
+          "source": ".*/[^/]*handler[^/]*",
+          "flags": "i"
+        }
+      ],
+      "modelRegexSources": [],
+      "tags": [
+        "workflow:database",
+        "severity:data-integrity",
+        "workflow:async"
+      ],
+      "scope": null,
+      "message": "## Lesson: Record side effects only after the primary DB write succeeds\nRecording a dedup entry or side effect before the DB insert succeeds means the side effect persists even if the insert later fails. This causes data inconsistency (e.g., marked as deduplicated but never stored).\n**Fix**: Perform the critical DB write first. Only after confirming success, record side effects like dedup markers or send notifications.",
+      "summary": "Record side effects only after the primary DB write succeeds",
+      "problem": "Recording a dedup entry or side effect before the DB insert succeeds means the side effect persists even if the insert later fails. This causes data inconsistency (e.g., marked as deduplicated but never stored).",
+      "solution": "Perform the critical DB write first. Only after confirming success, record side effects like dedup markers or send notifications."
+    },
+    "01KS4PMPGYWRKXR8XRZMAPBYE1": {
+      "slug": "write-tool-requires-prior-read-for-moved-04b3",
+      "type": "hint",
+      "priority": 8,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "\\bmv\\b",
+          "flags": ""
+        },
+        {
+          "source": "\\bcp\\b",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "tool:write",
+        "tool:bash",
+        "severity:error"
+      ],
+      "scope": null,
+      "message": "## Lesson: Write fails after mv/rename — re-Read file to refresh internal path state\nThe Write tool throws 'File has not been read yet' even for files that exist and were recently moved via Bash. The tool tracks file state per-path, and a rename operation invalidates prior Read state.\n**Fix**: Use a symbolic tool (mcp_serena_read_file or Read) to re-anchor the file before Write, even if you just renamed or moved it with Bash. This forces the tool to refresh its internal file-state map.",
+      "summary": "Write fails after mv/rename — re-Read file to refresh internal path state",
+      "problem": "The Write tool throws 'File has not been read yet' even for files that exist and were recently moved via Bash. The tool tracks file state per-path, and a rename operation invalidates prior Read state.",
+      "solution": "Use a symbolic tool (mcp_serena_read_file or Read) to re-anchor the file before Write, even if you just renamed or moved it with Bash. This forces the tool to refresh its internal file-state map."
+    },
+    "01KS4PQD5F4FXYXE7S9WRFEX2N": {
+      "slug": "ebay-webhook-notification-insert-uses-wr-07c9",
+      "type": "hint",
+      "priority": 8,
+      "toolNames": [
+        "Edit",
+        "Write"
+      ],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [
+        {
+          "source": ".*/[^/]*\\.ts",
+          "flags": "i"
+        },
+        {
+          "source": ".*/[^/]*\\.js",
+          "flags": "i"
+        }
+      ],
+      "modelRegexSources": [],
+      "tags": [
+        "source:deep-scan",
+        "tool:typescript",
+        "tool:supabase",
+        "severity:silent-failure"
+      ],
+      "scope": "Users-joe-github-joeblackwaslike-ai-listings",
+      "message": "## Lesson: eBay webhook notification insert uses wrong column names\nInserting into a DB table using column names from a spec or prior context without verifying against the actual schema causes silent failures — the DB rejects the row or silently misses required fields like NOT NULL foreign keys.\n**Fix**: Before writing an insert statement, read the actual schema definition (migration file, ORM model, or DB introspection) and match column names exactly.",
+      "summary": "eBay webhook notification insert uses wrong column names",
+      "problem": "Inserting into a DB table using column names from a spec or prior context without verifying against the actual schema causes silent failures — the DB rejects the row or silently misses required fields like NOT NULL foreign keys.",
+      "solution": "Before writing an insert statement, read the actual schema definition (migration file, ORM model, or DB introspection) and match column names exactly."
+    },
+    "01KS4PQD5KQC82T89BXV140H7V": {
+      "slug": "ebay-webhook-uses-anon-client-with-no-se-080d",
+      "type": "hint",
+      "priority": 8,
+      "toolNames": [
+        "Edit",
+        "Write",
+        "mcp__plugin_serena_serena__replace_content",
+        "mcp__plugin_serena_serena__replace_symbol_body",
+        "mcp__plugin_serena_serena__insert_after_symbol",
+        "mcp__plugin_serena_serena__insert_before_symbol"
+      ],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [
+        {
+          "source": ".*/webhooks/.*",
+          "flags": "i"
+        },
+        {
+          "source": ".*/api/webhooks/.*",
+          "flags": "i"
+        }
+      ],
+      "modelRegexSources": [],
+      "tags": [
+        "source:deep-scan",
+        "tool:supabase",
+        "severity:silent-failure",
+        "security:rls-bypass"
+      ],
+      "scope": "Users-joe-github-joeblackwaslike-ai-listings",
+      "message": "## Lesson: eBay webhook uses anon client with no session; RLS blocks all inserts\nWebhook handlers that use a session-based Supabase client (anon key + cookies) silently fail — webhook requests carry no session cookie, so auth.getUser() returns null and RLS policies (auth.uid() = user_id) reject every insert.\n**Fix**: Use the service-role admin client for webhook handlers, not the session client. Map the inbound platform identity to the application user_id via a credentials/settings table, then insert with the admin client and explicit user_id.",
+      "summary": "eBay webhook uses anon client with no session; RLS blocks all inserts",
+      "problem": "Webhook handlers that use a session-based Supabase client (anon key + cookies) silently fail — webhook requests carry no session cookie, so auth.getUser() returns null and RLS policies (auth.uid() = user_id) reject every insert.",
+      "solution": "Use the service-role admin client for webhook handlers, not the session client. Map the inbound platform identity to the application user_id via a credentials/settings table, then insert with the admin client and explicit user_id."
+    },
+    "01KS4PQD5NTZ0DPC3MWSWYD136": {
+      "slug": "platformsettingkeys-is-incomplete-api-bl-590d",
+      "type": "hint",
+      "priority": 8,
+      "toolNames": [
+        "Edit",
+        "Write",
+        "mcp__plugin_serena_serena__replace_content",
+        "mcp__plugin_serena_serena__replace_symbol_body",
+        "mcp__plugin_serena_serena__insert_after_symbol",
+        "mcp__plugin_serena_serena__insert_before_symbol"
+      ],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [
+        {
+          "source": ".*/settings/.*",
+          "flags": "i"
+        },
+        {
+          "source": ".*/credentials[^/]*",
+          "flags": "i"
+        }
+      ],
+      "modelRegexSources": [],
+      "tags": [
+        "source:deep-scan",
+        "tool:typescript",
+        "severity:silent-failure"
+      ],
+      "scope": "Users-joe-github-joeblackwaslike-ai-listings",
+      "message": "## Lesson: PLATFORM_SETTING_KEYS is incomplete; API blocks storing client IDs and secrets\nAn API route validates incoming setting keys against an allowlist, but the allowlist is missing credential fields that are required by the credentials module. Those credentials can never be stored via the API — the gap is silent and easy to miss when adding new integrations.\n**Fix**: Keep the settings allowlist in sync with what the credentials module actually reads. When adding a new integration, add its credential keys to both the allowlist and the credentials reader at the same time. Consider a lint/test that asserts the two sets are in sync.",
+      "summary": "PLATFORM_SETTING_KEYS is incomplete; API blocks storing client IDs and secrets",
+      "problem": "An API route validates incoming setting keys against an allowlist, but the allowlist is missing credential fields that are required by the credentials module. Those credentials can never be stored via the API — the gap is silent and easy to miss when adding new integrations.",
+      "solution": "Keep the settings allowlist in sync with what the credentials module actually reads. When adding a new integration, add its credential keys to both the allowlist and the credentials reader at the same time. Consider a lint/test that asserts the two sets are in sync."
+    },
+    "01KS4PR8KVNJ4TKKP1AQCXG2W9": {
+      "slug": "verify-serena-tool-command-signatures-be-dc28",
+      "type": "hint",
+      "priority": 8,
+      "toolNames": [
+        "mcp__plugin_serena_serena__get_symbols_overview",
+        "mcp__plugin_serena_serena__find_symbol"
+      ],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "source:deep-scan",
+        "tool:serena",
+        "severity:tool-error"
+      ],
+      "scope": null,
+      "message": "## Lesson: Verify Serena tool command signatures before using (not all return include_body)\n`get_symbols_overview` takes a file path, not a directory. `find_symbol` and `get_symbols_overview` omit implementation details unless `include_body=true` is set.\n**Fix**: Pass a file path (not a directory) to `get_symbols_overview`. Add `include_body=true` whenever you need to read function bodies, not just signatures.",
+      "summary": "Verify Serena tool command signatures before using (not all return include_body)",
+      "problem": "`get_symbols_overview` takes a file path, not a directory. `find_symbol` and `get_symbols_overview` omit implementation details unless `include_body=true` is set.",
+      "solution": "Pass a file path (not a directory) to `get_symbols_overview`. Add `include_body=true` whenever you need to read function bodies, not just signatures."
+    },
+    "01KS4PRXD2EJH6AZ1Q3WCRQ51S": {
+      "slug": "snoowrap-types-cause-ts1062-circular-the-c3b4",
+      "type": "guard",
+      "priority": 8,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "tsc",
+          "flags": ""
+        },
+        {
+          "source": "npx tsc",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "executable",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "source:deep-scan",
+        "tool:snoowrap",
+        "tool:typescript",
+        "severity:build-failure"
+      ],
+      "scope": null,
+      "message": "## Lesson: snoowrap types cause TS1062 'circular then' errors; cast via `as unknown as Prom\nsnoowrap exports types that implement `.then()` (thenable). This is a known library limitation — TypeScript's type resolver hits a circular reference when trying to unwrap an awaited snoowrap call (e.g. `await r.submitSelfpost(...)`), causing TS1062.\n**Fix**: Cast snoowrap calls through `as unknown as Promise<X>` before awaiting to break the circular type chain:\n  // Before (TS1062):\n  const post = await r.submitSelfpost({ ... })\n  // After:\n  const post = await (r.submitSelfpost({ ... }) as unknown as Promise<Submission>)\nNo runtime impact.",
+      "summary": "snoowrap types cause TS1062 'circular then' errors; cast via `as unknown as Prom",
+      "problem": "snoowrap exports types that implement `.then()` (thenable). This is a known library limitation — TypeScript's type resolver hits a circular reference when trying to unwrap an awaited snoowrap call (e.g. `await r.submitSelfpost(...)`), causing TS1062.",
+      "solution": "Cast snoowrap calls through `as unknown as Promise<X>` before awaiting to break the circular type chain:\n  // Before (TS1062):\n  const post = await r.submitSelfpost({ ... })\n  // After:\n  const post = await (r.submitSelfpost({ ... }) as unknown as Promise<Submission>)\nNo runtime impact."
+    },
+    "01KS4PRXD6PBEK45EEPE6RXRF7": {
+      "slug": "imgur-api-requires-client-secret-platfor-1305",
+      "type": "guard",
+      "priority": 8,
+      "toolNames": [
+        "Supabase",
+        "Imgur API"
+      ],
+      "commandRegexSources": [],
+      "commandMatchTarget": "executable",
+      "pathRegexSources": [
+        {
+          "source": ".*/credentials[^/]*",
+          "flags": "i"
+        },
+        {
+          "source": ".*/oauth[^/]*",
+          "flags": "i"
+        },
+        {
+          "source": ".*/auth[^/]*",
+          "flags": "i"
+        },
+        {
+          "source": ".*/creds[^/]*",
+          "flags": "i"
+        },
+        {
+          "source": ".*/tokens[^/]*",
+          "flags": "i"
+        }
+      ],
+      "modelRegexSources": [],
+      "tags": [
+        "source:deep-scan",
+        "tool:oauth",
+        "severity:silent-failure",
+        "security:credentials"
+      ],
+      "scope": "Users-joe-github-joeblackwaslike-ai-listings",
+      "message": "## Lesson: Imgur API requires client secret; PlatformCreds does not store it; use env var o\nWhen implementing OAuth token refresh, a credentials getter returns the client ID and refresh token but not the client secret. Passing an empty string for the secret fails OAuth silently — providers do not distinguish a missing secret from a wrong one.\n**Fix**: Before implementing OAuth refresh, enumerate all required fields from the provider docs (client ID, client secret, refresh token) and ensure every field is stored in and retrieved from your credentials type. Validate completeness at startup, not at call time — a missing field that defaults to empty string is a silent failure.",
+      "summary": "Imgur API requires client secret; PlatformCreds does not store it; use env var o",
+      "problem": "When implementing OAuth token refresh, a credentials getter returns the client ID and refresh token but not the client secret. Passing an empty string for the secret fails OAuth silently — providers do not distinguish a missing secret from a wrong one.",
+      "solution": "Before implementing OAuth refresh, enumerate all required fields from the provider docs (client ID, client secret, refresh token) and ensure every field is stored in and retrieved from your credentials type. Validate completeness at startup, not at call time — a missing field that defaults to empty string is a silent failure."
+    },
+    "01KSJ1D3ZY0P2059CRM8QSMZY2": {
+      "slug": "imgur-api-is-closed-to-new-developer-reg-3f97",
+      "type": "hint",
+      "priority": 8,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "imgur",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "tool:imgur",
+        "provider:imgur",
+        "severity:integration-failure",
+        "api:deprecated-signup"
+      ],
+      "scope": null,
+      "message": "## Lesson: Imgur API is closed to new developer registrations as of 2023\nImgur shut down new developer app registrations in 2023. You cannot create a new Client ID or Client Secret — the developer portal rejects new signups. Any integration requiring programmatic uploads or OAuth will fail without pre-existing credentials.\n**Fix**: Do not plan Imgur API integration for new projects. For image hosting, use alternatives that still accept developer signups: Cloudinary, Uploadcare, S3/R2, or self-hosted. If a codebase already has Imgur credentials from before the shutdown, document them carefully — they cannot be regenerated.",
+      "summary": "Imgur API is closed to new developer registrations as of 2023",
+      "problem": "Imgur shut down new developer app registrations in 2023. You cannot create a new Client ID or Client Secret — the developer portal rejects new signups. Any integration requiring programmatic uploads or OAuth will fail without pre-existing credentials.",
+      "solution": "Do not plan Imgur API integration for new projects. For image hosting, use alternatives that still accept developer signups: Cloudinary, Uploadcare, S3/R2, or self-hosted. If a codebase already has Imgur credentials from before the shutdown, document them carefully — they cannot be regenerated."
+    },
+    "01KSJ1D4PARMWCBGFA306KC959": {
+      "slug": "reddit-api-is-closed-to-new-free-tier-de-1294",
+      "type": "hint",
+      "priority": 8,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "reddit",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "tool:reddit",
+        "provider:reddit",
+        "severity:integration-failure",
+        "api:deprecated-signup"
+      ],
+      "scope": null,
+      "message": "## Lesson: Reddit API is closed to new free-tier developer registrations\nReddit severely restricted API access in 2023 and effectively killed free-tier developer access. New apps cannot get the usage levels needed for meaningful integrations without a paid enterprise agreement. Third-party clients and bots were largely shut down.\n**Fix**: Do not plan Reddit API integration for new projects unless you have an approved enterprise agreement. For read-only data needs, check if Pushshift archives or official RSS feeds cover your use case. Existing apps with grandfathered credentials may continue working but should not be relied on long-term.",
+      "summary": "Reddit API is closed to new free-tier developer registrations",
+      "problem": "Reddit severely restricted API access in 2023 and effectively killed free-tier developer access. New apps cannot get the usage levels needed for meaningful integrations without a paid enterprise agreement. Third-party clients and bots were largely shut down.",
+      "solution": "Do not plan Reddit API integration for new projects unless you have an approved enterprise agreement. For read-only data needs, check if Pushshift archives or official RSS feeds cover your use case. Existing apps with grandfathered credentials may continue working but should not be relied on long-term."
+    },
+    "01KTDP02JXQCPFAYHGBGRZXR9Y": {
+      "slug": "state-assumptions-and-convert-vague-goal-9802",
+      "type": "directive",
+      "priority": 8,
+      "toolNames": [],
+      "commandRegexSources": [
+        {
+          "source": "\\bstart coding\\b",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "category:agent-behavior",
+        "category:planning",
+        "severity:wasted-work"
+      ],
+      "scope": null,
+      "message": "## Lesson: State assumptions and convert vague goals to verifiable targets before coding\nAgents charge ahead on ambiguous requests, picking one interpretation without stating assumptions or asking for clarification. Work gets done toward the wrong goal.\n**Fix**: Before writing code: (1) state assumptions explicitly, (2) ask if the request is ambiguous rather than guessing, (3) convert vague goals to verifiable targets (\"add validation\" becomes \"write failing tests for invalid inputs, then make them pass\") before starting.",
+      "summary": "State assumptions and convert vague goals to verifiable targets before coding",
+      "problem": "Agents charge ahead on ambiguous requests, picking one interpretation without stating assumptions or asking for clarification. Work gets done toward the wrong goal.",
+      "solution": "Before writing code: (1) state assumptions explicitly, (2) ask if the request is ambiguous rather than guessing, (3) convert vague goals to verifiable targets (\"add validation\" becomes \"write failing tests for invalid inputs, then make them pass\") before starting."
     },
     "01JQSEED00000000000000001": {
       "slug": "pytest-tty-hanging-k9m2",
@@ -635,6 +1605,7 @@
       ],
       "commandMatchTarget": "executable",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "lang:python",
         "tool:pytest",
@@ -661,6 +1632,7 @@
       ],
       "commandMatchTarget": "executable",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "tool:git",
         "severity:data-loss"
@@ -686,6 +1658,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "lang:python",
         "tool:pip",
@@ -712,6 +1685,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "tool:git",
         "topic:shell",
@@ -738,6 +1712,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "tool:git",
         "tool:lefthook",
@@ -765,6 +1740,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "lang:javascript",
         "tool:vitest",
@@ -792,6 +1768,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "tool:git",
         "severity:error",
@@ -818,6 +1795,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "language:bash",
         "severity:resource-leak"
@@ -843,6 +1821,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "language:bash",
         "severity:silent-failure"
@@ -868,6 +1847,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "language:bash",
         "tool:xargs",
@@ -895,6 +1875,7 @@
           "flags": "i"
         }
       ],
+      "modelRegexSources": [],
       "tags": [
         "lang:python",
         "severity:silent-failure"
@@ -921,6 +1902,7 @@
           "flags": "i"
         }
       ],
+      "modelRegexSources": [],
       "tags": [
         "lang:python",
         "severity:silent-failure"
@@ -952,6 +1934,7 @@
           "flags": "i"
         }
       ],
+      "modelRegexSources": [],
       "tags": [
         "framework:systemd",
         "language:bash",
@@ -971,6 +1954,7 @@
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "topic:raspberry-pi",
         "topic:pxe",
@@ -994,6 +1978,7 @@
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "workflow:sessions",
         "behavior:discipline"
@@ -1012,12 +1997,13 @@
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "workflow:cluster",
         "domain:raspberry-pi",
         "severity:repeated-mistakes"
       ],
-      "scope": "Users-joeblack-github-joeblackwaslike-rpi-cluster-bootstrap",
+      "scope": "Users-joe-github-joeblackwaslike-rpi-cluster-bootstrap",
       "message": "## Lesson: Read the pi-cluster skill file before any cluster task — never re-derive from scratch\nPi 5 EEPROM behavior, PXE boot quirks, and cluster-specific constraints (bind mount persistence, /tmp size, HAOS limitations) are re-derived each session, causing the same mistakes repeatedly\n**Fix**: Read ~/.claude/skills/pi-cluster.md at the start of any Pi cluster task. Use pi-* CLI scripts instead of exploratory SSH one-liners. Update the skill file immediately when new constraints are discovered.",
       "summary": "Read the pi-cluster skill file before any cluster task — never re-derive from scratch",
       "problem": "Pi 5 EEPROM behavior, PXE boot quirks, and cluster-specific constraints (bind mount persistence, /tmp size, HAOS limitations) are re-derived each session, causing the same mistakes repeatedly",
@@ -1031,6 +2017,7 @@
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "topic:planning",
         "topic:ux",
@@ -1061,6 +2048,7 @@
           "flags": "i"
         }
       ],
+      "modelRegexSources": [],
       "tags": [
         "tool:hooks",
         "category:claude-code",
@@ -1080,6 +2068,7 @@
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "category:autonomy",
         "category:workflow",
@@ -1099,6 +2088,7 @@
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "category:architecture",
         "category:code-quality",
@@ -1125,6 +2115,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "tool:osascript",
         "topic:heredoc",
@@ -1153,6 +2144,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "tool:vercel",
         "tool:openssl",
@@ -1164,6 +2156,691 @@
       "summary": "GitHub App PKCS#1 keys silently fail on Node 20+/OpenSSL 3 (Vercel)",
       "problem": "GitHub App private keys download in PKCS#1 format (BEGIN RSA PRIVATE KEY). Node.js 20+/OpenSSL 3 environments (Vercel production) cannot load PKCS#1 keys — createPrivateKey() throws ERR_OSSL_UNSUPPORTED at JWT-signing time, which is async and after the HTTP 202 is already sent. The function appears healthy in GitHub delivery history while silently doing nothing: all webhooks accepted, zero reviews posted.",
       "solution": "Convert the key to PKCS#8 immediately after downloading from GitHub App settings: `openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in key.pem -out key.pkcs8.pem`. The result starts with BEGIN PRIVATE KEY (no RSA). Store only the PKCS#8 form in env vars. Add a startup guard: if GITHUB_APP_PRIVATE_KEY contains BEGIN RSA PRIVATE KEY, throw at boot rather than failing silently mid-request."
+    },
+    "01KS4PDXGSX7Y0KCW7KG0C5C1Y": {
+      "slug": "docker-add-chmod-flag-requires-syntax-no-e274",
+      "type": "hint",
+      "priority": 7,
+      "toolNames": [
+        "Edit",
+        "Write",
+        "mcp__plugin_serena_serena__replace_content",
+        "mcp__plugin_serena_serena__replace_symbol_body",
+        "mcp__plugin_serena_serena__create_text_file"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "^ADD\\s+--chmod\\s+[0-9]",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [
+        {
+          "source": ".*/Dockerfile",
+          "flags": "i"
+        },
+        {
+          "source": ".*/[^/]*\\.dockerfile",
+          "flags": "i"
+        }
+      ],
+      "modelRegexSources": [],
+      "tags": [
+        "source:deep-scan",
+        "tool:docker",
+        "severity:build-failure"
+      ],
+      "scope": null,
+      "message": "## Lesson: Docker ADD --chmod flag requires = syntax, not standalone\n`ADD --chmod 755` (space-separated) fails in Dockerfiles — the flag requires `=` syntax.\n**Fix**: Use `ADD --chmod=755 source dest` (with equals). Same applies to `COPY --chmod=755`. The space-separated form is invalid.",
+      "summary": "Docker ADD --chmod flag requires = syntax, not standalone",
+      "problem": "`ADD --chmod 755` (space-separated) fails in Dockerfiles — the flag requires `=` syntax.",
+      "solution": "Use `ADD --chmod=755 source dest` (with equals). Same applies to `COPY --chmod=755`. The space-separated form is invalid."
+    },
+    "01KS4PE99TDFAQ3AQP8J0AQQ4M": {
+      "slug": "deprecated-vercel-ai-sdk-generateobject-7691",
+      "type": "guard",
+      "priority": 7,
+      "toolNames": [
+        "TypeScript",
+        "Vercel AI SDK"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "generateObject",
+          "flags": ""
+        },
+        {
+          "source": "streamObject",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "executable",
+      "pathRegexSources": [
+        {
+          "source": ".*/[^/]*\\.ts",
+          "flags": "i"
+        },
+        {
+          "source": ".*/[^/]*\\.tsx",
+          "flags": "i"
+        }
+      ],
+      "modelRegexSources": [
+        {
+          "source": "generateObject",
+          "flags": "i"
+        },
+        {
+          "source": "streamObject",
+          "flags": "i"
+        }
+      ],
+      "tags": [
+        "source:deep-scan",
+        "tool:vercel-ai-sdk",
+        "model-version:ai-sdk-6",
+        "severity:deprecation"
+      ],
+      "scope": null,
+      "message": "## Lesson: Deprecated Vercel AI SDK generateObject must migrate to generateText with output\ngenerateObject() and streamObject() in Vercel AI SDK are deprecated as of v6.0. They still work but will be removed in a future version. IDEs show deprecation warnings but the functions continue to execute, making the issue easy to ignore.\n**Fix**: Migrate to generateText() and streamText() with the Output.object() helper: import { generateText, Output } from 'ai'; const { output } = await generateText({ model, prompt, output: Output.object({ schema: MySchema }) }); The output property replaces the old schema argument.",
+      "summary": "Deprecated Vercel AI SDK generateObject must migrate to generateText with output",
+      "problem": "generateObject() and streamObject() in Vercel AI SDK are deprecated as of v6.0. They still work but will be removed in a future version. IDEs show deprecation warnings but the functions continue to execute, making the issue easy to ignore.",
+      "solution": "Migrate to generateText() and streamText() with the Output.object() helper: import { generateText, Output } from 'ai'; const { output } = await generateText({ model, prompt, output: Output.object({ schema: MySchema }) }); The output property replaces the old schema argument."
+    },
+    "01KS4PF9WSWG4PPB9AZSBNRS71": {
+      "slug": "npm-ci-fails-silently-when-workspace-pac-9452",
+      "type": "hint",
+      "priority": 7,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "npm ci",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "source:deep-scan",
+        "tool:npm",
+        "tool:docker",
+        "severity:hard-failure"
+      ],
+      "scope": null,
+      "message": "## Lesson: npm ci fails silently when workspace packages referenced in lockfile are not cop\n`npm ci` in a workspace fails with a cryptic lockfile error if any workspace directory referenced in `package-lock.json` is missing from the filesystem.\n**Fix**: Ensure all workspace directories are present before running `npm ci`. For Docker builds, use `--progress=plain` to surface the exact error.",
+      "summary": "npm ci fails silently when workspace packages referenced in lockfile are not cop",
+      "problem": "`npm ci` in a workspace fails with a cryptic lockfile error if any workspace directory referenced in `package-lock.json` is missing from the filesystem.",
+      "solution": "Ensure all workspace directories are present before running `npm ci`. For Docker builds, use `--progress=plain` to surface the exact error."
+    },
+    "01KS4PGDWG7K4SR1SQESP083VN": {
+      "slug": "large-find-output-can-be-automatically-s-99db",
+      "type": "hint",
+      "priority": 7,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "\\bfind\\b",
+          "flags": ""
+        },
+        {
+          "source": "grep -r",
+          "flags": ""
+        },
+        {
+          "source": "ls -laR",
+          "flags": ""
+        },
+        {
+          "source": "ls -R",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "tool:bash",
+        "severity:silent-truncation"
+      ],
+      "scope": null,
+      "message": "## Lesson: Large Bash output is auto-truncated and saved to file; only preview shown\nWhen running find commands that discover many results (111.2KB in this session), the Bash tool automatically saves the overflow output to a persisted file and shows only a preview. This can be surprising if you expect the full output in the result.\n**Fix**: When expecting large output from find or similar commands, be prepared to check the persisted file location provided in the tool result, or use grep/head to filter results before they exceed buffer limits.",
+      "summary": "Large Bash output is auto-truncated and saved to file; only preview shown",
+      "problem": "When running find commands that discover many results (111.2KB in this session), the Bash tool automatically saves the overflow output to a persisted file and shows only a preview. This can be surprising if you expect the full output in the result.",
+      "solution": "When expecting large output from find or similar commands, be prepared to check the persisted file location provided in the tool result, or use grep/head to filter results before they exceed buffer limits."
+    },
+    "01KS4PJ0YHA17XSVR7716W2A76": {
+      "slug": "snoowrap-dependency-chain-includes-depre-2eb6",
+      "type": "hint",
+      "priority": 7,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "npm audit",
+          "flags": ""
+        },
+        {
+          "source": "npm install",
+          "flags": ""
+        },
+        {
+          "source": "npm ci",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "tool:npm",
+        "library:snoowrap",
+        "severity:audit-noise"
+      ],
+      "scope": "Users-joe-github-joeblackwaslike-ai-listings",
+      "message": "## Lesson: snoowrap's deprecated request dep causes 17 npm audit vulns; suppress in CI\nThe snoowrap library, while actively used for Reddit OAuth, depends on the deprecated `request` package, which introduces 17 npm audit vulnerabilities (8 moderate, 7 high, 2 critical) into the dependency tree. The vulnerabilities are not directly exploitable in this app's context (server-side-only usage), but they clutter audit reports and require explanation.\n**Fix**: Document the snoowrap dependency as a known audit issue with a suppression comment in package.json or CI configuration. Monitor for snoowrap maintenance or consider a maintained Reddit API alternative (e.g., snoocore, better-oembed). The current vulnerabilities are in deprecated transitive dependencies and do not affect this app's security posture, but flag in dependency reviews.",
+      "summary": "snoowrap's deprecated request dep causes 17 npm audit vulns; suppress in CI",
+      "problem": "The snoowrap library, while actively used for Reddit OAuth, depends on the deprecated `request` package, which introduces 17 npm audit vulnerabilities (8 moderate, 7 high, 2 critical) into the dependency tree. The vulnerabilities are not directly exploitable in this app's context (server-side-only usage), but they clutter audit reports and require explanation.",
+      "solution": "Document the snoowrap dependency as a known audit issue with a suppression comment in package.json or CI configuration. Monitor for snoowrap maintenance or consider a maintained Reddit API alternative (e.g., snoocore, better-oembed). The current vulnerabilities are in deprecated transitive dependencies and do not affect this app's security posture, but flag in dependency reviews."
+    },
+    "01KS4PJY6QY15RB5YTNWKKB5SM": {
+      "slug": "git-worktree-list-porcelain-shows-locked-e50a",
+      "type": "hint",
+      "priority": 7,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "git worktree",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "source:deep-scan",
+        "tool:git",
+        "severity:workflow-blocker"
+      ],
+      "scope": null,
+      "message": "## Lesson: git worktree list --porcelain shows locked worktrees even if lock is stale\n`git worktree list --porcelain` includes locked worktrees without indicating whether the lock is valid or stale — a dead process can leave a lock that blocks pruning indefinitely.\n**Fix**: Before pruning a locked worktree, inspect `.git/worktrees/<name>/locked` to read the lock reason, and check if the locking PID is still alive. Verify accessibility with `ls -la <path>` first; stale worktrees from dead sessions can be removed with `git worktree prune` or `git worktree remove --force`.",
+      "summary": "git worktree list --porcelain shows locked worktrees even if lock is stale",
+      "problem": "`git worktree list --porcelain` includes locked worktrees without indicating whether the lock is valid or stale — a dead process can leave a lock that blocks pruning indefinitely.",
+      "solution": "Before pruning a locked worktree, inspect `.git/worktrees/<name>/locked` to read the lock reason, and check if the locking PID is still alive. Verify accessibility with `ls -la <path>` first; stale worktrees from dead sessions can be removed with `git worktree prune` or `git worktree remove --force`."
+    },
+    "01KS4PKY2F6Y6VT2TRMTWFB5V0": {
+      "slug": "gh-cli-arg-flag-auto-quotes-jq-arguments-274c",
+      "type": "hint",
+      "priority": 7,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "gh api",
+          "flags": ""
+        },
+        {
+          "source": "gh pr",
+          "flags": ""
+        },
+        {
+          "source": "gh issue",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "source:deep-scan",
+        "tool:gh",
+        "tool:jq",
+        "severity:silent-failure",
+        "security:injection"
+      ],
+      "scope": null,
+      "message": "## Lesson: gh CLI --arg flag auto-quotes jq arguments; use it for string payloads\nManually constructing JSON strings in `gh` + `jq` pipelines breaks on special characters. Shell quoting and escaping is error-prone and risks injecting unintended values.\n**Fix**: Use `--arg varname value` to pass strings safely — the value is auto JSON-encoded as `$varname` in the jq expression. Example: `gh api ... --jq 'select(.name == $name)' --arg name \"$VAR\"`.",
+      "summary": "gh CLI --arg flag auto-quotes jq arguments; use it for string payloads",
+      "problem": "Manually constructing JSON strings in `gh` + `jq` pipelines breaks on special characters. Shell quoting and escaping is error-prone and risks injecting unintended values.",
+      "solution": "Use `--arg varname value` to pass strings safely — the value is auto JSON-encoded as `$varname` in the jq expression. Example: `gh api ... --jq 'select(.name == $name)' --arg name \"$VAR\"`."
+    },
+    "01KS4PNNX6JWK8PQ6FF0Q67KAA": {
+      "slug": "reasoning-tokens-in-o-series-models-bill-5357",
+      "type": "hint",
+      "priority": 7,
+      "toolNames": [
+        "OpenAI API"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "o4-mini|o3",
+          "flags": ""
+        },
+        {
+          "source": "reasoning_effort",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [
+        {
+          "source": ".*/openai[^/]*",
+          "flags": "i"
+        },
+        {
+          "source": ".*/providers[^/]*",
+          "flags": "i"
+        },
+        {
+          "source": ".*/llm[^/]*",
+          "flags": "i"
+        }
+      ],
+      "modelRegexSources": [
+        {
+          "source": "o3",
+          "flags": "i"
+        },
+        {
+          "source": "o4-mini",
+          "flags": "i"
+        },
+        {
+          "source": "o1",
+          "flags": "i"
+        },
+        {
+          "source": "reasoning_effort",
+          "flags": "i"
+        }
+      ],
+      "tags": [
+        "source:deep-scan",
+        "provider:openai",
+        "model:gpt",
+        "model-variant:o3",
+        "model-variant:o4-mini",
+        "severity:cost-overrun"
+      ],
+      "scope": null,
+      "message": "## Lesson: Reasoning tokens in o-series models bill at output rates, multiplying effective \nOpenAI's o-series reasoning models (o3, o4-mini) bill reasoning tokens at the same output rate as completion tokens, not the cheaper input rate. A single review with 10,000 reasoning tokens generated can cost 3–10x more than the base token price suggests, making cost estimation non-obvious.\n**Fix**: When calculating cost for o-series models with reasoning enabled, treat reasoning tokens as output tokens at the higher per-1M rate. Budget accordingly for complex reviews and consider setting `reasoning_effort: low` or `medium` to constrain reasoning token generation if cost is a blocker.",
+      "summary": "Reasoning tokens in o-series models bill at output rates, multiplying effective ",
+      "problem": "OpenAI's o-series reasoning models (o3, o4-mini) bill reasoning tokens at the same output rate as completion tokens, not the cheaper input rate. A single review with 10,000 reasoning tokens generated can cost 3–10x more than the base token price suggests, making cost estimation non-obvious.",
+      "solution": "When calculating cost for o-series models with reasoning enabled, treat reasoning tokens as output tokens at the higher per-1M rate. Budget accordingly for complex reviews and consider setting `reasoning_effort: low` or `medium` to constrain reasoning token generation if cost is a blocker."
+    },
+    "01KS4PNNX86W3C0NV33F09VFB6": {
+      "slug": "obsidian-vault-uri-schemes-fail-silently-caf1",
+      "type": "hint",
+      "priority": 7,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "obsidian://",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "source:deep-scan",
+        "tool:obsidian",
+        "severity:silent-failure"
+      ],
+      "scope": null,
+      "message": "## Lesson: Obsidian vault URI schemes fail silently if vault name in URI doesn't match regi\nWhen using `obsidian://open?vault=...` URI scheme to open a vault or file, if the vault name in the URI doesn't exactly match the vault name as registered in Obsidian's vault switcher, the command fails silently and may open Obsidian to a different vault or the wrong note.\n**Fix**: If an Obsidian URI fails to open the correct file, fall back to opening the file path directly via `open /path/to/file.md` or use the vault manager UI. The vault name must match Obsidian's internal registration exactly, including case and special characters.",
+      "summary": "Obsidian vault URI schemes fail silently if vault name in URI doesn't match regi",
+      "problem": "When using `obsidian://open?vault=...` URI scheme to open a vault or file, if the vault name in the URI doesn't exactly match the vault name as registered in Obsidian's vault switcher, the command fails silently and may open Obsidian to a different vault or the wrong note.",
+      "solution": "If an Obsidian URI fails to open the correct file, fall back to opening the file path directly via `open /path/to/file.md` or use the vault manager UI. The vault name must match Obsidian's internal registration exactly, including case and special characters."
+    },
+    "01KS4PP1DWQGPSS1H0GAM7Q5G8": {
+      "slug": "grep-on-empty-output-returns-no-lines-us-f593",
+      "type": "hint",
+      "priority": 7,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "curl.*\\|.*grep",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "tool:bash",
+        "tool:curl",
+        "severity:silent-failure"
+      ],
+      "scope": null,
+      "message": "## Lesson: curl | grep silent on no-match — use head first to verify raw output format\nWhen piping curl output to grep with filters (e.g., grep -A 20 -i 'install'), if the pattern doesn't match or the response is empty, no output is produced, making it unclear if the fetch succeeded or failed.\n**Fix**: Always use a preliminary head -N fetch to inspect raw output format and verify content before applying grep filters. This reveals whether the source has the expected structure.",
+      "summary": "curl | grep silent on no-match — use head first to verify raw output format",
+      "problem": "When piping curl output to grep with filters (e.g., grep -A 20 -i 'install'), if the pattern doesn't match or the response is empty, no output is produced, making it unclear if the fetch succeeded or failed.",
+      "solution": "Always use a preliminary head -N fetch to inspect raw output format and verify content before applying grep filters. This reveals whether the source has the expected structure."
+    },
+    "01KS4PQN845J3WNVJV73HJ0ZB6": {
+      "slug": "unsupportedoperationerror-should-be-caug-8bba",
+      "type": "guard",
+      "priority": 7,
+      "toolNames": [
+        "Edit",
+        "Write",
+        "mcp__plugin_serena_serena__replace_content",
+        "mcp__plugin_serena_serena__replace_symbol_body",
+        "mcp__plugin_serena_serena__insert_after_symbol",
+        "mcp__plugin_serena_serena__insert_before_symbol"
+      ],
+      "commandRegexSources": [],
+      "commandMatchTarget": "executable",
+      "pathRegexSources": [
+        {
+          "source": ".*/[^/]*\\.ts",
+          "flags": "i"
+        }
+      ],
+      "modelRegexSources": [],
+      "tags": [
+        "source:deep-scan",
+        "tool:typescript",
+        "severity:silent-failure",
+        "severity:log-noise"
+      ],
+      "scope": "Users-joe-github-joeblackwaslike-ai-listings",
+      "message": "## Lesson: UnsupportedOperationError should be caught silently, not logged repeatedly\nGeneric catch-all error handlers cause two distinct failure modes: bare `catch {}` silently swallows real bugs (missing files, API errors, permission issues), while `catch (err) { log(err) }` produces noise when expected/sentinel errors fire on every poll cycle — both bury real failures.\n**Fix**: Always catch specific, expected errors first and suppress or downgrade them; let everything else propagate or log at error level:\n  try { ... }\n  catch (err) {\n    if (err instanceof UnsupportedOperationError) return  // expected no-op\n    if (err instanceof ENOENT) return                     // handled elsewhere\n    logger.error('unexpected error', err)                 // real failures only\n  }",
+      "summary": "UnsupportedOperationError should be caught silently, not logged repeatedly",
+      "problem": "Generic catch-all error handlers cause two distinct failure modes: bare `catch {}` silently swallows real bugs (missing files, API errors, permission issues), while `catch (err) { log(err) }` produces noise when expected/sentinel errors fire on every poll cycle — both bury real failures.",
+      "solution": "Always catch specific, expected errors first and suppress or downgrade them; let everything else propagate or log at error level:\n  try { ... }\n  catch (err) {\n    if (err instanceof UnsupportedOperationError) return  // expected no-op\n    if (err instanceof ENOENT) return                     // handled elsewhere\n    logger.error('unexpected error', err)                 // real failures only\n  }"
+    },
+    "01KS4PQN86V6M1CRCMNFDE4WG4": {
+      "slug": "typescript-require-import-requires-eslin-46bb",
+      "type": "hint",
+      "priority": 7,
+      "toolNames": [
+        "Edit",
+        "Write"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "eslint-disable.*require",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [
+        {
+          "source": ".*/[^/]*\\.ts",
+          "flags": "i"
+        },
+        {
+          "source": ".*/[^/]*\\.tsx",
+          "flags": "i"
+        }
+      ],
+      "modelRegexSources": [],
+      "tags": [
+        "tool:typescript",
+        "workflow:esm-compat",
+        "severity:linter-noise"
+      ],
+      "scope": null,
+      "message": "## Lesson: CommonJS require() in TS: add eslint-disable and as typeof import() cast\nThe mechmarket adapter uses CommonJS require() for the snoowrap library with an eslint-disable comment. Some tools and linters flag dynamic requires as a code smell, but this is sometimes necessary for libraries that don't export ESM.\n**Fix**: When using require() in TypeScript, add the eslint-disable comment and use `as typeof import('...')` for type safety. Document why the library requires CommonJS in a comment for future maintainers.",
+      "summary": "CommonJS require() in TS: add eslint-disable and as typeof import() cast",
+      "problem": "The mechmarket adapter uses CommonJS require() for the snoowrap library with an eslint-disable comment. Some tools and linters flag dynamic requires as a code smell, but this is sometimes necessary for libraries that don't export ESM.",
+      "solution": "When using require() in TypeScript, add the eslint-disable comment and use `as typeof import('...')` for type safety. Document why the library requires CommonJS in a comment for future maintainers."
+    },
+    "01KS4PR8KQJJCMHKFV7YWGFNZP": {
+      "slug": "inngest-createfunction-uses-2-arg-api-wi-214c",
+      "type": "hint",
+      "priority": 7,
+      "toolNames": [
+        "Edit",
+        "Write"
+      ],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [
+        {
+          "source": ".*/inngest/.*",
+          "flags": "i"
+        },
+        {
+          "source": ".*/[^/]*\\.inngest\\.ts",
+          "flags": "i"
+        }
+      ],
+      "modelRegexSources": [],
+      "tags": [
+        "source:deep-scan",
+        "tool:inngest",
+        "tool:typescript",
+        "severity:silent-failure"
+      ],
+      "scope": "Users-joe-github-joeblackwaslike-ai-listings",
+      "message": "## Lesson: Inngest createFunction uses 2-arg API with triggers in config, not 3-arg form\nOlder Inngest docs and examples show a 3-argument `createFunction(config, trigger, handler)` signature. The current SDK (v1+) moved triggers into the config object — using the 3-arg form silently fails to register the function.\n**Fix**: Use the 2-arg form with triggers in config:\n  createFunction(\n    { id: 'my-fn', name: 'My Function', triggers: [{ cron: '0 * * * *' }] },\n    async ({ step, event }) => { ... }\n  )\nThe trigger (cron or event) is a property of the first argument, not a separate second argument.",
+      "summary": "Inngest createFunction uses 2-arg API with triggers in config, not 3-arg form",
+      "problem": "Older Inngest docs and examples show a 3-argument `createFunction(config, trigger, handler)` signature. The current SDK (v1+) moved triggers into the config object — using the 3-arg form silently fails to register the function.",
+      "solution": "Use the 2-arg form with triggers in config:\n  createFunction(\n    { id: 'my-fn', name: 'My Function', triggers: [{ cron: '0 * * * *' }] },\n    async ({ step, event }) => { ... }\n  )\nThe trigger (cron or event) is a property of the first argument, not a separate second argument."
+    },
+    "01KS4PS8ZG1SNNC30RF7MNC7NR": {
+      "slug": "vercel-waituntil-extends-function-lifeti-ee75",
+      "type": "hint",
+      "priority": 7,
+      "toolNames": [
+        "Edit",
+        "Write"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "@vercel/functions",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [
+        {
+          "source": ".*/pages/api/.*",
+          "flags": "i"
+        },
+        {
+          "source": ".*/app/api/.*",
+          "flags": "i"
+        },
+        {
+          "source": ".*/api/.*",
+          "flags": "i"
+        }
+      ],
+      "modelRegexSources": [],
+      "tags": [
+        "platform:vercel",
+        "severity:silent-failure",
+        "workflow:serverless"
+      ],
+      "scope": null,
+      "message": "## Lesson: Use waitUntil() in Vercel functions or async tasks cancel after response\nVercel's waitUntil function allows background work to continue after HTTP response is sent to the client. Without it, async operations (like GitHub API calls in webhook handlers) may be cancelled when the response is returned.\n**Fix**: Wrap long-running async tasks in waitUntil() in Vercel serverless functions. This ensures background jobs like posting review comments complete even after the HTTP response goes out.",
+      "summary": "Use waitUntil() in Vercel functions or async tasks cancel after response",
+      "problem": "Vercel's waitUntil function allows background work to continue after HTTP response is sent to the client. Without it, async operations (like GitHub API calls in webhook handlers) may be cancelled when the response is returned.",
+      "solution": "Wrap long-running async tasks in waitUntil() in Vercel serverless functions. This ensures background jobs like posting review comments complete even after the HTTP response goes out."
+    },
+    "01KS4PTSKESFKB5SRV748FFKSV": {
+      "slug": "check-error-class-constructor-signatures-830b",
+      "type": "hint",
+      "priority": 7,
+      "toolNames": [
+        "Edit",
+        "Write",
+        "mcp__plugin_serena_serena__replace_content",
+        "mcp__plugin_serena_serena__replace_symbol_body",
+        "mcp__plugin_serena_serena__insert_after_symbol",
+        "mcp__plugin_serena_serena__insert_before_symbol"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "adapters/.*\\.ts",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [
+        {
+          "source": ".*/[^/]*\\.ts",
+          "flags": "i"
+        }
+      ],
+      "modelRegexSources": [],
+      "tags": [
+        "source:deep-scan",
+        "tool:typescript",
+        "severity:runtime-error"
+      ],
+      "scope": "Users-joe-github-joeblackwaslike-ai-listings",
+      "message": "## Lesson: Check error class constructor signatures before using in adapters\nAssuming a constructor signature from documentation, a spec, or prior context without verifying the actual implementation leads to runtime errors — especially for project-local classes where signatures diverge from what's described.\n**Fix**: Before instantiating any project-local class, read its definition to verify the constructor signature. Specs and memory are unreliable; the source is authoritative.",
+      "summary": "Check error class constructor signatures before using in adapters",
+      "problem": "Assuming a constructor signature from documentation, a spec, or prior context without verifying the actual implementation leads to runtime errors — especially for project-local classes where signatures diverge from what's described.",
+      "solution": "Before instantiating any project-local class, read its definition to verify the constructor signature. Specs and memory are unreliable; the source is authoritative."
+    },
+    "01KS4PV3CD790MSAHG4CV17G6P": {
+      "slug": "always-verify-mcp-server-paths-against-a-0fde",
+      "type": "guard",
+      "priority": 7,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "npx.*@.*",
+          "flags": ""
+        },
+        {
+          "source": "grep.*settings\\.json|config\\.toml",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "executable",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "source:deep-scan",
+        "tool:mcp",
+        "severity:silent-failure"
+      ],
+      "scope": "Users-joe",
+      "message": "## Lesson: Always verify MCP server paths against actual vault location before activation\nAn MCP server configured in ~/.claude/settings.json with an incorrect path is silently unavailable — no error, no warning, the tool just does not appear.\n**Fix**: After adding or configuring an MCP server, verify the configured path exists and contains expected data. Use `ls` or `find` to confirm before relying on the tool in workflows.",
+      "summary": "Always verify MCP server paths against actual vault location before activation",
+      "problem": "An MCP server configured in ~/.claude/settings.json with an incorrect path is silently unavailable — no error, no warning, the tool just does not appear.",
+      "solution": "After adding or configuring an MCP server, verify the configured path exists and contains expected data. Use `ls` or `find` to confirm before relying on the tool in workflows."
+    },
+    "01KSJ10WGFFXV533YCTNAH30VE": {
+      "slug": "wire-pre-commit-hooks-at-project-init-fo-c54e",
+      "type": "hint",
+      "priority": 7,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "git init",
+          "flags": ""
+        },
+        {
+          "source": "npx create-",
+          "flags": ""
+        },
+        {
+          "source": "yarn create",
+          "flags": ""
+        },
+        {
+          "source": "pnpm create",
+          "flags": ""
+        },
+        {
+          "source": "npm init",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "tool:git",
+        "tool:husky",
+        "workflow:pre-commit",
+        "severity:quality-debt"
+      ],
+      "scope": null,
+      "message": "## Lesson: Wire pre-commit hooks at project init: formatter, linter, typecheck, fast tests\nProjects initialized without a pre-commit hook accumulate formatting drift, type errors, and broken tests that only surface at PR review or in CI. Fixing many violations at once creates noisy diffs and is expensive to untangle.\n**Fix**: At project init, install a hook runner (Husky, lefthook, or git-native hooks) and wire: (1) auto-formatter in fix mode (prettier/biome/ruff), (2) linter + typechecker as blocking checks, (3) fast unit tests. Exclude e2e and slow integration tests — those belong in CI. Target: hook completes in under 10s.",
+      "summary": "Wire pre-commit hooks at project init: formatter, linter, typecheck, fast tests",
+      "problem": "Projects initialized without a pre-commit hook accumulate formatting drift, type errors, and broken tests that only surface at PR review or in CI. Fixing many violations at once creates noisy diffs and is expensive to untangle.",
+      "solution": "At project init, install a hook runner (Husky, lefthook, or git-native hooks) and wire: (1) auto-formatter in fix mode (prettier/biome/ruff), (2) linter + typechecker as blocking checks, (3) fast unit tests. Exclude e2e and slow integration tests — those belong in CI. Target: hook completes in under 10s."
+    },
+    "01KTDP06W59FYF4Z2J3Z3T8ZVR": {
+      "slug": "write-minimum-code-that-solves-the-probl-c264",
+      "type": "directive",
+      "priority": 7,
+      "toolNames": [],
+      "commandRegexSources": [
+        {
+          "source": "\\bwrite code\\b",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "category:agent-behavior",
+        "severity:over-engineering"
+      ],
+      "scope": null,
+      "message": "## Lesson: Write minimum code that solves the problem; no abstractions nobody asked for\nAgents default to patterns that feel like good engineering — abstraction layers, extensibility hooks, dependency injection — even when none was requested. A 3-line solution becomes a class with 8 methods.\n**Fix**: Write the minimum code that solves the problem as stated. No speculative abstractions, no flexibility nobody asked for. If a senior engineer would call it overcomplicated, simplify it.",
+      "summary": "Write minimum code that solves the problem; no abstractions nobody asked for",
+      "problem": "Agents default to patterns that feel like good engineering — abstraction layers, extensibility hooks, dependency injection — even when none was requested. A 3-line solution becomes a class with 8 methods.",
+      "solution": "Write the minimum code that solves the problem as stated. No speculative abstractions, no flexibility nobody asked for. If a senior engineer would call it overcomplicated, simplify it."
+    },
+    "01KTDP0NFZRKCEKCV8EDHHXABR": {
+      "slug": "only-change-what-the-task-requires-do-no-ec52",
+      "type": "hint",
+      "priority": 7,
+      "toolNames": [
+        "Edit",
+        "Write",
+        "mcp__plugin_serena_serena__replace_content",
+        "mcp__plugin_serena_serena__replace_symbol_body",
+        "mcp__plugin_serena_serena__insert_after_symbol",
+        "mcp__plugin_serena_serena__insert_before_symbol"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "\\bedit code\\b",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "category:agent-behavior",
+        "severity:scope-creep"
+      ],
+      "scope": null,
+      "message": "## Lesson: Only change what the task requires — do not improve neighboring code\nAgents routinely touch code adjacent to the requested change: reformatting files, adding type hints elsewhere, refactoring what was not broken. Every changed line should trace back to the task.\n**Fix**: Only change what the task requires. Do not fix, reformat, or refactor code that was not part of the request. If you notice something worth fixing, mention it — do not change it.",
+      "summary": "Only change what the task requires — do not improve neighboring code",
+      "problem": "Agents routinely touch code adjacent to the requested change: reformatting files, adding type hints elsewhere, refactoring what was not broken. Every changed line should trace back to the task.",
+      "solution": "Only change what the task requires. Do not fix, reformat, or refactor code that was not part of the request. If you notice something worth fixing, mention it — do not change it."
     },
     "01JQSEED00000000000000005": {
       "slug": "npm-link-peer-deps-r2f7",
@@ -1180,6 +2857,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "lang:javascript",
         "tool:npm",
@@ -1206,6 +2884,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "tool:chrome",
         "topic:debugging",
@@ -1232,6 +2911,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "lang:javascript",
         "topic:async",
@@ -1258,6 +2938,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "tool:curl",
         "topic:web-scraping",
@@ -1284,6 +2965,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "lang:javascript",
         "tool:biome",
@@ -1311,6 +2993,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "lang:python",
         "tool:uv",
@@ -1338,6 +3021,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "tool:supabase",
         "topic:auth",
@@ -1368,6 +3052,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "lang:javascript",
         "lang:typescript",
@@ -1395,6 +3080,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "lang:javascript",
         "tool:vitest",
@@ -1422,6 +3108,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "tool:jq",
         "severity:blocker"
@@ -1447,6 +3134,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "tool:grep",
         "language:bash",
@@ -1473,6 +3161,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "language:bash",
         "severity:blocker"
@@ -1498,6 +3187,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "language:bash",
         "severity:silent-failure"
@@ -1518,6 +3208,7 @@
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "env:claude-code",
         "topic:planning",
@@ -1540,6 +3231,7 @@
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "env:claude-code",
         "topic:planning",
@@ -1561,6 +3253,7 @@
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "env:claude-code",
         "topic:context-management",
@@ -1582,6 +3275,7 @@
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "env:claude-code",
         "topic:planning",
@@ -1608,6 +3302,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "env:claude-code",
         "topic:planning",
@@ -1629,6 +3324,7 @@
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "env:claude-code",
         "topic:planning",
@@ -1660,6 +3356,7 @@
           "flags": "i"
         }
       ],
+      "modelRegexSources": [],
       "tags": [
         "tool:hooks",
         "category:claude-code"
@@ -1691,6 +3388,7 @@
           "flags": "i"
         }
       ],
+      "modelRegexSources": [],
       "tags": [
         "tool:launchctl",
         "topic:env",
@@ -1719,6 +3417,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "tool:vercel",
         "topic:debugging",
@@ -1729,6 +3428,149 @@
       "summary": "vercel logs silently filters by branch — pass --no-branch for production",
       "problem": "Running `vercel logs --environment production` returns no output when an implicit branch filter is active. Logs from all deployments are only visible with the --no-branch flag. This masked a critical async error (ERR_OSSL_UNSUPPORTED) for multiple debugging sessions — the function appeared healthy because the error only surfaced after the 202 response was sent.",
       "solution": "Always use `vercel logs --no-branch` when debugging production issues. Full recommended invocation: `vercel logs --no-branch --since 10m --no-follow --expand`. Without --no-branch, the command may silently return empty output even when the function is actively throwing errors."
+    },
+    "01KS4PEMVZWA2ZCDAZW6CZ31XX": {
+      "slug": "gh-api-rate-limits-recover-asynchronousl-d3d9",
+      "type": "hint",
+      "priority": 6,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "gh api",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "source:deep-scan",
+        "tool:gh",
+        "severity:false-failure"
+      ],
+      "scope": null,
+      "message": "## Lesson: gh API rate limits recover asynchronously; retry after ~60 seconds\nAfter a GitHub API 429, the rate limit can still show as exceeded for a short window even though the token is valid. It is a recovery lag, not an auth failure.\n**Fix**: Wait 60+ seconds after a 429 before retrying. Check `gh api rate_limit` before assuming the token is invalid.",
+      "summary": "gh API rate limits recover asynchronously; retry after ~60 seconds",
+      "problem": "After a GitHub API 429, the rate limit can still show as exceeded for a short window even though the token is valid. It is a recovery lag, not an auth failure.",
+      "solution": "Wait 60+ seconds after a 429 before retrying. Check `gh api rate_limit` before assuming the token is invalid."
+    },
+    "01KS4PF1BC94505JS1RW6JPX6Y": {
+      "slug": "zsh-for-loop-doesnt-split-multiline-vari-d9b1",
+      "type": "hint",
+      "priority": 6,
+      "toolNames": [
+        "Bash",
+        "zsh"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "for .+ in \\$",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "source:deep-scan",
+        "tool:zsh",
+        "tool:bash",
+        "severity:silent-failure"
+      ],
+      "scope": null,
+      "message": "## Lesson: zsh for-loop doesn't split multiline variables; use while read instead\nIn zsh, iterating over a multiline command-substituted variable with `for ID in $VAR` treats the entire string as a single token instead of splitting on newlines.\n**Fix**: Use `while IFS= read -r` piped from the substitution:\n  while IFS= read -r id; do\n    echo \"$id\"\n  done < <(some-command)\nThis correctly iterates line-by-line regardless of shell.",
+      "summary": "zsh for-loop doesn't split multiline variables; use while read instead",
+      "problem": "In zsh, iterating over a multiline command-substituted variable with `for ID in $VAR` treats the entire string as a single token instead of splitting on newlines.",
+      "solution": "Use `while IFS= read -r` piped from the substitution:\n  while IFS= read -r id; do\n    echo \"$id\"\n  done < <(some-command)\nThis correctly iterates line-by-line regardless of shell."
+    },
+    "01KS4PMPGR11E93VXWTD2V7GT8": {
+      "slug": "validate-file-encoding-structure-before-b005",
+      "type": "hint",
+      "priority": 6,
+      "toolNames": [
+        "Write"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "mv ",
+          "flags": ""
+        },
+        {
+          "source": "ln -s",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "source:deep-scan",
+        "severity:tool-error",
+        "tool:write"
+      ],
+      "scope": null,
+      "message": "## Lesson: Validate file encoding & structure before Write operations to avoid tool errors\nWriting to a file without a prior Read in the same session causes the Write tool to reject the operation — the file state has not been initialized in the tool context.\n**Fix**: Read the file before writing it if you have not already done so in the current session. This is required by the Write tool, not just good practice.",
+      "summary": "Validate file encoding & structure before Write operations to avoid tool errors",
+      "problem": "Writing to a file without a prior Read in the same session causes the Write tool to reject the operation — the file state has not been initialized in the tool context.",
+      "solution": "Read the file before writing it if you have not already done so in the current session. This is required by the Write tool, not just good practice."
+    },
+    "01KS4PQD5QGJB6R6SBFW6EFH42": {
+      "slug": "poshmark-notification-sync-throws-unsupp-5fca",
+      "type": "hint",
+      "priority": 6,
+      "toolNames": [
+        "Edit",
+        "Write",
+        "mcp__plugin_serena_serena__replace_content",
+        "mcp__plugin_serena_serena__replace_symbol_body",
+        "mcp__plugin_serena_serena__insert_after_symbol",
+        "mcp__plugin_serena_serena__insert_before_symbol"
+      ],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "source:deep-scan",
+        "severity:log-noise",
+        "severity:silent-failure",
+        "tool:typescript"
+      ],
+      "scope": "Users-joe-github-joeblackwaslike-ai-listings",
+      "message": "## Lesson: Poshmark notification sync throws UnsupportedOperationError; generates noisy log\nCatching all errors with a single broad catch and logging+continuing will log predictable, expected errors (e.g. UnsupportedOperationError) every run, drowning out real failures.\n**Fix**: Catch expected error types separately and handle them silently. Reserve the broad catch + log for unexpected failures only.",
+      "summary": "Poshmark notification sync throws UnsupportedOperationError; generates noisy log",
+      "problem": "Catching all errors with a single broad catch and logging+continuing will log predictable, expected errors (e.g. UnsupportedOperationError) every run, drowning out real failures.",
+      "solution": "Catch expected error types separately and handle them silently. Reserve the broad catch + log for unexpected failures only."
+    },
+    "01KS4PTFZM3292B6ANZTY9FZG9": {
+      "slug": "attempted-to-review-etsy-adapter-against-2ffa",
+      "type": "hint",
+      "priority": 6,
+      "toolNames": [
+        "Bash",
+        "Read"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "git status",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "source:deep-scan",
+        "tool:git",
+        "severity:wasted-work"
+      ],
+      "scope": "Users-joe-github-joeblackwaslike-ai-listings",
+      "message": "## Lesson: Attempted to review Etsy adapter against a spec that doesn't exist locally\nFiles listed as untracked in `git status` may not exist on disk — they could be staged deletions or git state artifacts. Attempting to read them causes failed reads and wasted tool calls.\n**Fix**: Before referencing files from `git status` output, confirm they exist on disk. Do not assume `git status` untracked = present.",
+      "summary": "Attempted to review Etsy adapter against a spec that doesn't exist locally",
+      "problem": "Files listed as untracked in `git status` may not exist on disk — they could be staged deletions or git state artifacts. Attempting to read them causes failed reads and wasted tool calls.",
+      "solution": "Before referencing files from `git status` output, confirm they exist on disk. Do not assume `git status` untracked = present."
     },
     "01KMZ3CHGQMTYQA0AFPQRGCSEG": {
       "slug": "oh-my-zsh-nvm-plugin-outputs-warnings-in-df6f",
@@ -1745,6 +3587,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "tool:zsh",
         "env:claude-code",
@@ -1771,6 +3614,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "lang:javascript",
         "tool:node",
@@ -1791,6 +3635,7 @@
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "env:claude-code",
         "topic:subagents",
@@ -1818,6 +3663,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "lang:javascript",
         "topic:forms",
@@ -1845,6 +3691,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "language:bash",
         "severity:silent-failure"
@@ -1863,6 +3710,7 @@
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "env:claude-code",
         "topic:planning",
@@ -1882,6 +3730,7 @@
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "env:claude-code",
         "topic:planning",
@@ -1901,6 +3750,7 @@
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "env:claude-code",
         "topic:context-management",
@@ -1922,6 +3772,7 @@
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "env:claude-code",
         "topic:planning",
@@ -1943,6 +3794,7 @@
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "tool:bash",
         "category:shell"
@@ -1968,6 +3820,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "tool:beads",
         "tool:dolt",
@@ -1991,6 +3844,7 @@
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "category:security",
         "severity:critical"
@@ -2024,6 +3878,7 @@
       ],
       "commandMatchTarget": "executable",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "category:testing",
         "tool:pytest",
@@ -2043,6 +3898,7 @@
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "lang:python",
         "tool:pytest",
@@ -2055,6 +3911,189 @@
       "problem": "Running pytest without --timeout causes test suites to hang indefinitely in non-interactive environments. CI and eval runners have no TTY, so pytest may hang waiting for input or on a blocking test with no timeout enforcement.",
       "solution": "Always run pytest with --timeout=30 -p no:cacheprovider flags: `.venv/bin/python -m pytest --timeout=30 -p no:cacheprovider tests/` or `.venv/bin/pytest --timeout=30 -p no:cacheprovider`. Never run bare pytest without these flags."
     },
+    "01KS4PM3ZMZZA00ECN7F68QX3T": {
+      "slug": "vercel-ai-sdk-abstractly-unifies-provide-f6bb",
+      "type": "hint",
+      "priority": 5,
+      "toolNames": [
+        "Edit",
+        "Write",
+        "mcp__plugin_serena_serena__replace_content",
+        "mcp__plugin_serena_serena__replace_symbol_body",
+        "mcp__plugin_serena_serena__insert_after_symbol",
+        "mcp__plugin_serena_serena__insert_before_symbol"
+      ],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "source:deep-scan",
+        "tool:vercel-ai-sdk",
+        "severity:unnecessary-complexity"
+      ],
+      "scope": null,
+      "message": "## Lesson: Vercel AI SDK abstractly unifies provider-specific structured output APIs\nWriting provider-specific structured output code (separate paths for OpenAI JSON schema vs Anthropic tool-use) is unnecessary when using the Vercel AI SDK.\n**Fix**: Use `generateObject()` from `ai@latest` — it abstracts provider differences internally. One Zod/JSON schema works across all supported providers.",
+      "summary": "Vercel AI SDK abstractly unifies provider-specific structured output APIs",
+      "problem": "Writing provider-specific structured output code (separate paths for OpenAI JSON schema vs Anthropic tool-use) is unnecessary when using the Vercel AI SDK.",
+      "solution": "Use `generateObject()` from `ai@latest` — it abstracts provider differences internally. One Zod/JSON schema works across all supported providers."
+    },
+    "01KS4PN0DHV0GBXVAXYXJ3VK7A": {
+      "slug": "verify-file-sync-before-committing-multi-8fb4",
+      "type": "hint",
+      "priority": 5,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "git (commit|add)",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "tool:git",
+        "workflow:sync",
+        "severity:correctness"
+      ],
+      "scope": null,
+      "message": "## Lesson: Verify mirrored files are identical before committing\nWhen design or reference documents are maintained in multiple locations (project repo + agent skills directory), manual edits risk creating divergent copies that contradict each other.\n**Fix**: After editing one copy, immediately use `diff` to verify both are identical. Consider scripting the sync or storing a single source of truth and symlinking from mirrors.",
+      "summary": "Verify mirrored files are identical before committing",
+      "problem": "When design or reference documents are maintained in multiple locations (project repo + agent skills directory), manual edits risk creating divergent copies that contradict each other.",
+      "solution": "After editing one copy, immediately use `diff` to verify both are identical. Consider scripting the sync or storing a single source of truth and symlinking from mirrors."
+    },
+    "01KS4PNNX3X3KSV6ZJG9E5S1R2": {
+      "slug": "avoid-expensive-extended-thinking-on-pat-8973",
+      "type": "hint",
+      "priority": 5,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "claude.*extended_thinking|thinking.*true",
+          "flags": ""
+        },
+        {
+          "source": "openai.*reasoning_effort",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "source:deep-scan",
+        "severity:cost-overrun",
+        "tool:claude-api",
+        "model-variant:extended-thinking"
+      ],
+      "scope": "Users-joe-github-joeblackwaslike-lessons-learned",
+      "message": "## Lesson: Avoid expensive extended thinking on pattern-matching tasks like code review\nExtended thinking adds 15–60s latency per call with marginal gains on pattern-matching tasks. It is optimized for multi-step reasoning — math, planning, architecture — not classification or detection.\n**Fix**: Reserve extended thinking only for tasks requiring multi-step reasoning. Default it off for routine diffs, code smell detection, and security pattern checks.",
+      "summary": "Avoid expensive extended thinking on pattern-matching tasks like code review",
+      "problem": "Extended thinking adds 15–60s latency per call with marginal gains on pattern-matching tasks. It is optimized for multi-step reasoning — math, planning, architecture — not classification or detection.",
+      "solution": "Reserve extended thinking only for tasks requiring multi-step reasoning. Default it off for routine diffs, code smell detection, and security pattern checks."
+    },
+    "01KS4PP1DRNB0NK7W0K8TFNVEH": {
+      "slug": "curl-fails-silently-on-wrong-github-bran-b8cf",
+      "type": "hint",
+      "priority": 5,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "raw\\.githubusercontent\\.com",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "tool:curl",
+        "tool:github",
+        "severity:silent-failure"
+      ],
+      "scope": null,
+      "message": "## Lesson: GitHub raw 404 may mean wrong branch name, not bad URL pattern\nWhen fetching raw files from GitHub repositories, the default branch may not be 'main'. A 404 response provides no output, making it unclear whether the URL pattern is wrong or the branch name is incorrect.\n**Fix**: When a curl to a GitHub raw content URL returns 404 or empty output, systematically try alternate branch names ('master', 'dev', 'develop') before abandoning the URL pattern. Many older or community projects still use 'master'.",
+      "summary": "GitHub raw 404 may mean wrong branch name, not bad URL pattern",
+      "problem": "When fetching raw files from GitHub repositories, the default branch may not be 'main'. A 404 response provides no output, making it unclear whether the URL pattern is wrong or the branch name is incorrect.",
+      "solution": "When a curl to a GitHub raw content URL returns 404 or empty output, systematically try alternate branch names ('master', 'dev', 'develop') before abandoning the URL pattern. Many older or community projects still use 'master'."
+    },
+    "01KS4PRXD5BZ1EF5Q3HM0B8NJ5": {
+      "slug": "snoowrap-does-not-export-listingoptions-32d4",
+      "type": "hint",
+      "priority": 5,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "tsc",
+          "flags": ""
+        },
+        {
+          "source": "type-check",
+          "flags": ""
+        },
+        {
+          "source": "npm.*build",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "tool:typescript",
+        "library:snoowrap",
+        "severity:type-error"
+      ],
+      "scope": "Users-joe-github-joeblackwaslike-ai-listings",
+      "message": "## Lesson: snoowrap ListingOptions is not a named ES module export\nListingOptions interface is defined in snoowrap but not exposed as a named export from the main module. Attempting `import { ListingOptions } from 'snoowrap'` fails with TS2305.\n**Fix**: Either use `const Snoowrap = require('snoowrap')` to access the CommonJS export, or inline the interface definition locally. The d.ts file exports it via the namespace but the ES module re-export is missing.",
+      "summary": "snoowrap ListingOptions is not a named ES module export",
+      "problem": "ListingOptions interface is defined in snoowrap but not exposed as a named export from the main module. Attempting `import { ListingOptions } from 'snoowrap'` fails with TS2305.",
+      "solution": "Either use `const Snoowrap = require('snoowrap')` to access the CommonJS export, or inline the interface definition locally. The d.ts file exports it via the namespace but the ES module re-export is missing."
+    },
+    "01KS4PV3CGVDD5AYZJFYT0AA7F": {
+      "slug": "icloud-clouddocs-paths-use-comapplecloud-ccf4",
+      "type": "hint",
+      "priority": 5,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "Mobile.Documents",
+          "flags": ""
+        },
+        {
+          "source": "iCloud",
+          "flags": ""
+        },
+        {
+          "source": "CloudDocs",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "platform:macos",
+        "tool:icloud",
+        "severity:silent-failure"
+      ],
+      "scope": null,
+      "message": "## Lesson: iCloud shared folders use com~apple~CloudDocs, not iCloud~bundle namespace\nApple's iCloud CloudDocs integration uses a different namespace than app-specific iCloud directories (e.g., `iCloud~md~obsidian`). When a path appears empty or unwritable but you expect it to be in iCloud, check if you're using the wrong namespace.\n**Fix**: For cross-device iCloud folders, prefer the `~/Library/Mobile Documents/com~apple~CloudDocs/` prefix. For app-specific iCloud, use `~/Library/Mobile Documents/iCloud~{bundle-id}/`.",
+      "summary": "iCloud shared folders use com~apple~CloudDocs, not iCloud~bundle namespace",
+      "problem": "Apple's iCloud CloudDocs integration uses a different namespace than app-specific iCloud directories (e.g., `iCloud~md~obsidian`). When a path appears empty or unwritable but you expect it to be in iCloud, check if you're using the wrong namespace.",
+      "solution": "For cross-device iCloud folders, prefer the `~/Library/Mobile Documents/com~apple~CloudDocs/` prefix. For app-specific iCloud, use `~/Library/Mobile Documents/iCloud~{bundle-id}/`."
+    },
     "01KN38M1NYYV4Z92DZQPGTEWHK": {
       "slug": "used-decision-deny-reason-systemmessage-f9e4",
       "type": "protocol",
@@ -2063,13 +4102,14 @@
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "tool:hooks",
         "severity:silent-failure",
         "category:protocol",
         "category:reasoning"
       ],
-      "scope": "Users-joeblack-github-joeblackwaslike-lessons-learned",
+      "scope": "Users-joe-github-joeblackwaslike-lessons-learned",
       "message": "## Lesson: PreToolUse hooks using JSON response schemas are silently ignored — use exit code 2 to block\nPreToolUse hooks that output JSON schemas like { decision: \"deny\" } or { hookSpecificOutput: { permissionDecision: \"deny\" } } are silently ignored by Claude Code. The tool call proceeds as if the hook was not there — no blocking occurs.\n**Fix**: Use process.exit(2) to block a tool call from a PreToolUse hook. Optionally print a reason string to stdout before exiting. Exit code 0 means allow. JSON response bodies are not the blocking mechanism.",
       "summary": "PreToolUse hooks using JSON response schemas are silently ignored — use exit code 2 to block",
       "problem": "PreToolUse hooks that output JSON schemas like { decision: \"deny\" } or { hookSpecificOutput: { permissionDecision: \"deny\" } } are silently ignored by Claude Code. The tool call proceeds as if the hook was not there — no blocking occurs.",
@@ -2083,6 +4123,7 @@
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "category:scope-creep",
         "severity:silent-failure",
@@ -2104,6 +4145,7 @@
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "env:claude-code",
         "topic:context-management",
@@ -2130,6 +4172,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "tool:ssh",
         "severity:data-loss",
@@ -2156,6 +4199,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "tool:bash",
         "tool:claude-cli",
@@ -2175,13 +4219,14 @@
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "category:communication",
         "category:hooks",
         "severity:confusion",
         "category:reasoning"
       ],
-      "scope": "Users-joeblack-github-joeblackwaslike-lessons-learned",
+      "scope": "Users-joe-github-joeblackwaslike-lessons-learned",
       "message": "## Lesson: Said to run the test command ambiguously — users ran it directly instead of via Claude, bypassing PreToolUse\nWhen testing PreToolUse hook behavior, instructions like \"run node --test\" are ambiguous — the user may paste the command directly into their terminal. PreToolUse only fires when Claude invokes a tool; user-initiated terminal commands bypass the hook entirely, producing false negatives that make the hook look broken when it is working correctly.\n**Fix**: Always frame test instructions as \"ask Claude to run X\" (e.g., \"tell Claude to run the tests\"). This ensures the command goes through Claude's tool call, which is the only execution path that triggers PreToolUse.",
       "summary": "Said to run the test command ambiguously — users ran it directly instead of via Claude, bypassing PreToolUse",
       "problem": "When testing PreToolUse hook behavior, instructions like \"run node --test\" are ambiguous — the user may paste the command directly into their terminal. PreToolUse only fires when Claude invokes a tool; user-initiated terminal commands bypass the hook entirely, producing false negatives that make the hook look broken when it is working correctly.",
@@ -2195,13 +4240,14 @@
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "category:hooks",
         "category:plan-mode",
         "severity:confusion",
         "category:reasoning"
       ],
-      "scope": "Users-joeblack-github-joeblackwaslike-lessons-learned",
+      "scope": "Users-joe-github-joeblackwaslike-lessons-learned",
       "message": "## Lesson: Plan mode suppresses tool calls — PreToolUse never fires, giving false negatives in hook tests\nDidn't warn that plan mode suppresses tool calls — if Claude enters plan mode, PreToolUse never fires because Bash is never called, so the hook test produces a false negative\n**Fix**: When testing PreToolUse hooks, tell the user to disable plan mode or explicitly say \"don't plan, just run it\" so the hook actually fires",
       "summary": "Plan mode suppresses tool calls — PreToolUse never fires, giving false negatives in hook tests",
       "problem": "Didn't warn that plan mode suppresses tool calls — if Claude enters plan mode, PreToolUse never fires because Bash is never called, so the hook test produces a false negative",
@@ -2215,13 +4261,14 @@
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "tool:hooks",
         "category:misread-output",
         "severity:wasted-effort",
         "category:reasoning"
       ],
-      "scope": "Users-joeblack-github-joeblackwaslike-lessons-learned",
+      "scope": "Users-joe-github-joeblackwaslike-lessons-learned",
       "message": "## Lesson: Misread corrected retry output as proof the block failed — diagnosed a problem that did not exist\nWhen a guard lesson blocks a Bash command and Claude self-corrects by retrying without the flagged argument, the output log shows both the blocked attempt and the successful retry. Misreading the retry as a new failure causes false diagnosis — the system actually worked correctly through its full block → self-correct → retry cycle.\n**Fix**: Before diagnosing unexpected output as a guard failure, trace the expected flow: guard fires → Claude sees the block reason → Claude retries with corrected command → retry succeeds. Verify whether the observed output matches that flow before concluding anything is broken.",
       "summary": "Misread corrected retry output as proof the block failed — diagnosed a problem that did not exist",
       "problem": "When a guard lesson blocks a Bash command and Claude self-corrects by retrying without the flagged argument, the output log shows both the blocked attempt and the successful retry. Misreading the retry as a new failure causes false diagnosis — the system actually worked correctly through its full block → self-correct → retry cycle.",
@@ -2242,6 +4289,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "tool:Agent",
         "severity:process-violation",
@@ -2268,6 +4316,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "severity:process-violation",
         "topic:plan-mode"
@@ -2293,6 +4342,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "severity:process-violation",
         "topic:plan-mode"
@@ -2318,6 +4368,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "tool:Bash",
         "tool:hooks",
@@ -2345,6 +4396,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "tool:git",
         "tool:hooks",
@@ -2372,6 +4424,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "tool:ssh",
         "category:nfs-boot",
@@ -2398,6 +4451,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "category:k3s",
         "category:pi5",
@@ -2423,6 +4477,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "category:planning",
         "severity:trust-erosion",
@@ -2449,6 +4504,7 @@
       ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": [
         "tool:vite",
         "category:deployment",
