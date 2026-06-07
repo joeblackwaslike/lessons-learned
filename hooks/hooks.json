@@ -27,7 +27,7 @@
     ],
     "PreToolUse": [
       {
-        "matcher": "Read|Edit|Write|Bash|Glob",
+        "matcher": "Read|Edit|Write|Bash|Glob|Grep|mcp__plugin_serena_serena__.*",
         "hooks": [
           {
             "type": "command",
