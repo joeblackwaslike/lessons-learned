@@ -23,8 +23,9 @@ Also consult `docs/architecture/` for design context:
 
 ```
 hooks/                          # Claude Code hook handlers
-  hooks.json                    # Hook wiring (SessionStart, PreToolUse, SubagentStart)
+  hooks.json                    # Hook wiring (SessionStart, PreToolUse, PostToolUse, SubagentStart)
   pretooluse-lesson-inject.mjs  # Matches lessons against tool calls, injects context
+  posttooluse-directive-reinject.mjs  # Re-injects directives at 30/52/70% context thresholds
   session-start-lesson-protocol.mjs  # Injects #lesson protocol + session-start lessons
   session-start-reset.mjs       # Clears per-session dedup state on reset
   session-start-scan.mjs        # Fires background scan on startup (Tier 4 requires ANTHROPIC_API_KEY)
@@ -51,17 +52,22 @@ All management goes through one entry point:
 node scripts/lessons.mjs <subcommand> [options]
 ```
 
-| Subcommand       | Purpose                                                                 |
-| ---------------- | ----------------------------------------------------------------------- |
-| `add`            | Add a new lesson (interactive, `--json`, `--file`, or stdin)            |
-| `build`          | Rebuild `lesson-manifest.json` from the DB (`lessons.db`)               |
-| `edit`           | Edit a lesson field in-place (`--id <id> --patch '{"field":"value"}'}`) |
-| `list`           | List all lessons with patterns and metadata                             |
-| `onboard`        | Interactive onboarding for the lesson system                            |
-| `promote`        | Promote candidates to active, archive, or patch fields (`--ids`)        |
-| `review`         | Review candidates against validation rules, grouped by tag              |
-| `scan`           | Incrementally scan session logs for new candidates                      |
-| `scan aggregate` | List ranked candidates from the DB (JSON output)                        |
+| Subcommand       | Purpose                                                                            |
+| ---------------- | ---------------------------------------------------------------------------------- |
+| `add`            | Add a new lesson (interactive, `--json`, `--file`, or stdin)                       |
+| `build`          | Rebuild `lesson-manifest.json` from the DB (`lessons.db`)                          |
+| `doctor`         | Audit active lessons for 11 quality dimensions; exits 1 if issues found            |
+| `edit`           | Edit a lesson field in-place (`--id <id> --patch '{"field":"value"}'}`)            |
+| `list`           | List all lessons with patterns and metadata                                        |
+| `onboard`        | Interactive onboarding for the lesson system                                       |
+| `preflight`      | Pre-PR gate: doctor checks + manifest freshness validation                         |
+| `promote`        | Promote candidates to active, archive, or patch fields (`--ids`)                   |
+| `purge`          | Archive all candidates below a confidence threshold                                |
+| `restore`        | Restore archived lessons back to active (alias for `promote --restore`)            |
+| `review`         | Review candidates against validation rules, grouped by tag                         |
+| `scan`           | Incrementally scan session logs for new candidates                                 |
+| `scan aggregate` | List ranked candidates from the DB (JSON output)                                   |
+| `windows`        | List or archive pending Tier 3 structural windows (from lexical pattern detection) |
 
 Run any subcommand with `--help` for full options.
 

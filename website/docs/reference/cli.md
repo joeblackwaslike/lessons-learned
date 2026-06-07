@@ -187,13 +187,20 @@ node scripts/lessons.mjs scan [subcommand] [options]
 
 ### Options (base)
 
-| Option         | Description                                          |
-| -------------- | ---------------------------------------------------- |
-| `--auto`       | Non-interactive mode (used by background hook)       |
-| `--full`       | Reset byte offsets; re-scan all files from the start |
-| `--dry-run`    | Show what would be found; don't write candidates     |
-| `--tier1-only` | Only scan for structured `#lesson` tags              |
-| `--tier2-only` | Only run heuristic detection                         |
+| Option               | Description                                               |
+| -------------------- | --------------------------------------------------------- |
+| `--auto`             | Non-interactive mode (used by background hook)            |
+| `--full`             | Reset byte offsets; re-scan all files from the start      |
+| `--dry-run`          | Show what would be found; don't write candidates          |
+| `--tier1-only`       | Only scan for structured `#lesson` tags (Tier 1)          |
+| `--tier2-only`       | Only run heuristic detection (Tier 2)                     |
+| `--structural`       | Also run Tier 3 structural/insight detection              |
+| `--structural-full`  | Tier 3 full re-scan (ignore saved offsets)                |
+| `--deep`             | Also run Tier 4 LLM deep scan (requires API key)          |
+| `--deep-full`        | Tier 4 full re-scan (ignore saved offsets)                |
+| `--max-sessions <n>` | Limit Tier 4 deep scan to the N most recent sessions      |
+| `--path <dir>`       | Scan a specific directory instead of configured scanPaths |
+| `--verbose`          | Print per-file progress and candidate details             |
 
 ### Subcommands
 

@@ -244,3 +244,41 @@ node scripts/lessons.mjs config set maxLessonsPerInjection 2
 | `compactionReinjectionThreshold` | 7       | Lessons above this priority re-inject after `/compact` |
 
 See [Configuration](configuration.md) for the full reference including scan and scoring settings.
+
+---
+
+## /lessons:eval
+
+Run the lesson effectiveness eval suite to verify that active lessons are actually changing agent behavior.
+
+Each eval scenario has a **control** run (no intervention) and a **treatment** run (lesson injected). The suite checks that the treatment run avoids the mistake the control run makes.
+
+```text
+/lessons:eval
+```
+
+Claude asks what to run:
+
+- **All scenarios** — full suite (~30–45 min)
+- **Smoke test** — TC-H3 + TC-G1 only (~5–8 min)
+- **Specific scenarios** — e.g. `TC-D1, TC-H3`
+- **Generate new** — create scenarios for a specific lesson
+
+### Prerequisites
+
+The eval suite routes judge calls through a local proxy. Set these before running:
+
+```bash
+export ANTHROPIC_API_KEY=meridian
+export ANTHROPIC_BASE_URL=http://127.0.0.1:3456
+```
+
+See [Using the Eval Framework](../developer-guide/eval-usage.md) for setup details and how to read results.
+
+### CLI equivalent
+
+```bash
+cd evals
+ANTHROPIC_API_KEY=meridian ANTHROPIC_BASE_URL=http://127.0.0.1:3456 \
+  npx promptfoo eval --config promptfooconfig.yaml
+```

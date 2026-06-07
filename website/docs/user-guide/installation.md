@@ -20,7 +20,27 @@ Full installation guide for all supported agents.
 
 ---
 
-## Clone and install
+## Marketplace install (Claude Code / Codex)
+
+The fastest path for Claude Code and Codex CLI users. Add the marketplace once per machine, then install:
+
+```bash
+# Claude Code
+claude plugin marketplace add joeblackwaslike/agent-marketplace
+claude plugin install lessons-learned@agent-marketplace
+
+# Codex CLI
+codex plugin marketplace add joeblackwaslike/agent-marketplace
+codex plugin install lessons-learned@agent-marketplace
+```
+
+The `marketplace add` step registers the marketplace source — it only needs to run once. After that, `plugin install` resolves directly.
+
+For Gemini CLI, opencode, and Cursor, use the manual setup below.
+
+---
+
+## Manual install (clone and wire)
 
 ```bash
 git clone https://github.com/joeblackwaslike/lessons-learned.git ~/lessons-learned

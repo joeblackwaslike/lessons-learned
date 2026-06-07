@@ -20,7 +20,11 @@ flowchart LR
 ```
 
 ```bash
-claude /plugin install lessons-learned@agent-marketplace
+# Step 1 — add the marketplace (once per machine)
+claude plugin marketplace add joeblackwaslike/agent-marketplace
+
+# Step 2 — install the plugin
+claude plugin install lessons-learned@agent-marketplace
 ```
 
 - **Captures** mistakes from session logs — structured tags and heuristic scanning
@@ -104,14 +108,14 @@ Fix: Use `git stash -u` (or `--include-untracked`) to capture all changes.
 
 ## Install
 
-| Platform    | Install                                                                          |
-| ----------- | -------------------------------------------------------------------------------- |
-| Claude Code | `claude /plugin install lessons-learned@agent-marketplace`                       |
-| Codex CLI   | `codex plugin install lessons-learned@agent-marketplace`                         |
-| Gemini CLI  | Clone repo, run `LESSONS_AGENT_PLATFORM=gemini node scripts/lessons.mjs onboard` |
-| opencode    | Same as Claude Code — tool names match                                           |
-| Cursor      | `node scripts/lessons.mjs list --json > .cursorrules`                            |
-| Manual/MCP  | Coming soon (see Roadmap)                                                        |
+| Platform    | Install                                                                                                                          |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Claude Code | `claude plugin marketplace add joeblackwaslike/agent-marketplace` then `claude plugin install lessons-learned@agent-marketplace` |
+| Codex CLI   | `codex plugin marketplace add joeblackwaslike/agent-marketplace` then `codex plugin install lessons-learned@agent-marketplace`   |
+| Gemini CLI  | Clone repo, run `LESSONS_AGENT_PLATFORM=gemini node scripts/lessons.mjs onboard`                                                 |
+| opencode    | Same as Claude Code — tool names match                                                                                           |
+| Cursor      | `node scripts/lessons.mjs list --json > .cursorrules`                                                                            |
+| Manual/MCP  | Coming soon (see Roadmap)                                                                                                        |
 
 **Requirements:** Node.js ≥ 22.5
 

@@ -171,6 +171,30 @@ Priority penalty for patterns observed only once. Single-occurrence patterns are
 
 ---
 
+## Re-injection settings
+
+These settings control the PostToolUse hook that re-injects `directive` and `protocol` lessons mid-session as the context window fills up.
+
+### `reinjectThresholds`
+
+**Type:** `string` **Default:** `"30,52,70"` **Env:** `LESSONS_REINJECT_THRESHOLDS`
+
+Comma-separated context-usage percentages at which directives and protocols are re-injected. Each threshold fires at most once per session.
+
+The defaults (30%, 52%, 70%) are calibrated to the context degradation curve: early enough to refresh before loss, late enough to not be redundant.
+
+Set to an empty string to disable context-threshold re-injection (fallback to tool-count only).
+
+---
+
+### `reinjectToolCount`
+
+**Type:** `integer` **Default:** `20` **Env:** `LESSONS_REINJECT_TOOL_COUNT`
+
+Fallback interval: re-inject directives every N tool calls if context-usage percentage is unavailable from the PostToolUse payload. Set to `0` to disable the fallback entirely.
+
+---
+
 ## Full example
 
 ```json

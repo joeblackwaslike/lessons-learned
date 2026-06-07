@@ -119,6 +119,26 @@ Tier 4 runs a full-session LLM analysis using the Anthropic API to extract candi
 The `session-start-scan.mjs` hook only launches the deep-scan background job if `ANTHROPIC_API_KEY` is set. Without it, Tiers 1–3 still run normally.
 :::
 
+### Setting up the API key
+
+Two options — use whichever fits your setup:
+
+**Option A — environment variable** (key available system-wide):
+
+```bash
+export ANTHROPIC_API_KEY=sk-ant-...
+```
+
+Add to your shell profile (`~/.zshrc`, `~/.bashrc`) so it's set before Claude Code starts.
+
+**Option B — `data/.api-key` file** (scoped to this plugin only, gitignored):
+
+```bash
+echo "sk-ant-..." > ~/lessons-learned/data/.api-key
+```
+
+The session-start hook reads this file and injects the key into the scan subprocess environment. It does not affect any other process. The file is listed in `.gitignore` and will not be committed.
+
 ---
 
 ## Viewing candidates
