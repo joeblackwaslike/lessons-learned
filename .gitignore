@@ -30,6 +30,7 @@ docs/_backlog.md
 .beads/embeddeddolt/
 .beads/interactions.jsonl
 .beads/dolt-config.log
+.beads/_premigration_backup_*/
 .beads/backup/*.darc
 
 # OS artifacts
