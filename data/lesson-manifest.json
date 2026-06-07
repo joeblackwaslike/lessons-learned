@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-06-07T14:20:40.816Z",
+  "generatedAt": "2026-06-07T16:34:27.032Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -188,8 +188,8 @@
         "severity:security"
       ],
       "scope": null,
-      "message": "## Lesson: jq string interpolation of shell variables injects JSON when variable contains quotes\njq -cn \"{\\\"id\\\": \\\"$session_id\\\"}\" injects arbitrary JSON if $session_id contains quote characters\n**Fix**: Use jq --arg to pass values safely: `jq -cn --arg id \"$session_id\" '{id: $id}'`",
-      "summary": "jq string interpolation of shell variables injects JSON when variable contains quotes",
+      "message": "## Lesson: jq interpolation of shell vars injects JSON when the var contains quotes\njq -cn \"{\\\"id\\\": \\\"$session_id\\\"}\" injects arbitrary JSON if $session_id contains quote characters\n**Fix**: Use jq --arg to pass values safely: `jq -cn --arg id \"$session_id\" '{id: $id}'`",
+      "summary": "jq interpolation of shell vars injects JSON when the var contains quotes",
       "problem": "jq -cn \"{\\\"id\\\": \\\"$session_id\\\"}\" injects arbitrary JSON if $session_id contains quote characters",
       "solution": "Use jq --arg to pass values safely: `jq -cn --arg id \"$session_id\" '{id: $id}'`"
     },
@@ -215,8 +215,8 @@
         "severity:data-loss"
       ],
       "scope": null,
-      "message": "## Lesson: sed range deletion is unbounded when the closing pattern is absent, deleting to EOF\nsed '/start/,/end/d' silently deletes everything from the start pattern to EOF when the closing pattern is missing\n**Fix**: Use awk with explicit state tracking for range deletion; never rely on sed range patterns on files without a guaranteed closing delimiter",
-      "summary": "sed range deletion is unbounded when the closing pattern is absent, deleting to EOF",
+      "message": "## Lesson: sed range delete runs to EOF when the closing pattern is absent\nsed '/start/,/end/d' silently deletes everything from the start pattern to EOF when the closing pattern is missing\n**Fix**: Use awk with explicit state tracking for range deletion; never rely on sed range patterns on files without a guaranteed closing delimiter",
+      "summary": "sed range delete runs to EOF when the closing pattern is absent",
       "problem": "sed '/start/,/end/d' silently deletes everything from the start pattern to EOF when the closing pattern is missing",
       "solution": "Use awk with explicit state tracking for range deletion; never rely on sed range patterns on files without a guaranteed closing delimiter"
     },
@@ -244,8 +244,8 @@
         "severity:data-loss"
       ],
       "scope": null,
-      "message": "## Lesson: Async function called without await silently returns a coroutine that never executes\nCalling `async_func()` without await returns a coroutine object that is immediately discarded; the function body never runs\n**Fix**: Always await async calls: `await func()` or schedule explicitly: `asyncio.create_task(func())` with a done_callback",
-      "summary": "Async function called without await silently returns a coroutine that never executes",
+      "message": "## Lesson: Async function called without await returns a coroutine that never runs\nCalling `async_func()` without await returns a coroutine object that is immediately discarded; the function body never runs\n**Fix**: Always await async calls: `await func()` or schedule explicitly: `asyncio.create_task(func())` with a done_callback",
+      "summary": "Async function called without await returns a coroutine that never runs",
       "problem": "Calling `async_func()` without await returns a coroutine object that is immediately discarded; the function body never runs",
       "solution": "Always await async calls: `await func()` or schedule explicitly: `asyncio.create_task(func())` with a done_callback"
     },
@@ -265,8 +265,8 @@
         "severity:high"
       ],
       "scope": null,
-      "message": "## Lesson: Time-box any single debugging theory to 30 minutes; pivot to web search if no measurable progress\nContinuing to execute variations of a failing debugging approach without stepping back to search for existing solutions. Activity is not progress. Generating new commands is not debugging. A theory with no new observable facts after 30 minutes is a dead end, not a problem requiring more commands.\n**Fix**: If a debugging approach doesn't yield measurable progress (a new fact that changes understanding of root cause) within 30 minutes: (1) Stop executing. (2) Search the exact symptom or error message. (3) Find someone who solved the same problem. (4) Compare their working config against yours line by line. Measurable progress means new understanding, not new commands tried.",
-      "summary": "Time-box any single debugging theory to 30 minutes; pivot to web search if no measurable progress",
+      "message": "## Lesson: Time-box a debugging theory to 30 min; pivot to web search if no progress\nContinuing to execute variations of a failing debugging approach without stepping back to search for existing solutions. Activity is not progress. Generating new commands is not debugging. A theory with no new observable facts after 30 minutes is a dead end, not a problem requiring more commands.\n**Fix**: If a debugging approach doesn't yield measurable progress (a new fact that changes understanding of root cause) within 30 minutes: (1) Stop executing. (2) Search the exact symptom or error message. (3) Find someone who solved the same problem. (4) Compare their working config against yours line by line. Measurable progress means new understanding, not new commands tried.",
+      "summary": "Time-box a debugging theory to 30 min; pivot to web search if no progress",
       "problem": "Continuing to execute variations of a failing debugging approach without stepping back to search for existing solutions. Activity is not progress. Generating new commands is not debugging. A theory with no new observable facts after 30 minutes is a dead end, not a problem requiring more commands.",
       "solution": "If a debugging approach doesn't yield measurable progress (a new fact that changes understanding of root cause) within 30 minutes: (1) Stop executing. (2) Search the exact symptom or error message. (3) Find someone who solved the same problem. (4) Compare their working config against yours line by line. Measurable progress means new understanding, not new commands tried."
     },
@@ -451,8 +451,8 @@
         "gpg"
       ],
       "scope": null,
-      "message": "## Lesson: VSCode git.enableCommitSigning overrides gitconfig commit.gpgsign causing commit to hang\nVSCode user setting git.enableCommitSigning: true passes -S to git directly, bypassing commit.gpgsign=false in gitconfig, causing commits to hang waiting for GPG passphrase\n**Fix**: Disable git.enableCommitSigning in VSCode user settings, or ensure GPG agent is running and key is available for signing",
-      "summary": "VSCode git.enableCommitSigning overrides gitconfig commit.gpgsign causing commit to hang",
+      "message": "## Lesson: VSCode git.enableCommitSigning overrides gitconfig, hanging commits\nVSCode user setting git.enableCommitSigning: true passes -S to git directly, bypassing commit.gpgsign=false in gitconfig, causing commits to hang waiting for GPG passphrase\n**Fix**: Disable git.enableCommitSigning in VSCode user settings, or ensure GPG agent is running and key is available for signing",
+      "summary": "VSCode git.enableCommitSigning overrides gitconfig, hanging commits",
       "problem": "VSCode user setting git.enableCommitSigning: true passes -S to git directly, bypassing commit.gpgsign=false in gitconfig, causing commits to hang waiting for GPG passphrase",
       "solution": "Disable git.enableCommitSigning in VSCode user settings, or ensure GPG agent is running and key is available for signing"
     },
@@ -485,8 +485,8 @@
         "topic:shell"
       ],
       "scope": null,
-      "message": "## Lesson: set -e kills bash scripts silently on any non-critical command failure without an EXIT trap\nset -euo pipefail with no EXIT trap makes any unguarded command failure silently abort the script with no output\n**Fix**: Add `trap '_log_exit $?' EXIT` and wrap non-critical operations in `{ ... } || warn` blocks to handle errors explicitly",
-      "summary": "set -e kills bash scripts silently on any non-critical command failure without an EXIT trap",
+      "message": "## Lesson: set -e silently kills a script on any command failure without an EXIT trap\nset -euo pipefail with no EXIT trap makes any unguarded command failure silently abort the script with no output\n**Fix**: Add `trap '_log_exit $?' EXIT` and wrap non-critical operations in `{ ... } || warn` blocks to handle errors explicitly",
+      "summary": "set -e silently kills a script on any command failure without an EXIT trap",
       "problem": "set -euo pipefail with no EXIT trap makes any unguarded command failure silently abort the script with no output",
       "solution": "Add `trap '_log_exit $?' EXIT` and wrap non-critical operations in `{ ... } || warn` blocks to handle errors explicitly"
     },
@@ -513,8 +513,8 @@
         "env:claude-code"
       ],
       "scope": null,
-      "message": "## Lesson: Scripts hang waiting on stdin when run in non-interactive shells (CI, Claude Code, pipes)\nScript reads stdin implicitly without redirect; hangs indefinitely in CI, Claude Code, or non-interactive shells\n**Fix**: Redirect stdin explicitly from /dev/null: `bash script.sh </dev/null` or add `</dev/null` to commands that do not expect interactive input",
-      "summary": "Scripts hang waiting on stdin when run in non-interactive shells (CI, Claude Code, pipes)",
+      "message": "## Lesson: Scripts hang on stdin in non-interactive shells (CI, Claude Code, pipes)\nScript reads stdin implicitly without redirect; hangs indefinitely in CI, Claude Code, or non-interactive shells\n**Fix**: Redirect stdin explicitly from /dev/null: `bash script.sh </dev/null` or add `</dev/null` to commands that do not expect interactive input",
+      "summary": "Scripts hang on stdin in non-interactive shells (CI, Claude Code, pipes)",
       "problem": "Script reads stdin implicitly without redirect; hangs indefinitely in CI, Claude Code, or non-interactive shells",
       "solution": "Redirect stdin explicitly from /dev/null: `bash script.sh </dev/null` or add `</dev/null` to commands that do not expect interactive input"
     },
@@ -649,8 +649,8 @@
         "severity:blocker"
       ],
       "scope": null,
-      "message": "## Lesson: Iterating a mutable async collection without snapshot raises RuntimeError on concurrent modification\n`for item in self.subscribers:` with async/await inside the loop allows concurrent modification, raising RuntimeError\n**Fix**: Snapshot the collection before iterating: `for item in list(self.subscribers):` to prevent modification conflicts",
-      "summary": "Iterating a mutable async collection without snapshot raises RuntimeError on concurrent modification",
+      "message": "## Lesson: Iterating a mutable async collection without a snapshot raises RuntimeError\n`for item in self.subscribers:` with async/await inside the loop allows concurrent modification, raising RuntimeError\n**Fix**: Snapshot the collection before iterating: `for item in list(self.subscribers):` to prevent modification conflicts",
+      "summary": "Iterating a mutable async collection without a snapshot raises RuntimeError",
       "problem": "`for item in self.subscribers:` with async/await inside the loop allows concurrent modification, raising RuntimeError",
       "solution": "Snapshot the collection before iterating: `for item in list(self.subscribers):` to prevent modification conflicts"
     },
@@ -689,8 +689,8 @@
         "topic:tooluse"
       ],
       "scope": null,
-      "message": "## Lesson: Multiple-choice questions buried in prose force the user to parse before responding\nPresenting multiple-choice questions as prose paragraphs buries the options, makes them easy to miss, and requires the user to parse text before answering. The AskUserQuestion tool exists precisely for this and renders choices as a structured, scannable format the user can respond to directly.\n**Fix**: Always invoke the AskUserQuestion tool for any question that has discrete options or choices. Never present multiple-choice options as inline prose, numbered lists in regular text, or as part of a sentence — use the tool every time without exception.",
-      "summary": "Multiple-choice questions buried in prose force the user to parse before responding",
+      "message": "## Lesson: Multiple-choice questions buried in prose force the user to parse first\nPresenting multiple-choice questions as prose paragraphs buries the options, makes them easy to miss, and requires the user to parse text before answering. The AskUserQuestion tool exists precisely for this and renders choices as a structured, scannable format the user can respond to directly.\n**Fix**: Always invoke the AskUserQuestion tool for any question that has discrete options or choices. Never present multiple-choice options as inline prose, numbered lists in regular text, or as part of a sentence — use the tool every time without exception.",
+      "summary": "Multiple-choice questions buried in prose force the user to parse first",
       "problem": "Presenting multiple-choice questions as prose paragraphs buries the options, makes them easy to miss, and requires the user to parse text before answering. The AskUserQuestion tool exists precisely for this and renders choices as a structured, scannable format the user can respond to directly.",
       "solution": "Always invoke the AskUserQuestion tool for any question that has discrete options or choices. Never present multiple-choice options as inline prose, numbered lists in regular text, or as part of a sentence — use the tool every time without exception."
     },
@@ -709,8 +709,8 @@
         "topic:workflow"
       ],
       "scope": null,
-      "message": "## Lesson: Asking 'should I proceed?' on routine reversible actions creates unnecessary friction\nPausing to ask \"Should I proceed?\", \"Want me to implement this?\", or \"Ready to start?\" on routine, low-risk, reversible actions (editing files, running tests, rebuilding manifests) interrupts flow without adding value. When the user assigns a task, authorization to complete it is implicit in the request. Exception: when the user's message is a question or exploratory prompt rather than a task directive, there is no implicit authorization — answering is the correct response, not taking action.\n**Fix**: Execute routine, reversible actions proactively without asking permission when the user has assigned a task. Reserve confirmation for: irreversible operations, large blast radius (deleting data, force-pushing), actions affecting shared systems, or actions clearly outside the original request. When in doubt, state what you are about to do in one sentence — then do it. Critical distinction: task directives (\"add X\", \"fix Y\", \"implement Z\") carry implicit authorization; questions and exploratory prompts (\"what would you do?\", \"how should we approach X?\") do not — respond with information, not action.",
-      "summary": "Asking 'should I proceed?' on routine reversible actions creates unnecessary friction",
+      "message": "## Lesson: Asking 'should I proceed?' on routine reversible actions adds friction\nPausing to ask \"Should I proceed?\", \"Want me to implement this?\", or \"Ready to start?\" on routine, low-risk, reversible actions (editing files, running tests, rebuilding manifests) interrupts flow without adding value. When the user assigns a task, authorization to complete it is implicit in the request. Exception: when the user's message is a question or exploratory prompt rather than a task directive, there is no implicit authorization — answering is the correct response, not taking action.\n**Fix**: Execute routine, reversible actions proactively without asking permission when the user has assigned a task. Reserve confirmation for: irreversible operations, large blast radius (deleting data, force-pushing), actions affecting shared systems, or actions clearly outside the original request. When in doubt, state what you are about to do in one sentence — then do it. Critical distinction: task directives (\"add X\", \"fix Y\", \"implement Z\") carry implicit authorization; questions and exploratory prompts (\"what would you do?\", \"how should we approach X?\") do not — respond with information, not action.",
+      "summary": "Asking 'should I proceed?' on routine reversible actions adds friction",
       "problem": "Pausing to ask \"Should I proceed?\", \"Want me to implement this?\", or \"Ready to start?\" on routine, low-risk, reversible actions (editing files, running tests, rebuilding manifests) interrupts flow without adding value. When the user assigns a task, authorization to complete it is implicit in the request. Exception: when the user's message is a question or exploratory prompt rather than a task directive, there is no implicit authorization — answering is the correct response, not taking action.",
       "solution": "Execute routine, reversible actions proactively without asking permission when the user has assigned a task. Reserve confirmation for: irreversible operations, large blast radius (deleting data, force-pushing), actions affecting shared systems, or actions clearly outside the original request. When in doubt, state what you are about to do in one sentence — then do it. Critical distinction: task directives (\"add X\", \"fix Y\", \"implement Z\") carry implicit authorization; questions and exploratory prompts (\"what would you do?\", \"how should we approach X?\") do not — respond with information, not action."
     },
@@ -1081,6 +1081,56 @@
       "summary": "SQL DROP CONSTRAINT without IF EXISTS breaks idempotent migrations",
       "problem": "SQL migrations that drop constraints will fail if run a second time (e.g., during testing or recovery). The initial migration used bare `DROP CONSTRAINT` statements, which throw an error if the constraint doesn't exist, breaking idempotency.",
       "solution": "Always use `DROP CONSTRAINT IF EXISTS` in SQL migrations. This allows the migration to be re-applied safely without failing on subsequent runs. Idempotency is critical for database migrations in production environments."
+    },
+    "01KS4PJ0YFGRE1MNRE9PED6BJV": {
+      "slug": "missing-rls-policy-on-joining-table-bloc-fbbc",
+      "type": "hint",
+      "priority": 8,
+      "toolNames": [
+        "Edit",
+        "Write",
+        "mcp__plugin_serena_serena__replace_symbol_body",
+        "mcp__plugin_serena_serena__replace_content",
+        "mcp__plugin_serena_serena__insert_after_symbol",
+        "mcp__plugin_serena_serena__insert_before_symbol",
+        "mcp__plugin_serena_serena__create_text_file"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "CREATE TABLE.*REFERENCES listings",
+          "flags": ""
+        },
+        {
+          "source": "ALTER TABLE .* ENABLE ROW LEVEL SECURITY",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [
+        {
+          "source": ".*/[^/]*\\.sql",
+          "flags": "i"
+        },
+        {
+          "source": ".*/migrations/.*",
+          "flags": "i"
+        },
+        {
+          "source": ".*/supabase/.*",
+          "flags": "i"
+        }
+      ],
+      "modelRegexSources": [],
+      "tags": [
+        "tool:supabase",
+        "topic:rls",
+        "severity:security"
+      ],
+      "scope": "Users-joe-github-joeblackwaslike-ai-listings",
+      "message": "## Lesson: Enable RLS + ownership policy on child tables that reference listings\nA child table (e.g. listing_platforms) that references listings without RLS + a policy returns no rows for users — they can only see their own listings, so child rows must verify ownership through the parent. Missing RLS silently breaks the access model.\n**Fix**: For every table referencing listings, enable RLS and add a policy joining to the parent: USING (EXISTS (SELECT 1 FROM listings l WHERE l.id = listing_id AND l.user_id = auth.uid())). Test in dev before deploying.",
+      "summary": "Enable RLS + ownership policy on child tables that reference listings",
+      "problem": "A child table (e.g. listing_platforms) that references listings without RLS + a policy returns no rows for users — they can only see their own listings, so child rows must verify ownership through the parent. Missing RLS silently breaks the access model.",
+      "solution": "For every table referencing listings, enable RLS and add a policy joining to the parent: USING (EXISTS (SELECT 1 FROM listings l WHERE l.id = listing_id AND l.user_id = auth.uid())). Test in dev before deploying."
     },
     "01KS4PJ0YKJ8665MYXK32BN1X3": {
       "slug": "guard-api-calls-against-missing-credenti-ab4a",
@@ -1469,8 +1519,13 @@
       "type": "guard",
       "priority": 8,
       "toolNames": [
-        "Supabase",
-        "Imgur API"
+        "Edit",
+        "Write",
+        "mcp__plugin_serena_serena__replace_symbol_body",
+        "mcp__plugin_serena_serena__replace_content",
+        "mcp__plugin_serena_serena__insert_after_symbol",
+        "mcp__plugin_serena_serena__insert_before_symbol",
+        "mcp__plugin_serena_serena__create_text_file"
       ],
       "commandRegexSources": [],
       "commandMatchTarget": "executable",
@@ -1504,8 +1559,8 @@
         "security:credentials"
       ],
       "scope": "Users-joe-github-joeblackwaslike-ai-listings",
-      "message": "## Lesson: Imgur API requires client secret; PlatformCreds does not store it; use env var o\nWhen implementing OAuth token refresh, a credentials getter returns the client ID and refresh token but not the client secret. Passing an empty string for the secret fails OAuth silently — providers do not distinguish a missing secret from a wrong one.\n**Fix**: Before implementing OAuth refresh, enumerate all required fields from the provider docs (client ID, client secret, refresh token) and ensure every field is stored in and retrieved from your credentials type. Validate completeness at startup, not at call time — a missing field that defaults to empty string is a silent failure.",
-      "summary": "Imgur API requires client secret; PlatformCreds does not store it; use env var o",
+      "message": "## Lesson: Imgur OAuth refresh needs client secret; empty secret fails silently\nWhen implementing OAuth token refresh, a credentials getter returns the client ID and refresh token but not the client secret. Passing an empty string for the secret fails OAuth silently — providers do not distinguish a missing secret from a wrong one.\n**Fix**: Before implementing OAuth refresh, enumerate all required fields from the provider docs (client ID, client secret, refresh token) and ensure every field is stored in and retrieved from your credentials type. Validate completeness at startup, not at call time — a missing field that defaults to empty string is a silent failure.",
+      "summary": "Imgur OAuth refresh needs client secret; empty secret fails silently",
       "problem": "When implementing OAuth token refresh, a credentials getter returns the client ID and refresh token but not the client secret. Passing an empty string for the secret fails OAuth silently — providers do not distinguish a missing secret from a wrong one.",
       "solution": "Before implementing OAuth refresh, enumerate all required fields from the provider docs (client ID, client secret, refresh token) and ensure every field is stored in and retrieved from your credentials type. Validate completeness at startup, not at call time — a missing field that defaults to empty string is a silent failure."
     },
@@ -1570,12 +1625,7 @@
       "type": "directive",
       "priority": 8,
       "toolNames": [],
-      "commandRegexSources": [
-        {
-          "source": "\\bstart coding\\b",
-          "flags": ""
-        }
-      ],
+      "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
@@ -1908,8 +1958,8 @@
         "severity:silent-failure"
       ],
       "scope": null,
-      "message": "## Lesson: Bare except: catches everything including KeyboardInterrupt and SystemExit, hiding all failures\nexcept: without a specific exception type catches signals and system exits, making all failures invisible and preventing proper shutdown\n**Fix**: Always catch specific exception classes: `except Exception as e:` with `logger.error(..., exc_info=True)`; never use bare `except:`",
-      "summary": "Bare except: catches everything including KeyboardInterrupt and SystemExit, hiding all failures",
+      "message": "## Lesson: Bare except: catches KeyboardInterrupt/SystemExit too, hiding all failures\nexcept: without a specific exception type catches signals and system exits, making all failures invisible and preventing proper shutdown\n**Fix**: Always catch specific exception classes: `except Exception as e:` with `logger.error(..., exc_info=True)`; never use bare `except:`",
+      "summary": "Bare except: catches KeyboardInterrupt/SystemExit too, hiding all failures",
       "problem": "except: without a specific exception type catches signals and system exits, making all failures invisible and preventing proper shutdown",
       "solution": "Always catch specific exception classes: `except Exception as e:` with `logger.error(..., exc_info=True)`; never use bare `except:`"
     },
@@ -1935,8 +1985,8 @@
         "severity:silent-failure"
       ],
       "scope": null,
-      "message": "## Lesson: Decorator registry stays empty because the module containing registrations is never imported\nDecorator-based registration requires import-time side effects; if the decorated module is never imported, the registry is empty at runtime\n**Fix**: Explicitly import all modules with registrations in __init__.py or a loader module before using the registry",
-      "summary": "Decorator registry stays empty because the module containing registrations is never imported",
+      "message": "## Lesson: Decorator registry stays empty when its module is never imported\nDecorator-based registration requires import-time side effects; if the decorated module is never imported, the registry is empty at runtime\n**Fix**: Explicitly import all modules with registrations in __init__.py or a loader module before using the registry",
+      "summary": "Decorator registry stays empty when its module is never imported",
       "problem": "Decorator-based registration requires import-time side effects; if the decorated module is never imported, the registry is empty at runtime",
       "solution": "Explicitly import all modules with registrations in __init__.py or a loader module before using the registry"
     },
@@ -1968,34 +2018,10 @@
         "severity:silent-failure"
       ],
       "scope": null,
-      "message": "## Lesson: systemd EnvironmentFile silently ignores lines with export prefix, leaving variables unset\nsystemd EnvironmentFile expects KEY=value only; `export KEY=value` lines are silently ignored, so the service starts with empty environment\n**Fix**: BEFORE writing the service file, fix app.env: run `sed -i s/^export // app.env` to strip the export prefix from every line. Do not just note this as a caveat. systemd EnvironmentFile silently ignores lines with the export prefix — the service will start with empty environment variables if you skip this step. Fix the file first, then write the unit.",
-      "summary": "systemd EnvironmentFile silently ignores lines with export prefix, leaving variables unset",
+      "message": "## Lesson: systemd EnvironmentFile ignores 'export' lines, leaving vars unset\nsystemd EnvironmentFile expects KEY=value only; `export KEY=value` lines are silently ignored, so the service starts with empty environment\n**Fix**: BEFORE writing the service file, fix app.env: run `sed -i s/^export // app.env` to strip the export prefix from every line. Do not just note this as a caveat. systemd EnvironmentFile silently ignores lines with the export prefix — the service will start with empty environment variables if you skip this step. Fix the file first, then write the unit.",
+      "summary": "systemd EnvironmentFile ignores 'export' lines, leaving vars unset",
       "problem": "systemd EnvironmentFile expects KEY=value only; `export KEY=value` lines are silently ignored, so the service starts with empty environment",
       "solution": "BEFORE writing the service file, fix app.env: run `sed -i s/^export // app.env` to strip the export prefix from every line. Do not just note this as a caveat. systemd EnvironmentFile silently ignores lines with the export prefix — the service will start with empty environment variables if you skip this step. Fix the file first, then write the unit."
-    },
-    "01KP9WGC4PS017G743VY0NM8FH": {
-      "slug": "raspberry-pi-pxe-nfs-root-boot-working-config-8zzo",
-      "type": "hint",
-      "priority": 7,
-      "toolNames": [],
-      "commandRegexSources": [],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
-      "modelRegexSources": [],
-      "tags": [
-        "topic:raspberry-pi",
-        "topic:pxe",
-        "topic:nfs",
-        "topic:infrastructure",
-        "platform:linux",
-        "topic:k3s",
-        "in:nursery"
-      ],
-      "scope": null,
-      "message": "## Lesson: Working Raspberry Pi 5 PXE + NFS root boot configuration and common failure modes\nRaspberry Pi 5 PXE boot with NFS root failing silently — SSH refused, NFS root mounted read-only, or NFS mount not happening at all. Common causes: (1) proto=tcp in nfsroot kernel parameter is incompatible with Pi OS Trixie / kernel 6.12. (2) PXE server's own filesystem accidentally bind-mounted over the NFS root's /boot/firmware via a spurious systemd unit. (3) First-boot Pi OS services (sshswitch, regenerate_ssh_host_keys, userconfig) blocking SSH because they can't find /boot/firmware. (4) pi user account locked in shadow (pi:! means locked). (5) Missing /run/sshd directory — sshd fails silently.\n**Fix**: Working cmdline.txt for Pi 5 NFS root boot:\nconsole=serial0,115200 console=tty1 root=/dev/nfs nfsroot=<SERVER_IP>:/path/to/root,vers=3 rw ip=dhcp rootwait\n\nKey: vers=3 only — no proto=tcp, no nolock, no rootfstype=nfs.\n\nRequired NFS root fixes for Pi OS Trixie:\n- fstab: proc entry only, no NFS root entry (kernel handles the root mount)\n- Mask: sshswitch.service, regenerate_ssh_host_keys.service, userconfig.service\n- Remove: /etc/ssh/sshd_config.d/rename_user.conf (contains SSH banner that blocks sshd)\n- Pre-generate SSH host keys: ssh-keygen -A -f <nfs_root>\n- Unlock pi user: replace pi:! with real password hash in /etc/shadow\n- Pre-create /home/pi/.ssh/authorized_keys with your public key (chown 1000:1000, chmod 600)\n- Add to /etc/tmpfiles.d/sshd.conf: d /run/sshd 0755 root root -\n- Bind mount TFTP dir to <nfs_root>/boot/firmware so Pi OS first-boot services work\n- ALWAYS run: mount | grep <nfs_root_path> to verify no spurious mounts before booting\n- NFS export must have no_root_squash\n\nDiagnosis: if lastlog mtime never updates after boot, the NFS root is read-only. Check for proto=tcp first.",
-      "summary": "Working Raspberry Pi 5 PXE + NFS root boot configuration and common failure modes",
-      "problem": "Raspberry Pi 5 PXE boot with NFS root failing silently — SSH refused, NFS root mounted read-only, or NFS mount not happening at all. Common causes: (1) proto=tcp in nfsroot kernel parameter is incompatible with Pi OS Trixie / kernel 6.12. (2) PXE server's own filesystem accidentally bind-mounted over the NFS root's /boot/firmware via a spurious systemd unit. (3) First-boot Pi OS services (sshswitch, regenerate_ssh_host_keys, userconfig) blocking SSH because they can't find /boot/firmware. (4) pi user account locked in shadow (pi:! means locked). (5) Missing /run/sshd directory — sshd fails silently.",
-      "solution": "Working cmdline.txt for Pi 5 NFS root boot:\nconsole=serial0,115200 console=tty1 root=/dev/nfs nfsroot=<SERVER_IP>:/path/to/root,vers=3 rw ip=dhcp rootwait\n\nKey: vers=3 only — no proto=tcp, no nolock, no rootfstype=nfs.\n\nRequired NFS root fixes for Pi OS Trixie:\n- fstab: proc entry only, no NFS root entry (kernel handles the root mount)\n- Mask: sshswitch.service, regenerate_ssh_host_keys.service, userconfig.service\n- Remove: /etc/ssh/sshd_config.d/rename_user.conf (contains SSH banner that blocks sshd)\n- Pre-generate SSH host keys: ssh-keygen -A -f <nfs_root>\n- Unlock pi user: replace pi:! with real password hash in /etc/shadow\n- Pre-create /home/pi/.ssh/authorized_keys with your public key (chown 1000:1000, chmod 600)\n- Add to /etc/tmpfiles.d/sshd.conf: d /run/sshd 0755 root root -\n- Bind mount TFTP dir to <nfs_root>/boot/firmware so Pi OS first-boot services work\n- ALWAYS run: mount | grep <nfs_root_path> to verify no spurious mounts before booting\n- NFS export must have no_root_squash\n\nDiagnosis: if lastlog mtime never updates after boot, the NFS root is read-only. Check for proto=tcp first."
     },
     "01KPARNDEM2DB77AQ4K4VFXBYS": {
       "slug": "start-a-new-conversation-per-major-task-7b67",
@@ -2011,8 +2037,8 @@
         "behavior:discipline"
       ],
       "scope": null,
-      "message": "## Lesson: Start a new conversation per major task — long sessions degrade inference quality\nEach tool call result accumulates in context; by the time the session is long, inference quality visibly degrades and error rate increases because attention is spread across too much history\n**Fix**: Start a new conversation for each major task. Pass a concise handoff document as context rather than letting session history grow unbounded. CLI scripts and skill files reduce per-session tool call volume.",
-      "summary": "Start a new conversation per major task — long sessions degrade inference quality",
+      "message": "## Lesson: Start a new conversation per major task; long sessions degrade inference\nEach tool call result accumulates in context; by the time the session is long, inference quality visibly degrades and error rate increases because attention is spread across too much history\n**Fix**: Start a new conversation for each major task. Pass a concise handoff document as context rather than letting session history grow unbounded. CLI scripts and skill files reduce per-session tool call volume.",
+      "summary": "Start a new conversation per major task; long sessions degrade inference",
       "problem": "Each tool call result accumulates in context; by the time the session is long, inference quality visibly degrades and error rate increases because attention is spread across too much history",
       "solution": "Start a new conversation for each major task. Pass a concise handoff document as context rather than letting session history grow unbounded. CLI scripts and skill files reduce per-session tool call volume."
     },
@@ -2031,8 +2057,8 @@
         "severity:repeated-mistakes"
       ],
       "scope": "Users-joe-github-joeblackwaslike-rpi-cluster-bootstrap",
-      "message": "## Lesson: Read the pi-cluster skill file before any cluster task — never re-derive from scratch\nPi 5 EEPROM behavior, PXE boot quirks, and cluster-specific constraints (bind mount persistence, /tmp size, HAOS limitations) are re-derived each session, causing the same mistakes repeatedly\n**Fix**: Read ~/.claude/skills/pi-cluster.md at the start of any Pi cluster task. Use pi-* CLI scripts instead of exploratory SSH one-liners. Update the skill file immediately when new constraints are discovered.",
-      "summary": "Read the pi-cluster skill file before any cluster task — never re-derive from scratch",
+      "message": "## Lesson: Read the pi-cluster skill before any cluster task — don't re-derive\nPi 5 EEPROM behavior, PXE boot quirks, and cluster-specific constraints (bind mount persistence, /tmp size, HAOS limitations) are re-derived each session, causing the same mistakes repeatedly\n**Fix**: Read ~/.claude/skills/pi-cluster.md at the start of any Pi cluster task. Use pi-* CLI scripts instead of exploratory SSH one-liners. Update the skill file immediately when new constraints are discovered.",
+      "summary": "Read the pi-cluster skill before any cluster task — don't re-derive",
       "problem": "Pi 5 EEPROM behavior, PXE boot quirks, and cluster-specific constraints (bind mount persistence, /tmp size, HAOS limitations) are re-derived each session, causing the same mistakes repeatedly",
       "solution": "Read ~/.claude/skills/pi-cluster.md at the start of any Pi cluster task. Use pi-* CLI scripts instead of exploratory SSH one-liners. Update the skill file immediately when new constraints are discovered."
     },
@@ -2051,8 +2077,8 @@
         "topic:workflow"
       ],
       "scope": null,
-      "message": "## Lesson: Plan approval without a refine-then-execute option forces unnecessary round trips\nWhen presenting a plan for approval and offering only approve-or-reject, users who want one small tweak must either accept the plan as-is or restart the planning cycle. This wastes a full turn and breaks flow. ExitPlanMode and AskUserQuestion both support custom option text.\n**Fix**: End every plan or design proposal with an explicit numbered approval menu. Include at minimum: 1. Approve as-is and begin, 2. Incorporate feedback and begin executing, 3. Go back and revise entirely. Never present a plan without immediately following it with this choice — do not rely on the user to initiate the decision.",
-      "summary": "Plan approval without a refine-then-execute option forces unnecessary round trips",
+      "message": "## Lesson: Plan approval lacking a refine-then-execute option forces round trips\nWhen presenting a plan for approval and offering only approve-or-reject, users who want one small tweak must either accept the plan as-is or restart the planning cycle. This wastes a full turn and breaks flow. ExitPlanMode and AskUserQuestion both support custom option text.\n**Fix**: End every plan or design proposal with an explicit numbered approval menu. Include at minimum: 1. Approve as-is and begin, 2. Incorporate feedback and begin executing, 3. Go back and revise entirely. Never present a plan without immediately following it with this choice — do not rely on the user to initiate the decision.",
+      "summary": "Plan approval lacking a refine-then-execute option forces round trips",
       "problem": "When presenting a plan for approval and offering only approve-or-reject, users who want one small tweak must either accept the plan as-is or restart the planning cycle. This wastes a full turn and breaks flow. ExitPlanMode and AskUserQuestion both support custom option text.",
       "solution": "End every plan or design proposal with an explicit numbered approval menu. Include at minimum: 1. Approve as-is and begin, 2. Incorporate feedback and begin executing, 3. Go back and revise entirely. Never present a plan without immediately following it with this choice — do not rely on the user to initiate the decision."
     },
@@ -2151,8 +2177,8 @@
         "env:macos"
       ],
       "scope": null,
-      "message": "## Lesson: osascript heredoc dollar signs are expanded by bash unless delimiter is single-quoted\nUsing `osascript << EOF` with a double-quoted heredoc causes bash to expand $VARIABLE references before osascript receives the script. This silently corrupts AppleScript/JXA code that contains literal dollar signs or shell-variable patterns.\n**Fix**: Use a single-quoted heredoc delimiter to prevent expansion: `osascript <<'EOF' ... EOF`. If the heredoc needs some shell variable expansion, escape literal dollar signs as \\$.",
-      "summary": "osascript heredoc dollar signs are expanded by bash unless delimiter is single-quoted",
+      "message": "## Lesson: osascript heredoc $ is expanded by bash unless the delimiter is quoted\nUsing `osascript << EOF` with a double-quoted heredoc causes bash to expand $VARIABLE references before osascript receives the script. This silently corrupts AppleScript/JXA code that contains literal dollar signs or shell-variable patterns.\n**Fix**: Use a single-quoted heredoc delimiter to prevent expansion: `osascript <<'EOF' ... EOF`. If the heredoc needs some shell variable expansion, escape literal dollar signs as \\$.",
+      "summary": "osascript heredoc $ is expanded by bash unless the delimiter is quoted",
       "problem": "Using `osascript << EOF` with a double-quoted heredoc causes bash to expand $VARIABLE references before osascript receives the script. This silently corrupts AppleScript/JXA code that contains literal dollar signs or shell-variable patterns.",
       "solution": "Use a single-quoted heredoc delimiter to prevent expansion: `osascript <<'EOF' ... EOF`. If the heredoc needs some shell variable expansion, escape literal dollar signs as \\$."
     },
@@ -2229,8 +2255,13 @@
       "type": "guard",
       "priority": 7,
       "toolNames": [
-        "TypeScript",
-        "Vercel AI SDK"
+        "Edit",
+        "Write",
+        "mcp__plugin_serena_serena__replace_symbol_body",
+        "mcp__plugin_serena_serena__replace_content",
+        "mcp__plugin_serena_serena__insert_after_symbol",
+        "mcp__plugin_serena_serena__insert_before_symbol",
+        "mcp__plugin_serena_serena__create_text_file"
       ],
       "commandRegexSources": [
         {
@@ -2270,8 +2301,8 @@
         "severity:deprecation"
       ],
       "scope": null,
-      "message": "## Lesson: Deprecated Vercel AI SDK generateObject must migrate to generateText with output\ngenerateObject() and streamObject() in Vercel AI SDK are deprecated as of v6.0. They still work but will be removed in a future version. IDEs show deprecation warnings but the functions continue to execute, making the issue easy to ignore.\n**Fix**: Migrate to generateText() and streamText() with the Output.object() helper: import { generateText, Output } from 'ai'; const { output } = await generateText({ model, prompt, output: Output.object({ schema: MySchema }) }); The output property replaces the old schema argument.",
-      "summary": "Deprecated Vercel AI SDK generateObject must migrate to generateText with output",
+      "message": "## Lesson: Vercel AI SDK generateObject/streamObject deprecated in v6 — use generateText\ngenerateObject() and streamObject() in Vercel AI SDK are deprecated as of v6.0. They still work but will be removed in a future version. IDEs show deprecation warnings but the functions continue to execute, making the issue easy to ignore.\n**Fix**: Migrate to generateText() and streamText() with the Output.object() helper: import { generateText, Output } from 'ai'; const { output } = await generateText({ model, prompt, output: Output.object({ schema: MySchema }) }); The output property replaces the old schema argument.",
+      "summary": "Vercel AI SDK generateObject/streamObject deprecated in v6 — use generateText",
       "problem": "generateObject() and streamObject() in Vercel AI SDK are deprecated as of v6.0. They still work but will be removed in a future version. IDEs show deprecation warnings but the functions continue to execute, making the issue easy to ignore.",
       "solution": "Migrate to generateText() and streamText() with the Output.object() helper: import { generateText, Output } from 'ai'; const { output } = await generateText({ model, prompt, output: Output.object({ schema: MySchema }) }); The output property replaces the old schema argument."
     },
@@ -2440,12 +2471,46 @@
       "problem": "Manually constructing JSON strings in `gh` + `jq` pipelines breaks on special characters. Shell quoting and escaping is error-prone and risks injecting unintended values.",
       "solution": "Use `--arg varname value` to pass strings safely — the value is auto JSON-encoded as `$varname` in the jq expression. Example: `gh api ... --jq 'select(.name == $name)' --arg name \"$VAR\"`."
     },
+    "01KS4PKY2NSWKEQCKGSW92C514": {
+      "slug": "guard-concurrent-worker-invocations-with-b3cc",
+      "type": "hint",
+      "priority": 7,
+      "toolNames": [
+        "Edit",
+        "Write",
+        "mcp__plugin_serena_serena__replace_symbol_body",
+        "mcp__plugin_serena_serena__replace_content",
+        "mcp__plugin_serena_serena__insert_after_symbol",
+        "mcp__plugin_serena_serena__insert_before_symbol",
+        "mcp__plugin_serena_serena__create_text_file"
+      ],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "topic:concurrency",
+        "severity:data-loss",
+        "lang:typescript"
+      ],
+      "scope": "Users-joe-github-joeblackwaslike-ctx-tree",
+      "message": "## Lesson: Guard periodic workers with an inFlight flag to prevent concurrent batch runs\nIf a periodic walker (e.g., embedding batches) fires while a previous batch is still in-flight, both batches run concurrently. This can cause race conditions, duplicate work, or deadlocks if shared resources (like DB locks) are contended.\n**Fix**: Set an `inFlight` boolean flag when starting a batch. Check it at the start of the worker function; if true, skip or reschedule. Clear the flag only after the batch completes.",
+      "summary": "Guard periodic workers with an inFlight flag to prevent concurrent batch runs",
+      "problem": "If a periodic walker (e.g., embedding batches) fires while a previous batch is still in-flight, both batches run concurrently. This can cause race conditions, duplicate work, or deadlocks if shared resources (like DB locks) are contended.",
+      "solution": "Set an `inFlight` boolean flag when starting a batch. Check it at the start of the worker function; if true, skip or reschedule. Clear the flag only after the batch completes."
+    },
     "01KS4PNNX6JWK8PQ6FF0Q67KAA": {
       "slug": "reasoning-tokens-in-o-series-models-bill-5357",
       "type": "hint",
       "priority": 7,
       "toolNames": [
-        "OpenAI API"
+        "Edit",
+        "Write",
+        "mcp__plugin_serena_serena__replace_symbol_body",
+        "mcp__plugin_serena_serena__replace_content",
+        "mcp__plugin_serena_serena__insert_after_symbol",
+        "mcp__plugin_serena_serena__insert_before_symbol",
+        "mcp__plugin_serena_serena__create_text_file"
       ],
       "commandRegexSources": [
         {
@@ -2499,8 +2564,8 @@
         "severity:cost-overrun"
       ],
       "scope": null,
-      "message": "## Lesson: Reasoning tokens in o-series models bill at output rates, multiplying effective \nOpenAI's o-series reasoning models (o3, o4-mini) bill reasoning tokens at the same output rate as completion tokens, not the cheaper input rate. A single review with 10,000 reasoning tokens generated can cost 3–10x more than the base token price suggests, making cost estimation non-obvious.\n**Fix**: When calculating cost for o-series models with reasoning enabled, treat reasoning tokens as output tokens at the higher per-1M rate. Budget accordingly for complex reviews and consider setting `reasoning_effort: low` or `medium` to constrain reasoning token generation if cost is a blocker.",
-      "summary": "Reasoning tokens in o-series models bill at output rates, multiplying effective ",
+      "message": "## Lesson: o-series reasoning tokens bill at output rate — 3-10x cost vs base estimate\nOpenAI's o-series reasoning models (o3, o4-mini) bill reasoning tokens at the same output rate as completion tokens, not the cheaper input rate. A single review with 10,000 reasoning tokens generated can cost 3–10x more than the base token price suggests, making cost estimation non-obvious.\n**Fix**: When calculating cost for o-series models with reasoning enabled, treat reasoning tokens as output tokens at the higher per-1M rate. Budget accordingly for complex reviews and consider setting `reasoning_effort: low` or `medium` to constrain reasoning token generation if cost is a blocker.",
+      "summary": "o-series reasoning tokens bill at output rate — 3-10x cost vs base estimate",
       "problem": "OpenAI's o-series reasoning models (o3, o4-mini) bill reasoning tokens at the same output rate as completion tokens, not the cheaper input rate. A single review with 10,000 reasoning tokens generated can cost 3–10x more than the base token price suggests, making cost estimation non-obvious.",
       "solution": "When calculating cost for o-series models with reasoning enabled, treat reasoning tokens as output tokens at the higher per-1M rate. Budget accordingly for complex reviews and consider setting `reasoning_effort: low` or `medium` to constrain reasoning token generation if cost is a blocker."
     },
@@ -2661,6 +2726,52 @@
       "problem": "Older Inngest docs and examples show a 3-argument `createFunction(config, trigger, handler)` signature. The current SDK (v1+) moved triggers into the config object — using the 3-arg form silently fails to register the function.",
       "solution": "Use the 2-arg form with triggers in config:\n  createFunction(\n    { id: 'my-fn', name: 'My Function', triggers: [{ cron: '0 * * * *' }] },\n    async ({ step, event }) => { ... }\n  )\nThe trigger (cron or event) is a property of the first argument, not a separate second argument."
     },
+    "01KS4PS8ZD5B1MP3PTKE2CZX65": {
+      "slug": "esm-module-imports-must-use-explicit-js-14b8",
+      "type": "hint",
+      "priority": 7,
+      "toolNames": [
+        "Edit",
+        "Write",
+        "mcp__plugin_serena_serena__replace_symbol_body",
+        "mcp__plugin_serena_serena__replace_content",
+        "mcp__plugin_serena_serena__insert_after_symbol",
+        "mcp__plugin_serena_serena__insert_before_symbol",
+        "mcp__plugin_serena_serena__create_text_file"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "tsc --noEmit",
+          "flags": ""
+        },
+        {
+          "source": "node .*\\.js",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [
+        {
+          "source": ".*/[^/]*\\.ts",
+          "flags": "i"
+        },
+        {
+          "source": ".*/[^/]*\\.mts",
+          "flags": "i"
+        }
+      ],
+      "modelRegexSources": [],
+      "tags": [
+        "lang:typescript",
+        "topic:esm",
+        "severity:runtime-error"
+      ],
+      "scope": null,
+      "message": "## Lesson: TypeScript NodeNext ESM requires explicit .js extensions on relative imports\nTypeScript with NodeNext resolution requires explicit .js extensions on relative imports for Node.js ESM compatibility. Omitting extensions causes runtime import failures despite passing tsc --noEmit.\n**Fix**: Always use explicit .js extensions on all relative imports: import { foo } from './file.js' not './file'. This is especially important in a Vercel serverless environment where files are served as-is.",
+      "summary": "TypeScript NodeNext ESM requires explicit .js extensions on relative imports",
+      "problem": "TypeScript with NodeNext resolution requires explicit .js extensions on relative imports for Node.js ESM compatibility. Omitting extensions causes runtime import failures despite passing tsc --noEmit.",
+      "solution": "Always use explicit .js extensions on all relative imports: import { foo } from './file.js' not './file'. This is especially important in a Vercel serverless environment where files are served as-is."
+    },
     "01KS4PS8ZG1SNNC30RF7MNC7NR": {
       "slug": "vercel-waituntil-extends-function-lifeti-ee75",
       "type": "hint",
@@ -2819,12 +2930,7 @@
       "type": "directive",
       "priority": 7,
       "toolNames": [],
-      "commandRegexSources": [
-        {
-          "source": "\\bwrite code\\b",
-          "flags": ""
-        }
-      ],
+      "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
@@ -3247,8 +3353,8 @@
         "severity:silent-failure"
       ],
       "scope": null,
-      "message": "## Lesson: env file parser using cut -d= fails to strip export prefix from export KEY=value lines\nParser using `grep KEY= file | cut -d= -f2` silently skips or mispares `export KEY=value` lines, returning empty\n**Fix**: Normalize lines before parsing: `grep KEY= file | sed 's/^export //' | cut -d= -f2`",
-      "summary": "env file parser using cut -d= fails to strip export prefix from export KEY=value lines",
+      "message": "## Lesson: env parser using cut -d= fails to strip 'export' from KEY=value lines\nParser using `grep KEY= file | cut -d= -f2` silently skips or mispares `export KEY=value` lines, returning empty\n**Fix**: Normalize lines before parsing: `grep KEY= file | sed 's/^export //' | cut -d= -f2`",
+      "summary": "env parser using cut -d= fails to strip 'export' from KEY=value lines",
       "problem": "Parser using `grep KEY= file | cut -d= -f2` silently skips or mispares `export KEY=value` lines, returning empty",
       "solution": "Normalize lines before parsing: `grep KEY= file | sed 's/^export //' | cut -d= -f2`"
     },
@@ -3269,8 +3375,8 @@
         "category:specification-drift"
       ],
       "scope": null,
-      "message": "## Lesson: Agents expand scope during execution, introducing unreviewed changes that add bugs\nBatch plan said 'add rate limiting' but agent also refactored auth middleware and added logging — unreviewed changes introduced bugs\n**Fix**: Add explicit prohibition to batch instructions: 'Do not implement anything not listed here. Note improvements in a progress file for future batches.'",
-      "summary": "Agents expand scope during execution, introducing unreviewed changes that add bugs",
+      "message": "## Lesson: Agents expand scope mid-execution, adding unreviewed, buggy changes\nBatch plan said 'add rate limiting' but agent also refactored auth middleware and added logging — unreviewed changes introduced bugs\n**Fix**: Add explicit prohibition to batch instructions: 'Do not implement anything not listed here. Note improvements in a progress file for future batches.'",
+      "summary": "Agents expand scope mid-execution, adding unreviewed, buggy changes",
       "problem": "Batch plan said 'add rate limiting' but agent also refactored auth middleware and added logging — unreviewed changes introduced bugs",
       "solution": "Add explicit prohibition to batch instructions: 'Do not implement anything not listed here. Note improvements in a progress file for future batches.'"
     },
@@ -3292,8 +3398,8 @@
         "category:specification-drift"
       ],
       "scope": null,
-      "message": "## Lesson: Agent-written tests validate the agent's own misunderstanding instead of the spec (closed-loop self-grading)\nAgent wrote implementation and tests together; misunderstood 'cache results' as per-request instead of persistent; tests confirmed the misunderstanding\n**Fix**: Before writing a single line of implementation, write ALL tests directly against the spec acceptance criteria. Each assertion must be anchored to a named spec requirement — not inferred from implementation that does not exist yet. Required patterns: assert object identity (result1 is result2) for cache hits, assert call_count == 1 to verify the network layer was not called again, assert call_count == 2 (or higher) to verify the no-cache path always fetches live. Only after all spec-anchored tests exist should you write the implementation.",
-      "summary": "Agent-written tests validate the agent's own misunderstanding instead of the spec (closed-loop self-grading)",
+      "message": "## Lesson: Agent-written tests validate the agent's misunderstanding, not the spec\nAgent wrote implementation and tests together; misunderstood 'cache results' as per-request instead of persistent; tests confirmed the misunderstanding\n**Fix**: Before writing a single line of implementation, write ALL tests directly against the spec acceptance criteria. Each assertion must be anchored to a named spec requirement — not inferred from implementation that does not exist yet. Required patterns: assert object identity (result1 is result2) for cache hits, assert call_count == 1 to verify the network layer was not called again, assert call_count == 2 (or higher) to verify the no-cache path always fetches live. Only after all spec-anchored tests exist should you write the implementation.",
+      "summary": "Agent-written tests validate the agent's misunderstanding, not the spec",
       "problem": "Agent wrote implementation and tests together; misunderstood 'cache results' as per-request instead of persistent; tests confirmed the misunderstanding",
       "solution": "Before writing a single line of implementation, write ALL tests directly against the spec acceptance criteria. Each assertion must be anchored to a named spec requirement — not inferred from implementation that does not exist yet. Required patterns: assert object identity (result1 is result2) for cache hits, assert call_count == 1 to verify the network layer was not called again, assert call_count == 2 (or higher) to verify the no-cache path always fetches live. Only after all spec-anchored tests exist should you write the implementation."
     },
@@ -3314,8 +3420,8 @@
         "category:context-retrieval"
       ],
       "scope": null,
-      "message": "## Lesson: File reads at batch start become stale — agent consumes old snapshot and misses changes from earlier tasks\nTask 1 added a new API endpoint; Task 2 used the batch-start file snapshot, missing the new endpoint; frontend integration broke\n**Fix**: Instruct agent to re-read files immediately before consuming them: 'Before Task 2, re-read src/api.py to see current state.' Or split into separate batches.",
-      "summary": "File reads at batch start become stale — agent consumes old snapshot and misses changes from earlier tasks",
+      "message": "## Lesson: File reads at batch start go stale; agent misses earlier tasks' changes\nTask 1 added a new API endpoint; Task 2 used the batch-start file snapshot, missing the new endpoint; frontend integration broke\n**Fix**: Instruct agent to re-read files immediately before consuming them: 'Before Task 2, re-read src/api.py to see current state.' Or split into separate batches.",
+      "summary": "File reads at batch start go stale; agent misses earlier tasks' changes",
       "problem": "Task 1 added a new API endpoint; Task 2 used the batch-start file snapshot, missing the new endpoint; frontend integration broke",
       "solution": "Instruct agent to re-read files immediately before consuming them: 'Before Task 2, re-read src/api.py to see current state.' Or split into separate batches."
     },
@@ -3336,8 +3442,8 @@
         "category:planning-control-flow"
       ],
       "scope": null,
-      "message": "## Lesson: Batches ordered top-down fail when a task imports code that a later task produces\nBatch 1 (CLI) imported from Batch 3 (pipeline) which did not exist yet; ModuleNotFoundError on execution\n**Fix**: Draw the dependency graph before ordering. For each batch, list what it produces and what it consumes. Producers must always come before consumers.",
-      "summary": "Batches ordered top-down fail when a task imports code that a later task produces",
+      "message": "## Lesson: Top-down batch order fails when a task imports a later task's code\nBatch 1 (CLI) imported from Batch 3 (pipeline) which did not exist yet; ModuleNotFoundError on execution\n**Fix**: Draw the dependency graph before ordering. For each batch, list what it produces and what it consumes. Producers must always come before consumers.",
+      "summary": "Top-down batch order fails when a task imports a later task's code",
       "problem": "Batch 1 (CLI) imported from Batch 3 (pipeline) which did not exist yet; ModuleNotFoundError on execution",
       "solution": "Draw the dependency graph before ordering. For each batch, list what it produces and what it consumes. Producers must always come before consumers."
     },
@@ -3363,8 +3469,8 @@
         "category:planning-control-flow"
       ],
       "scope": null,
-      "message": "## Lesson: Batch executed without a rollback plan leaves partial state that is harder to debug than a clean revert\nBatch failed after migration applied but ORM models were incomplete; retrying hit already-applied migration; partial state failed differently each time\n**Fix**: Commit all prior work before executing. On failure: use git stash to preserve and revert to clean state. Define the recovery path in the plan before executing.",
-      "summary": "Batch executed without a rollback plan leaves partial state that is harder to debug than a clean revert",
+      "message": "## Lesson: Batch without a rollback plan leaves partial state that is hard to debug\nBatch failed after migration applied but ORM models were incomplete; retrying hit already-applied migration; partial state failed differently each time\n**Fix**: Commit all prior work before executing. On failure: use git stash to preserve and revert to clean state. Define the recovery path in the plan before executing.",
+      "summary": "Batch without a rollback plan leaves partial state that is hard to debug",
       "problem": "Batch failed after migration applied but ORM models were incomplete; retrying hit already-applied migration; partial state failed differently each time",
       "solution": "Commit all prior work before executing. On failure: use git stash to preserve and revert to clean state. Define the recovery path in the plan before executing."
     },
@@ -3451,8 +3557,8 @@
         "env:macos"
       ],
       "scope": null,
-      "message": "## Lesson: launchd agents do not inherit shell env; always set HOME in plist EnvironmentVariables\nLaunchAgent plist files run processes without the user's shell environment. $HOME, $PATH, and other vars are unset or minimal, causing tools that use nvm, pyenv, or $HOME to fail silently or with cryptic errors.\n**Fix**: Add EnvironmentVariables to the plist: <key>EnvironmentVariables</key><dict><key>HOME</key><string>/Users/USERNAME</string><key>PATH</key><string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string></dict>. Hardcode paths — do not use $HOME or $PATH inside the plist.",
-      "summary": "launchd agents do not inherit shell env; always set HOME in plist EnvironmentVariables",
+      "message": "## Lesson: launchd agents don't inherit shell env; set HOME in plist EnvironmentVariables\nLaunchAgent plist files run processes without the user's shell environment. $HOME, $PATH, and other vars are unset or minimal, causing tools that use nvm, pyenv, or $HOME to fail silently or with cryptic errors.\n**Fix**: Add EnvironmentVariables to the plist: <key>EnvironmentVariables</key><dict><key>HOME</key><string>/Users/USERNAME</string><key>PATH</key><string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string></dict>. Hardcode paths — do not use $HOME or $PATH inside the plist.",
+      "summary": "launchd agents don't inherit shell env; set HOME in plist EnvironmentVariables",
       "problem": "LaunchAgent plist files run processes without the user's shell environment. $HOME, $PATH, and other vars are unset or minimal, causing tools that use nvm, pyenv, or $HOME to fail silently or with cryptic errors.",
       "solution": "Add EnvironmentVariables to the plist: <key>EnvironmentVariables</key><dict><key>HOME</key><string>/Users/USERNAME</string><key>PATH</key><string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string></dict>. Hardcode paths — do not use $HOME or $PATH inside the plist."
     },
@@ -3515,12 +3621,11 @@
       "type": "hint",
       "priority": 6,
       "toolNames": [
-        "Bash",
-        "zsh"
+        "Bash"
       ],
       "commandRegexSources": [
         {
-          "source": "for .+ in \\$",
+          "source": "\\bfor\\b\\s+\\w+\\s+in\\b",
           "flags": ""
         }
       ],
@@ -3725,8 +3830,8 @@
         "severity:error"
       ],
       "scope": null,
-      "message": "## Lesson: Zod v4 zodResolver requires zod/v4/core — v3 and v4 resolvers are not interchangeable\nUsing zodResolver from @hookform/resolvers with Zod v4 schemas fails because the resolver expects zod/v4/core to be importable and the schema types differ between v3 and v4. Mixing versions produces runtime type mismatches.\n**Fix**: Ensure @hookform/resolvers is updated to a version that supports Zod v4, and import zodResolver from @hookform/resolvers/zod. Do not mix Zod v3 and v4 schemas in the same form.",
-      "summary": "Zod v4 zodResolver requires zod/v4/core — v3 and v4 resolvers are not interchangeable",
+      "message": "## Lesson: Zod v4 zodResolver needs zod/v4/core — v3/v4 resolvers aren't interchangeable\nUsing zodResolver from @hookform/resolvers with Zod v4 schemas fails because the resolver expects zod/v4/core to be importable and the schema types differ between v3 and v4. Mixing versions produces runtime type mismatches.\n**Fix**: Ensure @hookform/resolvers is updated to a version that supports Zod v4, and import zodResolver from @hookform/resolvers/zod. Do not mix Zod v3 and v4 schemas in the same form.",
+      "summary": "Zod v4 zodResolver needs zod/v4/core — v3/v4 resolvers aren't interchangeable",
       "problem": "Using zodResolver from @hookform/resolvers with Zod v4 schemas fails because the resolver expects zod/v4/core to be importable and the schema types differ between v3 and v4. Mixing versions produces runtime type mismatches.",
       "solution": "Ensure @hookform/resolvers is updated to a version that supports Zod v4, and import zodResolver from @hookform/resolvers/zod. Do not mix Zod v3 and v4 schemas in the same form."
     },
@@ -3751,8 +3856,8 @@
         "severity:silent-failure"
       ],
       "scope": null,
-      "message": "## Lesson: local keyword used outside a bash function is undefined behavior and fails in dash/sh\nbash tolerates `local var` at script top-level but it is undefined behavior; fails with `local: can only be used in a function` in dash/sh\n**Fix**: Reserve `local` for function bodies only; use plain assignment at script top-level",
-      "summary": "local keyword used outside a bash function is undefined behavior and fails in dash/sh",
+      "message": "## Lesson: bash 'local' outside a function is undefined and fails in dash/sh\nbash tolerates `local var` at script top-level but it is undefined behavior; fails with `local: can only be used in a function` in dash/sh\n**Fix**: Reserve `local` for function bodies only; use plain assignment at script top-level",
+      "summary": "bash 'local' outside a function is undefined and fails in dash/sh",
       "problem": "bash tolerates `local var` at script top-level but it is undefined behavior; fails with `local: can only be used in a function` in dash/sh",
       "solution": "Reserve `local` for function bodies only; use plain assignment at script top-level"
     },
@@ -3791,8 +3896,8 @@
         "category:specification-drift"
       ],
       "scope": null,
-      "message": "## Lesson: Single example in a spec is treated as the complete contract; missing formats break production\nSpec gave one example date '2024-01-15'; agent implemented ISO-only parsing; production had US format and null values\n**Fix**: Provide at least 3 examples per behavior: happy path, error case, boundary condition. Explicitly state what is NOT required.",
-      "summary": "Single example in a spec is treated as the complete contract; missing formats break production",
+      "message": "## Lesson: A spec's single example is treated as the full contract, breaking prod\nSpec gave one example date '2024-01-15'; agent implemented ISO-only parsing; production had US format and null values\n**Fix**: Provide at least 3 examples per behavior: happy path, error case, boundary condition. Explicitly state what is NOT required.",
+      "summary": "A spec's single example is treated as the full contract, breaking prod",
       "problem": "Spec gave one example date '2024-01-15'; agent implemented ISO-only parsing; production had US format and null values",
       "solution": "Provide at least 3 examples per behavior: happy path, error case, boundary condition. Explicitly state what is NOT required."
     },
@@ -3811,8 +3916,8 @@
         "category:context-retrieval"
       ],
       "scope": null,
-      "message": "## Lesson: Late requirements placed mid-context are silently missed; attention degrades past ~6000 chars\nRequirements placed after 7000 chars of context; a 500ms timeout requirement was missed because it fell in the low-attention middle region\n**Fix**: Place context in this order: task description first, then requirements, then reference material, then acceptance criteria last. Keep total context under 6000 chars per batch.",
-      "summary": "Late requirements placed mid-context are silently missed; attention degrades past ~6000 chars",
+      "message": "## Lesson: Requirements placed mid-context are missed; attention decays past ~6000 chars\nRequirements placed after 7000 chars of context; a 500ms timeout requirement was missed because it fell in the low-attention middle region\n**Fix**: Place context in this order: task description first, then requirements, then reference material, then acceptance criteria last. Keep total context under 6000 chars per batch.",
+      "summary": "Requirements placed mid-context are missed; attention decays past ~6000 chars",
       "problem": "Requirements placed after 7000 chars of context; a 500ms timeout requirement was missed because it fell in the low-attention middle region",
       "solution": "Place context in this order: task description first, then requirements, then reference material, then acceptance criteria last. Keep total context under 6000 chars per batch."
     },
@@ -3833,8 +3938,8 @@
         "category:planning-control-flow"
       ],
       "scope": null,
-      "message": "## Lesson: Batches over 5 tasks or 250 lines produce subtle bugs in later tasks due to degraded context attention\n8-task batch had subtle bugs in tasks 7-8: missed validation, off-by-one pagination, missing assertion — all in the context-depleted region\n**Fix**: Split batches at natural module boundaries when exceeding 5 tasks or ~250 estimated lines of output",
-      "summary": "Batches over 5 tasks or 250 lines produce subtle bugs in later tasks due to degraded context attention",
+      "message": "## Lesson: Batches over 5 tasks/250 lines breed late-task bugs from context decay\n8-task batch had subtle bugs in tasks 7-8: missed validation, off-by-one pagination, missing assertion — all in the context-depleted region\n**Fix**: Split batches at natural module boundaries when exceeding 5 tasks or ~250 estimated lines of output",
+      "summary": "Batches over 5 tasks/250 lines breed late-task bugs from context decay",
       "problem": "8-task batch had subtle bugs in tasks 7-8: missed validation, off-by-one pagination, missing assertion — all in the context-depleted region",
       "solution": "Split batches at natural module boundaries when exceeding 5 tasks or ~250 estimated lines of output"
     },
@@ -3965,6 +4070,112 @@
       "problem": "Running pytest without --timeout causes test suites to hang indefinitely in non-interactive environments. CI and eval runners have no TTY, so pytest may hang waiting for input or on a blocking test with no timeout enforcement.",
       "solution": "Always run pytest with --timeout=30 -p no:cacheprovider flags: `.venv/bin/python -m pytest --timeout=30 -p no:cacheprovider tests/` or `.venv/bin/pytest --timeout=30 -p no:cacheprovider`. Never run bare pytest without these flags."
     },
+    "01KS4PGDWDB7B4EE059K0HKAR4": {
+      "slug": "file-name-case-sensitivity-varies-across-fb63",
+      "type": "hint",
+      "priority": 5,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "\\bfind\\b.*-name\\b",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "tool:find",
+        "severity:correctness"
+      ],
+      "scope": null,
+      "message": "## Lesson: Use find -iname (not -name) for files whose case varies across a tree\nfind with -name does exact-case matching. Files that should share a consistent name (SKILL.md, README, config files) sometimes appear in lowercase in some directories, so -name silently misses them with no error.\n**Fix**: When searching for files whose case may vary across a tree, use case-insensitive matching: `find . -iname 'skill.md'` instead of `-name 'SKILL.md'`, or search for both variants.",
+      "summary": "Use find -iname (not -name) for files whose case varies across a tree",
+      "problem": "find with -name does exact-case matching. Files that should share a consistent name (SKILL.md, README, config files) sometimes appear in lowercase in some directories, so -name silently misses them with no error.",
+      "solution": "When searching for files whose case may vary across a tree, use case-insensitive matching: `find . -iname 'skill.md'` instead of `-name 'SKILL.md'`, or search for both variants."
+    },
+    "01KS4PJ0YAT9ANW4M43X16DNTP": {
+      "slug": "git-worktree-gitignore-not-automatically-f055",
+      "type": "hint",
+      "priority": 5,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "\\bgit\\s+worktree\\s+add\\b",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "tool:git",
+        "topic:worktrees",
+        "severity:hygiene"
+      ],
+      "scope": null,
+      "message": "## Lesson: Create worktrees via the using-git-worktrees skill; gitignore manual ones\nManually running `git worktree add` inside the repo creates a directory git will track, risking accidental commits of worktree contents — the .worktrees/ entry is not auto-added to .gitignore.\n**Fix**: Prefer the superpowers:using-git-worktrees skill — it selects the directory and handles .gitignore (or uses an out-of-repo location) for you. If you must run `git worktree add` manually inside the repo, add the worktree dir (e.g. .worktrees/) to .gitignore first.",
+      "summary": "Create worktrees via the using-git-worktrees skill; gitignore manual ones",
+      "problem": "Manually running `git worktree add` inside the repo creates a directory git will track, risking accidental commits of worktree contents — the .worktrees/ entry is not auto-added to .gitignore.",
+      "solution": "Prefer the superpowers:using-git-worktrees skill — it selects the directory and handles .gitignore (or uses an out-of-repo location) for you. If you must run `git worktree add` manually inside the repo, add the worktree dir (e.g. .worktrees/) to .gitignore first."
+    },
+    "01KS4PJEEXNZB7KZBZAKQ5TA00": {
+      "slug": "jq-empty-output-vs-grep-filtering-on-jso-46e5",
+      "type": "hint",
+      "priority": 5,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "\\bjq\\b.*\\belse\\s+empty\\b",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "tool:jq",
+        "severity:correctness"
+      ],
+      "scope": null,
+      "message": "## Lesson: Use jq select(.x==v) not if/then/else empty to filter JSONL streams\nFiltering JSONL with jq via `if .type == \"human\" then . else empty end` is error-prone and often yields no output when the conditional is mis-structured, even though matching records exist.\n**Fix**: Use jq `select()` for filtering: `jq -c 'select(.type == \"human\")'` — idiomatic and reliable. Apply transformations after the select, or pre-filter the stream before any if/then logic.",
+      "summary": "Use jq select(.x==v) not if/then/else empty to filter JSONL streams",
+      "problem": "Filtering JSONL with jq via `if .type == \"human\" then . else empty end` is error-prone and often yields no output when the conditional is mis-structured, even though matching records exist.",
+      "solution": "Use jq `select()` for filtering: `jq -c 'select(.type == \"human\")'` — idiomatic and reliable. Apply transformations after the select, or pre-filter the stream before any if/then logic."
+    },
+    "01KS4PK8ATHJ8W00XCGR06EQY2": {
+      "slug": "gh-cli-rate-limiting-can-mask-pr-visibil-4f69",
+      "type": "hint",
+      "priority": 5,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "\\bgh\\s+(pr|api)\\b",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "tool:gh",
+        "topic:auth",
+        "severity:debugging"
+      ],
+      "scope": null,
+      "message": "## Lesson: On gh rate-limited errors, check gh auth status — its often auth, not limits\nA gh pr view / gh api command returning rate limited is frequently an expired or wrong token rather than an actual rate limit; the error message gives minimal diagnostic detail.\n**Fix**: Run `gh auth status` first to rule out auth. If genuinely limited, check `gh api rate_limit` and wait. Fall back to `git log` / local branch inspection when gh is unreliable.",
+      "summary": "On gh rate-limited errors, check gh auth status — its often auth, not limits",
+      "problem": "A gh pr view / gh api command returning rate limited is frequently an expired or wrong token rather than an actual rate limit; the error message gives minimal diagnostic detail.",
+      "solution": "Run `gh auth status` first to rule out auth. If genuinely limited, check `gh api rate_limit` and wait. Fall back to `git log` / local branch inspection when gh is unreliable."
+    },
     "01KS4PM3ZMZZA00ECN7F68QX3T": {
       "slug": "vercel-ai-sdk-abstractly-unifies-provide-f6bb",
       "type": "hint",
@@ -4078,6 +4289,37 @@
       "problem": "When fetching raw files from GitHub repositories, the default branch may not be 'main'. A 404 response provides no output, making it unclear whether the URL pattern is wrong or the branch name is incorrect.",
       "solution": "When a curl to a GitHub raw content URL returns 404 or empty output, systematically try alternate branch names ('master', 'dev', 'develop') before abandoning the URL pattern. Many older or community projects still use 'master'."
     },
+    "01KS4PP1DT75AE8BP1G42ZMMGE": {
+      "slug": "webfetch-tool-errors-should-trigger-fall-be54",
+      "type": "hint",
+      "priority": 5,
+      "toolNames": [
+        "WebFetch"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "WebFetch.*README",
+          "flags": ""
+        },
+        {
+          "source": "WebFetch.*install",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "tool:webfetch",
+        "topic:error-recovery",
+        "topic:context-efficiency"
+      ],
+      "scope": null,
+      "message": "## Lesson: When WebFetch fails on a raw URL, fetch with curl piped to a filter (jq/grep)\nWebFetch returns cryptic errors on raw/non-HTML URLs (GitHub raw files, JSON APIs, binaries). Falling back to a bare `curl <url>` succeeds but dumps the entire response into context, burning tokens when only a fragment is needed.\n**Fix**: Fall back to curl, but always pipe through a filter to extract only what you need: `curl -s <url> | jq '.field'` for JSON, `curl -s <url> | grep -A3 pattern` or `| sed -n '10,40p'` for text, `| head -c 2000` to cap size. Never bare `curl <url>` — it streams the whole body into context.",
+      "summary": "When WebFetch fails on a raw URL, fetch with curl piped to a filter (jq/grep)",
+      "problem": "WebFetch returns cryptic errors on raw/non-HTML URLs (GitHub raw files, JSON APIs, binaries). Falling back to a bare `curl <url>` succeeds but dumps the entire response into context, burning tokens when only a fragment is needed.",
+      "solution": "Fall back to curl, but always pipe through a filter to extract only what you need: `curl -s <url> | jq '.field'` for JSON, `curl -s <url> | grep -A3 pattern` or `| sed -n '10,40p'` for text, `| head -c 2000` to cap size. Never bare `curl <url>` — it streams the whole body into context."
+    },
     "01KS4PRXD5BZ1EF5Q3HM0B8NJ5": {
       "slug": "snoowrap-does-not-export-listingoptions-32d4",
       "type": "hint",
@@ -4164,8 +4406,8 @@
         "category:reasoning"
       ],
       "scope": "Users-joe-github-joeblackwaslike-lessons-learned",
-      "message": "## Lesson: PreToolUse hooks using JSON response schemas are silently ignored — use exit code 2 to block\nPreToolUse hooks that output JSON schemas like { decision: \"deny\" } or { hookSpecificOutput: { permissionDecision: \"deny\" } } are silently ignored by Claude Code. The tool call proceeds as if the hook was not there — no blocking occurs.\n**Fix**: Use process.exit(2) to block a tool call from a PreToolUse hook. Optionally print a reason string to stdout before exiting. Exit code 0 means allow. JSON response bodies are not the blocking mechanism.",
-      "summary": "PreToolUse hooks using JSON response schemas are silently ignored — use exit code 2 to block",
+      "message": "## Lesson: PreToolUse JSON-schema responses are ignored — use exit code 2 to block\nPreToolUse hooks that output JSON schemas like { decision: \"deny\" } or { hookSpecificOutput: { permissionDecision: \"deny\" } } are silently ignored by Claude Code. The tool call proceeds as if the hook was not there — no blocking occurs.\n**Fix**: Use process.exit(2) to block a tool call from a PreToolUse hook. Optionally print a reason string to stdout before exiting. Exit code 0 means allow. JSON response bodies are not the blocking mechanism.",
+      "summary": "PreToolUse JSON-schema responses are ignored — use exit code 2 to block",
       "problem": "PreToolUse hooks that output JSON schemas like { decision: \"deny\" } or { hookSpecificOutput: { permissionDecision: \"deny\" } } are silently ignored by Claude Code. The tool call proceeds as if the hook was not there — no blocking occurs.",
       "solution": "Use process.exit(2) to block a tool call from a PreToolUse hook. Optionally print a reason string to stdout before exiting. Exit code 0 means allow. JSON response bodies are not the blocking mechanism."
     },
@@ -4184,8 +4426,8 @@
         "category:reasoning"
       ],
       "scope": null,
-      "message": "## Lesson: Fixing one noisy tool by switching to an allowlist silently drops all tools not explicitly listed\nobserved that Read tool results caused false positives, then jumped from \"exclude Read\" to \"only allow Bash/TaskOutput\" — an allowlist that silently dropped MCP tools, Edit, Write, and all future tools not explicitly listed\n**Fix**: match the scope of the fix to the scope of the observation; if the problem is \"X is noisy,\" exclude X — don't redesign around the absence of X",
-      "summary": "Fixing one noisy tool by switching to an allowlist silently drops all tools not explicitly listed",
+      "message": "## Lesson: Switching to a tool allowlist silently drops all unlisted tools\nobserved that Read tool results caused false positives, then jumped from \"exclude Read\" to \"only allow Bash/TaskOutput\" — an allowlist that silently dropped MCP tools, Edit, Write, and all future tools not explicitly listed\n**Fix**: match the scope of the fix to the scope of the observation; if the problem is \"X is noisy,\" exclude X — don't redesign around the absence of X",
+      "summary": "Switching to a tool allowlist silently drops all unlisted tools",
       "problem": "observed that Read tool results caused false positives, then jumped from \"exclude Read\" to \"only allow Bash/TaskOutput\" — an allowlist that silently dropped MCP tools, Edit, Write, and all future tools not explicitly listed",
       "solution": "match the scope of the fix to the scope of the observation; if the problem is \"X is noisy,\" exclude X — don't redesign around the absence of X"
     },
@@ -4206,8 +4448,8 @@
         "category:context-retrieval"
       ],
       "scope": null,
-      "message": "## Lesson: Lesson reminders placed at batch start are forgotten by the time the guarded task executes\nAll lesson summaries injected at batch start (2000 chars); by Task 4, agent forgot the bare-except lesson and wrote `except: pass`\n**Fix**: Co-locate each lesson reminder immediately before the task it guards: [Task N] → [one-line lesson reminder] → [acceptance criteria]",
-      "summary": "Lesson reminders placed at batch start are forgotten by the time the guarded task executes",
+      "message": "## Lesson: Reminders at batch start are forgotten by the time the task executes\nAll lesson summaries injected at batch start (2000 chars); by Task 4, agent forgot the bare-except lesson and wrote `except: pass`\n**Fix**: Co-locate each lesson reminder immediately before the task it guards: [Task N] → [one-line lesson reminder] → [acceptance criteria]",
+      "summary": "Reminders at batch start are forgotten by the time the task executes",
       "problem": "All lesson summaries injected at batch start (2000 chars); by Task 4, agent forgot the bare-except lesson and wrote `except: pass`",
       "solution": "Co-locate each lesson reminder immediately before the task it guards: [Task N] → [one-line lesson reminder] → [acceptance criteria]"
     },
@@ -4233,8 +4475,8 @@
         "scope:pi-cluster"
       ],
       "scope": null,
-      "message": "## Lesson: /tmp on the PXE server is a 449 MB tmpfs that survives across SSH sessions but is cleared on reboot.\n/tmp on the PXE server is a 449 MB tmpfs that survives across SSH sessions but is cleared on reboot. The recovery image stored in /tmp was lost before it could be copied out, because a reboot happened between sessions.\n**Fix**: Never defer \"copy from /tmp to persistent storage\" — do it as the absolute first action before any other work. Set a reminder in the session handoff note that /tmp may already be empty in the next session.",
-      "summary": "/tmp on the PXE server is a 449 MB tmpfs that survives across SSH sessions but is cleared on reboot.",
+      "message": "## Lesson: PXE server /tmp is a 449MB tmpfs — persists across SSH but clears on reboot\n/tmp on the PXE server is a 449 MB tmpfs that survives across SSH sessions but is cleared on reboot. The recovery image stored in /tmp was lost before it could be copied out, because a reboot happened between sessions.\n**Fix**: Never defer \"copy from /tmp to persistent storage\" — do it as the absolute first action before any other work. Set a reminder in the session handoff note that /tmp may already be empty in the next session.",
+      "summary": "PXE server /tmp is a 449MB tmpfs — persists across SSH but clears on reboot",
       "problem": "/tmp on the PXE server is a 449 MB tmpfs that survives across SSH sessions but is cleared on reboot. The recovery image stored in /tmp was lost before it could be copied out, because a reboot happened between sessions.",
       "solution": "Never defer \"copy from /tmp to persistent storage\" — do it as the absolute first action before any other work. Set a reminder in the session handoff note that /tmp may already be empty in the next session."
     },
@@ -4260,8 +4502,8 @@
         "severity:timeout"
       ],
       "scope": null,
-      "message": "## Lesson: claude -p produces output quickly but the process hangs for 60+ seconds after printing (session cleanup).\nclaude -p produces output quickly but the process hangs for 60+ seconds after printing (session cleanup). subprocess.run with timeout=60 kills the process and raises TimeoutExpired even though the response was already printed to stdout.\n**Fix**: Use async spawn (Node.js) or background subprocess: capture stdout as it streams in, then kill the process after a fixed delay (e.g., 30s). The output is available immediately; the hang is post-output cleanup only.",
-      "summary": "claude -p produces output quickly but the process hangs for 60+ seconds after printing (session cleanup).",
+      "message": "## Lesson: claude -p hangs 60+s after printing output (session cleanup)\nclaude -p produces output quickly but the process hangs for 60+ seconds after printing (session cleanup). subprocess.run with timeout=60 kills the process and raises TimeoutExpired even though the response was already printed to stdout.\n**Fix**: Use async spawn (Node.js) or background subprocess: capture stdout as it streams in, then kill the process after a fixed delay (e.g., 30s). The output is available immediately; the hang is post-output cleanup only.",
+      "summary": "claude -p hangs 60+s after printing output (session cleanup)",
       "problem": "claude -p produces output quickly but the process hangs for 60+ seconds after printing (session cleanup). subprocess.run with timeout=60 kills the process and raises TimeoutExpired even though the response was already printed to stdout.",
       "solution": "Use async spawn (Node.js) or background subprocess: capture stdout as it streams in, then kill the process after a fixed delay (e.g., 30s). The output is available immediately; the hang is post-output cleanup only."
     },
@@ -4281,8 +4523,8 @@
         "category:reasoning"
       ],
       "scope": "Users-joe-github-joeblackwaslike-lessons-learned",
-      "message": "## Lesson: Said to run the test command ambiguously — users ran it directly instead of via Claude, bypassing PreToolUse\nWhen testing PreToolUse hook behavior, instructions like \"run node --test\" are ambiguous — the user may paste the command directly into their terminal. PreToolUse only fires when Claude invokes a tool; user-initiated terminal commands bypass the hook entirely, producing false negatives that make the hook look broken when it is working correctly.\n**Fix**: Always frame test instructions as \"ask Claude to run X\" (e.g., \"tell Claude to run the tests\"). This ensures the command goes through Claude's tool call, which is the only execution path that triggers PreToolUse.",
-      "summary": "Said to run the test command ambiguously — users ran it directly instead of via Claude, bypassing PreToolUse",
+      "message": "## Lesson: Ambiguous 'run the tests' makes users run it directly, bypassing PreToolUse\nWhen testing PreToolUse hook behavior, instructions like \"run node --test\" are ambiguous — the user may paste the command directly into their terminal. PreToolUse only fires when Claude invokes a tool; user-initiated terminal commands bypass the hook entirely, producing false negatives that make the hook look broken when it is working correctly.\n**Fix**: Always frame test instructions as \"ask Claude to run X\" (e.g., \"tell Claude to run the tests\"). This ensures the command goes through Claude's tool call, which is the only execution path that triggers PreToolUse.",
+      "summary": "Ambiguous 'run the tests' makes users run it directly, bypassing PreToolUse",
       "problem": "When testing PreToolUse hook behavior, instructions like \"run node --test\" are ambiguous — the user may paste the command directly into their terminal. PreToolUse only fires when Claude invokes a tool; user-initiated terminal commands bypass the hook entirely, producing false negatives that make the hook look broken when it is working correctly.",
       "solution": "Always frame test instructions as \"ask Claude to run X\" (e.g., \"tell Claude to run the tests\"). This ensures the command goes through Claude's tool call, which is the only execution path that triggers PreToolUse."
     },
@@ -4302,8 +4544,8 @@
         "category:reasoning"
       ],
       "scope": "Users-joe-github-joeblackwaslike-lessons-learned",
-      "message": "## Lesson: Plan mode suppresses tool calls — PreToolUse never fires, giving false negatives in hook tests\nDidn't warn that plan mode suppresses tool calls — if Claude enters plan mode, PreToolUse never fires because Bash is never called, so the hook test produces a false negative\n**Fix**: When testing PreToolUse hooks, tell the user to disable plan mode or explicitly say \"don't plan, just run it\" so the hook actually fires",
-      "summary": "Plan mode suppresses tool calls — PreToolUse never fires, giving false negatives in hook tests",
+      "message": "## Lesson: Plan mode suppresses tool calls — PreToolUse won't fire in hook tests\nDidn't warn that plan mode suppresses tool calls — if Claude enters plan mode, PreToolUse never fires because Bash is never called, so the hook test produces a false negative\n**Fix**: When testing PreToolUse hooks, tell the user to disable plan mode or explicitly say \"don't plan, just run it\" so the hook actually fires",
+      "summary": "Plan mode suppresses tool calls — PreToolUse won't fire in hook tests",
       "problem": "Didn't warn that plan mode suppresses tool calls — if Claude enters plan mode, PreToolUse never fires because Bash is never called, so the hook test produces a false negative",
       "solution": "When testing PreToolUse hooks, tell the user to disable plan mode or explicitly say \"don't plan, just run it\" so the hook actually fires"
     },
@@ -4323,8 +4565,8 @@
         "category:reasoning"
       ],
       "scope": "Users-joe-github-joeblackwaslike-lessons-learned",
-      "message": "## Lesson: Misread corrected retry output as proof the block failed — diagnosed a problem that did not exist\nWhen a guard lesson blocks a Bash command and Claude self-corrects by retrying without the flagged argument, the output log shows both the blocked attempt and the successful retry. Misreading the retry as a new failure causes false diagnosis — the system actually worked correctly through its full block → self-correct → retry cycle.\n**Fix**: Before diagnosing unexpected output as a guard failure, trace the expected flow: guard fires → Claude sees the block reason → Claude retries with corrected command → retry succeeds. Verify whether the observed output matches that flow before concluding anything is broken.",
-      "summary": "Misread corrected retry output as proof the block failed — diagnosed a problem that did not exist",
+      "message": "## Lesson: Misread corrected retry output as a failure; diagnosed a non-problem\nWhen a guard lesson blocks a Bash command and Claude self-corrects by retrying without the flagged argument, the output log shows both the blocked attempt and the successful retry. Misreading the retry as a new failure causes false diagnosis — the system actually worked correctly through its full block → self-correct → retry cycle.\n**Fix**: Before diagnosing unexpected output as a guard failure, trace the expected flow: guard fires → Claude sees the block reason → Claude retries with corrected command → retry succeeds. Verify whether the observed output matches that flow before concluding anything is broken.",
+      "summary": "Misread corrected retry output as a failure; diagnosed a non-problem",
       "problem": "When a guard lesson blocks a Bash command and Claude self-corrects by retrying without the flagged argument, the output log shows both the blocked attempt and the successful retry. Misreading the retry as a new failure causes false diagnosis — the system actually worked correctly through its full block → self-correct → retry cycle.",
       "solution": "Before diagnosing unexpected output as a guard failure, trace the expected flow: guard fires → Claude sees the block reason → Claude retries with corrected command → retry succeeds. Verify whether the observed output matches that flow before concluding anything is broken."
     },
@@ -4350,8 +4592,8 @@
         "topic:brainstorming"
       ],
       "scope": null,
-      "message": "## Lesson: Acknowledging brainstorming hard-gate then immediately launching agents violates the gate\nInvoked brainstorming skill, acknowledged the hard gate (\"don't proceed without approval\"), then immediately launched Explore agents and started writing a PRD — skipping the entire brainstorming conversation. The skill's HARD-GATE says no implementation until user approves the design. Exploring the codebase and writing a PRD is implementation-adjacent action, not brainstorming.\n**Fix**: When the brainstorming skill fires, stop and ask clarifying questions one at a time. Do not spawn Explore agents or write any document until the brainstorming conversation is complete and the user has approved the design.",
-      "summary": "Acknowledging brainstorming hard-gate then immediately launching agents violates the gate",
+      "message": "## Lesson: Acknowledging the brainstorm gate then launching agents violates it\nInvoked brainstorming skill, acknowledged the hard gate (\"don't proceed without approval\"), then immediately launched Explore agents and started writing a PRD — skipping the entire brainstorming conversation. The skill's HARD-GATE says no implementation until user approves the design. Exploring the codebase and writing a PRD is implementation-adjacent action, not brainstorming.\n**Fix**: When the brainstorming skill fires, stop and ask clarifying questions one at a time. Do not spawn Explore agents or write any document until the brainstorming conversation is complete and the user has approved the design.",
+      "summary": "Acknowledging the brainstorm gate then launching agents violates it",
       "problem": "Invoked brainstorming skill, acknowledged the hard gate (\"don't proceed without approval\"), then immediately launched Explore agents and started writing a PRD — skipping the entire brainstorming conversation. The skill's HARD-GATE says no implementation until user approves the design. Exploring the codebase and writing a PRD is implementation-adjacent action, not brainstorming.",
       "solution": "When the brainstorming skill fires, stop and ask clarifying questions one at a time. Do not spawn Explore agents or write any document until the brainstorming conversation is complete and the user has approved the design."
     },
@@ -4376,8 +4618,8 @@
         "topic:plan-mode"
       ],
       "scope": null,
-      "message": "## Lesson: Called ExitPlanMode three times in the same session when the user had clearly not approved the design.\nCalled ExitPlanMode three times in the same session when the user had clearly not approved the design. ExitPlanMode is only for requesting final approval — not for checkpoints mid-conversation where the user is still giving feedback.\n**Fix**: Only call ExitPlanMode once the brainstorming conversation is complete, the user has said something equivalent to \"looks good\" or \"proceed,\" and the plan file contains a proper implementation plan (not a PRD).",
-      "summary": "Called ExitPlanMode three times in the same session when the user had clearly not approved the design.",
+      "message": "## Lesson: Called ExitPlanMode repeatedly without user approval of the design\nCalled ExitPlanMode three times in the same session when the user had clearly not approved the design. ExitPlanMode is only for requesting final approval — not for checkpoints mid-conversation where the user is still giving feedback.\n**Fix**: Only call ExitPlanMode once the brainstorming conversation is complete, the user has said something equivalent to \"looks good\" or \"proceed,\" and the plan file contains a proper implementation plan (not a PRD).",
+      "summary": "Called ExitPlanMode repeatedly without user approval of the design",
       "problem": "Called ExitPlanMode three times in the same session when the user had clearly not approved the design. ExitPlanMode is only for requesting final approval — not for checkpoints mid-conversation where the user is still giving feedback.",
       "solution": "Only call ExitPlanMode once the brainstorming conversation is complete, the user has said something equivalent to \"looks good\" or \"proceed,\" and the plan file contains a proper implementation plan (not a PRD)."
     },
@@ -4523,12 +4765,7 @@
       "type": "protocol",
       "priority": 3,
       "toolNames": [],
-      "commandRegexSources": [
-        {
-          "source": "\\bRecommending\\b",
-          "flags": ""
-        }
-      ],
+      "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
@@ -4538,8 +4775,8 @@
         "domain:nodejs"
       ],
       "scope": null,
-      "message": "## Lesson: Made a confident architectural recommendation based on stale priors instead of researching the Node.\nMade a confident architectural recommendation based on stale priors instead of researching the Node.js module customization hooks API first. The injected lessons-learned directives explicitly required research before any planning, but were ignored. User's correct Python intuition (importlib hooks) mapped directly to Node's equivalent (module.register + resolve/load hooks), which research confirmed.\n**Fix**: Always research the idiomatic solution in the target ecosystem before recommending an approach — especially when crossing language boundaries where your priors may not transfer. Follow the lessons-learned directives without exception.",
-      "summary": "Made a confident architectural recommendation based on stale priors instead of researching the Node.",
+      "message": "## Lesson: Made a confident architecture call from stale priors without researching\nMade a confident architectural recommendation based on stale priors instead of researching the Node.js module customization hooks API first. The injected lessons-learned directives explicitly required research before any planning, but were ignored. User's correct Python intuition (importlib hooks) mapped directly to Node's equivalent (module.register + resolve/load hooks), which research confirmed.\n**Fix**: Always research the idiomatic solution in the target ecosystem before recommending an approach — especially when crossing language boundaries where your priors may not transfer. Follow the lessons-learned directives without exception.",
+      "summary": "Made a confident architecture call from stale priors without researching",
       "problem": "Made a confident architectural recommendation based on stale priors instead of researching the Node.js module customization hooks API first. The injected lessons-learned directives explicitly required research before any planning, but were ignored. User's correct Python intuition (importlib hooks) mapped directly to Node's equivalent (module.register + resolve/load hooks), which research confirmed.",
       "solution": "Always research the idiomatic solution in the target ecosystem before recommending an approach — especially when crossing language boundaries where your priors may not transfer. Follow the lessons-learned directives without exception."
     },
