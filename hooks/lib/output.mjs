@@ -37,6 +37,28 @@ export function formatHookOutput(additionalContext, lessonsSeen, metadata) {
 }
 
 /**
+ * Format a blocking (guard) decision for a PreToolUse hook.
+ *
+ * Claude Code blocks a tool call when stdout contains
+ * `hookSpecificOutput.permissionDecision: "deny"` and the hook exits 0.
+ * The legacy "exit 2 + reason" path feeds the reason via STDERR, not stdout —
+ * writing the reason to stdout while exiting 2 yields an empty-stderr error
+ * ("No stderr output") and silently drops the guard reason.
+ *
+ * @param {string} reason - Human-readable denial reason shown to the agent
+ * @returns {string} JSON string to write to stdout (paired with exit 0)
+ */
+export function formatBlockerOutput(reason) {
+  return JSON.stringify({
+    hookSpecificOutput: {
+      hookEventName: 'PreToolUse',
+      permissionDecision: 'deny',
+      permissionDecisionReason: reason,
+    },
+  });
+}
+
+/**
  * Write empty JSON output (no lessons matched or all filtered).
  */
 export function formatEmptyOutput() {

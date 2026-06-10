@@ -15,7 +15,7 @@ import { fileURLToPath } from 'node:url';
 
 import { parseHookInput } from './lib/stdin.mjs';
 import { loadSeenSet, claimLesson, persistSeenState } from './lib/dedup.mjs';
-import { formatHookOutput, formatEmptyOutput } from './lib/output.mjs';
+import { formatHookOutput, formatEmptyOutput, formatBlockerOutput } from './lib/output.mjs';
 import { matchLessons, findBlocker } from '../core/match.mjs';
 import { selectCandidates } from '../core/select.mjs';
 
@@ -72,9 +72,11 @@ if (matches.length === 0) {
 
 const blocker = findBlocker(matches, command);
 if (blocker) {
-  // Exit code 2 blocks the tool call; stdout is shown to the agent as the denial reason.
-  process.stdout.write(blocker.reason);
-  process.exit(2);
+  // Block via JSON permissionDecision:"deny" + exit 0 (the PreToolUse contract).
+  // NOT exit 2 — that channel reads the reason from stderr, so a stdout reason is
+  // dropped and Claude Code reports a spurious "No stderr output" hook error.
+  process.stdout.write(formatBlockerOutput(blocker.reason));
+  process.exit(0);
 }
 
 // ─── Stage 4–5: Dedup, rank, budget ─────────────────────────────────
