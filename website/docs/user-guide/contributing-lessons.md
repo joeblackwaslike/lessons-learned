@@ -1,3 +1,9 @@
+---
+sidebar_position: 8
+title: Contributing Lessons
+description: Writing, reviewing, and tuning high-quality lessons for maximum injection effectiveness.
+---
+
 # Contributing Lessons
 
 This guide covers writing, reviewing, and tuning lessons for maximum effectiveness.
