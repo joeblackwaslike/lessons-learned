@@ -11,13 +11,13 @@ When working on or developing this plugin (modifying hooks, commands, skills, or
 - `plugin-dev@claude-plugins-official` — canonical directory layout, manifest spec, hook wiring format, command frontmatter rules
 - `skill-creator@claude-plugins-official` — skill description quality, progressive disclosure, trigger reliability, writing style
 
-Also consult `docs/architecture/` for design context:
+Also consult `website/docs/architecture/` for design context:
 
 - `constitution.md` — stable principles governing lesson quality and injection philosophy (start here)
 - `project.md` — mission, component map, and end-to-end pipeline overview
 - `data-model.md` — lesson schema, manifest format, scan state, candidate format
 - `testing-plan.md` — test strategy, unit/integration/E2E coverage targets
-- `quality-checkd.md` -
+- `quality-checks.md` — lesson quality anti-patterns enforced by `doctor` and `lint`
 
 ## Architecture
 
@@ -244,7 +244,7 @@ ANTHROPIC_API_KEY=meridian ANTHROPIC_BASE_URL=http://127.0.0.1:3456 \
   node scripts/repair-judge-errors.mjs
 ```
 
-See `evals/README.md` and `docs/eval-usage.md` for full reference. For authoring new scenarios, see `docs/eval-scenario-writing.md`.
+See `evals/README.md` and `website/docs/developer-guide/eval-usage.md` for full reference. For authoring new scenarios, see `website/docs/developer-guide/eval-scenario-writing.md`.
 
 ## Running Tests
 
