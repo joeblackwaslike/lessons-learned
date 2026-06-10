@@ -3,6 +3,7 @@ import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 import Heading from '@theme/Heading';
+import Mermaid from '@theme/Mermaid';
 import HomepageFeatures from '@site/src/components/HomepageFeatures';
 
 import styles from './index.module.css';
@@ -80,18 +81,18 @@ function HowItWorks() {
           A continuous capture-inject loop that gets smarter every session.
         </p>
         <div className={styles.mermaidContainer}>
-          <pre className="mermaid">
-            {`flowchart LR
-    A["Claude makes a mistake"] --> B["Emits #lesson tag\\nor scanner detects pattern"]
-    B --> C["Candidate stored\\nin lessons.db"]
-    C --> D["Review and promote\\nvia CLI"]
-    D --> E["lesson-manifest.json\\nrebuilt"]
-    E --> F["Next session:\\nPreToolUse hook fires"]
-    F --> G{"Lesson matches\\ntool + pattern?"}
-    G -- Yes --> H["Warning injected\\nbefore tool call"]
+          <Mermaid
+            value={`flowchart LR
+    A["Claude makes a mistake"] --> B["Emits #lesson tag<br/>or scanner detects pattern"]
+    B --> C["Candidate stored<br/>in lessons.db"]
+    C --> D["Review and promote<br/>via CLI"]
+    D --> E["lesson-manifest.json<br/>rebuilt"]
+    E --> F["Next session:<br/>PreToolUse hook fires"]
+    F --> G{"Lesson matches<br/>tool + pattern?"}
+    G -- Yes --> H["Warning injected<br/>before tool call"]
     G -- No --> I["Skipped — no noise"]
     H --> J["Mistake avoided"]`}
-          </pre>
+          />
         </div>
       </div>
     </section>

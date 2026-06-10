@@ -1,3 +1,9 @@
+---
+sidebar_position: 9
+title: Lesson Type Examples
+description: Representative real-world examples for each lesson type — hint, guard, protocol, and directive.
+---
+
 # Lesson Type Examples
 
 Reference document showing 3 representative examples per lesson type.
@@ -42,7 +48,9 @@ Blocks the tool call entirely and surfaces a corrective message. Use only when e
 
 **Fix:** Use `python -m pytest --no-header -rN -p no:faulthandler` or prepend `TERM=dumb`. Pipe through `cat` if rich output is still suspected.
 
-> _Note: Only one guard lesson currently exists — this type should be reserved for high-certainty, high-severity hangs or destructive operations._
+:::note
+Only one guard lesson currently exists — this type should be reserved for high-certainty, high-severity hangs or destructive operations.
+:::
 
 ---
 

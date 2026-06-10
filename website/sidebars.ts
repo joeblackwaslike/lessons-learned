@@ -9,7 +9,9 @@ const sidebars: SidebarsConfig = {
       items: [
         'user-guide/how-it-works',
         'user-guide/lessons',
+        'user-guide/lesson-type-examples',
         'user-guide/emitting-lessons',
+        'user-guide/contributing-lessons',
         'user-guide/scanning',
         'user-guide/configuration',
         'user-guide/installation',
