@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-06-07T16:34:27.032Z",
+  "generatedAt": "2026-06-11T13:00:14.604Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -1696,14 +1696,14 @@
     },
     "01JQSEED00000000000000003": {
       "slug": "git-stash-untracked-p4w1",
-      "type": "guard",
+      "type": "hint",
       "priority": 7,
       "toolNames": [
         "Bash"
       ],
       "commandRegexSources": [
         {
-          "source": "\\bgit\\s+stash\\b(?!.*(-u|--include-untracked|--all))",
+          "source": "\\bgit\\s+stash\\b(?!\\s+(list|show|pop|apply|drop|clear|branch))(?!.*(-u|--include-untracked|--all))",
           "flags": ""
         }
       ],
