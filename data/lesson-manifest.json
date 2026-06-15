@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-06-11T13:00:14.604Z",
+  "generatedAt": "2026-06-15T00:50:16.753Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -764,7 +764,7 @@
       ],
       "commandRegexSources": [
         {
-          "source": "openssl",
+          "source": "\\bopenssl\\b",
           "flags": ""
         },
         {
@@ -1039,19 +1039,19 @@
       ],
       "commandRegexSources": [
         {
-          "source": "psql",
+          "source": "\\bpsql\\b",
           "flags": ""
         },
         {
-          "source": "flyway",
+          "source": "\\bflyway\\b",
           "flags": ""
         },
         {
-          "source": "alembic",
+          "source": "\\balembic\\b",
           "flags": ""
         },
         {
-          "source": "migrate",
+          "source": "\\bmigrate\\b",
           "flags": ""
         },
         {
@@ -1484,14 +1484,14 @@
     },
     "01KS4PRXD2EJH6AZ1Q3WCRQ51S": {
       "slug": "snoowrap-types-cause-ts1062-circular-the-c3b4",
-      "type": "guard",
+      "type": "hint",
       "priority": 8,
       "toolNames": [
         "Bash"
       ],
       "commandRegexSources": [
         {
-          "source": "tsc",
+          "source": "\\btsc\\b",
           "flags": ""
         },
         {
@@ -1499,7 +1499,7 @@
           "flags": ""
         }
       ],
-      "commandMatchTarget": "executable",
+      "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
       "tags": [
@@ -1508,7 +1508,7 @@
         "tool:typescript",
         "severity:build-failure"
       ],
-      "scope": null,
+      "scope": "Users-joe-github-joeblackwaslike-ai-listings",
       "message": "## Lesson: snoowrap types cause TS1062 'circular then' errors; cast via `as unknown as Prom\nsnoowrap exports types that implement `.then()` (thenable). This is a known library limitation — TypeScript's type resolver hits a circular reference when trying to unwrap an awaited snoowrap call (e.g. `await r.submitSelfpost(...)`), causing TS1062.\n**Fix**: Cast snoowrap calls through `as unknown as Promise<X>` before awaiting to break the circular type chain:\n  // Before (TS1062):\n  const post = await r.submitSelfpost({ ... })\n  // After:\n  const post = await (r.submitSelfpost({ ... }) as unknown as Promise<Submission>)\nNo runtime impact.",
       "summary": "snoowrap types cause TS1062 'circular then' errors; cast via `as unknown as Prom",
       "problem": "snoowrap exports types that implement `.then()` (thenable). This is a known library limitation — TypeScript's type resolver hits a circular reference when trying to unwrap an awaited snoowrap call (e.g. `await r.submitSelfpost(...)`), causing TS1062.",
@@ -1573,7 +1573,7 @@
       ],
       "commandRegexSources": [
         {
-          "source": "imgur",
+          "source": "\\bimgur\\b",
           "flags": ""
         }
       ],
@@ -1601,7 +1601,7 @@
       ],
       "commandRegexSources": [
         {
-          "source": "reddit",
+          "source": "\\breddit\\b",
           "flags": ""
         }
       ],
@@ -2265,11 +2265,11 @@
       ],
       "commandRegexSources": [
         {
-          "source": "generateObject",
+          "source": "\\bgenerateObject\\b",
           "flags": ""
         },
         {
-          "source": "streamObject",
+          "source": "\\bstreamObject\\b",
           "flags": ""
         }
       ],
@@ -2518,7 +2518,7 @@
           "flags": ""
         },
         {
-          "source": "reasoning_effort",
+          "source": "\\breasoning_effort\\b",
           "flags": ""
         }
       ],
@@ -3456,7 +3456,7 @@
       ],
       "commandRegexSources": [
         {
-          "source": "alembic",
+          "source": "\\balembic\\b",
           "flags": ""
         }
       ],
@@ -4329,11 +4329,11 @@
       ],
       "commandRegexSources": [
         {
-          "source": "tsc",
+          "source": "\\btsc\\b",
           "flags": ""
         },
         {
-          "source": "type-check",
+          "source": "\\btype-check\\b",
           "flags": ""
         },
         {
@@ -4368,11 +4368,11 @@
           "flags": ""
         },
         {
-          "source": "iCloud",
+          "source": "\\biCloud\\b",
           "flags": ""
         },
         {
-          "source": "CloudDocs",
+          "source": "\\bCloudDocs\\b",
           "flags": ""
         }
       ],
