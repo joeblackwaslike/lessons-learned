@@ -349,11 +349,31 @@ export function deserializeRow(row) {
   return plain;
 }
 
+// A bare single token (e.g. "tsc", "migrate") with no spaces or regex
+// metacharacters. Such a pattern substring-matches inside larger words
+// ("tsc" ⊂ "tsconfig"), so it must be anchored with \b…\b. Patterns that
+// already contain spaces or regex structure are specific enough to leave alone.
+export const BARE_TOKEN_RE = /^[\w-]+$/;
+
+/**
+ * Anchor a bare single-token commandPattern with word boundaries so it cannot
+ * substring-match inside a larger word. Returns structured patterns unchanged.
+ * Idempotent: an already-anchored pattern contains "\" and is left as-is.
+ */
+export function anchorBareToken(pattern) {
+  return BARE_TOKEN_RE.test(pattern) ? `\\b${pattern}\\b` : pattern;
+}
+
+function anchorCommandPatterns(val) {
+  return Array.isArray(val) ? val.map(anchorBareToken) : val;
+}
+
 function serializeRecord(record) {
   const out = { ...record };
   for (const col of JSON_COLUMNS) {
     if (Array.isArray(out[col])) {
-      out[col] = JSON.stringify(out[col]);
+      const arr = col === 'commandPatterns' ? out[col].map(anchorBareToken) : out[col];
+      out[col] = JSON.stringify(arr);
     }
   }
   for (const col of JSON_OBJECT_COLUMNS) {
@@ -560,7 +580,7 @@ export function promoteToActive(db, ids, patches = {}) {
           const setClauses = fields.map(f => `${f} = :${f}`).join(', ');
           const values = { id };
           for (const f of fields) {
-            const val = patch[f];
+            const val = f === 'commandPatterns' ? anchorCommandPatterns(patch[f]) : patch[f];
             values[f] = Array.isArray(val) ? JSON.stringify(val) : val;
           }
           db.prepare(`UPDATE lessons SET ${setClauses}, updatedAt = :now WHERE id = :id`).run({
@@ -569,6 +589,18 @@ export function promoteToActive(db, ids, patches = {}) {
           });
         }
       }
+    }
+
+    // Normalize commandPatterns on promotion so every lesson reaching 'active'
+    // has anchored bare-word patterns, regardless of how the candidate's
+    // patterns were authored (deep-scan, heuristic, or an un-anchored patch).
+    const readCmd = db.prepare('SELECT commandPatterns FROM lessons WHERE id = ?');
+    const writeCmd = db.prepare('UPDATE lessons SET commandPatterns = :v WHERE id = :id');
+    for (const id of ids) {
+      const row = readCmd.get(id);
+      if (!row) continue;
+      const anchored = anchorCommandPatterns(JSON.parse(String(row.commandPatterns)));
+      writeCmd.run({ v: JSON.stringify(anchored), id });
     }
 
     const placeholders = ids.map(() => '?').join(',');
@@ -627,7 +659,7 @@ export function updateRecord(db, id, patch) {
   const setClauses = fields.map(f => `${f} = :${f}`).join(', ');
   const values = { id, now };
   for (const f of fields) {
-    const val = patch[f];
+    const val = f === 'commandPatterns' ? anchorCommandPatterns(patch[f]) : patch[f];
     values[f] =
       Array.isArray(val) || (val !== null && typeof val === 'object') ? JSON.stringify(val) : val;
   }

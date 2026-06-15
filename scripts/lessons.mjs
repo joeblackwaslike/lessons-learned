@@ -47,6 +47,8 @@ import {
   getRecordsByIds,
   insertReviewSession,
   computeContentHash as computeContentHashFromDb,
+  anchorBareToken,
+  BARE_TOKEN_RE,
 } from './db.mjs';
 import { join, resolve, dirname, relative, sep, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -139,6 +141,7 @@ Per-lesson checks:
   - no-patterns: hint/guard with no commandPatterns or pathPatterns (fires on every call)
   - weak-pair: solution < 60 chars, or solution Jaccard similarity with problem >= 0.7
   - overspecified-trigger: commandPattern > 40 non-regex chars (too specific, misses variants)
+  - underspecified-pattern: bare single-word commandPattern (substring-matches, e.g. "tsc" ⊂ "tsconfig")
   - solution-staleness: solution contains version strings that may be outdated
   - context-bleed: problem/solution contains session-specific language (first-person, "this repo")
   - orphaned-scope: scope ID not found in ~/.claude/projects/ — lesson will never fire
@@ -549,14 +552,16 @@ function buildTriggers(input) {
     const patterns = Array.isArray(input.commandPatterns)
       ? input.commandPatterns
       : [input.commandPatterns];
-    triggers.commandPatterns = patterns.filter(p => {
-      try {
-        new RegExp(p);
-        return true;
-      } catch {
-        return false;
-      }
-    });
+    triggers.commandPatterns = patterns
+      .filter(p => {
+        try {
+          new RegExp(p);
+          return true;
+        } catch {
+          return false;
+        }
+      })
+      .map(anchorBareToken);
   }
 
   if (input.pathPatterns) {
@@ -1706,6 +1711,15 @@ function auditLesson(lesson) {
     if (raw.length > OVERSPECIFIED_PATTERN_LENGTH)
       issues.push(
         `commandPattern "${pat.slice(0, 50)}${pat.length > 50 ? '…' : ''}" may be overspecified (${raw.length} non-regex chars) — generalize to the hazardous argument, not the full invocation`
+      );
+  }
+
+  // underspecified-pattern: a bare single-token pattern substring-matches inside
+  // larger words (e.g. "tsc" fires on "tsconfig"). Anchor it with \b…\b.
+  for (const pat of lesson.commandPatterns ?? []) {
+    if (BARE_TOKEN_RE.test(pat))
+      issues.push(
+        `commandPattern "${pat}" is an unanchored bare word — it substring-matches inside larger words (e.g. "${pat}" fires on "${pat}config"); anchor it as "\\b${pat}\\b"`
       );
   }
 

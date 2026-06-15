@@ -329,6 +329,71 @@ describe('lessons doctor', () => {
     assert.match(stdout, /may be overspecified/);
   });
 
+  it('flags underspecified bare-word commandPattern', async () => {
+    insertLesson(store.dbPath, {
+      commandPatterns: JSON.stringify(['tsc']),
+    });
+
+    const { exitCode, stdout } = await run(LESSONS_CLI, {
+      args: ['doctor'],
+      env: env(),
+    });
+    assert.equal(exitCode, 1);
+    assert.match(stdout, /unanchored bare word/);
+  });
+
+  it('does not flag an anchored or multi-token commandPattern', async () => {
+    insertLesson(store.dbPath, {
+      commandPatterns: JSON.stringify(['\\btsc\\b', 'npx tsc', 'npm.*build']),
+    });
+
+    const { exitCode, stdout } = await run(LESSONS_CLI, {
+      args: ['doctor'],
+      env: env(),
+    });
+    assert.equal(exitCode, 0, `anchored/multi-token patterns should pass: ${stdout}`);
+  });
+
+  function readCommandPatterns(dbPath, id) {
+    const db = new DatabaseSync(dbPath);
+    const row = db.prepare('SELECT commandPatterns FROM lessons WHERE id = ?').get(id);
+    db.close();
+    return JSON.parse(String(row.commandPatterns));
+  }
+
+  it('anchors bare-word commandPatterns when promoting a candidate', async () => {
+    // Raw insert bypasses buildTriggers, exactly like a deep-scan candidate.
+    const id = 'promote-bare-tsc';
+    insertLesson(store.dbPath, {
+      id,
+      status: 'candidate',
+      commandPatterns: JSON.stringify(['tsc']),
+    });
+
+    const { exitCode } = await run(LESSONS_CLI, {
+      args: ['promote', '--ids', id],
+      env: env(),
+    });
+    assert.equal(exitCode, 0);
+    assert.deepEqual(
+      readCommandPatterns(store.dbPath, id),
+      ['\\btsc\\b'],
+      'promotion should anchor the stored pattern'
+    );
+  });
+
+  it('anchors bare-word commandPatterns when editing a lesson', async () => {
+    const id = 'edit-bare-tsc';
+    insertLesson(store.dbPath, { id });
+
+    const { exitCode } = await run(LESSONS_CLI, {
+      args: ['edit', '--id', id, '--patch', JSON.stringify({ commandPatterns: ['tsc'] })],
+      env: env(),
+    });
+    assert.equal(exitCode, 0);
+    assert.deepEqual(readCommandPatterns(store.dbPath, id), ['\\btsc\\b']);
+  });
+
   it('flags solution with version reference', async () => {
     insertLesson(store.dbPath, {
       solution:
