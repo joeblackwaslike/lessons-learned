@@ -56,6 +56,10 @@ dolt-server.activity
 # Backup data (auto-exported JSONL, local-only)
 backup/
 
+# Proxied server (runtime, per-machine)
+proxieddb/
+proxied_server_client_info.json
+
 # Per-project environment file (Dolt connection config, GH#2520)
 .env
 

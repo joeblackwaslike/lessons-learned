@@ -32,6 +32,7 @@ docs/_backlog.md
 .beads/dolt-config.log
 .beads/_premigration_backup_*/
 .beads/backup/*.darc
+.beads/proxieddb/
 
 # OS artifacts
 .DS_Store
