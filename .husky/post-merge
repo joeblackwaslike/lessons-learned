@@ -1,0 +1,4 @@
+#!/bin/sh
+export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+# beads sync (non-fatal — never blocks git ops)
+command -v bd >/dev/null 2>&1 && bd hooks run post-merge "$@" || true

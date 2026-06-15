@@ -2,3 +2,5 @@
 export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 ./node_modules/.bin/lint-staged
 ./node_modules/.bin/tsc --noEmit -p jsconfig.json
+# beads sync (non-fatal — never blocks git ops; lint-staged/tsc stay the fatal gate)
+command -v bd >/dev/null 2>&1 && bd hooks run pre-commit "$@" || true
