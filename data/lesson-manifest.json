@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-06-15T00:50:16.753Z",
+  "generatedAt": "2026-06-16T11:34:28.117Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -362,40 +362,6 @@
       "problem": "The Etsy webhook handler skips signature verification when ETSY_WEBHOOK_SECRET is undefined or empty. The guard condition `if (ETSY_WEBHOOK_SECRET && !verifyEtsySignature(...))` allows requests through without validation when the secret is missing, creating a security bypass that permits spoofed events.",
       "solution": "Invert the logic to require valid signature verification before processing any webhook. Fail fast with 401/403 if the secret is missing or signature verification fails, rather than logging a warning after processing begins."
     },
-    "01JQSEED00000000000000002": {
-      "slug": "mock-patch-namespace-v3x8",
-      "type": "hint",
-      "priority": 8,
-      "toolNames": [
-        "Bash",
-        "Edit",
-        "Write"
-      ],
-      "commandRegexSources": [
-        {
-          "source": "mock\\.patch\\(|@patch\\(",
-          "flags": ""
-        }
-      ],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [
-        {
-          "source": "test.*\\.py$",
-          "flags": "i"
-        }
-      ],
-      "modelRegexSources": [],
-      "tags": [
-        "lang:python",
-        "tool:unittest",
-        "topic:testing"
-      ],
-      "scope": null,
-      "message": "## Lesson: mock.patch must target the importing module's namespace, not the source\nPython `mock.patch('requests.get')` patches the source module but the importing module still sees the original. The test passes but the mock has no effect.\n**Fix**: Patch where the name is looked up: `@patch('myapp.views.requests.get')` not `@patch('requests.get')`.",
-      "summary": "mock.patch must target the importing module's namespace, not the source",
-      "problem": "Python `mock.patch('requests.get')` patches the source module but the importing module still sees the original. The test passes but the mock has no effect.",
-      "solution": "Patch where the name is looked up: `@patch('myapp.views.requests.get')` not `@patch('requests.get')`."
-    },
     "01KMZ3BJKZHP5D15BD1CYPT54F": {
       "slug": "vitest-hangs-in-non-interactive-terminal-0c00",
       "type": "guard",
@@ -554,7 +520,11 @@
       ],
       "commandRegexSources": [
         {
-          "source": "\\bgit\\b.*2>/dev/null",
+          "source": "\\$\\(\\s*git\\b[^)]*2>/dev/null",
+          "flags": ""
+        },
+        {
+          "source": "`\\s*git\\b[^`]*2>/dev/null",
           "flags": ""
         }
       ],
@@ -567,10 +537,10 @@
         "severity:data-loss"
       ],
       "scope": null,
-      "message": "## Lesson: git stderr redirected to /dev/null silently caches wrong content on failure\ngit branch 2>/dev/null on failure writes empty or wrong output to cache; the error is swallowed and bad state persists\n**Fix**: Do not suppress git stderr for operations with side effects; validate output before writing to cache",
+      "message": "## Lesson: git stderr redirected to /dev/null silently caches wrong content on failure\nCapturing git output while swallowing stderr — VAR=$(git ... 2>/dev/null) — caches empty or wrong content on failure; the error is hidden and the bad value persists downstream.\n**Fix**: Do not suppress git stderr when capturing its output into a variable/cache. Capture stdout only, check the exit code, and validate the value before using it. Read-only inspection piped to a filter (git log ... 2>/dev/null | grep) is fine.",
       "summary": "git stderr redirected to /dev/null silently caches wrong content on failure",
-      "problem": "git branch 2>/dev/null on failure writes empty or wrong output to cache; the error is swallowed and bad state persists",
-      "solution": "Do not suppress git stderr for operations with side effects; validate output before writing to cache"
+      "problem": "Capturing git output while swallowing stderr — VAR=$(git ... 2>/dev/null) — caches empty or wrong content on failure; the error is hidden and the bad value persists downstream.",
+      "solution": "Do not suppress git stderr when capturing its output into a variable/cache. Capture stdout only, check the exit code, and validate the value before using it. Read-only inspection piped to a filter (git log ... 2>/dev/null | grep) is fine."
     },
     "01KNH2HXM0M2H29F2T108XQ2ES": {
       "slug": "missing-tool-dependency-check-silently-d-4a39",
@@ -821,7 +791,7 @@
         "severity:data-loss",
         "promotion_risk:high"
       ],
-      "scope": "Users-joe-github-joeblackwaslike-agent-skills",
+      "scope": null,
       "message": "## Lesson: Never use rm -rf outside project cwd; Claude Code safety net blocks destructive \nRunning `rm -rf` on system or home directories outside the project CWD (e.g. ~/.*, /opt/, /usr/) is blocked by Claude Code's safety net and should never be attempted by the agent.\n**Fix**: Never issue destructive operations outside the project repository. If the user needs files removed from system directories, surface the exact command and ask them to run it manually. For tracked files within the repo, use `git rm` instead — it stages the deletion properly and avoids absolute-path safety net blocks.",
       "summary": "Never use rm -rf outside project cwd; Claude Code safety net blocks destructive ",
       "problem": "Running `rm -rf` on system or home directories outside the project CWD (e.g. ~/.*, /opt/, /usr/) is blocked by Claude Code's safety net and should never be attempted by the agent.",
@@ -1694,59 +1664,6 @@
       "problem": "Running bare `pytest` or `pytest -v` in Claude Code causes the process to hang indefinitely because pytest's rich output module detects a non-interactive terminal and stalls.",
       "solution": "Use `python -m pytest --no-header -rN -p no:faulthandler` or prepend `TERM=dumb`. Pipe through `cat` if rich output is still suspected.\nRerun as: pytest -p no:faulthandler --no-header"
     },
-    "01JQSEED00000000000000003": {
-      "slug": "git-stash-untracked-p4w1",
-      "type": "hint",
-      "priority": 7,
-      "toolNames": [
-        "Bash"
-      ],
-      "commandRegexSources": [
-        {
-          "source": "\\bgit\\s+stash\\b(?!\\s+(list|show|pop|apply|drop|clear|branch))(?!.*(-u|--include-untracked|--all))",
-          "flags": ""
-        }
-      ],
-      "commandMatchTarget": "executable",
-      "pathRegexSources": [],
-      "modelRegexSources": [],
-      "tags": [
-        "tool:git",
-        "severity:data-loss"
-      ],
-      "scope": null,
-      "message": "## Lesson: git stash silently drops untracked files without -u flag\n`git stash` only stashes tracked, modified files. Untracked files (new files not yet `git add`ed) are silently left behind, leading to data loss if the user expects them to be stashed.\n**Fix**: Use `git stash -u` (or `--include-untracked`) to include untracked files.",
-      "summary": "git stash silently drops untracked files without -u flag",
-      "problem": "`git stash` only stashes tracked, modified files. Untracked files (new files not yet `git add`ed) are silently left behind, leading to data loss if the user expects them to be stashed.",
-      "solution": "Use `git stash -u` (or `--include-untracked`) to include untracked files."
-    },
-    "01JQSEED00000000000000004": {
-      "slug": "pip-install-wrong-venv-j6n3",
-      "type": "hint",
-      "priority": 7,
-      "toolNames": [
-        "Bash"
-      ],
-      "commandRegexSources": [
-        {
-          "source": "\\bpip\\s+install\\b",
-          "flags": ""
-        }
-      ],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
-      "modelRegexSources": [],
-      "tags": [
-        "lang:python",
-        "tool:pip",
-        "topic:packaging"
-      ],
-      "scope": null,
-      "message": "## Lesson: pip install may target wrong virtualenv — use python -m pip install\n`pip install` uses whichever `pip` is first on PATH, which may not be the project's virtualenv. This silently installs packages into the wrong environment.\n**Fix**: Use `python -m pip install` to ensure you're installing into the active Python's environment, or verify with `which pip` first.",
-      "summary": "pip install may target wrong virtualenv — use python -m pip install",
-      "problem": "`pip install` uses whichever `pip` is first on PATH, which may not be the project's virtualenv. This silently installs packages into the wrong environment.",
-      "solution": "Use `python -m pip install` to ensure you're installing into the active Python's environment, or verify with `which pip` first."
-    },
     "01KMZ3BSN01D9VQR8DDGT2Q9TR": {
       "slug": "git-commit-with-heredoc-fails-due-to-she-599e",
       "type": "hint",
@@ -1908,33 +1825,6 @@
       "summary": "cd inside a bash function leaks the directory change to all subsequent code",
       "problem": "cd in a function without restore changes the shell global cwd; the new directory persists after the function returns",
       "solution": "Use a subshell to isolate: `( cd \"$dir\" && ... )` or use pushd/popd pair within the function"
-    },
-    "01KNH2H8ZXY0JT1Z1BDEGF6K9Z": {
-      "slug": "xargs-word-splits-filenames-with-spaces-c0bd",
-      "type": "hint",
-      "priority": 7,
-      "toolNames": [
-        "Bash"
-      ],
-      "commandRegexSources": [
-        {
-          "source": "\\bxargs\\b",
-          "flags": ""
-        }
-      ],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
-      "modelRegexSources": [],
-      "tags": [
-        "language:bash",
-        "tool:xargs",
-        "severity:data-loss"
-      ],
-      "scope": null,
-      "message": "## Lesson: xargs word-splits filenames with spaces, breaking them into separate arguments\necho \"$file\" | xargs or unquoted $var piped to xargs splits 'my file.sh' into two separate arguments\n**Fix**: Use bash arrays `\"${arr[@]}\"`, or pipe with `xargs -d '\n'` (newline delimiter), or pair find -print0 with xargs -0",
-      "summary": "xargs word-splits filenames with spaces, breaking them into separate arguments",
-      "problem": "echo \"$file\" | xargs or unquoted $var piped to xargs splits 'my file.sh' into two separate arguments",
-      "solution": "Use bash arrays `\"${arr[@]}\"`, or pipe with `xargs -d '\n'` (newline delimiter), or pair find -print0 with xargs -0"
     },
     "01KNH2J9586HRGEYQBG9MJ233Z": {
       "slug": "bare-except-catches-everything-including-52b1",
@@ -3306,32 +3196,6 @@
       "problem": "grep -c exits 1 on zero matches; `|| echo 0` fallback executes and produces both the empty count and the echoed 0",
       "solution": "Use `grep -c ... || true` then `count=${count:-0}` to capture properly; or `(grep -c ... || true)` in a subshell"
     },
-    "01KNH2J2PRGGZJ9GZ4KK0AATZQ": {
-      "slug": "unquoted-bash-variable-in-comparison-fai-05b4",
-      "type": "hint",
-      "priority": 6,
-      "toolNames": [
-        "Bash"
-      ],
-      "commandRegexSources": [
-        {
-          "source": "\\[\\[.*!=|\\[\\[.*==",
-          "flags": ""
-        }
-      ],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
-      "modelRegexSources": [],
-      "tags": [
-        "language:bash",
-        "severity:blocker"
-      ],
-      "scope": null,
-      "message": "## Lesson: Unquoted bash variable in [[ ]] comparison fails under set -u on unset variables\n`[[ $var != true ]]` with $var unset triggers unbound variable error under set -u; quotes are not optional\n**Fix**: Always quote variables in comparisons: `[[ \"$var\" != \"true\" ]]` or use default expansion: `[[ \"${VAR:-}\" != \"true\" ]]`",
-      "summary": "Unquoted bash variable in [[ ]] comparison fails under set -u on unset variables",
-      "problem": "`[[ $var != true ]]` with $var unset triggers unbound variable error under set -u; quotes are not optional",
-      "solution": "Always quote variables in comparisons: `[[ \"$var\" != \"true\" ]]` or use default expansion: `[[ \"${VAR:-}\" != \"true\" ]]`"
-    },
     "01KNH2KGNNFMNZ3Z1Z9EPYMV8Y": {
       "slug": "env-file-parser-using-cut-d-fails-to-str-2d06",
       "type": "hint",
@@ -3730,6 +3594,26 @@
       "summary": "Attempted to review Etsy adapter against a spec that doesn't exist locally",
       "problem": "Files listed as untracked in `git status` may not exist on disk — they could be staged deletions or git state artifacts. Attempting to read them causes failed reads and wasted tool calls.",
       "solution": "Before referencing files from `git status` output, confirm they exist on disk. Do not assume `git status` untracked = present."
+    },
+    "01KV67NA6802WW5MP63Y8THFKR": {
+      "slug": "run-plugin-ops-yourself-via-claude-plugi-0a4b",
+      "type": "directive",
+      "priority": 6,
+      "toolNames": [],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "category:agent-behavior",
+        "tool:claude-code",
+        "severity:friction"
+      ],
+      "scope": null,
+      "message": "## Lesson: Run plugin ops yourself via `claude plugin`; never tell the user to run /plugin\nAgents running inside VS Code or the CLI cannot invoke `/plugin` slash commands, so when a plugin needs updating or installing they punt to the user (e.g. \"run /plugin update agent-skills@agent-marketplace and restart\"). The user has to do it by hand every single time, even though a non-interactive CLI equivalent exists and the agent can run it directly.\n**Fix**: Run plugin operations yourself in Bash via `claude plugin <subcommand>`, which maps 1:1 to the `/plugin` slash forms: `claude plugin install X`, `claude plugin update X`, `claude plugin uninstall X`, plus `enable`/`disable`/`list`/`marketplace`. Use the `plugin@marketplace` form to disambiguate. Only the session restart afterward (to load/unload the plugin) requires the user — never the plugin command itself. Do NOT instruct the user to run `/plugin ...`.",
+      "summary": "Run plugin ops yourself via `claude plugin`; never tell the user to run /plugin",
+      "problem": "Agents running inside VS Code or the CLI cannot invoke `/plugin` slash commands, so when a plugin needs updating or installing they punt to the user (e.g. \"run /plugin update agent-skills@agent-marketplace and restart\"). The user has to do it by hand every single time, even though a non-interactive CLI equivalent exists and the agent can run it directly.",
+      "solution": "Run plugin operations yourself in Bash via `claude plugin <subcommand>`, which maps 1:1 to the `/plugin` slash forms: `claude plugin install X`, `claude plugin update X`, `claude plugin uninstall X`, plus `enable`/`disable`/`list`/`marketplace`. Use the `plugin@marketplace` form to disambiguate. Only the session restart afterward (to load/unload the plugin) requires the user — never the plugin command itself. Do NOT instruct the user to run `/plugin ...`."
     },
     "01KMZ3CHGQMTYQA0AFPQRGCSEG": {
       "slug": "oh-my-zsh-nvm-plugin-outputs-warnings-in-df6f",

@@ -1,0 +1,77 @@
+{
+  "description": "Lessons archived because current-generation models no longer make the mistake (eval verdict CONTROL_CORRECT). Retained here as a machine-readable record so they can be re-tested against other models/providers (Codex, Gemini, future Claude versions). If a future model regresses, restore the lesson with `node scripts/lessons.mjs restore --ids <id>`. See website/docs/developer-guide/pruning-obsolete-lessons.md for the full runbook.",
+  "entries": [
+    {
+      "slug": "git-stash-untracked-p4w1",
+      "lessonId": "01JQSEED00000000000000003",
+      "scenarioId": "TC-G7-git-stash-untracked-p4w1",
+      "archivedDate": "2026-06-16",
+      "obsoletedBy": { "modelGeneration": "Opus 4.x", "evalModel": "claude-sonnet-4-6" },
+      "evidence": {
+        "verdict": "CONTROL_CORRECT",
+        "evalRunId": "eval-3PI-2026-06-15T20:18:00",
+        "adversarialTested": false
+      },
+      "confidence": "high",
+      "retestOn": ["codex", "gemini"]
+    },
+    {
+      "slug": "xargs-word-splits-filenames-with-spaces-c0bd",
+      "lessonId": "01KNH2H8ZXY0JT1Z1BDEGF6K9Z",
+      "scenarioId": "TC-H42-xargs-word-splits-filenames-wi",
+      "archivedDate": "2026-06-16",
+      "obsoletedBy": { "modelGeneration": "Opus 4.x", "evalModel": "claude-sonnet-4-6" },
+      "evidence": {
+        "verdict": "CONTROL_CORRECT",
+        "evalRunId": "eval-3PI-2026-06-15T20:18:00",
+        "adversarialTested": true,
+        "adversarialNote": "TC-H42/PROMPT.md was hardened to force `find | xargs` with space-named files; model still used -print0/-0 and explained the bug unprompted. The hardened prompt is retained as a sharper probe for cross-model testing."
+      },
+      "confidence": "high",
+      "retestOn": ["codex", "gemini"]
+    },
+    {
+      "slug": "unquoted-bash-variable-in-comparison-fai-05b4",
+      "lessonId": "01KNH2J2PRGGZJ9GZ4KK0AATZQ",
+      "scenarioId": "TC-H49-unquoted-bash-variable-in-comp",
+      "archivedDate": "2026-06-16",
+      "obsoletedBy": { "modelGeneration": "Opus 4.x", "evalModel": "claude-sonnet-4-6" },
+      "evidence": {
+        "verdict": "CONTROL_CORRECT",
+        "evalRunId": "eval-3PI-2026-06-15T20:18:00",
+        "adversarialTested": false
+      },
+      "confidence": "high",
+      "retestOn": ["codex", "gemini"]
+    },
+    {
+      "slug": "pip-install-wrong-venv-j6n3",
+      "lessonId": "01JQSEED00000000000000004",
+      "scenarioId": "TC-H32-pip-install-wrong-venv-j6n3",
+      "archivedDate": "2026-06-16",
+      "obsoletedBy": { "modelGeneration": "Opus 4.x", "evalModel": "claude-sonnet-4-6" },
+      "evidence": {
+        "verdict": "CONTROL_CORRECT",
+        "evalRunId": "eval-3PI-2026-06-15T20:18:00",
+        "adversarialTested": false
+      },
+      "confidence": "high",
+      "retestOn": ["codex", "gemini"]
+    },
+    {
+      "slug": "mock-patch-namespace-v3x8",
+      "lessonId": "01JQSEED00000000000000002",
+      "scenarioId": "TC-H57-mock-patch-namespace-v3x8",
+      "archivedDate": "2026-06-16",
+      "obsoletedBy": { "modelGeneration": "Opus 4.x", "evalModel": "claude-sonnet-4-6" },
+      "evidence": {
+        "verdict": "CONTROL_CORRECT",
+        "evalRunId": "eval-3PI-2026-06-15T20:18:00",
+        "adversarialTested": false
+      },
+      "confidence": "low",
+      "note": "Single-run CONTROL_CORRECT with prior flaky history (earlier SKIPs from sandbox errors / thin transcripts). This is a genuinely subtle bug (patching the importing module's namespace vs the source) that models still sometimes miss — top candidate to adversarially harden and re-verify before trusting the archive.",
+      "retestOn": ["codex", "gemini", "claude-sonnet-4-6"]
+    }
+  ]
+}
