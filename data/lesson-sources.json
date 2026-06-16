@@ -13,5 +13,16 @@
       "Requires JSX/component-level static analysis not triggerable via Bash/path patterns"
     ],
     "notes": "Numbered lessons 0001-0082 plus dated bash-specific lessons (2026-02-28-*). Cluster directories cluster-d (0080-0091), cluster-e (0084-0091), cluster-f (0088-0091) — agent planning/context/batching lessons, 11 of 12 added as sessionStart. One skipped (0087) as too project-specific to prompt caching internals."
+  },
+  {
+    "url": "https://medium.com/towards-deep-learning/a-single-claude-md-file-went-viral-the-reason-is-embarrassingly-simple-5b515c9e4cca",
+    "description": "Medium (Towards Deep Learning) — \"A single CLAUDE.md file went viral — the reason is embarrassingly simple.\" Argues effective agent instructions come from explicit, disciplined directives (state assumptions, write minimal code, don't expand scope) rather than clever prompting. Yielded agent-behavior directive lessons on goal-setting and change-scoping discipline.",
+    "lastExtracted": "2026-06-06",
+    "lessonsAdded": 3,
+    "lessonsSkipped": 1,
+    "skipReasons": [
+      "A 4th drafted lesson was rejected at intake — hint/guard with command/path patterns but no toolNames (a lesson can never fire without toolNames)"
+    ],
+    "notes": "Added as agent-behavior directives (session-start, always-on): state-assumptions-and-convert-vague-goal-9802, write-minimum-code-that-solves-the-probl-c264, only-change-what-the-task-requires-do-no-ec52. Shared and extracted Jun 6, 2026."
   }
 ]
