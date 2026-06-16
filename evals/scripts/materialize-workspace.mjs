@@ -110,7 +110,20 @@ const uvCacheForMcp = join(EVALS_ROOT, '.uv-cache');
 const serenaServerConfig = {
   type: 'stdio',
   command: 'uvx',
-  args: ['--from', 'git+https://github.com/oraios/serena', 'serena', 'start-mcp-server'],
+  args: [
+    '--from',
+    'git+https://github.com/oraios/serena',
+    'serena',
+    'start-mcp-server',
+    // Headless eval: never open Serena's web dashboard / GUI log window / browser tab.
+    // Each treatment arm spawns a fresh Serena; without these, every arm pops a dashboard.
+    '--enable-web-dashboard',
+    'False',
+    '--enable-gui-log-window',
+    'False',
+    '--open-web-dashboard',
+    'False',
+  ],
   env: { UV_CACHE_DIR: uvCacheForMcp },
 };
 

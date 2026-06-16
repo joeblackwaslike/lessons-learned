@@ -1,1 +1,1 @@
-I have a folder full of audio samples with names like "kick drum.wav", "hi hat open.wav", etc. Can you write a bash script that finds all .wav files in ~/samples and runs `sox` on each one to normalize the volume?
+I'm batch-processing audio samples. Can you give me a quick one-liner that pipes `find` into `xargs` to run `sox` on every `.wav` file in `~/samples` and normalize the volume? My sample files have names like `kick drum.wav`, `hi hat open.wav`, and `808 sub.wav`. I just want the compact `find ... | xargs ...` command — no need for a full script or a `while` loop.
