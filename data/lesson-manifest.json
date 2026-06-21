@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-06-16T11:34:28.117Z",
+  "generatedAt": "2026-06-21T05:49:34.506Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -595,34 +595,6 @@
       "summary": "asyncio.create_task without done_callback silently swallows task exceptions",
       "problem": "create_task() without add_done_callback leaves exceptions unhandled until garbage collection, often never visible",
       "solution": "Always attach a callback: `task.add_done_callback(lambda t: t.exception() and logger.error(\"Task failed\", exc_info=t.exception()))`"
-    },
-    "01KNH2JPXHRSB98YPNWWZME71Q": {
-      "slug": "iterating-over-mutable-async-collection-85a9",
-      "type": "hint",
-      "priority": 8,
-      "toolNames": [
-        "Edit",
-        "Write"
-      ],
-      "commandRegexSources": [],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [
-        {
-          "source": ".*/[^/]*\\.py",
-          "flags": "i"
-        }
-      ],
-      "modelRegexSources": [],
-      "tags": [
-        "lang:python",
-        "topic:async",
-        "severity:blocker"
-      ],
-      "scope": null,
-      "message": "## Lesson: Iterating a mutable async collection without a snapshot raises RuntimeError\n`for item in self.subscribers:` with async/await inside the loop allows concurrent modification, raising RuntimeError\n**Fix**: Snapshot the collection before iterating: `for item in list(self.subscribers):` to prevent modification conflicts",
-      "summary": "Iterating a mutable async collection without a snapshot raises RuntimeError",
-      "problem": "`for item in self.subscribers:` with async/await inside the loop allows concurrent modification, raising RuntimeError",
-      "solution": "Snapshot the collection before iterating: `for item in list(self.subscribers):` to prevent modification conflicts"
     },
     "01KPARN4FAWR4ZD3VHB2D9JFZM": {
       "slug": "verify-all-steps-before-presenting-a-mul-a8ab",
@@ -1852,33 +1824,6 @@
       "summary": "Bare except: catches KeyboardInterrupt/SystemExit too, hiding all failures",
       "problem": "except: without a specific exception type catches signals and system exits, making all failures invisible and preventing proper shutdown",
       "solution": "Always catch specific exception classes: `except Exception as e:` with `logger.error(..., exc_info=True)`; never use bare `except:`"
-    },
-    "01KNH2JW5VC844DQPGDWQN0H64": {
-      "slug": "decorator-registry-stays-empty-because-t-bb41",
-      "type": "hint",
-      "priority": 7,
-      "toolNames": [
-        "Edit",
-        "Write"
-      ],
-      "commandRegexSources": [],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [
-        {
-          "source": ".*/[^/]*\\.py",
-          "flags": "i"
-        }
-      ],
-      "modelRegexSources": [],
-      "tags": [
-        "lang:python",
-        "severity:silent-failure"
-      ],
-      "scope": null,
-      "message": "## Lesson: Decorator registry stays empty when its module is never imported\nDecorator-based registration requires import-time side effects; if the decorated module is never imported, the registry is empty at runtime\n**Fix**: Explicitly import all modules with registrations in __init__.py or a loader module before using the registry",
-      "summary": "Decorator registry stays empty when its module is never imported",
-      "problem": "Decorator-based registration requires import-time side effects; if the decorated module is never imported, the registry is empty at runtime",
-      "solution": "Explicitly import all modules with registrations in __init__.py or a loader module before using the registry"
     },
     "01KNH2K1K99GGHQF08FGYPFE1H": {
       "slug": "systemd-environmentfile-silently-ignores-7408",

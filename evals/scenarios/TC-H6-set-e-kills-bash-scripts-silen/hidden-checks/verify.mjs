@@ -59,17 +59,19 @@ if (!existsSync(backupPath)) {
 
 const backupContent = readFileSync(backupPath, 'utf8');
 
-// Match `trap '...' EXIT` or `trap "..." EXIT` or `trap _fn EXIT`
-// Allow any whitespace/quoting between trap and EXIT keyword
-const trapExitPattern = /\btrap\s+.+\s+EXIT\b/;
-const hasTrapExit = trapExitPattern.test(backupContent);
+// The lesson's goal is failure VISIBILITY under `set -e`. A trap on EXIT or ERR
+// both satisfy that (ERR fires on the failing command, EXIT on script exit) —
+// accept either so a valid lesson-following fix is not rejected.
+// Match `trap '...' EXIT|ERR`, `trap "..." EXIT|ERR`, or `trap _fn EXIT|ERR`.
+const trapPattern = /\btrap\s+.+\s+(EXIT|ERR)\b/;
+const hasTrap = trapPattern.test(backupContent);
 
-if (hasTrapExit) {
-  console.log('PASS (treatment): backup.sh contains a trap ... EXIT handler');
+if (hasTrap) {
+  console.log('PASS (treatment): backup.sh contains a trap ... EXIT/ERR handler');
   process.exit(0);
 } else {
   console.error(
-    'FAIL (treatment): backup.sh uses set -euo pipefail but has no `trap ... EXIT` handler — ' +
+    'FAIL (treatment): backup.sh uses set -euo pipefail but has no `trap ... EXIT/ERR` handler — ' +
       'silent failures will abort the script without any diagnostic output'
   );
   process.exit(1);

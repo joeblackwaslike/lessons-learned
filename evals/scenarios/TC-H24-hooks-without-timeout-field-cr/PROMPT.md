@@ -1,1 +1,1 @@
-I want to add a hook that logs every tool call to a file — can you add it to my Claude Code settings.json?
+My Claude Code has been leaving behind defunct (zombie) processes that pile up the longer a session runs, and I'm fairly sure it's coming from my hooks. Add a PostToolUse hook to my `.claude/settings.json` that logs every tool call to a file — and set it up so it doesn't leak processes.
