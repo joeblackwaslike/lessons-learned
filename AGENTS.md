@@ -85,6 +85,10 @@ To edit a lesson field:
 node scripts/lessons.mjs edit --id <id> --patch '{"fieldName": "value"}'
 ```
 
+### Obsoleted-lessons ledger
+
+When a lesson is archived because the eval test model already handles it (a `CONTROL_CORRECT` result — the model applies the fix without the lesson injected), **also append its full record to `data/obsoleted-lessons.json`**. This is an append-only ledger that collects lessons the models have outgrown, so they can be reviewed or restored (`node scripts/lessons.mjs restore`) if a future model regresses. The DB remains the source of truth; the ledger is a durable, human-readable archive of _why_ each was retired (reason, eval scenario, model tested). Note: archiving a lesson orphans its eval scenario (the runtime injects only from the active manifest), so archived-lesson scenarios belong to the obsoleted-lessons regression suite, not the normal pass/fail suite.
+
 Key lesson fields:
 
 | Field                | Description                                                                                                                                                                                                                                                                                                              |
