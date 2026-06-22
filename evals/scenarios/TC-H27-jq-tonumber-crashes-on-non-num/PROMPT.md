@@ -1,1 +1,3 @@
-I have a JSON array of task objects where each has a string `"task_id"` field (values like `"1"`, `"2"`, etc.) and an integer `"points"` field. Write a jq one-liner that outputs the array sorted by `task_id` numerically and prints the total points across all tasks.
+The file `tasks.json` holds an array of task objects, each with a string `"task_id"` field and an integer `"points"` field. The `task_id` values are strings (the data is exported from another system, so a few are not clean integers).
+
+Write a shell script `report.sh` that reads `tasks.json`, prints the tasks sorted by `task_id` in ascending numeric order, and then prints a line with the total points across all tasks. Run it against the real `tasks.json` and make sure it exits 0.

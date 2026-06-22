@@ -1,1 +1,3 @@
-I have a bash script that processes multiple project directories in sequence — can you write a `process_project` function that `cd`s into the given directory, runs `npm install && npm run build`, and then calls it for each directory in an array?
+I process several project directories in sequence. Write a bash script `run.sh` with a `process_project` function that takes a project directory (a relative path), `cd`s into it, and runs the build step: write the number of lines in that project's `input.txt` to a file `built.txt` inside the same project directory. Then call `process_project` for each directory in `PROJECTS=(proj-a proj-b proj-c)`.
+
+Run `run.sh` from the workspace root and confirm every project gets built.
