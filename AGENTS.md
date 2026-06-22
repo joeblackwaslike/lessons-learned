@@ -248,7 +248,9 @@ ANTHROPIC_API_KEY=meridian ANTHROPIC_BASE_URL=http://127.0.0.1:3456 \
   node scripts/repair-judge-errors.mjs
 ```
 
-See `evals/README.md` and `website/docs/developer-guide/eval-usage.md` for full reference. For authoring new scenarios, see `website/docs/developer-guide/eval-scenario-writing.md`.
+**Pin the agent model.** The agent arm is pinned to `claude-sonnet-4-6` (provider passes `--model`; override with `EVAL_AGENT_MODEL`). This is deliberate: without it, `claude --print` uses the OAuth session default, which silently became Opus and confounded earlier results (see `evals/FINDINGS.md`). Keep eval/regression runs on **Sonnet** for now so results are comparable and target the model many sessions actually run. After changing the pinned model, clear the cache (`npm run eval:clean`) so cached Opus-era arms are not reused.
+
+See `evals/README.md`, `evals/FINDINGS.md`, and `website/docs/developer-guide/eval-usage.md` for full reference. For authoring new scenarios, see `website/docs/developer-guide/eval-scenario-writing.md`.
 
 ## Running Tests
 

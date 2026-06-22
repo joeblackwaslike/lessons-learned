@@ -131,7 +131,18 @@ async function runArm({
     materializeWorkspace(scenarioDir, workspaceDir, intervention);
 
     const env = buildEnv(workspaceDir, intervention);
-    const claudeArgs = ['--print', '--dangerously-skip-permissions', '--setting-sources=project'];
+    // Pin the agent model explicitly. Without --model, `claude --print` uses the
+    // OAuth session's default model (which silently changed to Opus over this
+    // project's life and confounded earlier CONTROL_CORRECT results), while the
+    // cache key and judge assumed Sonnet. Resolved `model` defaults to
+    // claude-sonnet-4-6 (override via EVAL_AGENT_MODEL).
+    const claudeArgs = [
+      '--print',
+      '--dangerously-skip-permissions',
+      '--setting-sources=project',
+      '--model',
+      model,
+    ];
     // Pass explicit MCP config for treatment arms so Serena loads in --print mode.
     // Project-level mcpServers in settings.json are not loaded by CC in --print mode.
     const mcpConfigPath = join(workspaceDir, '.eval', 'mcp-config.json');
