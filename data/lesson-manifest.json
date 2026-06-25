@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-06-25T23:45:40.386Z",
+  "generatedAt": "2026-06-25T23:47:52.178Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -929,7 +929,16 @@
         "mcp__plugin_serena_serena__insert_after_symbol",
         "mcp__plugin_serena_serena__insert_before_symbol"
       ],
-      "commandRegexSources": [],
+      "commandRegexSources": [
+        {
+          "source": "\\b(apiKey|api_key|client_secret|clientSecret|credentials)\\b",
+          "flags": ""
+        },
+        {
+          "source": "process\\.env\\.[A-Z_]*(KEY|SECRET|TOKEN)",
+          "flags": ""
+        }
+      ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
@@ -1011,7 +1020,28 @@
         "mcp__plugin_serena_serena__insert_after_symbol",
         "mcp__plugin_serena_serena__insert_before_symbol"
       ],
-      "commandRegexSources": [],
+      "commandRegexSources": [
+        {
+          "source": "\\bbyteLength\\b",
+          "flags": ""
+        },
+        {
+          "source": "\\btruncat\\b",
+          "flags": ""
+        },
+        {
+          "source": "\\.slice\\(0\\s*,",
+          "flags": ""
+        },
+        {
+          "source": "\\.substring\\(0\\s*,",
+          "flags": ""
+        },
+        {
+          "source": "\\bmaxBytes\\b",
+          "flags": ""
+        }
+      ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
@@ -1993,7 +2023,28 @@
         "mcp__plugin_serena_serena__insert_before_symbol",
         "mcp__plugin_serena_serena__create_text_file"
       ],
-      "commandRegexSources": [],
+      "commandRegexSources": [
+        {
+          "source": "\\binFlight\\b",
+          "flags": ""
+        },
+        {
+          "source": "\\bsetInterval\\b",
+          "flags": ""
+        },
+        {
+          "source": "\\bcron\\b",
+          "flags": ""
+        },
+        {
+          "source": "\\bschedule",
+          "flags": ""
+        },
+        {
+          "source": "\\bworker\\b",
+          "flags": ""
+        }
+      ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
@@ -2865,7 +2916,16 @@
         "mcp__plugin_serena_serena__insert_after_symbol",
         "mcp__plugin_serena_serena__insert_before_symbol"
       ],
-      "commandRegexSources": [],
+      "commandRegexSources": [
+        {
+          "source": "\\bUnsupportedOperationError\\b",
+          "flags": ""
+        },
+        {
+          "source": "catch\\s*\\(",
+          "flags": ""
+        }
+      ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
@@ -3290,7 +3350,28 @@
         "mcp__plugin_serena_serena__insert_after_symbol",
         "mcp__plugin_serena_serena__insert_before_symbol"
       ],
-      "commandRegexSources": [],
+      "commandRegexSources": [
+        {
+          "source": "\\bgenerateObject\\b",
+          "flags": ""
+        },
+        {
+          "source": "\\bstreamObject\\b",
+          "flags": ""
+        },
+        {
+          "source": "\\bresponse_format\\b",
+          "flags": ""
+        },
+        {
+          "source": "\\bjson_schema\\b",
+          "flags": ""
+        },
+        {
+          "source": "\\btool_choice\\b",
+          "flags": ""
+        }
+      ],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
