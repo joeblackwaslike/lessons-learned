@@ -31,6 +31,16 @@ a true baseline.
 (set `EVAL_AGENT_MODEL=claude-sonnet-4-6` or rely on the provider default). The judge is
 already pinned to `claude-sonnet-4-6` in `judge.mjs`.
 
+**Partial re-validation (2026-06-25, quota-limited).** Re-ran a 4-scenario sample on
+pinned Sonnet. **TC-H4** (async-without-await) and **TC-H8** (grep under `set -e`) returned
+**CONTROL_CORRECT on Sonnet — same as Opus**, i.e. for these the verdict is _not_ a model
+artifact; they are genuinely obsolete. **TC-H22** and **TC-H27** (the adversarial runtime
+discriminators) hit the **Max session limit** and produced no data. So the early read is
+"at least some CONTROL_CORRECTs are real, not Opus-only," but it is only 2 clean points and
+the sharper discriminators still need a clean run. **All 35 archived lessons were restored
+to active** pending a complete Sonnet pass; `data/obsoleted-lessons.json` is marked
+PROVISIONAL. Resume after quota resets, starting with H22/H27 + more adversarial cases.
+
 ### Other findings from the 2026-06 run
 
 - **Archiving a lesson orphans its eval scenario.** The runtime injects only from the

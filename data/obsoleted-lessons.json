@@ -823,5 +823,10 @@
       "evalScenario": "TC-H60-vitest-parallel-tests-fail-due",
       "priorStatus": "active"
     }
-  ]
+  ],
+  "revalidation": {
+    "status": "PROVISIONAL — pending pinned-Sonnet re-validation. Archived on an unpinned agent that was very likely Opus 4.8 (see evals/FINDINGS.md). All entries RESTORED to active until confirmed obsolete on Sonnet.",
+    "restoredToActive": "2026-06-25",
+    "partialFindings": "Sonnet 4-scenario test: TC-H4 and TC-H8 returned CONTROL_CORRECT on pinned Sonnet (same as Opus → genuinely obsolete, not a model artifact). TC-H22 and TC-H27 hit the Max session limit — no data. Resume remaining validation after quota resets."
+  }
 }
