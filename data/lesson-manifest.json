@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-06-22T16:05:12.601Z",
+  "generatedAt": "2026-06-25T23:12:37.354Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -326,7 +326,7 @@
     },
     "01KS4PT6QZWR87TJ5V2DCR2TS9": {
       "slug": "webhook-signature-verification-skipped-w-c1a8",
-      "type": "guard",
+      "type": "hint",
       "priority": 9,
       "toolNames": [
         "Edit",
@@ -338,14 +338,10 @@
           "flags": ""
         }
       ],
-      "commandMatchTarget": "executable",
+      "commandMatchTarget": "full",
       "pathRegexSources": [
         {
           "source": ".*/webhooks/.*",
-          "flags": "i"
-        },
-        {
-          "source": ".*/api/.*",
           "flags": "i"
         }
       ],
@@ -1486,7 +1482,7 @@
     },
     "01KS4PRXD6PBEK45EEPE6RXRF7": {
       "slug": "imgur-api-requires-client-secret-platfor-1305",
-      "type": "guard",
+      "type": "hint",
       "priority": 8,
       "toolNames": [
         "Edit",
@@ -1498,7 +1494,7 @@
         "mcp__plugin_serena_serena__create_text_file"
       ],
       "commandRegexSources": [],
-      "commandMatchTarget": "executable",
+      "commandMatchTarget": "full",
       "pathRegexSources": [
         {
           "source": ".*/credentials[^/]*",
@@ -2142,7 +2138,7 @@
     },
     "01KS4PE99TDFAQ3AQP8J0AQQ4M": {
       "slug": "deprecated-vercel-ai-sdk-generateobject-7691",
-      "type": "guard",
+      "type": "hint",
       "priority": 7,
       "toolNames": [
         "Edit",
@@ -2163,7 +2159,7 @@
           "flags": ""
         }
       ],
-      "commandMatchTarget": "executable",
+      "commandMatchTarget": "full",
       "pathRegexSources": [
         {
           "source": ".*/[^/]*\\.ts",
@@ -2515,7 +2511,7 @@
     },
     "01KS4PQN845J3WNVJV73HJ0ZB6": {
       "slug": "unsupportedoperationerror-should-be-caug-8bba",
-      "type": "guard",
+      "type": "hint",
       "priority": 7,
       "toolNames": [
         "Edit",
@@ -2526,7 +2522,7 @@
         "mcp__plugin_serena_serena__insert_before_symbol"
       ],
       "commandRegexSources": [],
-      "commandMatchTarget": "executable",
+      "commandMatchTarget": "full",
       "pathRegexSources": [
         {
           "source": ".*/[^/]*\\.ts",
