@@ -33,7 +33,30 @@ function stripQuotedStrings(command) {
   return command.replace(/"(?:[^"\\]|\\.)*"/g, '""').replace(/'(?:[^'\\]|\\.)*'/g, "''");
 }
 
-export function matchLessons(lessons, toolName, command, filePath, projectId = null) {
+function anyRegexMatches(regexSources, target) {
+  for (const regexDef of regexSources) {
+    try {
+      const re = new RegExp(regexDef.source, regexDef.flags ?? '');
+      if (re.test(target)) return true;
+    } catch {
+      // Invalid regex in manifest — skip
+    }
+  }
+  return false;
+}
+
+/**
+ * @param {object} lessons
+ * @param {string} toolName
+ * @param {string} command  - Bash command (command invocations)
+ * @param {string} filePath - File path (Edit/Write/Read invocations)
+ * @param {string|null} projectId
+ * @param {string} content  - Edit `new_string` / Write `content` (the edit payload).
+ *   For path-tool invocations, `commandPatterns` are tested against this and
+ *   AND-combined with `pathPatterns`, so a content-specific lesson fires only
+ *   when the edit actually contains the pattern — not on every matching file.
+ */
+export function matchLessons(lessons, toolName, command, filePath, projectId = null, content = '') {
   const matches = [];
 
   for (const [id, lesson] of Object.entries(lessons)) {
@@ -45,50 +68,40 @@ export function matchLessons(lessons, toolName, command, filePath, projectId = n
     const toolNames = lesson.toolNames ?? [];
     if (!toolNames.includes(toolName)) continue;
 
-    let matched = false;
+    const cmdSources = Array.isArray(lesson.commandRegexSources) ? lesson.commandRegexSources : [];
+    const pathSources = Array.isArray(lesson.pathRegexSources) ? lesson.pathRegexSources : [];
+    const hasCmd = cmdSources.length > 0;
+    const hasPath = pathSources.length > 0;
+    const executable = lesson.commandMatchTarget === 'executable';
 
-    if (command && Array.isArray(lesson.commandRegexSources)) {
-      const matchTarget =
-        lesson.commandMatchTarget === 'executable' ? stripQuotedStrings(command) : command;
-
-      for (const regexDef of lesson.commandRegexSources) {
-        try {
-          const re = new RegExp(regexDef.source, regexDef.flags ?? '');
-          if (re.test(matchTarget)) {
-            matched = true;
-            break;
-          }
-        } catch {
-          // Invalid regex in manifest — skip
-        }
-      }
-    }
-
-    if (filePath && Array.isArray(lesson.pathRegexSources)) {
-      for (const regexDef of lesson.pathRegexSources) {
-        try {
-          const re = new RegExp(regexDef.source, regexDef.flags ?? '');
-          if (re.test(filePath)) {
-            matched = true;
-            break;
-          }
-        } catch {
-          // Invalid regex in manifest — skip
-        }
-      }
-    }
-
-    // Tool-name-only match: when a lesson has no command or path patterns,
-    // toolName match alone is sufficient (e.g. MCP tool lessons).
-    if (!matched && !lesson.commandRegexSources?.length && !lesson.pathRegexSources?.length) {
+    let matched;
+    if (!hasCmd && !hasPath) {
+      // Tool-name-only match (e.g. MCP tool lessons) — toolName alone suffices.
       matched = true;
+    } else if (command) {
+      // Command invocation (Bash): only commandPatterns apply; pathPatterns are
+      // for file-path tools and cannot be evaluated here. A path-only lesson
+      // therefore does not fire on a command invocation.
+      const target = executable ? stripQuotedStrings(command) : command;
+      matched = hasCmd && anyRegexMatches(cmdSources, target);
+    } else if (filePath) {
+      // Path invocation (Edit/Write/Read): pathPatterns gate the path AND
+      // commandPatterns gate the edit content. Each is vacuously satisfied when
+      // the lesson omits it.
+      const pathOk = !hasPath || anyRegexMatches(pathSources, filePath);
+      const contentTarget = executable ? stripQuotedStrings(content) : content;
+      const contentOk = !hasCmd || (Boolean(content) && anyRegexMatches(cmdSources, contentTarget));
+      matched = pathOk && contentOk;
+    } else {
+      // No command and no file path — a pattern-bearing lesson cannot match.
+      matched = false;
     }
 
     // modelRegexSources is an AND gate: if non-empty, at least one must match
     // the command OR file path. This gates model-specific lessons to contexts
     // where the target model is actually referenced.
     if (matched && lesson.modelRegexSources?.length) {
-      const modelTarget = command || filePath;
+      const modelTarget = command || content || filePath;
       let modelMatched = false;
       for (const regexDef of lesson.modelRegexSources) {
         try {

@@ -147,12 +147,15 @@ describe('hook pipeline: injection', () => {
     assert.deepEqual(JSON.parse(stdout), {});
   });
 
-  it('matches Read tool by file path pattern', async () => {
-    // mock-patch lesson has pathRegexSources matching test*.py
+  it('matches an Edit by path + content (commandPattern gates the edit content)', async () => {
+    // mock-patch lesson: path test*.py AND command mock.patch( — both must match.
     const { stdout, exitCode } = await run(HOOK_SCRIPT, {
       stdin: JSON.stringify({
         tool_name: 'Edit',
-        tool_input: { file_path: '/project/tests/test_auth.py' },
+        tool_input: {
+          file_path: '/project/tests/test_auth.py',
+          new_string: '@patch("app.auth.verify")\ndef test_login(mock_verify):\n    ...',
+        },
         session_id: `test-${Date.now()}`,
         agent_id: 'main',
         cwd: '/project',
@@ -161,6 +164,32 @@ describe('hook pipeline: injection', () => {
     });
     assert.equal(exitCode, 0);
     const out = JSON.parse(stdout);
-    assert.ok(out.hookSpecificOutput?.additionalContext, 'expected injection for test .py file');
+    assert.ok(
+      out.hookSpecificOutput?.additionalContext,
+      'expected injection for a test .py edit whose content uses @patch'
+    );
+  });
+
+  it('does NOT match the same Edit when content lacks the pattern', async () => {
+    // Same test*.py path, but content has no mock.patch — the lesson must stay silent.
+    const { stdout, exitCode } = await run(HOOK_SCRIPT, {
+      stdin: JSON.stringify({
+        tool_name: 'Edit',
+        tool_input: {
+          file_path: '/project/tests/test_auth.py',
+          new_string: 'def test_addition():\n    assert 1 + 1 == 2',
+        },
+        session_id: `test-${Date.now()}`,
+        agent_id: 'main',
+        cwd: '/project',
+      }),
+      env: baseEnv,
+    });
+    assert.equal(exitCode, 0);
+    const out = JSON.parse(stdout);
+    assert.ok(
+      !out.hookSpecificOutput?.additionalContext,
+      'content-gated lesson must not fire on an unrelated test edit'
+    );
   });
 });

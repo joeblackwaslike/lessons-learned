@@ -163,6 +163,94 @@ describe('matchLessons', () => {
     const byCommand = matchLessons(lessons, 'Bash', 'grep foo', '');
     assert.equal(byCommand.length, 1);
   });
+
+  // ── Edit/Write content gating (commandPatterns match the edit content) ──────
+  // For path-tool invocations, commandPatterns are tested against the edit
+  // content and AND-combined with pathPatterns, so a content-specific lesson
+  // only fires when the edit actually contains the pattern — not on every file.
+
+  const editLesson = overrides =>
+    makeLessons([
+      [
+        'L1',
+        {
+          toolNames: ['Edit', 'Write'],
+          commandRegexSources: [{ source: '\\bgenerateObject\\b', flags: '' }],
+          pathRegexSources: [{ source: '\\.tsx?$', flags: '' }],
+          ...overrides,
+        },
+      ],
+    ]);
+
+  it('Edit: path+content lesson fires only when content matches', () => {
+    const lessons = editLesson();
+    const withContent = matchLessons(
+      lessons,
+      'Edit',
+      '',
+      'src/app/api/x/route.ts',
+      null,
+      'const r = await generateObject({ model })'
+    );
+    assert.equal(withContent.length, 1, 'fires when content has generateObject');
+  });
+
+  it('Edit: path+content lesson does NOT fire when content lacks the pattern', () => {
+    const lessons = editLesson();
+    const noMatch = matchLessons(
+      lessons,
+      'Edit',
+      '',
+      'src/app/api/x/route.ts',
+      null,
+      'export async function GET() { return Response.json({}) }'
+    );
+    assert.deepEqual(noMatch, [], 'does not fire on an unrelated .ts edit');
+  });
+
+  it('Edit: path+content lesson does NOT fire when path matches but no content provided', () => {
+    const lessons = editLesson();
+    const noContent = matchLessons(lessons, 'Edit', '', 'src/app/api/x/route.ts');
+    assert.deepEqual(noContent, [], 'content-gated lesson needs content to match');
+  });
+
+  it('Edit: path-only lesson still fires on any matching path', () => {
+    const lessons = makeLessons([
+      [
+        'L1',
+        {
+          toolNames: ['Edit'],
+          commandRegexSources: [],
+          pathRegexSources: [{ source: '\\.ts$', flags: '' }],
+        },
+      ],
+    ]);
+    const result = matchLessons(lessons, 'Edit', '', 'a/b/route.ts', null, 'anything');
+    assert.equal(result.length, 1);
+  });
+
+  it('Edit: tool-only lesson (no patterns) still fires on any edit', () => {
+    const lessons = makeLessons([
+      ['L1', { toolNames: ['Edit'], commandRegexSources: [], pathRegexSources: [] }],
+    ]);
+    const result = matchLessons(lessons, 'Edit', '', 'a/b/c.ts', null, 'x');
+    assert.equal(result.length, 1);
+  });
+
+  it('Edit: content-only lesson fires when content matches regardless of path', () => {
+    const lessons = makeLessons([
+      [
+        'L1',
+        {
+          toolNames: ['Edit'],
+          commandRegexSources: [{ source: 'TODO', flags: '' }],
+          pathRegexSources: [],
+        },
+      ],
+    ]);
+    assert.equal(matchLessons(lessons, 'Edit', '', 'a.ts', null, 'x TODO y').length, 1);
+    assert.deepEqual(matchLessons(lessons, 'Edit', '', 'a.ts', null, 'no marker'), []);
+  });
 });
 
 // ─── findBlocker ───────────────────────────────────────────────────────────

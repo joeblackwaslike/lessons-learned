@@ -139,6 +139,7 @@ Per-lesson checks:
   - summary-truncated: summary ends with ... (truncation indicator)
   - placeholder: unfilled template placeholders in summary, problem, or solution
   - no-patterns: hint/guard with no commandPatterns or pathPatterns (fires on every call)
+  - edit-guard-overblocks: guard on Edit/Write gating only by path (hard-blocks every matching file regardless of content)
   - weak-pair: solution < 60 chars, or solution Jaccard similarity with problem >= 0.7
   - overspecified-trigger: commandPattern > 40 non-regex chars (too specific, misses variants)
   - underspecified-pattern: bare single-word commandPattern (substring-matches, e.g. "tsc" ⊂ "tsconfig")
@@ -1690,6 +1691,22 @@ function auditLesson(lesson) {
     (!lesson.pathPatterns || lesson.pathPatterns.length === 0)
   )
     issues.push('no commandPatterns or pathPatterns — fires on every matching tool call');
+
+  // edit-guard-overblocks: a guard on Edit/Write that gates only by path hard-
+  // blocks EVERY edit to a matching file regardless of content (Edit/Write carry
+  // no command string, so commandPatterns gate the edit content). Without
+  // content patterns this blocks legitimate edits. Add commandPatterns to gate on
+  // the written content, or make it a hint.
+  const editWriteTools = (lesson.toolNames ?? []).filter(t => t === 'Edit' || t === 'Write');
+  if (
+    type === 'guard' &&
+    editWriteTools.length > 0 &&
+    lesson.pathPatterns?.length > 0 &&
+    (!lesson.commandPatterns || lesson.commandPatterns.length === 0)
+  )
+    issues.push(
+      `guard on ${editWriteTools.join('/')} gates only by path — hard-blocks every matching file regardless of content; add commandPatterns to gate on the edit content, or make it a hint`
+    );
 
   // weak-pair: solution too short, or solution mostly restates the problem
   if (lesson.solution && lesson.solution.length < WEAK_SOLUTION_MIN_LENGTH)

@@ -63,7 +63,25 @@ const budgetBytes =
 const command = toolName === 'Bash' ? (toolInput.command ?? '') : '';
 const filePath = toolName !== 'Bash' ? (toolInput.file_path ?? '') : '';
 
-const matches = matchLessons(manifest.lessons ?? {}, toolName, command, filePath, projectId);
+// Edit payload, so content-specific lessons (commandPatterns on Edit/Write) can
+// gate on what is actually being written rather than firing on every file.
+const content =
+  toolName === 'Write'
+    ? (toolInput.content ?? '')
+    : toolName === 'Edit'
+      ? (toolInput.new_string ?? '')
+      : toolName === 'MultiEdit'
+        ? (toolInput.edits ?? []).map(e => e?.new_string ?? '').join('\n')
+        : '';
+
+const matches = matchLessons(
+  manifest.lessons ?? {},
+  toolName,
+  command,
+  filePath,
+  projectId,
+  content
+);
 
 if (matches.length === 0) {
   process.stdout.write(formatEmptyOutput());
