@@ -27,30 +27,8 @@
       "obsoletedAt": "2026-06-22",
       "obsoletedReason": "CONTROL_CORRECT in eval — test model applied the fix without the lesson injected",
       "evalScenario": "TC-H11-iterating-over-mutable-async-c",
-      "priorStatus": "archived"
-    },
-    {
-      "slug": "bare-except-catches-everything-including-52b1",
-      "id": "01KNH2J9586HRGEYQBG9MJ233Z",
-      "type": "hint",
-      "summary": "Bare except: catches KeyboardInterrupt/SystemExit too, hiding all failures",
-      "problem": "except: without a specific exception type catches signals and system exits, making all failures invisible and preventing proper shutdown",
-      "solution": "Always catch specific exception classes: `except Exception as e:` with `logger.error(..., exc_info=True)`; never use bare `except:`",
-      "toolNames": ["Edit", "Write"],
-      "commandPatterns": [],
-      "pathPatterns": ["**/*.py"],
-      "commandMatchTarget": null,
-      "modelPatterns": [],
-      "tags": ["lang:python", "severity:silent-failure"],
-      "scope": null,
-      "priority": 7,
-      "confidence": 0.85,
-      "requires": null,
-      "duplicatedBy": null,
-      "obsoletedAt": "2026-06-22",
-      "obsoletedReason": "CONTROL_CORRECT in eval — test model applied the fix without the lesson injected",
-      "evalScenario": "TC-H12-bare-except-catches-everything",
-      "priorStatus": "active"
+      "priorStatus": "active",
+      "sonnetRevalidated": "2026-06-25 CONTROL_CORRECT"
     },
     {
       "slug": "agent-written-tests-validate-the-agents-2fdf",
@@ -73,7 +51,8 @@
       "obsoletedAt": "2026-06-22",
       "obsoletedReason": "CONTROL_CORRECT in eval — test model applied the fix without the lesson injected",
       "evalScenario": "TC-H16-agent-written-tests-validate-t",
-      "priorStatus": "active"
+      "priorStatus": "active",
+      "sonnetRevalidated": "2026-06-25 CONTROL_CORRECT"
     },
     {
       "slug": "decorator-registry-stays-empty-because-t-bb41",
@@ -96,7 +75,8 @@
       "obsoletedAt": "2026-06-22",
       "obsoletedReason": "CONTROL_CORRECT in eval — test model applied the fix without the lesson injected",
       "evalScenario": "TC-H23-decorator-registry-stays-empty",
-      "priorStatus": "archived"
+      "priorStatus": "active",
+      "sonnetRevalidated": "2026-06-25 CONTROL_CORRECT"
     },
     {
       "slug": "never-write-literal-secret-values-into-s-b226",
@@ -119,7 +99,8 @@
       "obsoletedAt": "2026-06-22",
       "obsoletedReason": "CONTROL_CORRECT in eval — test model applied the fix without the lesson injected",
       "evalScenario": "TC-H3-hardcoded-secrets",
-      "priorStatus": "active"
+      "priorStatus": "active",
+      "sonnetRevalidated": "2026-06-25 CONTROL_CORRECT"
     },
     {
       "slug": "async-function-called-without-await-sile-3a80",
@@ -142,7 +123,8 @@
       "obsoletedAt": "2026-06-22",
       "obsoletedReason": "CONTROL_CORRECT in eval — test model applied the fix without the lesson injected",
       "evalScenario": "TC-H4-async-function-called-without",
-      "priorStatus": "active"
+      "priorStatus": "active",
+      "sonnetRevalidated": "2026-06-25 CONTROL_CORRECT"
     },
     {
       "slug": "grep-exits-1-on-no-match-silently-aborti-d9ff",
@@ -165,7 +147,8 @@
       "obsoletedAt": "2026-06-22",
       "obsoletedReason": "CONTROL_CORRECT in eval — test model applied the fix without the lesson injected",
       "evalScenario": "TC-H8-grep-exits-1-on-no-match-silen",
-      "priorStatus": "active"
+      "priorStatus": "active",
+      "sonnetRevalidated": "2026-06-25 CONTROL_CORRECT"
     },
     {
       "slug": "browser-eval-returns-undefined-for-async-9cf3",
@@ -188,7 +171,8 @@
       "obsoletedAt": "2026-06-22",
       "obsoletedReason": "CONTROL_CORRECT in eval — test model applied the fix without the lesson injected",
       "evalScenario": "TC-H13-browser-eval-returns-undefined",
-      "priorStatus": "active"
+      "priorStatus": "active",
+      "sonnetRevalidated": "2026-06-25 CONTROL_CORRECT"
     },
     {
       "slug": "biome-2x-config-schema-is-incompatible-w-3369",
@@ -211,7 +195,8 @@
       "obsoletedAt": "2026-06-22",
       "obsoletedReason": "CONTROL_CORRECT in eval — test model applied the fix without the lesson injected",
       "evalScenario": "TC-H14-biome-2x-config-schema-is-inco",
-      "priorStatus": "active"
+      "priorStatus": "active",
+      "sonnetRevalidated": "2026-06-25 CONTROL_CORRECT"
     },
     {
       "slug": "batches-ordered-top-down-fail-when-a-tas-6001",
@@ -234,7 +219,8 @@
       "obsoletedAt": "2026-06-22",
       "obsoletedReason": "CONTROL_CORRECT in eval — test model applied the fix without the lesson injected",
       "evalScenario": "TC-H17-batches-ordered-top-down-fail",
-      "priorStatus": "active"
+      "priorStatus": "active",
+      "sonnetRevalidated": "2026-06-25 CONTROL_CORRECT"
     },
     {
       "slug": "always-quote-file-paths-with-spaces-in-s-ba0a",
@@ -257,7 +243,8 @@
       "obsoletedAt": "2026-06-22",
       "obsoletedReason": "CONTROL_CORRECT in eval — test model applied the fix without the lesson injected",
       "evalScenario": "TC-H20-always-quote-file-paths-with-s",
-      "priorStatus": "active"
+      "priorStatus": "active",
+      "sonnetRevalidated": "2026-06-25 CONTROL_CORRECT"
     },
     {
       "slug": "cd-inside-a-bash-function-leaks-the-dire-9b4c",
@@ -280,7 +267,8 @@
       "obsoletedAt": "2026-06-22",
       "obsoletedReason": "CONTROL_CORRECT in eval — test model applied the fix without the lesson injected",
       "evalScenario": "TC-H22-cd-inside-a-bash-function-leak",
-      "priorStatus": "active"
+      "priorStatus": "active",
+      "sonnetRevalidated": "2026-06-25 CONTROL_CORRECT"
     },
     {
       "slug": "jq-tonumber-crashes-on-non-numeric-input-0536",
@@ -303,7 +291,8 @@
       "obsoletedAt": "2026-06-22",
       "obsoletedReason": "CONTROL_CORRECT in eval — test model applied the fix without the lesson injected",
       "evalScenario": "TC-H27-jq-tonumber-crashes-on-non-num",
-      "priorStatus": "active"
+      "priorStatus": "active",
+      "sonnetRevalidated": "2026-06-25 CONTROL_CORRECT"
     },
     {
       "slug": "awk-code-injection-via-unvalidated-shell-cf5a",
@@ -326,7 +315,8 @@
       "obsoletedAt": "2026-06-22",
       "obsoletedReason": "CONTROL_CORRECT in eval — test model applied the fix without the lesson injected",
       "evalScenario": "TC-G2-awk-code-injection-via-unvalid",
-      "priorStatus": "active"
+      "priorStatus": "active",
+      "sonnetRevalidated": "2026-06-25 CONTROL_CORRECT"
     },
     {
       "slug": "jq-string-interpolation-of-shell-variabl-8803",
@@ -349,7 +339,8 @@
       "obsoletedAt": "2026-06-22",
       "obsoletedReason": "CONTROL_CORRECT in eval — test model applied the fix without the lesson injected",
       "evalScenario": "TC-G3-jq-string-interpolation-of-she",
-      "priorStatus": "active"
+      "priorStatus": "active",
+      "sonnetRevalidated": "2026-06-25 CONTROL_CORRECT"
     },
     {
       "slug": "grep-c-with-echo-0-fallback-double-outpu-1aa4",
@@ -372,7 +363,8 @@
       "obsoletedAt": "2026-06-22",
       "obsoletedReason": "CONTROL_CORRECT in eval — test model applied the fix without the lesson injected",
       "evalScenario": "TC-H28-grep-c-with-echo-0-fallback-do",
-      "priorStatus": "active"
+      "priorStatus": "active",
+      "sonnetRevalidated": "2026-06-25 CONTROL_CORRECT"
     },
     {
       "slug": "env-file-parser-using-cut-d-fails-to-str-2d06",
@@ -395,30 +387,8 @@
       "obsoletedAt": "2026-06-22",
       "obsoletedReason": "CONTROL_CORRECT in eval — test model applied the fix without the lesson injected",
       "evalScenario": "TC-H29-env-file-parser-using-cut-d-fa",
-      "priorStatus": "active"
-    },
-    {
-      "slug": "file-reads-at-batch-start-become-stale-a-d847",
-      "id": "01KNH36NCH76JR86ET2A8TANG4",
-      "type": "hint",
-      "summary": "File reads at batch start go stale; agent misses earlier tasks' changes",
-      "problem": "Task 1 added a new API endpoint; Task 2 used the batch-start file snapshot, missing the new endpoint; frontend integration broke",
-      "solution": "Instruct agent to re-read files immediately before consuming them: 'Before Task 2, re-read src/api.py to see current state.' Or split into separate batches.",
-      "toolNames": ["Agent"],
-      "commandPatterns": [],
-      "pathPatterns": [],
-      "commandMatchTarget": null,
-      "modelPatterns": [],
-      "tags": ["env:claude-code", "topic:context-management", "category:context-retrieval"],
-      "scope": null,
-      "priority": 6,
-      "confidence": 0.85,
-      "requires": null,
-      "duplicatedBy": null,
-      "obsoletedAt": "2026-06-22",
-      "obsoletedReason": "CONTROL_CORRECT in eval — test model applied the fix without the lesson injected",
-      "evalScenario": "TC-H30-file-reads-at-batch-start-beco",
-      "priorStatus": "active"
+      "priorStatus": "active",
+      "sonnetRevalidated": "2026-06-25 CONTROL_CORRECT"
     },
     {
       "slug": "mktemp-without-a-trap-leaks-temp-files-o-b7f2",
@@ -441,7 +411,8 @@
       "obsoletedAt": "2026-06-22",
       "obsoletedReason": "CONTROL_CORRECT in eval — test model applied the fix without the lesson injected",
       "evalScenario": "TC-H33-mktemp-without-a-trap-leaks-te",
-      "priorStatus": "active"
+      "priorStatus": "active",
+      "sonnetRevalidated": "2026-06-25 CONTROL_CORRECT"
     },
     {
       "slug": "osascript-heredoc-dollar-signs-are-expan-5765",
@@ -470,7 +441,8 @@
       "obsoletedAt": "2026-06-22",
       "obsoletedReason": "CONTROL_CORRECT in eval — test model applied the fix without the lesson injected",
       "evalScenario": "TC-H34-osascript-heredoc-dollar-signs",
-      "priorStatus": "active"
+      "priorStatus": "active",
+      "sonnetRevalidated": "2026-06-25 CONTROL_CORRECT"
     },
     {
       "slug": "launchd-agents-do-not-inherit-shell-env-3142",
@@ -499,7 +471,8 @@
       "obsoletedAt": "2026-06-22",
       "obsoletedReason": "CONTROL_CORRECT in eval — test model applied the fix without the lesson injected",
       "evalScenario": "TC-H36-launchd-agents-do-not-inherit",
-      "priorStatus": "active"
+      "priorStatus": "active",
+      "sonnetRevalidated": "2026-06-25 CONTROL_CORRECT"
     },
     {
       "slug": "oh-my-zsh-nvm-plugin-outputs-warnings-in-df6f",
@@ -522,30 +495,8 @@
       "obsoletedAt": "2026-06-22",
       "obsoletedReason": "CONTROL_CORRECT in eval — test model applied the fix without the lesson injected",
       "evalScenario": "TC-H37-oh-my-zsh-nvm-plugin-outputs-w",
-      "priorStatus": "active"
-    },
-    {
-      "slug": "nodejs-deprecationwarnings-pollute-cli-o-112c",
-      "id": "01KMZ3DB3W7VMWBVSXT4G0MTNF",
-      "type": "hint",
-      "summary": "Node.js DeprecationWarnings pollute CLI output in non-interactive terminals",
-      "problem": "Node.js emits `DeprecationWarning` messages to stderr (e.g., `--locale` flag, `punycode` module, `fs.Stats` constructor) that clutter tool output in Claude Code. These warnings are harmless but can be mistaken for errors and obscure actual error messages.",
-      "solution": "Suppress with `NODE_NO_WARNINGS=1` or `--no-deprecation` flag. For specific warnings, use `--disable-warning=DEP0XXX`. Do not suppress all warnings in production — only in non-interactive agent contexts.",
-      "toolNames": ["Bash"],
-      "commandPatterns": ["\\b(node|npx|tsx)\\b"],
-      "pathPatterns": [],
-      "commandMatchTarget": null,
-      "modelPatterns": [],
-      "tags": ["lang:javascript", "tool:node", "env:claude-code", "severity:noise"],
-      "scope": null,
-      "priority": 5,
-      "confidence": 0.75,
-      "requires": null,
-      "duplicatedBy": null,
-      "obsoletedAt": "2026-06-22",
-      "obsoletedReason": "CONTROL_CORRECT in eval — test model applied the fix without the lesson injected",
-      "evalScenario": "TC-H38-nodejs-deprecationwarnings-pol",
-      "priorStatus": "active"
+      "priorStatus": "active",
+      "sonnetRevalidated": "2026-06-25 CONTROL_CORRECT"
     },
     {
       "slug": "local-keyword-used-outside-a-bash-functi-2b18",
@@ -568,7 +519,8 @@
       "obsoletedAt": "2026-06-22",
       "obsoletedReason": "CONTROL_CORRECT in eval — test model applied the fix without the lesson injected",
       "evalScenario": "TC-H39-local-keyword-used-outside-a-b",
-      "priorStatus": "active"
+      "priorStatus": "active",
+      "sonnetRevalidated": "2026-06-25 CONTROL_CORRECT"
     },
     {
       "slug": "lesson-reminders-placed-at-batch-start-a-c7e1",
@@ -591,7 +543,8 @@
       "obsoletedAt": "2026-06-22",
       "obsoletedReason": "CONTROL_CORRECT in eval — test model applied the fix without the lesson injected",
       "evalScenario": "TC-H40-lesson-reminders-placed-at-bat",
-      "priorStatus": "active"
+      "priorStatus": "active",
+      "sonnetRevalidated": "2026-06-25 CONTROL_CORRECT"
     },
     {
       "slug": "systemd-environmentfile-silently-ignores-7408",
@@ -614,30 +567,8 @@
       "obsoletedAt": "2026-06-22",
       "obsoletedReason": "CONTROL_CORRECT in eval — test model applied the fix without the lesson injected",
       "evalScenario": "TC-H43-systemd-environmentfile-silent",
-      "priorStatus": "active"
-    },
-    {
-      "slug": "virtualenv-env-var-points-to-wrong-venv-8def",
-      "id": "01KMZ3E7SCGVVWHAF2EG9R5D79",
-      "type": "hint",
-      "summary": "VIRTUAL_ENV env var points to wrong venv when using uv or switching projects",
-      "problem": "The `VIRTUAL_ENV` environment variable persists from a previous shell session or project, causing `uv`, `poetry`, or `pip` to warn about mismatched environments. Commands may silently operate on the wrong venv, installing packages in the wrong place.",
-      "solution": "Run `source .venv/bin/activate` in the project directory to reset VIRTUAL_ENV, or use `uv run` which manages the venv automatically. Verify with `which python` before installing.",
-      "toolNames": ["Bash"],
-      "commandPatterns": ["\\b(uv|poetry|pip)\\s+(install|run|add|sync)\\b"],
-      "pathPatterns": [],
-      "commandMatchTarget": null,
-      "modelPatterns": [],
-      "tags": ["lang:python", "tool:uv", "topic:packaging", "severity:silent"],
-      "scope": null,
-      "priority": 6,
-      "confidence": 0.8,
-      "requires": null,
-      "duplicatedBy": null,
-      "obsoletedAt": "2026-06-22",
-      "obsoletedReason": "CONTROL_CORRECT in eval — test model applied the fix without the lesson injected",
-      "evalScenario": "TC-H45-virtualenv-env-var-points-to-w",
-      "priorStatus": "active"
+      "priorStatus": "active",
+      "sonnetRevalidated": "2026-06-25 CONTROL_CORRECT"
     },
     {
       "slug": "typescript-file-using-jsx-must-have-tsx-ce55",
@@ -660,7 +591,8 @@
       "obsoletedAt": "2026-06-22",
       "obsoletedReason": "CONTROL_CORRECT in eval — test model applied the fix without the lesson injected",
       "evalScenario": "TC-H47-typescript-file-using-jsx-must",
-      "priorStatus": "active"
+      "priorStatus": "active",
+      "sonnetRevalidated": "2026-06-25 CONTROL_CORRECT"
     },
     {
       "slug": "vitest-run-run-double-argument-treats-se-983e",
@@ -683,30 +615,8 @@
       "obsoletedAt": "2026-06-22",
       "obsoletedReason": "CONTROL_CORRECT in eval — test model applied the fix without the lesson injected",
       "evalScenario": "TC-H48-vitest-run-run-double-argument",
-      "priorStatus": "active"
-    },
-    {
-      "slug": "tasks-without-a-verification-command-pas-fc8f",
-      "id": "01KNH37YW5BS58WXXTA45S2RZR",
-      "type": "hint",
-      "summary": "Tasks without a verification command pass quality gates despite incorrect output",
-      "problem": "Task 'improve error messages' had no verification command; quality gate passed but messages were unchanged; agent improvised a different change",
-      "solution": "Write the verification command before the task description: 'This task is done when: <shell command> exits 0 with output <expected>'",
-      "toolNames": ["Agent"],
-      "commandPatterns": [],
-      "pathPatterns": [],
-      "commandMatchTarget": null,
-      "modelPatterns": [],
-      "tags": ["env:claude-code", "topic:planning", "category:planning-control-flow"],
-      "scope": null,
-      "priority": 6,
-      "confidence": 0.85,
-      "requires": null,
-      "duplicatedBy": null,
-      "obsoletedAt": "2026-06-22",
-      "obsoletedReason": "CONTROL_CORRECT in eval — test model applied the fix without the lesson injected",
-      "evalScenario": "TC-H50-tasks-without-a-verification-c",
-      "priorStatus": "active"
+      "priorStatus": "active",
+      "sonnetRevalidated": "2026-06-25 CONTROL_CORRECT"
     },
     {
       "slug": "suppressoutput-true-in-hook-json-hides-t-c48e",
@@ -729,7 +639,8 @@
       "obsoletedAt": "2026-06-22",
       "obsoletedReason": "CONTROL_CORRECT in eval — test model applied the fix without the lesson injected",
       "evalScenario": "TC-H51-suppressoutput-true-in-hook-js",
-      "priorStatus": "active"
+      "priorStatus": "active",
+      "sonnetRevalidated": "2026-06-25 CONTROL_CORRECT"
     },
     {
       "slug": "vite-generates-absolute-asset-paths-e-f2a5",
@@ -752,7 +663,8 @@
       "obsoletedAt": "2026-06-22",
       "obsoletedReason": "CONTROL_CORRECT in eval — test model applied the fix without the lesson injected",
       "evalScenario": "TC-H54-vite-generates-absolute-asset",
-      "priorStatus": "active"
+      "priorStatus": "active",
+      "sonnetRevalidated": "2026-06-25 CONTROL_CORRECT"
     },
     {
       "slug": "secrets-hardcoded-in-source-files-are-pe-00f3",
@@ -775,7 +687,8 @@
       "obsoletedAt": "2026-06-22",
       "obsoletedReason": "CONTROL_CORRECT in eval — test model applied the fix without the lesson injected",
       "evalScenario": "TC-H55-secrets-hardcoded-in-source-fi",
-      "priorStatus": "active"
+      "priorStatus": "active",
+      "sonnetRevalidated": "2026-06-25 CONTROL_CORRECT"
     },
     {
       "slug": "git-commit-with-heredoc-fails-due-to-she-599e",
@@ -798,7 +711,8 @@
       "obsoletedAt": "2026-06-22",
       "obsoletedReason": "CONTROL_CORRECT in eval — test model applied the fix without the lesson injected",
       "evalScenario": "TC-H58-git-commit-with-heredoc-fails",
-      "priorStatus": "active"
+      "priorStatus": "active",
+      "sonnetRevalidated": "2026-06-25 CONTROL_CORRECT"
     },
     {
       "slug": "vitest-parallel-tests-fail-due-to-shared-a9cc",
@@ -821,12 +735,19 @@
       "obsoletedAt": "2026-06-22",
       "obsoletedReason": "CONTROL_CORRECT in eval — test model applied the fix without the lesson injected",
       "evalScenario": "TC-H60-vitest-parallel-tests-fail-due",
-      "priorStatus": "active"
+      "priorStatus": "active",
+      "sonnetRevalidated": "2026-06-25 CONTROL_CORRECT"
     }
   ],
   "revalidation": {
-    "status": "PROVISIONAL — pending pinned-Sonnet re-validation. Archived on an unpinned agent that was very likely Opus 4.8 (see evals/FINDINGS.md). All entries RESTORED to active until confirmed obsolete on Sonnet.",
-    "restoredToActive": "2026-06-25",
-    "partialFindings": "Sonnet 4-scenario test: TC-H4 and TC-H8 returned CONTROL_CORRECT on pinned Sonnet (same as Opus → genuinely obsolete, not a model artifact). TC-H22 and TC-H27 hit the Max session limit — no data. Resume remaining validation after quota resets."
+    "status": "VALIDATED on pinned claude-sonnet-4-6 (2026-06-25): 30/35 reproduced CONTROL_CORRECT on Sonnet — genuinely obsolete, not an Opus artifact. Re-archived.",
+    "keptActive": [
+      "TC-H12-bare-except-catches-everything (bare-except-catches-everything-including-52b1) — Sonnet SKIP",
+      "TC-H30-file-reads-at-batch-start-beco (file-reads-at-batch-start-become-stale-a-d847) — Sonnet SKIP",
+      "TC-H38-nodejs-deprecationwarnings-pol (nodejs-deprecationwarnings-pollute-cli-o-112c) — Sonnet PASS",
+      "TC-H45-virtualenv-env-var-points-to-w (virtualenv-env-var-points-to-wrong-venv-8def) — Sonnet SKIP",
+      "TC-H50-tasks-without-a-verification-c (tasks-without-a-verification-command-pas-fc8f) — Sonnet SKIP"
+    ],
+    "note": "TC-H38 PASS = Sonnet still benefits (kept active). 4 SKIP (H12,H30,H45,H50) inconclusive, kept active pending a clean re-run."
   }
 }
