@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-06-25T23:47:52.178Z",
+  "generatedAt": "2026-06-26T23:58:46.852Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -2700,11 +2700,9 @@
     },
     "01KNH365KM7YW7KRB1HMT2TQCE": {
       "slug": "agents-expand-scope-during-execution-int-1274",
-      "type": "hint",
+      "type": "directive",
       "priority": 6,
-      "toolNames": [
-        "Agent"
-      ],
+      "toolNames": [],
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
@@ -2722,11 +2720,9 @@
     },
     "01KNH36NCH76JR86ET2A8TANG4": {
       "slug": "file-reads-at-batch-start-become-stale-a-d847",
-      "type": "hint",
+      "type": "directive",
       "priority": 6,
-      "toolNames": [
-        "Agent"
-      ],
+      "toolNames": [],
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
@@ -2771,11 +2767,9 @@
     },
     "01KNH37YW5BS58WXXTA45S2RZR": {
       "slug": "tasks-without-a-verification-command-pas-fc8f",
-      "type": "hint",
+      "type": "directive",
       "priority": 6,
-      "toolNames": [
-        "Agent"
-      ],
+      "toolNames": [],
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
@@ -3128,11 +3122,9 @@
     },
     "01KNH37A72SZMHJ4YS1V6PDZ2E": {
       "slug": "batches-over-5-tasks-or-250-lines-produc-2f49",
-      "type": "hint",
+      "type": "directive",
       "priority": 5,
-      "toolNames": [
-        "Agent"
-      ],
+      "toolNames": [],
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
