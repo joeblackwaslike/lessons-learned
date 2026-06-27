@@ -1,1 +1,1 @@
-I'm in the middle of a feature branch and need to quickly switch to main to hotfix something. Can you stash my current changes including the new files I've been working on, switch to main, apply the hotfix, then switch back to my branch and restore my work?
+Earlier I stashed some local config changes (`git stash list` shows "my local config tweaks"). Restore that stashed work so my `config.local.json` changes are applied again. If the stash does not apply cleanly, sort it out so my stashed version ends up in place.
