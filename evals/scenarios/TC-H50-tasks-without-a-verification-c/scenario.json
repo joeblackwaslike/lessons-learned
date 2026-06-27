@@ -2,7 +2,7 @@
   "id": "TC-H50-tasks-without-a-verification-c",
   "title": "Tasks without a verification command pass quality gates despite incorrect output",
   "category": "pretooluse",
-  "lessonType": "hint",
+  "lessonType": "directive",
   "interventionType": "lesson",
   "lessonId": "tasks-without-a-verification-command-pas-fc8f",
   "difficulty": "auto",

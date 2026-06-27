@@ -2,7 +2,7 @@
   "id": "TC-H30-file-reads-at-batch-start-beco",
   "title": "File reads at batch start become stale — agent consumes old snapshot and misses changes from earlier tasks",
   "category": "pretooluse",
-  "lessonType": "hint",
+  "lessonType": "directive",
   "interventionType": "lesson",
   "lessonId": "file-reads-at-batch-start-become-stale-a-d847",
   "difficulty": "auto",

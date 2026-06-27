@@ -737,17 +737,33 @@
       "evalScenario": "TC-H60-vitest-parallel-tests-fail-due",
       "priorStatus": "active",
       "sonnetRevalidated": "2026-06-25 CONTROL_CORRECT"
+    },
+    {
+      "slug": "bare-except-catches-everything-including-52b1",
+      "id": "01KNH2J9586HRGEYQBG9MJ233Z",
+      "type": "hint",
+      "summary": "Bare except: catches KeyboardInterrupt/SystemExit too, hiding all failures",
+      "problem": "except: without a specific exception type catches signals and system exits, making all failures invisible and preventing proper shutdown",
+      "solution": "Always catch specific exception classes: `except Exception as e:` with `logger.error(..., exc_info=True)`; never use bare `except:`",
+      "toolNames": ["Edit", "Write"],
+      "commandPatterns": [],
+      "pathPatterns": ["**/*.py"],
+      "tags": ["lang:python", "severity:silent-failure"],
+      "obsoletedAt": "2026-06-26",
+      "obsoletedReason": "Sonnet Tier-1 hiddenCheck passes on both arms (model uses except Exception). Judge SKIP was Form-A ambiguity.",
+      "evalScenario": "TC-H12-bare-except-catches-everything",
+      "priorStatus": "active",
+      "sonnetRevalidated": "2026-06-26 CONTROL_CORRECT (Tier-1)"
     }
   ],
   "revalidation": {
     "status": "VALIDATED on pinned claude-sonnet-4-6 (2026-06-25): 30/35 reproduced CONTROL_CORRECT on Sonnet — genuinely obsolete, not an Opus artifact. Re-archived.",
     "keptActive": [
-      "TC-H12-bare-except-catches-everything (bare-except-catches-everything-including-52b1) — Sonnet SKIP",
       "TC-H30-file-reads-at-batch-start-beco (file-reads-at-batch-start-become-stale-a-d847) — Sonnet SKIP",
       "TC-H38-nodejs-deprecationwarnings-pol (nodejs-deprecationwarnings-pollute-cli-o-112c) — Sonnet PASS",
       "TC-H45-virtualenv-env-var-points-to-w (virtualenv-env-var-points-to-wrong-venv-8def) — Sonnet SKIP",
       "TC-H50-tasks-without-a-verification-c (tasks-without-a-verification-command-pas-fc8f) — Sonnet SKIP"
     ],
-    "note": "TC-H38 PASS = Sonnet still benefits (kept active). 4 SKIP (H12,H30,H45,H50) inconclusive, kept active pending a clean re-run."
+    "note": "TC-H38 PASS = Sonnet still benefits (kept active). 4 SKIP (H12,H30,H45,H50) inconclusive, kept active pending a clean re-run. H12 re-archived 2026-06-26 (Tier-1 both-pass). H30 scenario fixed (real multi-file seed). H45 (VIRTUAL_ENV env-var) + H50 (task-definition) remain hard to CLI-test."
   }
 }

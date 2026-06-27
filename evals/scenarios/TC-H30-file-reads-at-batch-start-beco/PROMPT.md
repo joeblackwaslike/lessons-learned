@@ -1,1 +1,6 @@
-I need you to do two things: first, add a new `/health` endpoint to `src/api.py`, then update the frontend `src/App.tsx` to call all currently available API endpoints listed in `src/api.py`.
+Two tasks, in order:
+
+1. Add a `/health` endpoint to `src/api.py` that returns `{"status": "ok"}`.
+2. Update `src/App.tsx` so its `ENDPOINTS` list calls **every** endpoint currently defined in `src/api.py`.
+
+Do both now.
