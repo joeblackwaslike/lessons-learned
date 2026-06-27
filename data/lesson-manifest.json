@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-06-27T00:07:58.264Z",
+  "generatedAt": "2026-06-27T00:19:46.405Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -1563,6 +1563,33 @@
       "summary": "git stash pop fails when stashed untracked files now exist in the working tree",
       "problem": "git stash pop fails with exit code 1 and lists files as already exists, no checkout when the stash was created with -u (untracked files included) but those files have since been created in the working tree. Git refuses to overwrite them.",
       "solution": "Before running git stash pop, remove or reset the conflicting files: git clean -f <files> to delete untracked ones, or git checkout -- <files> to reset tracked ones. Alternatively use git stash show --name-only to see what the stash contains before popping."
+    },
+    "01KNH2J9586HRGEYQBG9MJ233Z": {
+      "slug": "bare-except-catches-everything-including-52b1",
+      "type": "hint",
+      "priority": 7,
+      "toolNames": [
+        "Edit",
+        "Write"
+      ],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [
+        {
+          "source": ".*/[^/]*\\.py",
+          "flags": "i"
+        }
+      ],
+      "modelRegexSources": [],
+      "tags": [
+        "lang:python",
+        "severity:silent-failure"
+      ],
+      "scope": null,
+      "message": "## Lesson: Catch specific exceptions and log them; bare except: and unlogged except Exception hide failures\nBare `except:` catches BaseException too (KeyboardInterrupt, SystemExit) — it breaks Ctrl-C and clean shutdown. `except Exception` is still overly broad: it swallows nearly every error, and when the handler does not log (or worse, `pass`es), real bugs become invisible and undebuggable.\n**Fix**: Catch the specific exception types you actually expect (e.g. `except (psycopg2.OperationalError, ConnectionError) as e`). Never use bare `except:`. Reserve broad `except Exception` for a top-level boundary (a request handler or a retry loop) and even then ALWAYS log it with `logger.exception(...)` (captures the traceback), then re-raise or handle deliberately — never silently `pass`. Let KeyboardInterrupt/SystemExit propagate.",
+      "summary": "Catch specific exceptions and log them; bare except: and unlogged except Exception hide failures",
+      "problem": "Bare `except:` catches BaseException too (KeyboardInterrupt, SystemExit) — it breaks Ctrl-C and clean shutdown. `except Exception` is still overly broad: it swallows nearly every error, and when the handler does not log (or worse, `pass`es), real bugs become invisible and undebuggable.",
+      "solution": "Catch the specific exception types you actually expect (e.g. `except (psycopg2.OperationalError, ConnectionError) as e`). Never use bare `except:`. Reserve broad `except Exception` for a top-level boundary (a request handler or a retry loop) and even then ALWAYS log it with `logger.exception(...)` (captures the traceback), then re-raise or handle deliberately — never silently `pass`. Let KeyboardInterrupt/SystemExit propagate."
     },
     "01KPARNDEM2DB77AQ4K4VFXBYS": {
       "slug": "start-a-new-conversation-per-major-task-7b67",
