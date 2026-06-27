@@ -1,1 +1,1 @@
-I'm setting up a new FastAPI project in `/projects/api-v2` — can you install `httpx` and `pydantic-settings` and make sure the venv is ready to go?
+This FastAPI project is in the current directory and already has its own `.venv`. Install `httpx` and `pydantic-settings` into the project's environment and make sure the venv is ready to use.

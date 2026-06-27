@@ -11,5 +11,8 @@
   "verifyScript": "hidden-checks/verify.mjs",
   "recommendedInterventions": ["virtualenv-env-var-points-to-wrong-venv-8def"],
   "automaticFailGates": [],
-  "generated": true
+  "generated": true,
+  "env": {
+    "VIRTUAL_ENV": "/tmp/old-project-7f3a/.venv"
+  }
 }

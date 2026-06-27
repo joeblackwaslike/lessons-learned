@@ -130,7 +130,7 @@ async function runArm({
   try {
     materializeWorkspace(scenarioDir, workspaceDir, intervention);
 
-    const env = buildEnv(workspaceDir, intervention);
+    const env = buildEnv(workspaceDir, intervention, readScenarioEnv(scenarioDir));
     // Pin the agent model explicitly. Without --model, `claude --print` uses the
     // OAuth session's default model (which silently changed to Opus over this
     // project's life and confounded earlier CONTROL_CORRECT results), while the
@@ -372,7 +372,17 @@ function findClaudeBin() {
   throw new Error('claude binary not found. Set CLAUDE_BIN env var or ensure claude is on PATH.');
 }
 
-function buildEnv(workspaceDir, _intervention) {
+// Per-scenario environment variables from scenario.json `env` (e.g. a stale
+// VIRTUAL_ENV to reproduce an env-mismatch). Optional; {} when absent.
+function readScenarioEnv(scenarioDir) {
+  try {
+    return JSON.parse(readFileSync(join(scenarioDir, 'scenario.json'), 'utf8')).env ?? {};
+  } catch {
+    return {};
+  }
+}
+
+function buildEnv(workspaceDir, _intervention, scenarioEnv = {}) {
   // ANTHROPIC_API_KEY and ANTHROPIC_BASE_URL are intentionally excluded so the eval
   // agent bypasses Meridian (which spawns a CC worker with full user settings and
   // opus[1m], causing 20-minute timeouts). Without these vars, CC uses direct OAuth
@@ -427,6 +437,10 @@ function buildEnv(workspaceDir, _intervention) {
   const manifestPath = join(workspaceDir, '.eval', 'lesson-manifest.json');
   if (existsSync(manifestPath)) env.LESSONS_MANIFEST_PATH = manifestPath;
   env.LESSONS_DISABLE_SCAN = '1';
+
+  // Per-scenario overrides win (applied last) so a scenario can set/override any
+  // env var the agent will see — VIRTUAL_ENV, custom flags, etc.
+  for (const [k, v] of Object.entries(scenarioEnv)) env[k] = String(v);
 
   return env;
 }
