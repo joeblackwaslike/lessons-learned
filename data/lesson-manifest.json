@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-06-27T01:36:26.522Z",
+  "generatedAt": "2026-06-27T03:07:05.459Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -11,33 +11,6 @@
     "compactionReinjectionThreshold": 7
   },
   "lessons": {
-    "01KNH2EHTAPSE0CNT8XW8Z4CA4": {
-      "slug": "parallel-agents-sharing-a-git-worktree-c-cad6",
-      "type": "hint",
-      "priority": 10,
-      "toolNames": [
-        "Bash"
-      ],
-      "commandRegexSources": [
-        {
-          "source": "\\bgit\\s+(add|commit)\\b",
-          "flags": ""
-        }
-      ],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
-      "modelRegexSources": [],
-      "tags": [
-        "tool:git",
-        "severity:data-loss",
-        "topic:parallel-agents"
-      ],
-      "scope": null,
-      "message": "## Lesson: Parallel agents sharing a git worktree corrupt the staging area and lose commits\nMultiple concurrent git processes writing to the same worktree corrupt the index and lose commits silently\n**Fix**: Each parallel agent must use an isolated git worktree via `git worktree add`; never share a worktree between concurrent agents",
-      "summary": "Parallel agents sharing a git worktree corrupt the staging area and lose commits",
-      "problem": "Multiple concurrent git processes writing to the same worktree corrupt the index and lose commits silently",
-      "solution": "Each parallel agent must use an isolated git worktree via `git worktree add`; never share a worktree between concurrent agents"
-    },
     "01KNH2FRACBQMQWX29GPYE47D8": {
       "slug": "eval-on-user-supplied-command-strings-en-702a",
       "type": "hint",
@@ -299,34 +272,6 @@
       "problem": "set -euo pipefail with no EXIT trap makes any unguarded command failure silently abort the script with no output",
       "solution": "Add `trap '_log_exit $?' EXIT` and wrap non-critical operations in `{ ... } || warn` blocks to handle errors explicitly"
     },
-    "01KNH2EZQ2BRAGYC9QNKTJCGBQ": {
-      "slug": "scripts-hang-waiting-on-stdin-when-run-i-7195",
-      "type": "hint",
-      "priority": 8,
-      "toolNames": [
-        "Bash"
-      ],
-      "commandRegexSources": [
-        {
-          "source": "\\bbash\\b.*\\.sh\\b",
-          "flags": ""
-        }
-      ],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
-      "modelRegexSources": [],
-      "tags": [
-        "language:bash",
-        "tool:ci",
-        "severity:hang",
-        "env:claude-code"
-      ],
-      "scope": null,
-      "message": "## Lesson: Scripts hang on stdin in non-interactive shells (CI, Claude Code, pipes)\nScript reads stdin implicitly without redirect; hangs indefinitely in CI, Claude Code, or non-interactive shells\n**Fix**: Redirect stdin explicitly from /dev/null: `bash script.sh </dev/null` or add `</dev/null` to commands that do not expect interactive input",
-      "summary": "Scripts hang on stdin in non-interactive shells (CI, Claude Code, pipes)",
-      "problem": "Script reads stdin implicitly without redirect; hangs indefinitely in CI, Claude Code, or non-interactive shells",
-      "solution": "Redirect stdin explicitly from /dev/null: `bash script.sh </dev/null` or add `</dev/null` to commands that do not expect interactive input"
-    },
     "01KNH2GQWE0E2693PZVJDBGB23": {
       "slug": "git-stderr-redirected-to-devnull-silentl-1ec9",
       "type": "guard",
@@ -383,34 +328,6 @@
       "summary": "Missing tool dependency check silently disables safety-critical features",
       "problem": "bc not installed; numeric fallback returns 0; budget enforcement silently becomes a no-op with no error",
       "solution": "Check required tools at function entry: `command -v bc >/dev/null || { echo 'bc required' >&2; return 1; }` — fail closed on absence"
-    },
-    "01KNH2JDX2B935CGQJV8C3RH5P": {
-      "slug": "asynciocreatetask-without-donecallback-s-97d8",
-      "type": "hint",
-      "priority": 8,
-      "toolNames": [
-        "Edit",
-        "Write"
-      ],
-      "commandRegexSources": [],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [
-        {
-          "source": ".*/[^/]*\\.py",
-          "flags": "i"
-        }
-      ],
-      "modelRegexSources": [],
-      "tags": [
-        "lang:python",
-        "topic:async",
-        "severity:data-loss"
-      ],
-      "scope": null,
-      "message": "## Lesson: asyncio.create_task without done_callback silently swallows task exceptions\ncreate_task() without add_done_callback leaves exceptions unhandled until garbage collection, often never visible\n**Fix**: Always attach a callback: `task.add_done_callback(lambda t: t.exception() and logger.error(\"Task failed\", exc_info=t.exception()))`",
-      "summary": "asyncio.create_task without done_callback silently swallows task exceptions",
-      "problem": "create_task() without add_done_callback leaves exceptions unhandled until garbage collection, often never visible",
-      "solution": "Always attach a callback: `task.add_done_callback(lambda t: t.exception() and logger.error(\"Task failed\", exc_info=t.exception()))`"
     },
     "01KPARN4FAWR4ZD3VHB2D9JFZM": {
       "slug": "verify-all-steps-before-presenting-a-mul-a8ab",
@@ -1482,34 +1399,6 @@
       "problem": "Running bare `pytest` or `pytest -v` in Claude Code causes the process to hang indefinitely because pytest's rich output module detects a non-interactive terminal and stalls.",
       "solution": "Use `python -m pytest --no-header -rN -p no:faulthandler` or prepend `TERM=dumb`. Pipe through `cat` if rich output is still suspected.\nRerun as: pytest -p no:faulthandler --no-header"
     },
-    "01KMZ3CSX8QR8EN5W6DYM6TEA4": {
-      "slug": "pre-commit-hooks-lefthookhusky-fail-on-l-adf8",
-      "type": "hint",
-      "priority": 7,
-      "toolNames": [
-        "Bash"
-      ],
-      "commandRegexSources": [
-        {
-          "source": "\\bgit\\s+commit\\b",
-          "flags": ""
-        }
-      ],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
-      "modelRegexSources": [],
-      "tags": [
-        "tool:git",
-        "tool:lefthook",
-        "topic:ci",
-        "severity:error"
-      ],
-      "scope": null,
-      "message": "## Lesson: Pre-commit hooks (lefthook/husky) fail on lint errors in unstaged files\nGit commit fails because pre-commit hooks (lefthook, husky, pre-commit) run linters against the entire working tree, not just staged files. Lint errors in unstaged or pre-existing files block the commit even though those files are not being committed.\n**Fix**: Fix only the lint errors in files you are committing, or use `git stash --keep-index` before committing to temporarily hide unstaged changes. For persistent pre-existing lint issues, consider `--no-verify` only as a last resort and document why.",
-      "summary": "Pre-commit hooks (lefthook/husky) fail on lint errors in unstaged files",
-      "problem": "Git commit fails because pre-commit hooks (lefthook, husky, pre-commit) run linters against the entire working tree, not just staged files. Lint errors in unstaged or pre-existing files block the commit even though those files are not being committed.",
-      "solution": "Fix only the lint errors in files you are committing, or use `git stash --keep-index` before committing to temporarily hide unstaged changes. For persistent pre-existing lint issues, consider `--no-verify` only as a last resort and document why."
-    },
     "01KNH2J9586HRGEYQBG9MJ233Z": {
       "slug": "bare-except-catches-everything-including-52b1",
       "type": "hint",
@@ -2507,33 +2396,6 @@
       "summary": "Check git status before staging to catch unignored build artifacts",
       "problem": "A .gitignore listed individual filenames (media/ui.html) instead of the whole output directory (media/). Running `git add packages/ctx-tree-vscode/` swept up a 280KB build artifact (media/d3.min.js) that was not listed. Staging a whole directory with `git add <dir>/` is risky for the same reason.",
       "solution": "Before any `git add`, run `git status` and review what will be staged. Gitignore output directories wholesale (e.g. `media/`) rather than individual filenames. Prefer `git add <specific-file>` over `git add <dir>/`."
-    },
-    "01JQSEED00000000000000005": {
-      "slug": "npm-link-peer-deps-r2f7",
-      "type": "hint",
-      "priority": 6,
-      "toolNames": [
-        "Bash"
-      ],
-      "commandRegexSources": [
-        {
-          "source": "\\bnpm\\s+link\\b",
-          "flags": ""
-        }
-      ],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
-      "modelRegexSources": [],
-      "tags": [
-        "lang:javascript",
-        "tool:npm",
-        "topic:packaging"
-      ],
-      "scope": null,
-      "message": "## Lesson: npm link doesn't resolve peer dependencies of the linked package\n`npm link` creates a symlink but does NOT install peer dependencies of the linked package. This causes subtle runtime errors when peer deps are missing.\n**Fix**: After `npm link <pkg>`, manually install any peer deps, or use `npm install <path>` instead for a proper install.",
-      "summary": "npm link doesn't resolve peer dependencies of the linked package",
-      "problem": "`npm link` creates a symlink but does NOT install peer dependencies of the linked package. This causes subtle runtime errors when peer deps are missing.",
-      "solution": "After `npm link <pkg>`, manually install any peer deps, or use `npm install <path>` instead for a proper install."
     },
     "01KMZ3C0KEE5ZCSQWZZXQZZH67": {
       "slug": "chrome-devtools-econnrefused-when-chrome-5079",
