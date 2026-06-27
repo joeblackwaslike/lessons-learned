@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-06-26T23:58:46.852Z",
+  "generatedAt": "2026-06-27T00:04:14.147Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -40,7 +40,7 @@
     },
     "01KNH2FRACBQMQWX29GPYE47D8": {
       "slug": "eval-on-user-supplied-command-strings-en-702a",
-      "type": "directive",
+      "type": "hint",
       "priority": 10,
       "toolNames": [
         "Bash",
