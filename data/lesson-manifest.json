@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-06-27T01:30:46.910Z",
+  "generatedAt": "2026-06-27T01:36:26.522Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -2588,34 +2588,6 @@
       "summary": "WebFetch and curl fail on URLs that require browser JavaScript rendering",
       "problem": "Using `WebFetch` or `curl` to fetch content from SPAs, job boards, or modern web apps returns 404, empty HTML, or redirect pages because the content is rendered client-side via JavaScript. The server returns a shell HTML page that requires JS execution.",
       "solution": "Use a headless browser tool (Playwright, Chrome DevTools MCP) instead of WebFetch/curl for JS-rendered content. If you only need structured data, check if the site has a public API or structured data in the initial HTML (JSON-LD, meta tags)."
-    },
-    "01KMZ3E7SCGVVWHAF2EG9R5D79": {
-      "slug": "virtualenv-env-var-points-to-wrong-venv-8def",
-      "type": "hint",
-      "priority": 6,
-      "toolNames": [
-        "Bash"
-      ],
-      "commandRegexSources": [
-        {
-          "source": "\\b(uv|poetry|pip)\\s+(install|run|add|sync)\\b",
-          "flags": ""
-        }
-      ],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
-      "modelRegexSources": [],
-      "tags": [
-        "lang:python",
-        "tool:uv",
-        "topic:packaging",
-        "severity:silent"
-      ],
-      "scope": null,
-      "message": "## Lesson: VIRTUAL_ENV env var points to wrong venv when using uv or switching projects\nThe `VIRTUAL_ENV` environment variable persists from a previous shell session or project, causing `uv`, `poetry`, or `pip` to warn about mismatched environments. Commands may silently operate on the wrong venv, installing packages in the wrong place.\n**Fix**: Run `source .venv/bin/activate` in the project directory to reset VIRTUAL_ENV, or use `uv run` which manages the venv automatically. Verify with `which python` before installing.",
-      "summary": "VIRTUAL_ENV env var points to wrong venv when using uv or switching projects",
-      "problem": "The `VIRTUAL_ENV` environment variable persists from a previous shell session or project, causing `uv`, `poetry`, or `pip` to warn about mismatched environments. Commands may silently operate on the wrong venv, installing packages in the wrong place.",
-      "solution": "Run `source .venv/bin/activate` in the project directory to reset VIRTUAL_ENV, or use `uv run` which manages the venv automatically. Verify with `which python` before installing."
     },
     "01KMZ3EGAAJKHA5ECVMCXME0TC": {
       "slug": "supabase-auth-returns-500-database-error-d1e9",

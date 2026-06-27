@@ -785,6 +785,23 @@
       "evalScenario": "TC-H21-git-stash-pop-fails-with-alrea",
       "priorStatus": "active",
       "sonnetRevalidated": "2026-06-26 CONTROL_CORRECT (adversarial)"
+    },
+    {
+      "slug": "virtualenv-env-var-points-to-wrong-venv-8def",
+      "id": "01KMZ3E7SCGVVWHAF2EG9R5D79",
+      "type": "hint",
+      "summary": "VIRTUAL_ENV env var points to wrong venv when using uv or switching projects",
+      "problem": "The `VIRTUAL_ENV` environment variable persists from a previous shell session or project, causing `uv`, `poetry`, or `pip` to warn about mismatched environments. Commands may silently operate on the wrong venv, installing packages in the wrong place.",
+      "solution": "Run `source .venv/bin/activate` in the project directory to reset VIRTUAL_ENV, or use `uv run` which manages the venv automatically. Verify with `which python` before installing.",
+      "toolNames": ["Bash"],
+      "commandPatterns": ["\\b(uv|poetry|pip)\\s+(install|run|add|sync)\\b"],
+      "pathPatterns": [],
+      "tags": ["lang:python", "tool:uv", "topic:packaging", "severity:silent"],
+      "obsoletedAt": "2026-06-26",
+      "obsoletedReason": "CONTROL_CORRECT on pinned Sonnet (env-injection scenario); strict archive-all-CC.",
+      "evalScenario": "TC-H45-virtualenv-env-var-points-to-w",
+      "priorStatus": "active",
+      "sonnetRevalidated": "2026-06-26 CONTROL_CORRECT"
     }
   ],
   "revalidation": {
@@ -792,7 +809,6 @@
     "keptActive": [
       "TC-H30-file-reads-at-batch-start-beco (file-reads-at-batch-start-become-stale-a-d847) — Sonnet SKIP",
       "TC-H38-nodejs-deprecationwarnings-pol (nodejs-deprecationwarnings-pollute-cli-o-112c) — Sonnet PASS",
-      "TC-H45-virtualenv-env-var-points-to-w (virtualenv-env-var-points-to-wrong-venv-8def) — Sonnet SKIP",
       "TC-H50-tasks-without-a-verification-c (tasks-without-a-verification-command-pas-fc8f) — Sonnet SKIP",
       "TC-H12-bare-except-catches-everything (bare-except-...-52b1) — restored; lesson broadened to specific-exceptions+logging best practice"
     ],
