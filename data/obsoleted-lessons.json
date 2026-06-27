@@ -737,6 +737,54 @@
       "evalScenario": "TC-H60-vitest-parallel-tests-fail-due",
       "priorStatus": "active",
       "sonnetRevalidated": "2026-06-25 CONTROL_CORRECT"
+    },
+    {
+      "slug": "sed-range-deletion-is-unbounded-when-the-64ac",
+      "id": "01KNH2GJG6DE29V8JSBZW34ZG2",
+      "type": "hint",
+      "summary": "sed range delete runs to EOF when the closing pattern is absent",
+      "problem": "sed '/start/,/end/d' silently deletes everything from the start pattern to EOF when the closing pattern is missing",
+      "solution": "Use awk with explicit state tracking for range deletion; never rely on sed range patterns on files without a guaranteed closing delimiter",
+      "toolNames": ["Bash"],
+      "commandPatterns": ["\\bsed\\b.*,.*d"],
+      "pathPatterns": [],
+      "commandMatchTarget": null,
+      "modelPatterns": [],
+      "tags": ["tool:sed", "language:bash", "severity:data-loss"],
+      "scope": null,
+      "priority": 9,
+      "confidence": 0.9,
+      "requires": null,
+      "duplicatedBy": null,
+      "obsoletedAt": "2026-06-26",
+      "obsoletedReason": "CONTROL_CORRECT on pinned Sonnet under a REAL adversarial scenario (rebuilt). Strict archive-all-CC policy. Scenario remains a regression canary via its control arm.",
+      "evalScenario": "TC-H56-sed-range-deletion-is-unbounde",
+      "priorStatus": "active",
+      "sonnetRevalidated": "2026-06-26 CONTROL_CORRECT (adversarial)"
+    },
+    {
+      "slug": "git-stash-pop-fails-with-already-exists-808b",
+      "id": "01KN3P9QZCFBC04F12DFKVF3MV",
+      "type": "hint",
+      "summary": "git stash pop fails when stashed untracked files now exist in the working tree",
+      "problem": "git stash pop fails with exit code 1 and lists files as already exists, no checkout when the stash was created with -u (untracked files included) but those files have since been created in the working tree. Git refuses to overwrite them.",
+      "solution": "Before running git stash pop, remove or reset the conflicting files: git clean -f <files> to delete untracked ones, or git checkout -- <files> to reset tracked ones. Alternatively use git stash show --name-only to see what the stash contains before popping.",
+      "toolNames": ["Bash"],
+      "commandPatterns": ["\\bgit stash pop\\b"],
+      "pathPatterns": [],
+      "commandMatchTarget": null,
+      "modelPatterns": [],
+      "tags": ["tool:git", "severity:error", "topic:stash"],
+      "scope": null,
+      "priority": 7,
+      "confidence": 0.8,
+      "requires": null,
+      "duplicatedBy": null,
+      "obsoletedAt": "2026-06-26",
+      "obsoletedReason": "CONTROL_CORRECT on pinned Sonnet under a REAL adversarial scenario (rebuilt). Strict archive-all-CC policy. Scenario remains a regression canary via its control arm.",
+      "evalScenario": "TC-H21-git-stash-pop-fails-with-alrea",
+      "priorStatus": "active",
+      "sonnetRevalidated": "2026-06-26 CONTROL_CORRECT (adversarial)"
     }
   ],
   "revalidation": {
@@ -748,6 +796,6 @@
       "TC-H50-tasks-without-a-verification-c (tasks-without-a-verification-command-pas-fc8f) — Sonnet SKIP",
       "TC-H12-bare-except-catches-everything (bare-except-...-52b1) — restored; lesson broadened to specific-exceptions+logging best practice"
     ],
-    "note": "TC-H38 PASS = Sonnet still benefits (kept active). 4 SKIP (H12,H30,H45,H50) inconclusive, kept active pending a clean re-run. H30 scenario fixed (real multi-file seed). H45 (VIRTUAL_ENV env-var) + H50 (task-definition) remain hard to CLI-test. H12 RESTORED 2026-06-26: lesson+verify rewrote — `except Exception` (the model default) is still bad (swallows errors, no logging); not obsolete."
+    "note": "TC-H38 PASS = Sonnet still benefits (kept active). 4 SKIP (H12,H30,H45,H50) inconclusive, kept active pending a clean re-run. H30 scenario fixed (real multi-file seed). H45 (VIRTUAL_ENV env-var) + H50 (task-definition) remain hard to CLI-test. H12 RESTORED 2026-06-26: lesson+verify rewrote — `except Exception` (the model default) is still bad (swallows errors, no logging); not obsolete. H56+H21 obsoleted 2026-06-26 (strict archive-all-CC; adversarial scenarios kept as regression canaries)."
   }
 }
