@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-07-31T00:55:03.098Z",
+  "generatedAt": "2026-07-31T03:18:48.554Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -88,6 +88,47 @@
       "summary": "Attach evidence to every load-bearing claim; state confidence that matches it",
       "problem": "Verified facts and unchecked inferences get written in the same confident register, so the reader cannot tell which is which and cannot calibrate. In one session this produced four wrong high-confidence assertions: a token-cost estimate off by two orders of magnitude that was embedded in a decision prompt, a root cause attributed to the wrong config file, a blast radius inflated 17x by an unfiltered find, and a claim that two agent runtimes lacked a feature they demonstrably have. Two came from relaying subagent output as fact. Every one was cheap to check and none was checked.",
       "solution": "Four rules. (1) A quantity that feeds a decision must be computed, or explicitly labelled as not computed - if a number is going into a recommendation or an AskUserQuestion option, it is load-bearing. (2) Mark evidentiary status inline: measured / derived / estimated / unverified. (3) A diagnosis must state what would falsify it and whether that check was run. (4) Counts from find/grep are raw until filtered - report the filter with the number or omit the number. Subagent and tool output is evidence, not fact; relaying it inherits its uncertainty."
+    },
+    "01KYV2WZYERY69NNV3EF6DFXKV": {
+      "slug": "never-narrate-an-action-as-underway-with-2afa",
+      "type": "hint",
+      "priority": 10,
+      "toolNames": [
+        "Bash",
+        "Task",
+        "Agent"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "\\bsleep\\b",
+          "flags": ""
+        },
+        {
+          "source": "gh pr view",
+          "flags": ""
+        },
+        {
+          "source": "gh pr checks",
+          "flags": ""
+        },
+        {
+          "source": "\\b--watch\\b",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "category:honesty",
+        "topic:claimed-actions",
+        "severity:trust"
+      ],
+      "scope": null,
+      "message": "## Lesson: Never narrate an action as underway without the tool call in the same turn\nEnded a message with 'polling for that pass now' without starting any poll. The user had to notice and ask. This is worse than a wrong fact: a wrong fact can be checked against the code, but a claimed action is invisible until someone independently discovers nothing happened — and in the meantime they are waiting on work that does not exist. The same shape covers 'kicking off X', 'running Y in the background', 'watching for Z', and 'I'll monitor that' when no monitor, background command, or scheduled wakeup was created.\n**Fix**: Before writing that an action is in progress, confirm the tool call for it appears in the same turn. If it does not, either make the call or change the tense: 'I'll poll next' is honest, 'polling now' is a claim. Present-progressive and 'now' are the tells. For anything asynchronous — background commands, monitors, subagents, scheduled wakeups — the claim is only true if a tool call returned an id or handle; quote or act on that handle rather than asserting the work is running.",
+      "summary": "Never narrate an action as underway without the tool call in the same turn",
+      "problem": "Ended a message with 'polling for that pass now' without starting any poll. The user had to notice and ask. This is worse than a wrong fact: a wrong fact can be checked against the code, but a claimed action is invisible until someone independently discovers nothing happened — and in the meantime they are waiting on work that does not exist. The same shape covers 'kicking off X', 'running Y in the background', 'watching for Z', and 'I'll monitor that' when no monitor, background command, or scheduled wakeup was created.",
+      "solution": "Before writing that an action is in progress, confirm the tool call for it appears in the same turn. If it does not, either make the call or change the tense: 'I'll poll next' is honest, 'polling now' is a claim. Present-progressive and 'now' are the tells. For anything asynchronous — background commands, monitors, subagents, scheduled wakeups — the claim is only true if a tool call returned an id or handle; quote or act on that handle rather than asserting the work is running."
     },
     "01KP9WGC4PZ2E9S7SAMARR0JDC": {
       "slug": "time-box-debugging-theories-30-minutes-then-search-b1zn",
@@ -269,10 +310,10 @@
         "severity:sloppy"
       ],
       "scope": null,
-      "message": "## Lesson: Never merge a PR with unresolved review threads, even when reviewDecision is APPROVED\nMerged a PR on `reviewDecision: APPROVED` plus green checks, leaving 31 unresolved review threads — including a second full review pass posted after the last push that was never read. Approval and thread resolution are independent: an advisory bot can approve while its own threads sit open, and a required bot can post a fresh pass that arrives after the approval. The REST list-comments endpoint does not expose resolution state at all, so a loop built on it cannot see the gap.\n**Fix**: Before `gh pr merge`, query the GraphQL `reviewThreads` connection (resolution state exists ONLY there) and require zero unresolved. Re-poll after the last push: reviewers post a new pass ~7.5min after any push, so an approval predating the final push is stale. Merge gate is: reviewDecision APPROVED AND required checks green AND zero unresolved threads.",
-      "summary": "Never merge a PR with unresolved review threads, even when reviewDecision is APPROVED",
-      "problem": "Merged a PR on `reviewDecision: APPROVED` plus green checks, leaving 31 unresolved review threads — including a second full review pass posted after the last push that was never read. Approval and thread resolution are independent: an advisory bot can approve while its own threads sit open, and a required bot can post a fresh pass that arrives after the approval. The REST list-comments endpoint does not expose resolution state at all, so a loop built on it cannot see the gap.",
-      "solution": "Before `gh pr merge`, query the GraphQL `reviewThreads` connection (resolution state exists ONLY there) and require zero unresolved. Re-poll after the last push: reviewers post a new pass ~7.5min after any push, so an approval predating the final push is stale. Merge gate is: reviewDecision APPROVED AND required checks green AND zero unresolved threads."
+      "message": "## Lesson: Merge gate: zero unresolved threads, all required bots, current head SHA\nMerged a PR on one bot's APPROVED plus green checks, with 31 unresolved threads and an entire second review pass unread. Two independent traps. (1) Approval is per-reviewer: CodeRabbit approved while the required internal bot had not, and reviewDecision can read APPROVED without every internal reviewer having weighed in. (2) Approval is per-commit: every approval was against an OLDER head SHA than the one being merged. Each push restarts the cycle, and fixes are exactly where new defects get introduced — the fix pushed in response to that review itself introduced a CRLF bug that silently reopened the loop the PR existed to close, and a later 'fix' for a race turned out to guard nothing at all.\n**Fix**: Before merging, verify all three independently. (a) Zero unresolved threads via the GraphQL reviewThreads connection — resolution state does not exist in REST. (b) Every required/internal reviewer has approved, enumerated by name; do not accept an advisory bot's approval as the gate, and do not treat reviewDecision alone as proof all internal bots ran. (c) Each of those approvals is against the CURRENT head SHA — query `reviews { commit { oid } }` and compare to the head oid. Any approval predating the last push is stale and must be re-earned. After pushing fixes, wait out the reviewer delay (~7.5min) and re-run the whole check: a fix is a new change and gets reviewed as one.",
+      "summary": "Merge gate: zero unresolved threads, all required bots, current head SHA",
+      "problem": "Merged a PR on one bot's APPROVED plus green checks, with 31 unresolved threads and an entire second review pass unread. Two independent traps. (1) Approval is per-reviewer: CodeRabbit approved while the required internal bot had not, and reviewDecision can read APPROVED without every internal reviewer having weighed in. (2) Approval is per-commit: every approval was against an OLDER head SHA than the one being merged. Each push restarts the cycle, and fixes are exactly where new defects get introduced — the fix pushed in response to that review itself introduced a CRLF bug that silently reopened the loop the PR existed to close, and a later 'fix' for a race turned out to guard nothing at all.",
+      "solution": "Before merging, verify all three independently. (a) Zero unresolved threads via the GraphQL reviewThreads connection — resolution state does not exist in REST. (b) Every required/internal reviewer has approved, enumerated by name; do not accept an advisory bot's approval as the gate, and do not treat reviewDecision alone as proof all internal bots ran. (c) Each of those approvals is against the CURRENT head SHA — query `reviews { commit { oid } }` and compare to the head oid. Any approval predating the last push is stale and must be re-earned. After pushing fixes, wait out the reviewer delay (~7.5min) and re-run the whole check: a fix is a new change and gets reviewed as one."
     },
     "01KYTTNRN3CX71GAZYKMRP28GV": {
       "slug": "reply-on-the-review-thread-itself-not-in-2071",
