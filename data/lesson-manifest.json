@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-07-31T00:37:04.635Z",
+  "generatedAt": "2026-07-31T00:55:03.098Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -234,6 +234,80 @@
       "summary": "Never let code inherit the interactive model when spawning an LLM subprocess",
       "problem": "Code that shells out to an LLM CLI without an explicit model argument inherits whatever the user's interactive default is. A summarize-to-JSON enrichment pass inherited Opus and ran 2,825 times in 43 hours, costing roughly 20x what the task needed and consuming about 69% of a weekly quota. The task was small-model work throughout; nothing in the code expressed that intent.",
       "solution": "Always pass an explicit model when spawning an LLM subprocess, chosen for the task on economy AND accuracy - structured extraction and summarization are small-model work. Make it overridable by env var and resolve the override per call, not at module load. Guard blank overrides: `??` only catches null/undefined, so an empty env var passes through and spawns `--model ''`, failing every call in the run."
+    },
+    "01KYTTNRMC5QHV91XMCP8AA6RB": {
+      "slug": "never-merge-a-pr-with-unresolved-review-3920",
+      "type": "hint",
+      "priority": 9,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "gh pr merge",
+          "flags": ""
+        },
+        {
+          "source": "gh pr review",
+          "flags": ""
+        },
+        {
+          "source": "\\b--squash\\b",
+          "flags": ""
+        },
+        {
+          "source": "\\b--auto\\b",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "category:process",
+        "topic:code-review",
+        "severity:sloppy"
+      ],
+      "scope": null,
+      "message": "## Lesson: Never merge a PR with unresolved review threads, even when reviewDecision is APPROVED\nMerged a PR on `reviewDecision: APPROVED` plus green checks, leaving 31 unresolved review threads — including a second full review pass posted after the last push that was never read. Approval and thread resolution are independent: an advisory bot can approve while its own threads sit open, and a required bot can post a fresh pass that arrives after the approval. The REST list-comments endpoint does not expose resolution state at all, so a loop built on it cannot see the gap.\n**Fix**: Before `gh pr merge`, query the GraphQL `reviewThreads` connection (resolution state exists ONLY there) and require zero unresolved. Re-poll after the last push: reviewers post a new pass ~7.5min after any push, so an approval predating the final push is stale. Merge gate is: reviewDecision APPROVED AND required checks green AND zero unresolved threads.",
+      "summary": "Never merge a PR with unresolved review threads, even when reviewDecision is APPROVED",
+      "problem": "Merged a PR on `reviewDecision: APPROVED` plus green checks, leaving 31 unresolved review threads — including a second full review pass posted after the last push that was never read. Approval and thread resolution are independent: an advisory bot can approve while its own threads sit open, and a required bot can post a fresh pass that arrives after the approval. The REST list-comments endpoint does not expose resolution state at all, so a loop built on it cannot see the gap.",
+      "solution": "Before `gh pr merge`, query the GraphQL `reviewThreads` connection (resolution state exists ONLY there) and require zero unresolved. Re-poll after the last push: reviewers post a new pass ~7.5min after any push, so an approval predating the final push is stale. Merge gate is: reviewDecision APPROVED AND required checks green AND zero unresolved threads."
+    },
+    "01KYTTNRN3CX71GAZYKMRP28GV": {
+      "slug": "reply-on-the-review-thread-itself-not-in-2071",
+      "type": "hint",
+      "priority": 9,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "gh pr comment",
+          "flags": ""
+        },
+        {
+          "source": "gh pr merge",
+          "flags": ""
+        },
+        {
+          "source": "gh api .*pulls.*comments",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "category:process",
+        "topic:code-review",
+        "severity:convergence"
+      ],
+      "scope": null,
+      "message": "## Lesson: Reply on the review thread itself, not in a top-level PR comment\nAnswered two rounds of review feedback with top-level PR comments. Threads stayed open and unanswered, nothing was resolved, and no reviewer could see a response where it was looking. AI reviewers converge by re-reading each thread for a concrete reply — a top-level comment is invisible to that loop, so the next pass re-raises the same findings and the PR never converges.\n**Fix**: Reply via `POST /repos/{owner}/{repo}/pulls/{pr}/comments/{root_comment_databaseId}/replies`, one per actionable thread, saying what changed or why it was declined. Then resolve handled threads with the GraphQL `resolveReviewThread` mutation keyed on the thread id — there is no REST equivalent. Rate the feedback too: react on the comment and explain in the reply why a finding was valuable or why it was a false positive, so the reviewer system gets a usable signal.",
+      "summary": "Reply on the review thread itself, not in a top-level PR comment",
+      "problem": "Answered two rounds of review feedback with top-level PR comments. Threads stayed open and unanswered, nothing was resolved, and no reviewer could see a response where it was looking. AI reviewers converge by re-reading each thread for a concrete reply — a top-level comment is invisible to that loop, so the next pass re-raises the same findings and the PR never converges.",
+      "solution": "Reply via `POST /repos/{owner}/{repo}/pulls/{pr}/comments/{root_comment_databaseId}/replies`, one per actionable thread, saying what changed or why it was declined. Then resolve handled threads with the GraphQL `resolveReviewThread` mutation keyed on the thread id — there is no REST equivalent. Rate the feedback too: react on the comment and explain in the reply why a finding was valuable or why it was a false positive, so the reviewer system gets a usable signal."
     },
     "01KMZ3BJKZHP5D15BD1CYPT54F": {
       "slug": "vitest-hangs-in-non-interactive-terminal-0c00",
@@ -1602,6 +1676,41 @@
       "summary": "Prove a regression test fails against the unfixed code before trusting it",
       "problem": "A test written alongside a fix passes trivially if it does not actually exercise the defect. Passing both before and after the fix proves only that the code compiles, while reading to everyone as proof the bug is pinned.",
       "solution": "After writing a regression test, disable the fix - comment out the guard or stash the change - and confirm the test fails, and that the RIGHT assertions fail. Then restore and confirm it passes. An unmutated regression test is an untested test. This is cheap and it catches tests that assert on the wrong thing."
+    },
+    "01KYTTNRNAMZ8N9DPZMHC3V89H": {
+      "slug": "load-the-pr-runbook-before-driving-a-pr-9771",
+      "type": "hint",
+      "priority": 8,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "gh pr create",
+          "flags": ""
+        },
+        {
+          "source": "gh pr merge",
+          "flags": ""
+        },
+        {
+          "source": "gh pr ready",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "category:process",
+        "topic:runbook",
+        "severity:rework"
+      ],
+      "scope": null,
+      "message": "## Lesson: Load the PR runbook before driving a PR, not from memory\nDrove a PR to merge from memory while a written runbook existed (agent-skills working-with-github, references/howto/driving-a-pr-to-approval.md) covering the exact steps skipped: enumerate threads via GraphQL, reply per thread, resolve, gate the merge on zero unresolved. Having the document and not reading it produced a worse outcome than not having it, because the gap was invisible until a human pointed it out.\n**Fix**: At the start of any PR work — create, review-triage, or merge — read `driving-a-pr-to-approval.md` in the working-with-github skill. Follow its ordered loop rather than an improvised one. The same applies to any task with an existing runbook: the cost of reading it is far below the cost of rediscovering its steps by omission.",
+      "summary": "Load the PR runbook before driving a PR, not from memory",
+      "problem": "Drove a PR to merge from memory while a written runbook existed (agent-skills working-with-github, references/howto/driving-a-pr-to-approval.md) covering the exact steps skipped: enumerate threads via GraphQL, reply per thread, resolve, gate the merge on zero unresolved. Having the document and not reading it produced a worse outcome than not having it, because the gap was invisible until a human pointed it out.",
+      "solution": "At the start of any PR work — create, review-triage, or merge — read `driving-a-pr-to-approval.md` in the working-with-github skill. Follow its ordered loop rather than an improvised one. The same applies to any task with an existing runbook: the cost of reading it is far below the cost of rediscovering its steps by omission."
     },
     "01JQSEED00000000000000001": {
       "slug": "pytest-tty-hanging-k9m2",
