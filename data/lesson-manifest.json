@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-07-31T03:18:48.554Z",
+  "generatedAt": "2026-07-31T04:23:33.957Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -349,6 +349,53 @@
       "summary": "Reply on the review thread itself, not in a top-level PR comment",
       "problem": "Answered two rounds of review feedback with top-level PR comments. Threads stayed open and unanswered, nothing was resolved, and no reviewer could see a response where it was looking. AI reviewers converge by re-reading each thread for a concrete reply — a top-level comment is invisible to that loop, so the next pass re-raises the same findings and the PR never converges.",
       "solution": "Reply via `POST /repos/{owner}/{repo}/pulls/{pr}/comments/{root_comment_databaseId}/replies`, one per actionable thread, saying what changed or why it was declined. Then resolve handled threads with the GraphQL `resolveReviewThread` mutation keyed on the thread id — there is no REST equivalent. Rate the feedback too: react on the comment and explain in the reply why a finding was valuable or why it was a false positive, so the reviewer system gets a usable signal."
+    },
+    "01KYV6KJ9AFTMR35WANVDY64FQ": {
+      "slug": "a-paginated-query-returning-exactly-the-25da",
+      "type": "hint",
+      "priority": 9,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "first: *100",
+          "flags": ""
+        },
+        {
+          "source": "first:100",
+          "flags": ""
+        },
+        {
+          "source": "\\bper_page\\b",
+          "flags": ""
+        },
+        {
+          "source": "gh api graphql",
+          "flags": ""
+        },
+        {
+          "source": "\\breviewThreads\\b",
+          "flags": ""
+        },
+        {
+          "source": "\\bfirst: *[0-9]+",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "category:epistemic",
+        "topic:pagination",
+        "severity:false-green"
+      ],
+      "scope": null,
+      "message": "## Lesson: A paginated query returning exactly the page size is truncated, not counted\nQueried GitHub review threads with `reviewThreads(first: 100)` and never followed `pageInfo.endCursor`, then reported 'zero unresolved threads' from the result. The real totals were 126 threads and 27 unresolved — every one of them unanswered. The tell was in the output the whole time: total read exactly 100, the page size. A round number equal to the limit is a truncation signal, not a measurement. The runbook being followed explicitly said to paginate and follow the cursor; the query was written from memory instead. This produced a confident false 'all clear' on a merge gate, twice.\n**Fix**: Any paginated API read that feeds a decision must follow the cursor to exhaustion, or explicitly report that it is a partial page. Check `pageInfo.hasNextPage` and loop on `endCursor` — never infer completeness from the node count. Treat a result whose length equals the requested `first`/`per_page` as presumptively truncated. For REST, use `--paginate`. The same rule covers `gh api` list endpoints, search results, and any 'first N' query: if the count could gate an action, it must be the whole set.",
+      "summary": "A paginated query returning exactly the page size is truncated, not counted",
+      "problem": "Queried GitHub review threads with `reviewThreads(first: 100)` and never followed `pageInfo.endCursor`, then reported 'zero unresolved threads' from the result. The real totals were 126 threads and 27 unresolved — every one of them unanswered. The tell was in the output the whole time: total read exactly 100, the page size. A round number equal to the limit is a truncation signal, not a measurement. The runbook being followed explicitly said to paginate and follow the cursor; the query was written from memory instead. This produced a confident false 'all clear' on a merge gate, twice.",
+      "solution": "Any paginated API read that feeds a decision must follow the cursor to exhaustion, or explicitly report that it is a partial page. Check `pageInfo.hasNextPage` and loop on `endCursor` — never infer completeness from the node count. Treat a result whose length equals the requested `first`/`per_page` as presumptively truncated. For REST, use `--paginate`. The same rule covers `gh api` list endpoints, search results, and any 'first N' query: if the count could gate an action, it must be the whole set."
     },
     "01KMZ3BJKZHP5D15BD1CYPT54F": {
       "slug": "vitest-hangs-in-non-interactive-terminal-0c00",
