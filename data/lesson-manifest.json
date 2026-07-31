@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-06-27T03:07:05.459Z",
+  "generatedAt": "2026-07-31T00:37:04.635Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -68,6 +68,26 @@
       "summary": "Search for known pitfalls and failure modes before starting any new work",
       "problem": "Proceeding directly to planning or implementation without searching for known footguns, version caveats, and community-reported failure modes produces plans that look correct but fail on documented edge cases. This applies to any domain: infrastructure, libraries, frameworks, CLI tools, APIs. The cost is encountering cold what was already diagnosed and documented by the community.",
       "solution": "MANDATORY gate — do not present or execute your plan until you have done this: search for known pitfalls, common mistakes, and failure modes with your specific approach and technology versions. This step is not optional. Incorporate the findings before writing any code or presenting your implementation plan. Skipping this step causes wasted effort when the plan hits known, documented problems."
+    },
+    "01KYTSHN2DFWP77CNJFEVDMB8J": {
+      "slug": "attach-evidence-to-every-load-bearing-cl-bff9",
+      "type": "directive",
+      "priority": 10,
+      "toolNames": [],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "epistemic",
+        "calibration",
+        "communication"
+      ],
+      "scope": null,
+      "message": "## Lesson: Attach evidence to every load-bearing claim; state confidence that matches it\nVerified facts and unchecked inferences get written in the same confident register, so the reader cannot tell which is which and cannot calibrate. In one session this produced four wrong high-confidence assertions: a token-cost estimate off by two orders of magnitude that was embedded in a decision prompt, a root cause attributed to the wrong config file, a blast radius inflated 17x by an unfiltered find, and a claim that two agent runtimes lacked a feature they demonstrably have. Two came from relaying subagent output as fact. Every one was cheap to check and none was checked.\n**Fix**: Four rules. (1) A quantity that feeds a decision must be computed, or explicitly labelled as not computed - if a number is going into a recommendation or an AskUserQuestion option, it is load-bearing. (2) Mark evidentiary status inline: measured / derived / estimated / unverified. (3) A diagnosis must state what would falsify it and whether that check was run. (4) Counts from find/grep are raw until filtered - report the filter with the number or omit the number. Subagent and tool output is evidence, not fact; relaying it inherits its uncertainty.",
+      "summary": "Attach evidence to every load-bearing claim; state confidence that matches it",
+      "problem": "Verified facts and unchecked inferences get written in the same confident register, so the reader cannot tell which is which and cannot calibrate. In one session this produced four wrong high-confidence assertions: a token-cost estimate off by two orders of magnitude that was embedded in a decision prompt, a root cause attributed to the wrong config file, a blast radius inflated 17x by an unfiltered find, and a claim that two agent runtimes lacked a feature they demonstrably have. Two came from relaying subagent output as fact. Every one was cheap to check and none was checked.",
+      "solution": "Four rules. (1) A quantity that feeds a decision must be computed, or explicitly labelled as not computed - if a number is going into a recommendation or an AskUserQuestion option, it is load-bearing. (2) Mark evidentiary status inline: measured / derived / estimated / unverified. (3) A diagnosis must state what would falsify it and whether that check was run. (4) Counts from find/grep are raw until filtered - report the filter with the number or omit the number. Subagent and tool output is evidence, not fact; relaying it inherits its uncertainty."
     },
     "01KP9WGC4PZ2E9S7SAMARR0JDC": {
       "slug": "time-box-debugging-theories-30-minutes-then-search-b1zn",
@@ -177,6 +197,43 @@
       "summary": "Webhook signature verification skipped when secret is unset",
       "problem": "The Etsy webhook handler skips signature verification when ETSY_WEBHOOK_SECRET is undefined or empty. The guard condition `if (ETSY_WEBHOOK_SECRET && !verifyEtsySignature(...))` allows requests through without validation when the secret is missing, creating a security bypass that permits spoofed events.",
       "solution": "Invert the logic to require valid signature verification before processing any webhook. Fail fast with 401/403 if the secret is missing or signature verification fails, rather than logging a warning after processing begins."
+    },
+    "01KYTSKJ2DQN034CSG8N9H7V69": {
+      "slug": "never-let-code-inherit-the-interactive-m-5630",
+      "type": "hint",
+      "priority": 9,
+      "toolNames": [
+        "Edit",
+        "Write",
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "claude -p",
+          "flags": ""
+        },
+        {
+          "source": "spawn\\(['\"]claude",
+          "flags": ""
+        },
+        {
+          "source": "execFile\\w*\\(['\"]claude",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "category:cost",
+        "topic:llm",
+        "severity:quota"
+      ],
+      "scope": null,
+      "message": "## Lesson: Never let code inherit the interactive model when spawning an LLM subprocess\nCode that shells out to an LLM CLI without an explicit model argument inherits whatever the user's interactive default is. A summarize-to-JSON enrichment pass inherited Opus and ran 2,825 times in 43 hours, costing roughly 20x what the task needed and consuming about 69% of a weekly quota. The task was small-model work throughout; nothing in the code expressed that intent.\n**Fix**: Always pass an explicit model when spawning an LLM subprocess, chosen for the task on economy AND accuracy - structured extraction and summarization are small-model work. Make it overridable by env var and resolve the override per call, not at module load. Guard blank overrides: `??` only catches null/undefined, so an empty env var passes through and spawns `--model ''`, failing every call in the run.",
+      "summary": "Never let code inherit the interactive model when spawning an LLM subprocess",
+      "problem": "Code that shells out to an LLM CLI without an explicit model argument inherits whatever the user's interactive default is. A summarize-to-JSON enrichment pass inherited Opus and ran 2,825 times in 43 hours, costing roughly 20x what the task needed and consuming about 69% of a weekly quota. The task was small-model work throughout; nothing in the code expressed that intent.",
+      "solution": "Always pass an explicit model when spawning an LLM subprocess, chosen for the task on economy AND accuracy - structured extraction and summarization are small-model work. Make it overridable by env var and resolve the override per call, not at module load. Guard blank overrides: `??` only catches null/undefined, so an empty env var passes through and spawns `--model ''`, failing every call in the run."
     },
     "01KMZ3BJKZHP5D15BD1CYPT54F": {
       "slug": "vitest-hangs-in-non-interactive-terminal-0c00",
@@ -1372,6 +1429,180 @@
       "problem": "If the local base branch has commits that were never pushed, GitHub compares the PR branch against the remote state of the base — making all unpushed commits appear as new. This caused a PR to show the entire repo as changed (85 background commits from a local feat/memtree-v1 that was never pushed before branching).",
       "solution": "Before running `gh pr create`, verify the local base is in sync with remote:\ngit fetch origin\ngit log origin/<BASE>..<BASE> --oneline   # must be empty\ngit log <BASE>..origin/<BASE> --oneline   # must be empty\ngit log origin/<BASE>..HEAD --oneline | wc -l  # should equal expected commit count\n\nIf local base is ahead of remote, push it first."
     },
+    "01KYTSKJ2PJ50Y0590ZSCK9YEC": {
+      "slug": "a-process-that-emits-artifacts-of-the-ki-ac42",
+      "type": "hint",
+      "priority": 8,
+      "toolNames": [
+        "Edit",
+        "Write"
+      ],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [
+        {
+          "source": ".*/engine\\.ts",
+          "flags": "i"
+        },
+        {
+          "source": ".*/indexer[^/]*",
+          "flags": "i"
+        },
+        {
+          "source": ".*/backfill[^/]*",
+          "flags": "i"
+        },
+        {
+          "source": ".*/crawler[^/]*",
+          "flags": "i"
+        }
+      ],
+      "modelRegexSources": [],
+      "tags": [
+        "category:correctness",
+        "topic:runaway-loop",
+        "severity:quota"
+      ],
+      "scope": null,
+      "message": "## Lesson: A process that emits artifacts of the kind it consumes needs a convergence test\nAn indexer spawned a subprocess per transcript; the subprocess wrote its own transcript into the same corpus, so every unit of work created a new unit of work. The queue could not drain and the loop had no fixed point. 2,507 of 40,053 indexed records were the indexer indexing itself. All unit tests passed because each individual step was correct.\n**Fix**: Whenever a process writes output into the same space it reads input from - indexers, crawlers, batch processors, loggers that log their own activity, agents that write transcripts - assert a fixed point: running it twice over a corpus containing its own output must not grow the work queue. Isolate the output location AND recognize historical output by content, since anything produced before the isolation existed is scattered across the corpus.",
+      "summary": "A process that emits artifacts of the kind it consumes needs a convergence test",
+      "problem": "An indexer spawned a subprocess per transcript; the subprocess wrote its own transcript into the same corpus, so every unit of work created a new unit of work. The queue could not drain and the loop had no fixed point. 2,507 of 40,053 indexed records were the indexer indexing itself. All unit tests passed because each individual step was correct.",
+      "solution": "Whenever a process writes output into the same space it reads input from - indexers, crawlers, batch processors, loggers that log their own activity, agents that write transcripts - assert a fixed point: running it twice over a corpus containing its own output must not grow the work queue. Isolate the output location AND recognize historical output by content, since anything produced before the isolation existed is scattered across the corpus."
+    },
+    "01KYTSKJ30ZNSDDPKTWS6B8W28": {
+      "slug": "read-at-least-one-backup-before-bulk-del-8464",
+      "type": "hint",
+      "priority": 8,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "rm .*\\.bak",
+          "flags": ""
+        },
+        {
+          "source": "rm .*backup",
+          "flags": ""
+        },
+        {
+          "source": "find .* -delete",
+          "flags": ""
+        },
+        {
+          "source": "rm -rf",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "category:verification",
+        "severity:data-loss",
+        "topic:cleanup"
+      ],
+      "scope": null,
+      "message": "## Lesson: Read at least one backup before bulk-deleting backups from a repair\nAbout to delete 20 backup files as cleanup after a bulk repair appeared to succeed. Reading one first revealed the repair had been mis-scoped - the backup was a full config carrying the legacy key, not the minimal stub assumed. Those backups were the only evidence of pre-repair state and the only route to verification or rollback.\n**Fix**: Never bulk-delete backups produced by a repair without reading at least one. Backups are the evidence that the repair was correct; deleting them unexamined destroys verification and rollback in a single step. If the sample contradicts the assumption the repair was built on, stop and re-scope before deleting anything.",
+      "summary": "Read at least one backup before bulk-deleting backups from a repair",
+      "problem": "About to delete 20 backup files as cleanup after a bulk repair appeared to succeed. Reading one first revealed the repair had been mis-scoped - the backup was a full config carrying the legacy key, not the minimal stub assumed. Those backups were the only evidence of pre-repair state and the only route to verification or rollback.",
+      "solution": "Never bulk-delete backups produced by a repair without reading at least one. Backups are the evidence that the repair was correct; deleting them unexamined destroys verification and rollback in a single step. If the sample contradicts the assumption the repair was built on, stop and re-scope before deleting anything."
+    },
+    "01KYTSKJ36H72VPCSB555YFM0S": {
+      "slug": "judge-a-verification-gate-by-its-exit-co-885e",
+      "type": "hint",
+      "priority": 8,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "\\beslint\\b",
+          "flags": ""
+        },
+        {
+          "source": "biome check",
+          "flags": ""
+        },
+        {
+          "source": "tsc --noEmit",
+          "flags": ""
+        },
+        {
+          "source": "ruff check",
+          "flags": ""
+        },
+        {
+          "source": "\\bmypy\\b",
+          "flags": ""
+        },
+        {
+          "source": "vitest run",
+          "flags": ""
+        },
+        {
+          "source": "\\bpytest\\b",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "category:verification",
+        "topic:ci",
+        "severity:false-green"
+      ],
+      "scope": null,
+      "message": "## Lesson: Judge a verification gate by its exit code, never by grepping its output\nChecked lint status with `eslint ... | grep -E ' error '` and reported the gate clean. The gate runs with --max-warnings=0, so a single warning failed it - invisible to a grep looking for the word 'error'. The pre-commit hook then rejected the commit, after the work had already been declared verified.\n**Fix**: Run the gate and check its exit code. Grepping output for a chosen severity word silently misses every failure mode the tool spells differently: warnings under --max-warnings=0, non-zero exits with no matching text, output written to stderr. `cmd >/dev/null 2>&1; echo $?` is the assertion; the printed output is only for diagnosis.",
+      "summary": "Judge a verification gate by its exit code, never by grepping its output",
+      "problem": "Checked lint status with `eslint ... | grep -E ' error '` and reported the gate clean. The gate runs with --max-warnings=0, so a single warning failed it - invisible to a grep looking for the word 'error'. The pre-commit hook then rejected the commit, after the work had already been declared verified.",
+      "solution": "Run the gate and check its exit code. Grepping output for a chosen severity word silently misses every failure mode the tool spells differently: warnings under --max-warnings=0, non-zero exits with no matching text, output written to stderr. `cmd >/dev/null 2>&1; echo $?` is the assertion; the printed output is only for diagnosis."
+    },
+    "01KYTSKJ3BGNDS6DX56JGYSD4S": {
+      "slug": "prove-a-regression-test-fails-against-th-fc0f",
+      "type": "hint",
+      "priority": 8,
+      "toolNames": [
+        "Write",
+        "Edit"
+      ],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [
+        {
+          "source": ".*/[^/]*\\.test\\.ts",
+          "flags": "i"
+        },
+        {
+          "source": ".*/[^/]*\\.test\\.js",
+          "flags": "i"
+        },
+        {
+          "source": ".*/[^/]*\\.test\\.mjs",
+          "flags": "i"
+        },
+        {
+          "source": ".*/test_[^/]*\\.py",
+          "flags": "i"
+        },
+        {
+          "source": ".*/[^/]*_test\\.go",
+          "flags": "i"
+        }
+      ],
+      "modelRegexSources": [],
+      "tags": [
+        "category:testing",
+        "topic:regression",
+        "severity:false-green"
+      ],
+      "scope": null,
+      "message": "## Lesson: Prove a regression test fails against the unfixed code before trusting it\nA test written alongside a fix passes trivially if it does not actually exercise the defect. Passing both before and after the fix proves only that the code compiles, while reading to everyone as proof the bug is pinned.\n**Fix**: After writing a regression test, disable the fix - comment out the guard or stash the change - and confirm the test fails, and that the RIGHT assertions fail. Then restore and confirm it passes. An unmutated regression test is an untested test. This is cheap and it catches tests that assert on the wrong thing.",
+      "summary": "Prove a regression test fails against the unfixed code before trusting it",
+      "problem": "A test written alongside a fix passes trivially if it does not actually exercise the defect. Passing both before and after the fix proves only that the code compiles, while reading to everyone as proof the bug is pinned.",
+      "solution": "After writing a regression test, disable the fix - comment out the guard or stash the change - and confirm the test fails, and that the RIGHT assertions fail. Then restore and confirm it passes. An unmutated regression test is an untested test. This is cheap and it catches tests that assert on the wrong thing."
+    },
     "01JQSEED00000000000000001": {
       "slug": "pytest-tty-hanging-k9m2",
       "type": "guard",
@@ -2396,6 +2627,82 @@
       "summary": "Check git status before staging to catch unignored build artifacts",
       "problem": "A .gitignore listed individual filenames (media/ui.html) instead of the whole output directory (media/). Running `git add packages/ctx-tree-vscode/` swept up a 280KB build artifact (media/d3.min.js) that was not listed. Staging a whole directory with `git add <dir>/` is risky for the same reason.",
       "solution": "Before any `git add`, run `git status` and review what will be staged. Gitignore output directories wholesale (e.g. `media/`) rather than individual filenames. Prefer `git add <specific-file>` over `git add <dir>/`."
+    },
+    "01KYTSKJ2WS24DPEMNT436XER5": {
+      "slug": "make-the-detection-predicate-match-the-r-b8ff",
+      "type": "hint",
+      "priority": 7,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "grep -q",
+          "flags": ""
+        },
+        {
+          "source": "grep -L",
+          "flags": ""
+        },
+        {
+          "source": "grep -c",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "category:epistemic",
+        "topic:detection",
+        "severity:churn"
+      ],
+      "scope": null,
+      "message": "## Lesson: Make the detection predicate match the real failure condition, not a proxy\nDetecting broken configs with `grep -q new_field_name` treated 'lacks the new field' as equivalent to 'is broken'. Upstream had a RENAMED_FIELDS compat shim that auto-migrated the old key, so 18 of 20 flagged files were fine and got patched unnecessarily. The proxy was never checked against the tool's own migration code.\n**Fix**: Before writing a predicate for 'broken', read the target's own validation or migration code and express the real condition - here it was 'has NEITHER the old key NOR the new key'. A proxy predicate produces false positives that look like successful repairs, which is worse than no repair because the resulting churn is invisible.",
+      "summary": "Make the detection predicate match the real failure condition, not a proxy",
+      "problem": "Detecting broken configs with `grep -q new_field_name` treated 'lacks the new field' as equivalent to 'is broken'. Upstream had a RENAMED_FIELDS compat shim that auto-migrated the old key, so 18 of 20 flagged files were fine and got patched unnecessarily. The proxy was never checked against the tool's own migration code.",
+      "solution": "Before writing a predicate for 'broken', read the target's own validation or migration code and express the real condition - here it was 'has NEITHER the old key NOR the new key'. A proxy predicate produces false positives that look like successful repairs, which is worse than no repair because the resulting churn is invisible."
+    },
+    "01KYTSKJ3KPE0F6XS0C9DW0Q8Z": {
+      "slug": "pin-any-tool-launched-from-an-unpinned-v-cb25",
+      "type": "hint",
+      "priority": 7,
+      "toolNames": [
+        "Bash",
+        "Edit",
+        "Write"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "uvx --from git\\+",
+          "flags": ""
+        },
+        {
+          "source": "npx -y .*@latest",
+          "flags": ""
+        },
+        {
+          "source": "pip install git\\+",
+          "flags": ""
+        },
+        {
+          "source": "go install .*@latest",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "category:dependency-drift",
+        "topic:pinning",
+        "severity:silent-failure"
+      ],
+      "scope": null,
+      "message": "## Lesson: Pin any tool launched from an unpinned VCS ref\nAn MCP server launched via `uvx --from git+https://github.com/org/repo` with no ref resolved upstream main on every start. Five distinct builds landed in the local cache in two days, and one made a config field required - silently breaking project activation across the machine. Nothing reported the tool was degraded; work simply continued without it.\n**Fix**: Treat `--from git+<url>` with no @ref, and any `@latest` or unpinned install, as a live dependency on someone else's unreleased main. Pin to a tag or SHA so upgrades are deliberate. Where a docs or reference artifact also pins a version, both must use the SAME coordinate system - a skill pinning a PyPI version while the runtime tracks git main cannot detect its own drift.",
+      "summary": "Pin any tool launched from an unpinned VCS ref",
+      "problem": "An MCP server launched via `uvx --from git+https://github.com/org/repo` with no ref resolved upstream main on every start. Five distinct builds landed in the local cache in two days, and one made a config field required - silently breaking project activation across the machine. Nothing reported the tool was degraded; work simply continued without it.",
+      "solution": "Treat `--from git+<url>` with no @ref, and any `@latest` or unpinned install, as a live dependency on someone else's unreleased main. Pin to a tag or SHA so upgrades are deliberate. Where a docs or reference artifact also pins a version, both must use the SAME coordinate system - a skill pinning a PyPI version while the runtime tracks git main cannot detect its own drift."
     },
     "01KMZ3C0KEE5ZCSQWZZXQZZH67": {
       "slug": "chrome-devtools-econnrefused-when-chrome-5079",
