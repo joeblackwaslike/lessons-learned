@@ -19,8 +19,15 @@ function HomepageHero() {
         <p className="hero__subtitle">
           Stop repeating Claude's mistakes. Every session, automatically.
         </p>
+        <img
+          src="/lessons-learned/img/demo.gif"
+          alt="lessons-learned: a session emits a #lesson tag, it's scanned, reviewed, promoted, and the next session's PreToolUse hook injects the warning before the mistake repeats"
+          className={styles.heroDemo}
+        />
         <div className={styles.installCommand}>
-          claude /plugin install lessons-learned@agent-marketplace
+          claude plugin marketplace add joeblackwaslike/agent-marketplace
+          <br />
+          claude plugin install lessons-learned@agent-marketplace
         </div>
         <div className={styles.buttons}>
           <Link
