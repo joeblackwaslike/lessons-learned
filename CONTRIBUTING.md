@@ -13,7 +13,7 @@ Pre-commit hooks are installed automatically via `npm ci` (Husky runs `prepare`)
 ## Running tests
 
 ```bash
-npm test                  # all 188 tests
+npm test                  # all 297 tests
 npm run test:unit         # pure function tests — fast, no I/O
 npm run test:integration  # subprocess + real temp files
 npm run test:e2e          # cross-agent protocol tests
@@ -50,9 +50,19 @@ node scripts/lessons.mjs add
 
 The CLI prompts for summary, problem, solution, trigger patterns, and tags. It enforces validation rules before writing.
 
-### Option 2 — Direct JSON edit
+### Option 2 — Non-interactive JSON/file/stdin
 
-Edit `data/lessons.json` directly, then rebuild the manifest:
+```bash
+node scripts/lessons.mjs add --json '{"summary":"...","problem":"...","solution":"..."}'
+node scripts/lessons.mjs add --file lesson.json
+echo '{"summary":"...","problem":"...","solution":"..."}' | node scripts/lessons.mjs add
+```
+
+All lessons live in `data/lessons.db` (SQLite) — **never edit it directly**. Every
+mutation goes through the CLI (`add`, `edit --patch`, `promote`, `purge`, `restore`),
+which enforces validation and automatically rebuilds `data/lesson-manifest.json`
+for active-lesson changes. To rebuild the manifest manually after any out-of-band
+change:
 
 ```bash
 node scripts/lessons.mjs build
@@ -60,7 +70,7 @@ node scripts/lessons.mjs build
 
 ### Validation rules
 
-`lessons add` enforces these before writing. Direct edits should respect them too:
+`lessons add` enforces these before writing:
 
 - `summary`, `problem`, `solution` each ≥ 20 characters
 - No unfilled template placeholders (`<what_went_wrong>` etc.)
@@ -70,32 +80,36 @@ node scripts/lessons.mjs build
 
 ### Trigger patterns
 
-Lessons match tool calls via three trigger mechanisms:
-
-```json
-"triggers": {
-  "commandPatterns": ["\\bpytest\\b(?!.*(--no-header))"],
-  "pathPatterns": ["**/*.test.py", "pytest.ini"],
-  "toolNames": ["Bash"],
-  "sessionStart": true
-}
-```
-
-- `commandPatterns` — regex array tested against the Bash command string
-- `pathPatterns` — glob array tested against `Read`/`Edit`/`Write` file paths
-- `toolNames` — exact match on tool name (e.g. inject on every `Bash` call)
-- `sessionStart: true` — inject at session start instead of PreToolUse
-
-### Blocking a tool call
-
-Set `"block": true` and `"blockReason"` to deny the tool call entirely instead of injecting context:
+Lessons match tool calls via top-level fields on the lesson record itself (see the
+field reference in `AGENTS.md` for the full list):
 
 ```json
 {
-  "block": true,
-  "blockReason": "Running pytest without --no-header hangs in this environment."
+  "toolNames": ["Bash"],
+  "commandPatterns": ["\\bpytest\\b(?!.*(--no-header))"],
+  "pathPatterns": ["**/*.test.py", "pytest.ini"]
 }
 ```
+
+- `toolNames` — **required.** Exact tool name match; a lesson never fires without
+  this, even if `commandPatterns`/`pathPatterns` are set
+- `commandPatterns` — regex array tested against the Bash command string
+- `pathPatterns` — glob array tested against `Read`/`Edit`/`Write` file paths
+- `type: "protocol"` or `type: "directive"` — inject at session start instead of
+  `PreToolUse` (there is no separate `sessionStart` flag)
+
+### Blocking a tool call
+
+Set `type: "guard"` (instead of `hint`) to deny the tool call entirely — the
+`summary`/`problem`/`solution` fields become the block reason shown to the agent:
+
+```bash
+node scripts/lessons.mjs edit --id <id> --patch '{"type": "guard", "commandMatchTarget": "executable"}'
+```
+
+Use `commandMatchTarget: "executable"` on guards so the pattern is tested against
+the command with quoted strings stripped — this stops a guard from firing on
+trigger words that only appear inside a quoted argument (e.g. `--patch '...'`).
 
 ## Emitting lessons from sessions
 
@@ -118,13 +132,15 @@ Tags follow `category:value` format. Common categories: `lang:`, `tool:`, `sever
 ## Scanning for lessons
 
 ```bash
-node scripts/lessons.mjs scan              # incremental scan of session logs
-node scripts/lessons.mjs scan candidates   # cross-project recurring patterns only
-node scripts/lessons.mjs scan promote 3    # promote candidate #3 into the store
-node scripts/lessons.mjs review            # review Tier 2 heuristic candidates
+node scripts/lessons.mjs scan                # incremental scan of session logs (Tier 1 + Tier 2)
+node scripts/lessons.mjs scan aggregate      # list ranked candidates from the DB (JSON)
+node scripts/lessons.mjs review              # review candidates interactively, grouped by tag
+node scripts/lessons.mjs promote --ids <id1>,<id2>   # promote reviewed candidates to active
 ```
 
-Tier 1 (structured `#lesson` tags) auto-promote. Tier 2 (heuristic) require `scan promote`.
+Both Tier 1 (structured `#lesson` tags) and Tier 2 (heuristic pattern detection)
+write to `status: "candidate"` — nothing is auto-promoted. `lessons review` (or the
+`/lessons:review` slash command) is what moves candidates to `active`.
 
 ## Test architecture
 
@@ -177,9 +193,10 @@ scripts/
     incremental.mjs Byte-offset state for incremental JSONL scanning
 
 data/
-  lessons.json          Source of truth — edit this
-  lesson-manifest.json  Pre-compiled runtime manifest — regenerate with `lessons build`
-  config.json           Injection and scanning configuration
+  lessons.db              Source of truth (SQLite) — CLI-only, never edit directly
+  lesson-manifest.json    Generated by `lessons build` — do not edit
+  config.json             Injection and scanning configuration
+  obsoleted-lessons.json  Append-only ledger of lessons archived as model-obsolete
 ```
 
 ## PR guidelines
