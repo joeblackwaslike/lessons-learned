@@ -11,6 +11,7 @@ const config: Config = {
   projectName: 'lessons-learned',
   deploymentBranch: 'gh-pages',
   trailingSlash: false,
+  favicon: 'img/favicon.ico',
 
   onBrokenLinks: 'warn',
   onBrokenMarkdownLinks: 'warn',
@@ -44,8 +45,13 @@ const config: Config = {
   ],
 
   themeConfig: {
+    image: 'img/social-card.png',
     navbar: {
       title: 'lessons-learned',
+      logo: {
+        alt: 'lessons-learned logo',
+        src: 'img/logo-512.png',
+      },
       items: [
         {
           type: 'docSidebar',
