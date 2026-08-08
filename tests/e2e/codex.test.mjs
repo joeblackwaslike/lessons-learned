@@ -62,8 +62,13 @@ describe('Codex: shell → Bash matching', () => {
 
 describe('Codex: apply_patch → Edit matching', () => {
   it('apply_patch on a test .py file triggers injection', async () => {
+    // apply_patch normalizes to Edit; the fixture lesson content-gates on
+    // new_string (core/match.mjs ll-cgu), so path alone won't trigger it.
     const { stdout, exitCode } = await run(HOOK_SCRIPT, {
-      stdin: payload('apply_patch', { file_path: '/project/tests/test_auth.py' }),
+      stdin: payload('apply_patch', {
+        file_path: '/project/tests/test_auth.py',
+        new_string: 'with mock.patch("auth.get_client") as m:',
+      }),
       env: baseEnv,
     });
     assert.equal(exitCode, 0);

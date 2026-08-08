@@ -54,8 +54,13 @@ describe('Claude Code: Bash block', () => {
 
 describe('Claude Code: Edit inject (file path match)', () => {
   it('editing a test .py file injects the mock-patch lesson', async () => {
+    // The fixture lesson content-gates on the edit payload (see core/match.mjs
+    // ll-cgu): path alone is no longer enough, the new_string must also match.
     const { stdout, exitCode } = await run(HOOK_SCRIPT, {
-      stdin: payload('Edit', { file_path: '/project/tests/test_service.py' }),
+      stdin: payload('Edit', {
+        file_path: '/project/tests/test_service.py',
+        new_string: 'with mock.patch("service.get_client") as m:',
+      }),
       env: baseEnv,
     });
     assert.equal(exitCode, 0);

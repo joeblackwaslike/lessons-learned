@@ -64,8 +64,13 @@ describe('Gemini: run_shell_command → Bash matching', () => {
 
 describe('Gemini: replace_in_file → Edit matching', () => {
   it('replace_in_file on test .py file triggers injection', async () => {
+    // replace_in_file normalizes to Edit; the fixture lesson content-gates on
+    // new_string (core/match.mjs ll-cgu), so path alone won't trigger it.
     const { stdout, exitCode } = await run(HOOK_SCRIPT, {
-      stdin: payload('replace_in_file', { file_path: '/project/tests/test_service.py' }),
+      stdin: payload('replace_in_file', {
+        file_path: '/project/tests/test_service.py',
+        new_string: 'with mock.patch("service.get_client") as m:',
+      }),
       env: baseEnv,
     });
     assert.equal(exitCode, 0);
@@ -76,8 +81,13 @@ describe('Gemini: replace_in_file → Edit matching', () => {
 
 describe('Gemini: write_file → Write matching', () => {
   it('write_file on test .py file triggers injection', async () => {
+    // write_file normalizes to Write; the fixture lesson content-gates on the
+    // written content (core/match.mjs ll-cgu), so path alone won't trigger it.
     const { stdout, exitCode } = await run(HOOK_SCRIPT, {
-      stdin: payload('write_file', { file_path: '/project/tests/test_new.py' }),
+      stdin: payload('write_file', {
+        file_path: '/project/tests/test_new.py',
+        content: 'with mock.patch("service.get_client") as m:',
+      }),
       env: baseEnv,
     });
     assert.equal(exitCode, 0);
