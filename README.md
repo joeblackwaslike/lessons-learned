@@ -11,7 +11,7 @@
 
 _Real terminal output, not staged — see [`website/static/demo.tape`](website/static/demo.tape) to reproduce it._
 
-**136 active lessons** · **87 eval scenarios** measuring whether injection actually changes behavior · **37 pages** of docs · **4 platforms** (Claude Code, Codex CLI, Gemini CLI, opencode)
+**137 active lessons** · **87 eval scenarios** measuring whether injection actually changes behavior · **37 pages** of docs · **4 platforms** (Claude Code, Codex CLI, Gemini CLI, opencode)
 
 ```bash
 # Step 1 — add the marketplace (once per machine)
@@ -220,14 +220,17 @@ Every scenario runs a **control arm** (no lesson) against a **treatment arm**
 model would have gotten it right anyway.
 
 That measurement infrastructure has caught real bugs in itself. The eval
-provider silently ran the agent arm on a different, stronger model than the
-run was labeled and cached under — so a 2026-06 full-suite result reading
-"~65% of lessons are obsolete" was confounded. From
+provider once silently ran the agent arm on a different, stronger model than
+the run was labeled and cached under — so a 2026-06 full-suite result reading
+"~65% of lessons are obsolete" was confounded, and every archive decision from
+that run had to be treated as provisional until re-validated on a pinned
+model. That re-validation is now complete. From
 [`evals/FINDINGS.md`](evals/FINDINGS.md):
 
-> The improvement may be **the model, not lesson obsolescence** — any archive
-> decision based on that run is provisional until re-validated on a pinned
-> model.
+> 30/35 originally-archived lessons reproduced `CONTROL_CORRECT` on
+> `claude-sonnet-4-6` (genuinely obsolete, not an Opus artifact) ... One
+> lesson (H12, bare `except`) was restored and rewritten — `except Exception`
+> is still a real hazard on Sonnet, not obsolete.
 
 The fix (pin the agent model, clear the cache, re-validate) is now a
 documented, repeatable process — see [Pruning Obsolete Lessons](website/docs/developer-guide/pruning-obsolete-lessons.md).
