@@ -75,7 +75,10 @@ describe('Codex: apply_patch → Edit matching', () => {
     assert.equal(exitCode, 0);
     const out = JSON.parse(stdout);
     assert.ok(out.hookSpecificOutput?.additionalContext, 'expected injection for apply_patch tool');
-    assert.ok(out.hookSpecificOutput.additionalContext.includes(MOCK_PATCH_DISTINCTIVE_TEXT));
+    assert.ok(
+      out.hookSpecificOutput.additionalContext.includes(MOCK_PATCH_DISTINCTIVE_TEXT),
+      `expected additionalContext to include ${JSON.stringify(MOCK_PATCH_DISTINCTIVE_TEXT)}`
+    );
   });
 });
 

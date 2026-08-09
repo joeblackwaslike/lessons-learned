@@ -67,7 +67,10 @@ describe('Claude Code: Edit inject (file path match)', () => {
     assert.equal(exitCode, 0);
     const out = JSON.parse(stdout);
     assert.ok(out.hookSpecificOutput?.additionalContext);
-    assert.ok(out.hookSpecificOutput.additionalContext.includes(MOCK_PATCH_DISTINCTIVE_TEXT));
+    assert.ok(
+      out.hookSpecificOutput.additionalContext.includes(MOCK_PATCH_DISTINCTIVE_TEXT),
+      `expected additionalContext to include ${JSON.stringify(MOCK_PATCH_DISTINCTIVE_TEXT)}`
+    );
   });
 });
 
