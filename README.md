@@ -41,7 +41,7 @@ The feedback loop tightens over time. The more sessions, the stronger the preven
 
 **Step 1 — Claude makes a mistake and emits a lesson tag:**
 
-```
+```text
 #lesson
 tool: Bash
 trigger: git stash
@@ -54,7 +54,7 @@ tags: tool:git, severity:data-loss
 
 **Step 2 — Next session startup scans the log:**
 
-```
+```text
 $ node scripts/lessons.mjs scan --verbose
 [scan] Scanning ~/.claude/projects/ for new lessons...
 [scan] Processing session: abc123-2024-01-15.jsonl (42.3 KB)
@@ -68,7 +68,7 @@ $ node scripts/lessons.mjs scan --verbose
 
 **Step 3 — Review, then promote (review is read-only; promotion is explicit):**
 
-```
+```text
 $ node scripts/lessons.mjs review
 ── tool:git (1) ───────────────────────────────────────────────
 
@@ -93,7 +93,7 @@ Built manifest: 1 lessons included, 0 excluded
 **Step 4 — Warning fires before the next `git stash`** (this is the actual
 `additionalContext` a `PreToolUse` hook injects, extracted with `jq`):
 
-```
+```text
 <details>
 <summary>[lessons-learned] 1 lesson matched for `git stash` — <em>Why am I seeing this?</em></summary>
 
@@ -114,7 +114,8 @@ including new files.
 ```
 
 See it happen live in the demo GIF at the top of this page, or reproduce it
-yourself with `vhs website/static/demo.tape`.
+yourself with `vhs website/static/demo.tape` (requires [`vhs`](https://github.com/charmbracelet/vhs)
+and `jq` on `PATH`).
 
 ---
 
@@ -262,7 +263,7 @@ Cost: ~$0.10–0.25/day at Haiku rates. Throttled to once per 24 hours.
 ## Development
 
 ```bash
-npm test                  # all 297 tests
+npm test                  # 297 tests at time of writing
 npm run test:unit         # unit tests only (fast)
 npm run test:integration  # integration tests
 npm run lint              # eslint

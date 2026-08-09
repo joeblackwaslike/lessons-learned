@@ -1,6 +1,7 @@
 import clsx from 'clsx';
 import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
+import useBaseUrl from '@docusaurus/useBaseUrl';
 import Layout from '@theme/Layout';
 import Heading from '@theme/Heading';
 import Mermaid from '@theme/Mermaid';
@@ -10,6 +11,7 @@ import styles from './index.module.css';
 
 function HomepageHero() {
   const { siteConfig } = useDocusaurusContext();
+  const demoGifUrl = useBaseUrl('img/demo.gif');
   return (
     <header className={clsx('hero hero--primary', styles.heroBanner)}>
       <div className="container">
@@ -20,7 +22,7 @@ function HomepageHero() {
           Stop repeating Claude's mistakes. Every session, automatically.
         </p>
         <img
-          src="/lessons-learned/img/demo.gif"
+          src={demoGifUrl}
           alt="Animated demo of lessons-learned preventing repeated mistakes in Claude sessions"
           className={styles.heroDemo}
         />

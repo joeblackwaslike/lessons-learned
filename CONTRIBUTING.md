@@ -13,7 +13,7 @@ Pre-commit hooks are installed automatically via `npm ci` (Husky runs `prepare`)
 ## Running tests
 
 ```bash
-npm test                  # all 297 tests
+npm test                  # 297 tests at time of writing
 npm run test:unit         # pure function tests — fast, no I/O
 npm run test:integration  # subprocess + real temp files
 npm run test:e2e          # cross-agent protocol tests
@@ -53,10 +53,17 @@ The CLI prompts for summary, problem, solution, trigger patterns, and tags. It e
 ### Option 2 — Non-interactive JSON/file/stdin
 
 ```bash
-node scripts/lessons.mjs add --json '{"summary":"...","problem":"...","solution":"..."}'
+node scripts/lessons.mjs add --json '{"summary":"...","problem":"...","solution":"...","tool":"Bash"}'
 node scripts/lessons.mjs add --file lesson.json
-echo '{"summary":"...","problem":"...","solution":"..."}' | node scripts/lessons.mjs add
+echo '{"summary":"...","problem":"...","solution":"...","tool":"Bash"}' | node scripts/lessons.mjs add
 ```
+
+`tool` (and `commandPatterns`/`pathPatterns`) are optional at intake — only
+`summary`/`problem`/`solution` are enforced — but a lesson added without a `tool`
+stores fine and simply never matches anything, since `toolNames` ends up empty.
+Always set `tool`, unless the lesson is meant to inject at session start
+regardless of tool calls (`type: "protocol"` or `type: "directive"` — see the
+field reference in `AGENTS.md`).
 
 All lessons live in `data/lessons.db` (SQLite) — **never edit it directly**. Every
 mutation goes through the CLI (`add`, `edit --patch`, `promote`, `purge`, `restore`),
@@ -134,13 +141,18 @@ Tags follow `category:value` format. Common categories: `lang:`, `tool:`, `sever
 ```bash
 node scripts/lessons.mjs scan                # incremental scan of session logs (Tier 1 + Tier 2)
 node scripts/lessons.mjs scan aggregate      # list ranked candidates from the DB (JSON)
-node scripts/lessons.mjs review              # review candidates interactively, grouped by tag
+node scripts/lessons.mjs review              # validate candidates (read-only PASS/FAIL), grouped by tag
 node scripts/lessons.mjs promote --ids <id1>,<id2>   # promote reviewed candidates to active
 ```
 
 Both Tier 1 (structured `#lesson` tags) and Tier 2 (heuristic pattern detection)
-write to `status: "candidate"` — nothing is auto-promoted. `lessons review` (or the
-`/lessons:review` slash command) is what moves candidates to `active`.
+write to `status: "candidate"` — nothing is auto-promoted. `lessons review` only
+_reports_ PASS/FAIL against the intake validation rules; `lessons promote --ids ...`
+is the explicit, separate step that moves candidates to `active`. The
+`/lessons:review` slash command is a higher-level conversational wrapper that runs
+both — it shows each candidate (like `review`) and then prompts you per-candidate,
+calling `promote --ids` or `promote --archive` based on your answer — but the raw
+`review` subcommand by itself never promotes anything.
 
 ## Test architecture
 
