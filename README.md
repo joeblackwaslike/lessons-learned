@@ -7,7 +7,7 @@
 
 > Stop repeating Claude's mistakes. Every session, automatically.
 
-![lessons-learned: a session emits a #lesson tag, it's scanned, reviewed, promoted, and the next session's PreToolUse hook injects the warning before the mistake repeats](website/static/img/demo.gif)
+![Animated terminal demo of lessons-learned capturing a mistake and preventing it from repeating](website/static/img/demo.gif)
 
 _Real terminal output, not staged — see [`website/static/demo.tape`](website/static/demo.tape) to reproduce it._
 

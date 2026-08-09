@@ -18,6 +18,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { run } from '../helpers/subprocess.mjs';
 import { fixturePath } from '../helpers/fixtures.mjs';
+import { MOCK_PATCH_SNIPPET, MOCK_PATCH_DISTINCTIVE_TEXT } from '../helpers/mock-patch-fixture.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const HOOK_SCRIPT = join(__dirname, '..', '..', 'hooks', 'pretooluse-lesson-inject.mjs');
@@ -69,13 +70,14 @@ describe('Gemini: replace_in_file → Edit matching', () => {
     const { stdout, exitCode } = await run(HOOK_SCRIPT, {
       stdin: payload('replace_in_file', {
         file_path: '/project/tests/test_service.py',
-        new_string: 'with mock.patch("service.get_client") as m:',
+        new_string: MOCK_PATCH_SNIPPET,
       }),
       env: baseEnv,
     });
     assert.equal(exitCode, 0);
     const out = JSON.parse(stdout);
     assert.ok(out.hookSpecificOutput?.additionalContext);
+    assert.match(out.hookSpecificOutput.additionalContext, new RegExp(MOCK_PATCH_DISTINCTIVE_TEXT));
   });
 });
 
@@ -86,13 +88,14 @@ describe('Gemini: write_file → Write matching', () => {
     const { stdout, exitCode } = await run(HOOK_SCRIPT, {
       stdin: payload('write_file', {
         file_path: '/project/tests/test_new.py',
-        content: 'with mock.patch("service.get_client") as m:',
+        content: MOCK_PATCH_SNIPPET,
       }),
       env: baseEnv,
     });
     assert.equal(exitCode, 0);
     const out = JSON.parse(stdout);
     assert.ok(out.hookSpecificOutput?.additionalContext);
+    assert.match(out.hookSpecificOutput.additionalContext, new RegExp(MOCK_PATCH_DISTINCTIVE_TEXT));
   });
 });
 

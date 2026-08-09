@@ -21,7 +21,7 @@ function HomepageHero() {
         </p>
         <img
           src="/lessons-learned/img/demo.gif"
-          alt="lessons-learned: a session emits a #lesson tag, it's scanned, reviewed, promoted, and the next session's PreToolUse hook injects the warning before the mistake repeats"
+          alt="Animated demo of lessons-learned preventing repeated mistakes in Claude sessions"
           className={styles.heroDemo}
         />
         <div className={styles.installCommand}>
