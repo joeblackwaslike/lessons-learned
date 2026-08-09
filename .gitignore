@@ -63,3 +63,4 @@ evals/.solidlsp-cache/
 # Docusaurus build output (not tracked, prevents lint-staged from scanning minified JS)
 website/build/
 website/.docusaurus/
+.demo-data*

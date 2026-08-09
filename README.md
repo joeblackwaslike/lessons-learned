@@ -7,18 +7,11 @@
 
 > Stop repeating Claude's mistakes. Every session, automatically.
 
-```mermaid
-flowchart LR
-    A["Claude makes\na mistake"] --> B["Emits #lesson tag\nor scanner detects it"]
-    B --> C["Candidate in\nlessons.db"]
-    C --> D["Review and promote\nvia /lessons:review"]
-    D --> E["lesson-manifest.json\nrebuilt"]
-    E --> F["Next session:\nPreToolUse hook"]
-    F --> G{"Pattern\nmatches?"}
-    G -- Yes --> H["Warning injected\nbefore tool call"]
-    G -- No --> I["Silently skipped"]
-    H --> J["Mistake avoided"]
-```
+![Animated terminal demo of lessons-learned capturing a mistake and preventing it from repeating](website/static/img/demo.gif)
+
+_Real terminal output, not staged — see [`website/static/demo.tape`](website/static/demo.tape) to reproduce it._
+
+**136 active lessons** · **87 eval scenarios** measuring whether injection actually changes behavior · **37 pages** of docs · **4 platforms** (Claude Code, Codex CLI, Gemini CLI, opencode)
 
 ```bash
 # Step 1 — add the marketplace (once per machine)
@@ -48,7 +41,7 @@ The feedback loop tightens over time. The more sessions, the stronger the preven
 
 **Step 1 — Claude makes a mistake and emits a lesson tag:**
 
-```
+```text
 #lesson
 tool: Bash
 trigger: git stash
@@ -61,7 +54,7 @@ tags: tool:git, severity:data-loss
 
 **Step 2 — Next session startup scans the log:**
 
-```
+```text
 $ node scripts/lessons.mjs scan --verbose
 [scan] Scanning ~/.claude/projects/ for new lessons...
 [scan] Processing session: abc123-2024-01-15.jsonl (42.3 KB)
@@ -73,37 +66,56 @@ $ node scripts/lessons.mjs scan --verbose
 [scan] New candidates: 2 | Duplicates skipped: 0 | Total in DB: 47
 ```
 
-**Step 3 — Review and promote:**
+**Step 3 — Review, then promote (review is read-only; promotion is explicit):**
 
+```text
+$ node scripts/lessons.mjs review
+── tool:git (1) ───────────────────────────────────────────────
+
+┌─ [1/1] ✓ PASS ───────────────────────────────────────────────────────
+│ Bash                      conf:0.8   pri:4    sessions:1
+│ Tags: tool:git, severity:data-loss
+│ ID:   01KZHWHQY4MHBKBZR0245NDVV9
+├─ Problem ────────────────────────────────────────────────────────────
+│ git stash silently omits untracked files -- they stay in the working tree...
+├─ Solution ───────────────────────────────────────────────────────────
+│ Use `git stash -u` (or `--include-untracked`) to capture all changes.
+└──────────────────────────────────────────────────────────────────────
+
+1 pass, 0 fail
+
+$ node scripts/lessons.mjs promote --ids 01KZHWHQY4MHBKBZR0245NDVV9
+Promoted 1 lesson(s):
+  + git-stash-silently-omits-untracked-files-3232 (01KZHWHQY4MHBKBZR0245NDVV9)
+Built manifest: 1 lessons included, 0 excluded
 ```
-$ node scripts/lessons.mjs review --batch=1
-── tool:git (1) ──────────────────────────────────────────
 
-CANDIDATE: git-stash-untracked-files-a3f1
-  Tool: Bash  Priority: 7  Confidence: 0.92
-  Trigger: git stash
-  Problem: git stash silently omits untracked files, risking data loss
-  Solution: Use git stash -u to include untracked files
+**Step 4 — Warning fires before the next `git stash`** (this is the actual
+`additionalContext` a `PreToolUse` hook injects, extracted with `jq`):
 
-  Validation: PASS (length ok, no placeholders, no duplicates)
+```text
+<details>
+<summary>[lessons-learned] 1 lesson matched for `git stash` — <em>Why am I seeing this?</em></summary>
 
-Promote? [y]es / [n]o / [s]kip / [q]uit: y
-✓ Promoted git-stash-untracked-files-a3f1 → active
-[build] Manifest rebuilt: 48 lessons included
+The **lessons-learned** plugin matched this tool call against known pitfall
+patterns and injected the following warnings for Claude to consider before
+executing.
+
+---
+
+## Lesson: git stash silently omits untracked files -- they stay in the working tree and are not stashed.
+git stash silently omits untracked files -- they stay in the working tree and
+are not stashed. Running git stash with new files present loses track of
+them across a branch switch.
+**Fix**: Use `git stash -u` (or `--include-untracked`) to capture all changes,
+including new files.
+
+</details>
 ```
 
-**Step 4 — Warning fires before the next `git stash`:**
-
-```
-# Claude is about to run: git stash
-
-⚠ Lesson: git stash silently omits untracked files
-
-Problem: git stash silently omits untracked files, risking data loss.
-Running git stash when new/untracked files are present does NOT stash them.
-
-Fix: Use `git stash -u` (or `--include-untracked`) to capture all changes.
-```
+See it happen live in the demo GIF at the top of this page, or reproduce it
+yourself with `vhs website/static/demo.tape` (requires [`vhs`](https://github.com/charmbracelet/vhs)
+and `jq` on `PATH`).
 
 ---
 
@@ -120,7 +132,7 @@ Fix: Use `git stash -u` (or `--include-untracked`) to capture all changes.
 
 **Requirements:** Node.js ≥ 22.5
 
-For manual hook wiring and platform-specific config, see [docs/user-guide/install.md](docs/user-guide/install.md).
+For manual hook wiring and platform-specific config, see [Installation](website/docs/user-guide/installation.md).
 
 ---
 
@@ -148,7 +160,7 @@ graph LR
 ```
 
 1. **Capture** — Claude emits `#lesson` tags in responses; the background scanner processes previous session JSONL files on startup using up to 4 tiers (structured tags, heuristic patterns, structural insights, LLM deep scan)
-2. **Review** — Candidates land in `lessons.db`; `lessons review` validates and promotes them to active
+2. **Review & promote** — Candidates land in `lessons.db`; `lessons review` validates them (PASS/FAIL, read-only) and `lessons promote --ids ...` moves the ones worth keeping to active
 3. **Build** — `lessons build` pre-compiles regexes into `lesson-manifest.json` for zero-latency runtime lookup
 4. **Inject** — At each `PreToolUse` event, `matchLessons()` checks tool name + command patterns + file paths; matching lessons prepend as `additionalContext` before the tool runs
 
@@ -189,6 +201,42 @@ graph LR
 
 ---
 
+## Measuring whether it actually works
+
+Injecting a warning is easy. Knowing whether it _changed the agent's behavior_
+is the hard part — so lessons-learned has an eval harness for that, not just
+for the plugin's plumbing.
+
+**87 hand-crafted scenarios** in [`evals/`](evals/), each graded on 3 tiers:
+
+| Tier | Checks                          | How                                                                  |
+| ---- | ------------------------------- | -------------------------------------------------------------------- |
+| 1    | Filesystem/command outcome      | A deterministic `hidden-checks/verify.mjs`                           |
+| 2    | Tool-call sequence              | Declarative trajectory rules in `scenario.json`                      |
+| 3    | Did the lesson change behavior? | An LLM judge compares the agent with vs. without the lesson injected |
+
+Every scenario runs a **control arm** (no lesson) against a **treatment arm**
+(lesson injected) so a pass means the lesson caused the fix, not that the
+model would have gotten it right anyway.
+
+That measurement infrastructure has caught real bugs in itself. The eval
+provider silently ran the agent arm on a different, stronger model than the
+run was labeled and cached under — so a 2026-06 full-suite result reading
+"~65% of lessons are obsolete" was confounded. From
+[`evals/FINDINGS.md`](evals/FINDINGS.md):
+
+> The improvement may be **the model, not lesson obsolescence** — any archive
+> decision based on that run is provisional until re-validated on a pinned
+> model.
+
+The fix (pin the agent model, clear the cache, re-validate) is now a
+documented, repeatable process — see [Pruning Obsolete Lessons](website/docs/developer-guide/pruning-obsolete-lessons.md).
+Lessons the model has genuinely outgrown are archived, not deleted, into an
+append-only [`obsoleted-lessons.json`](data/obsoleted-lessons.json) ledger so
+a future model regression can restore them.
+
+---
+
 ## Configuration
 
 Edit `data/config.json` directly. Every field has a `LESSONS_*` env var equivalent that takes precedence.
@@ -215,7 +263,7 @@ Cost: ~$0.10–0.25/day at Haiku rates. Throttled to once per 24 hours.
 ## Development
 
 ```bash
-npm test                  # all 175+ tests
+npm test                  # 297 tests at time of writing
 npm run test:unit         # unit tests only (fast)
 npm run test:integration  # integration tests
 npm run lint              # eslint

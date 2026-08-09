@@ -1,6 +1,7 @@
 import clsx from 'clsx';
 import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
+import useBaseUrl from '@docusaurus/useBaseUrl';
 import Layout from '@theme/Layout';
 import Heading from '@theme/Heading';
 import Mermaid from '@theme/Mermaid';
@@ -10,6 +11,7 @@ import styles from './index.module.css';
 
 function HomepageHero() {
   const { siteConfig } = useDocusaurusContext();
+  const demoGifUrl = useBaseUrl('img/demo.gif');
   return (
     <header className={clsx('hero hero--primary', styles.heroBanner)}>
       <div className="container">
@@ -19,8 +21,15 @@ function HomepageHero() {
         <p className="hero__subtitle">
           Stop repeating Claude's mistakes. Every session, automatically.
         </p>
+        <img
+          src={demoGifUrl}
+          alt="Animated demo of lessons-learned preventing repeated mistakes in Claude sessions"
+          className={styles.heroDemo}
+        />
         <div className={styles.installCommand}>
-          claude /plugin install lessons-learned@agent-marketplace
+          claude plugin marketplace add joeblackwaslike/agent-marketplace
+          <br />
+          claude plugin install lessons-learned@agent-marketplace
         </div>
         <div className={styles.buttons}>
           <Link
