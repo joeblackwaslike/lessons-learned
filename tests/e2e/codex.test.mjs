@@ -67,7 +67,7 @@ describe('Codex: apply_patch → Edit matching', () => {
     // new_string (core/match.mjs ll-cgu), so path alone won't trigger it.
     const { stdout, exitCode } = await run(HOOK_SCRIPT, {
       stdin: payload('apply_patch', {
-        file_path: '/project/tests/test_auth.py',
+        file_path: '/project/tests/test_service.py',
         new_string: MOCK_PATCH_SNIPPET,
       }),
       env: baseEnv,
@@ -75,7 +75,7 @@ describe('Codex: apply_patch → Edit matching', () => {
     assert.equal(exitCode, 0);
     const out = JSON.parse(stdout);
     assert.ok(out.hookSpecificOutput?.additionalContext, 'expected injection for apply_patch tool');
-    assert.match(out.hookSpecificOutput.additionalContext, new RegExp(MOCK_PATCH_DISTINCTIVE_TEXT));
+    assert.ok(out.hookSpecificOutput.additionalContext.includes(MOCK_PATCH_DISTINCTIVE_TEXT));
   });
 });
 
