@@ -1,3 +1,7 @@
+<!-- source of logo-512.png and favicon.ico — regenerate after editing with:
+     rsvg-convert -w 512 -h 512 logo.svg -o logo-512.png
+     rsvg-convert -w 16 -h 16 logo.svg -o /tmp/f16.png && rsvg-convert -w 32 -h 32 logo.svg -o /tmp/f32.png
+     magick /tmp/f16.png /tmp/f32.png favicon.ico -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
     <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
