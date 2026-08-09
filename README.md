@@ -52,45 +52,53 @@ tags: tool:git, severity:data-loss
 #/lesson
 ```
 
-**Step 2 — Next session startup scans the log:**
+**Step 2 — Next session, review and promote it with one command:**
+
+`/lessons:review` scans since the last check, filters candidates, and walks you
+through each one conversationally — no path to your checkout, no flags to
+remember:
+
+```text
+You: /lessons:review
+
+Claude: Found 1 candidate.
+
+--- Candidate 1 (Tier 1) ---
+Problem: git stash silently omits untracked files — they stay in the working
+         tree and are not stashed.
+Solution: Use git stash -u (or --include-untracked) to capture all changes.
+Tags: tool:git, severity:data-loss
+Priority: 9 (suggested)
+
+Promote this lesson? [yes / skip / edit priority]
+
+You: yes
+
+Claude: Promoted. Manifest rebuilt.
+```
+
+<details>
+<summary>Equivalent CLI, for local development against a cloned checkout</summary>
 
 ```text
 $ node scripts/lessons.mjs scan --verbose
-[scan] Scanning ~/.claude/projects/ for new lessons...
-[scan] Processing session: abc123-2024-01-15.jsonl (42.3 KB)
-  → tier1: found 1 structured lesson tag (#lesson)
-  → tier2: found 1 heuristic pattern (error→correction)
-[scan] Processing session: def456-2024-01-16.jsonl (38.1 KB)
-  → tier1: no structured tags
-  → tier2: no patterns detected
-[scan] New candidates: 2 | Duplicates skipped: 0 | Total in DB: 47
-```
+[scan] New candidates: 1 | Duplicates skipped: 0 | Total in DB: 47
 
-**Step 3 — Review, then promote (review is read-only; promotion is explicit):**
-
-```text
 $ node scripts/lessons.mjs review
-── tool:git (1) ───────────────────────────────────────────────
-
-┌─ [1/1] ✓ PASS ───────────────────────────────────────────────────────
-│ Bash                      conf:0.8   pri:4    sessions:1
-│ Tags: tool:git, severity:data-loss
-│ ID:   01KZHWHQY4MHBKBZR0245NDVV9
-├─ Problem ────────────────────────────────────────────────────────────
-│ git stash silently omits untracked files -- they stay in the working tree...
-├─ Solution ───────────────────────────────────────────────────────────
-│ Use `git stash -u` (or `--include-untracked`) to capture all changes.
-└──────────────────────────────────────────────────────────────────────
-
 1 pass, 0 fail
 
 $ node scripts/lessons.mjs promote --ids 01KZHWHQY4MHBKBZR0245NDVV9
-Promoted 1 lesson(s):
-  + git-stash-silently-omits-untracked-files-3232 (01KZHWHQY4MHBKBZR0245NDVV9)
-Built manifest: 1 lessons included, 0 excluded
+Promoted 1 lesson(s). Built manifest: 1 lessons included, 0 excluded.
 ```
 
-**Step 4 — Warning fires before the next `git stash`** (this is the actual
+`scripts/lessons.mjs` only exists inside a clone of this repo — it's the
+plugin's own internals, not something an installed plugin exposes a path to.
+Everyday use is `/lessons:*`; see [Slash Commands](website/docs/user-guide/slash-commands.md)
+for the full set.
+
+</details>
+
+**Step 3 — Warning fires before the next `git stash`** (this is the actual
 `additionalContext` a `PreToolUse` hook injects, extracted with `jq`):
 
 ```text
@@ -113,9 +121,11 @@ including new files.
 </details>
 ```
 
-See it happen live in the demo GIF at the top of this page, or reproduce it
-yourself with `vhs website/static/demo.tape` (requires [`vhs`](https://github.com/charmbracelet/vhs)
-and `jq` on `PATH`).
+The demo GIF at the top of this page shows this same flow at the CLI level —
+useful if you're developing the plugin itself against a clone. Reproduce it
+with `vhs website/static/demo.tape` (requires [`vhs`](https://github.com/charmbracelet/vhs)
+and `jq` on `PATH`). Day to day, inside Claude Code, `/lessons:review` is what
+you'd actually type.
 
 ---
 
