@@ -1,7 +1,7 @@
 ---
 name: lessons-learned
 version: 0.1.0
-description: 'Use when the user asks about the lessons-learned plugin or wants to work with it. Use when the user wants to add a lesson, capture a coding mistake for future prevention, scan session logs for new lesson candidates, promote or archive candidates from the scan output, browse active lessons, or tune injection settings. Use when the user types /lessons:add, /lessons:review, /lessons:manage, /lessons:config, /lessons:doctor, /lessons:cancel, /lessons:scope, or /lessons:help. Use when the user asks what lessons are currently active, how to get started, how lesson injection works, what commands are available, or what has recently changed. Use when the user wants to audit or QA the lesson store for dead triggers, unreachable lessons, truncated summaries, or near-duplicates. Use when the user wants to retract or cancel a lesson tag they just emitted. Use when the user wants to find lessons that should only inject in the current project and scope them. Do not wait for the user to name this plugin explicitly — if they ask about capturing mistakes, lesson candidates, the scan-promote pipeline, or lesson injection into context, this skill applies.'
+description: 'Use for the lessons-learned plugin — adding a lesson, capturing a coding mistake, scanning session logs for candidates, promoting/archiving candidates, browsing active lessons, tuning injection settings, auditing the lesson store (dead triggers, unreachable lessons, truncated summaries, near-duplicates), retracting a lesson tag, scoping a lesson to the current project, generating a session handoff, batch-importing lessons from JSON, or running the lesson effectiveness eval suite. Use when the user types /lessons:add, /lessons:review, /lessons:manage, /lessons:config, /lessons:doctor, /lessons:cancel, /lessons:scope, /lessons:help, /lessons:handoff, /lessons:onboard, or /lessons:eval, or asks what lessons are active, how to get started, how injection works, what commands exist, or what changed recently. Do not wait for the user to name this plugin explicitly — if they ask about capturing mistakes, lesson candidates, the scan-promote pipeline, or lesson injection into context, this skill applies.'
 ---
 
 # lessons-learned
@@ -44,16 +44,19 @@ candidate  →  reviewed  →  active  →  archived
 
 ## Slash commands
 
-| Command            | What it does                                                                                 |
-| ------------------ | -------------------------------------------------------------------------------------------- |
-| `/lessons:add`     | Conversationally add a lesson — Claude asks for problem, solution, trigger, then writes it   |
-| `/lessons:review`  | Scan for new candidates, LLM-filter them, present a numbered list, approve/archive → promote |
-| `/lessons:manage`  | Browse and manage all lessons by status — promote, archive, edit, restore                    |
-| `/lessons:config`  | View and tune configuration with plain-language explanations of every setting                |
-| `/lessons:doctor`  | QA audit — finds dead triggers, unreachable hints, guard false positives, truncated/long summaries, casing errors, near-duplicates. Offers automatic and interactive fixes. |
-| `/lessons:cancel`  | Retract a lesson tag after the fact — archives DB records (any status) and emits `#lesson:cancel` markers for lessons emitted this session but not yet scanned. |
+| Command            | What it does                                                                                                                                                                                |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/lessons:add`     | Conversationally add a lesson — Claude asks for problem, solution, trigger, then writes it                                                                                                  |
+| `/lessons:review`  | Scan for new candidates, LLM-filter them, present a numbered list, approve/archive → promote                                                                                                |
+| `/lessons:manage`  | Browse and manage all lessons by status — promote, archive, edit, restore                                                                                                                   |
+| `/lessons:config`  | View and tune configuration with plain-language explanations of every setting                                                                                                               |
+| `/lessons:doctor`  | QA audit — finds dead triggers, unreachable hints, guard false positives, truncated/long summaries, casing errors, near-duplicates. Offers automatic and interactive fixes.                 |
+| `/lessons:cancel`  | Retract a lesson tag after the fact — archives DB records (any status) and emits `#lesson:cancel` markers for lessons emitted this session but not yet scanned.                             |
 | `/lessons:scope`   | Scan active global lessons for ones that are project-specific (references project files, tools, or workflows), present each with reasoning, and scope approved ones to the current project. |
-| `/lessons:help`    | Print the full command and config reference — all slash commands with descriptions, current config values, and what's been added or changed recently. |
+| `/lessons:help`    | Print the full command and config reference — all slash commands with descriptions, current config values, and what's been added or changed recently.                                       |
+| `/lessons:handoff` | Generate a structured session handoff prompt, or manage precompact automation (`auto`/`on`/`off`).                                                                                          |
+| `/lessons:onboard` | Batch-import lessons from a JSON file — approve-all, reject-all, batch, or one-by-one.                                                                                                      |
+| `/lessons:eval`    | Run the lesson effectiveness eval suite against the active manifest and generate a report.                                                                                                  |
 
 ---
 

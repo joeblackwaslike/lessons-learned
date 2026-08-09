@@ -87,10 +87,12 @@ hooks/
     normalize-tool.mjs Maps Codex/Gemini tool names to canonical CC names
     dedup.mjs          3-layer dedup: env var, temp file, O_EXCL lock
     output.mjs         formatHookOutput() / formatEmptyOutput()
+    session-start.mjs  Shared SessionStart/SubagentStart injection logic
+    precompact.mjs     Transcript parsing for handoff generation
 
 core/
   match.mjs            matchLessons(manifest, toolName, command, path) → LessonMatch[]
-  select.mjs           selectCandidates(matches, budget, config) → LessonMatch[]
+  select.mjs           selectCandidates(matches, budget, config) → { injected, dropped, seen }
 
 scripts/
   lessons.mjs          Single CLI entry point — all management subcommands
@@ -141,7 +143,7 @@ When both match, the detector extracts:
 - `tool` and `trigger` from the preceding tool call
 - `confidence` in the 0.4–0.6 range (lower fidelity)
 
-Tier 2 candidates always have `needsReview: true`.
+Tier 2 candidates are written with a lower `confidence` (0.4–0.6), which keeps them out of the manifest until reviewed and promoted — there is no separate `needsReview` flag.
 
 ### Background scan
 
@@ -201,13 +203,15 @@ graph TD
 
 ### Match
 
-Three criteria, any of which can match a lesson:
+`matchLessons()` in `core/match.mjs` runs these checks in order; a lesson must pass all of them:
 
-- **`commandPatterns`** — regex tested against the `command` field of a `Bash` tool call
-- **`pathPatterns`** — glob tested against `file_path` of `Read`/`Edit`/`Write`/`Glob` tool calls
-- **`toolNames`** — exact match on the normalized tool name
+1. **`toolNames`** — exact match on the normalized tool name. This is a gate: a lesson whose `toolNames` doesn't include the current tool is skipped entirely, regardless of its other patterns.
+2. **`commandPatterns`** — regex tested against the `command` field of a `Bash` tool call. If `commandMatchTarget` is `"executable"` (the default for `guard` lessons), quoted strings are stripped from the command before matching, so a guard doesn't trigger on trigger words inside `--patch '...'` JSON values.
+3. **`pathPatterns`** — glob (converted to regex at build time) tested against `file_path` of `Read`/`Edit`/`Write`/`Glob` tool calls.
+4. **`modelPatterns`** — if non-empty, an additional AND-gate regex tested against the command or file path; the lesson only fires when a `modelPatterns` entry also matches.
+5. **`scope`** — if set, the lesson only matches when the hook's `cwd`-derived project ID equals `scope`.
 
-Matching uses `core/match.mjs` — a pure function with no side effects. All regex objects are pre-compiled from `commandRegexSources` stored as `{ source, flags }` pairs in the manifest.
+Matching is a pure function with no side effects. All regex objects are pre-compiled from `commandRegexSources`/`pathRegexSources`/`modelRegexSources`, stored as `{ source, flags }` pairs in the manifest.
 
 ### Dedup
 
@@ -231,7 +235,7 @@ The first lesson is always injected regardless of budget (prevents starvation wh
 
 ### Block
 
-If a matched lesson has `block: true`, the pipeline short-circuits after match and emits a deny decision instead of `additionalContext`:
+If a matched lesson has `type: 'guard'`, the pipeline short-circuits after match and emits a deny decision instead of `additionalContext`:
 
 ```json
 {
@@ -243,7 +247,7 @@ If a matched lesson has `block: true`, the pipeline short-circuits after match a
 }
 ```
 
-`{command}` in `blockReason` is substituted with the actual command at block time, truncated to 120 chars.
+`{command}` in the rendered message is substituted with the actual command at block time, truncated to 120 chars.
 
 ---
 
@@ -255,7 +259,7 @@ Two hooks fire on `startup`:
 
 2. **`session-start-lesson-protocol.mjs`** — emits two things as `additionalContext`:
    - The `#lesson` reporting protocol (so Claude knows how to emit lesson tags)
-   - Any lessons with `sessionStart: true` (reasoning reminders with no command/path trigger)
+   - Any lessons with `type: 'protocol'` (reasoning reminders with no command/path trigger)
 
 On `clear` or `compact`, only the reset hook fires. After compaction, `compactionReinjectionThreshold` lessons have their dedup entries removed so they re-inject in the new context.
 
@@ -267,9 +271,9 @@ On `clear` or `compact`, only the reset hook fires. After compaction, `compactio
 
 All lessons — global and project-specific — live in a single database and compile to a single `lesson-manifest.json`. Per-project files would require the hook to discover and merge them at runtime, adding latency and complexity.
 
-### No LLM in the pipeline
+### Deterministic by default, LLM-assisted as an opt-in tier
 
-Candidate evaluation is fully deterministic: field length, placeholder detection, Jaccard similarity. This keeps the pipeline fast, offline-capable, and free of API costs.
+Tier 1/2 candidate evaluation is fully deterministic: field length, placeholder detection, Jaccard similarity. This keeps the default pipeline fast, offline-capable, and free of API costs. Tier 4 deep scan is the one LLM-dependent stage, gated behind `ANTHROPIC_API_KEY` being set — it never runs by default.
 
 ### Fire-and-forget scan
 

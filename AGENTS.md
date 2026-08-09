@@ -52,22 +52,22 @@ All management goes through one entry point:
 node scripts/lessons.mjs <subcommand> [options]
 ```
 
-| Subcommand       | Purpose                                                                            |
-| ---------------- | ---------------------------------------------------------------------------------- |
-| `add`            | Add a new lesson (interactive, `--json`, `--file`, or stdin)                       |
-| `build`          | Rebuild `lesson-manifest.json` from the DB (`lessons.db`)                          |
-| `doctor`         | Audit active lessons for 11 quality dimensions; exits 1 if issues found            |
-| `edit`           | Edit a lesson field in-place (`--id <id> --patch '{"field":"value"}'}`)            |
-| `list`           | List all lessons with patterns and metadata                                        |
-| `onboard`        | Interactive onboarding for the lesson system                                       |
-| `preflight`      | Pre-PR gate: doctor checks + manifest freshness validation                         |
-| `promote`        | Promote candidates to active, archive, or patch fields (`--ids`)                   |
-| `purge`          | Archive all candidates below a confidence threshold                                |
-| `restore`        | Restore archived lessons back to active (alias for `promote --restore`)            |
-| `review`         | Review candidates against validation rules, grouped by tag                         |
-| `scan`           | Incrementally scan session logs for new candidates                                 |
-| `scan aggregate` | List ranked candidates from the DB (JSON output)                                   |
-| `windows`        | List or archive pending Tier 3 structural windows (from lexical pattern detection) |
+| Subcommand       | Purpose                                                                                                                                                                                           |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `add`            | Add a new lesson (interactive, `--json`, `--file`, or stdin)                                                                                                                                      |
+| `build`          | Rebuild `lesson-manifest.json` from the DB (`lessons.db`)                                                                                                                                         |
+| `doctor`         | Audit active lessons for quality issues (dead triggers, weak pairs, stale content, overbroad guards, invalid `requires`/`duplicatedBy`, store-level coverage gaps, etc.); exits 1 if issues found |
+| `edit`           | Edit a lesson field in-place (`--id <id> --patch '{"field":"value"}'}`)                                                                                                                           |
+| `list`           | List all lessons with patterns and metadata                                                                                                                                                       |
+| `onboard`        | Interactive onboarding for the lesson system                                                                                                                                                      |
+| `preflight`      | Pre-PR gate: doctor checks + manifest freshness validation                                                                                                                                        |
+| `promote`        | Promote candidates to active, archive, or patch fields (`--ids`)                                                                                                                                  |
+| `purge`          | Archive all candidates below a confidence threshold                                                                                                                                               |
+| `restore`        | Restore archived lessons back to active (`--ids <id,...>`; `promote` has no `--restore` flag)                                                                                                     |
+| `review`         | Review candidates against validation rules, grouped by tag                                                                                                                                        |
+| `scan`           | Incrementally scan session logs for new candidates                                                                                                                                                |
+| `scan aggregate` | List ranked candidates from the DB (JSON output)                                                                                                                                                  |
+| `windows`        | List or archive pending Tier 3 structural windows (from lexical pattern detection)                                                                                                                |
 
 Run any subcommand with `--help` for full options.
 
@@ -214,14 +214,16 @@ cwd.replace(/\//g, '-').replace(/^-/, '');
 // e.g. /Users/joe/github/foo → Users-joe-github-foo
 ```
 
-## Two-tier scanning
+## Scanning tiers
 
 - **Tier 1 (structured)**: extracts `#lesson … #/lesson` tags emitted by Claude during sessions → stored as `candidate`
 - **Tier 2 (heuristic)**: sliding-window pattern detection for error→correction sequences → stored as `candidate`
+- **Tier 3 (structural)**: `scan --structural` — lexical pattern detection over semantic windows, reviewed via `windows`
+- **Tier 4 (deep scan)**: `scan --deep` — LLM-assisted extraction, requires `ANTHROPIC_API_KEY`; also runs automatically from the background startup scan when that var is set
 
 **Scan timing**: the background scan fires at **session start** (not end). JSONL files from previous sessions are processed; the **current session's JSONL is not scanned until the next session starts**. Lessons emitted this session are invisible to the DB until then — use `/lessons:cancel` with `#lesson:cancel` markers to suppress them before they land.
 
-Both tiers write to `candidate` status. Use `/lessons:review` to promote candidates to `active`.
+All four tiers write to `candidate` status. Use `/lessons:review` to promote candidates to `active`.
 
 ## Do not edit
 
@@ -230,7 +232,13 @@ Both tiers write to `candidate` status. Use `/lessons:review` to promote candida
 
 ## Running Evals
 
-All eval API calls (judge + agent) route through the meridian proxy. Always set these env vars or judge calls will fail with auth errors:
+The Tier 3 judge and `evals/scripts/probe-scenario.mjs`, `evals/scripts/gen-regression-traps.mjs`,
+and `evals/scripts/repair-judge-errors.mjs` all call the Anthropic SDK directly and route through
+the meridian proxy. Always set these env vars in your shell or those calls will fail with auth errors — the
+agent arm does **not** use them (`evals/providers/claude-agent.mjs`'s `buildEnv()` deliberately
+excludes them from the CC subprocess so the agent runs via direct OAuth instead of the proxy),
+so it's safe to have them set in the environment while `npx promptfoo eval` also drives the
+agent arm:
 
 ```bash
 cd evals

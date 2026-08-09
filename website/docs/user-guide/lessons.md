@@ -19,10 +19,10 @@ A lesson is a structured record of a mistake and its fix, annotated with trigger
   "summary": "pytest hangs in non-interactive envs due to TTY detection",
   "problem": "Running bare `pytest` in Claude Code causes the process to hang waiting for TTY input.",
   "solution": "Use `python -m pytest --no-header -p no:faulthandler`",
-  "triggers": {
-    "commandPatterns": ["\\bpytest\\b(?!.*(--no-header|-p no:faulthandler))"],
-    "toolNames": ["Bash"]
-  },
+  "type": "guard",
+  "toolNames": ["Bash"],
+  "commandPatterns": ["\\bpytest\\b(?!.*(--no-header|-p no:faulthandler))"],
+  "pathPatterns": [],
   "tags": ["lang:python", "tool:pytest", "severity:hang"],
   "priority": 8,
   "confidence": 0.95
@@ -36,27 +36,28 @@ A lesson is a structured record of a mistake and its fix, annotated with trigger
 | `summary`    | yes      | One-line description. Used as fallback injection when full text exceeds budget. Max 120 chars. |
 | `problem`    | yes      | Root cause explanation. Describes _why_ something fails, not just that it does. Min 20 chars.  |
 | `solution`   | yes      | Concrete fix. Actionable commands or code. Copy-pasteable. Min 20 chars.                       |
-| `triggers`   | yes      | What tool calls activate this lesson. See trigger types below.                                 |
+| `type`       | yes      | `directive \| guard \| hint \| protocol` — see trigger types below.                            |
+| `toolNames`  | yes      | Tools this lesson applies to. See trigger types below.                                         |
 | `priority`   | yes      | 1–10. Higher wins budget conflicts.                                                            |
 | `confidence` | yes      | 0.0–1.0. Below `minConfidence` (default 0.5), excluded from the manifest.                      |
 
 ### Trigger types
 
 ```json
-"triggers": {
-  "commandPatterns": ["\\bpytest\\b(?!.*(--no-header))"],
-  "pathPatterns": ["**/*.test.py", "pytest.ini"],
+{
+  "type": "hint",
   "toolNames": ["Bash"],
-  "sessionStart": false
+  "commandPatterns": ["\\bpytest\\b(?!.*(--no-header))"],
+  "pathPatterns": ["**/*.test.py", "pytest.ini"]
 }
 ```
 
-| Type                 | Fires when                        | Use for                                                    |
-| -------------------- | --------------------------------- | ---------------------------------------------------------- |
-| `commandPatterns`    | Bash command matches regex        | Tool-specific commands like `pytest`, `git stash`          |
-| `pathPatterns`       | Read/Edit/Write path matches glob | File-type warnings like "don't edit this file directly"    |
-| `toolNames`          | Exact tool name match             | Broad reminders for any use of a tool                      |
-| `sessionStart: true` | Session startup                   | Cross-cutting reasoning reminders with no specific trigger |
+| Type               | Fires when                        | Use for                                                    |
+| ------------------ | --------------------------------- | ---------------------------------------------------------- |
+| `commandPatterns`  | Bash command matches regex        | Tool-specific commands like `pytest`, `git stash`          |
+| `pathPatterns`     | Read/Edit/Write path matches glob | File-type warnings like "don't edit this file directly"    |
+| `toolNames`        | Exact tool name match             | Broad reminders for any use of a tool                      |
+| `type: 'protocol'` | Session startup                   | Cross-cutting reasoning reminders with no specific trigger |
 
 ::: tip Use negative lookahead to suppress when fix is applied
 
@@ -199,9 +200,11 @@ node scripts/lessons.mjs add --json '{
   </TabItem>
   <TabItem value="direct" label="Direct edit">
 
-Edit `data/lessons.json` directly, then rebuild:
+There is no `lessons.json` file to hand-edit — lessons live in `data/lessons.db` (SQLite). Edit
+an existing lesson's fields with `edit`, then rebuild:
 
 ```bash
+node scripts/lessons.mjs edit --id <id> --patch '{"priority": 9}'
 node scripts/lessons.mjs build
 ```
 

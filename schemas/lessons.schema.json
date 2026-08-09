@@ -79,6 +79,21 @@
       "default": [],
       "description": "Glob or regex patterns tested against file_path for Read/Edit/Write/Glob tools."
     },
+    "commandMatchTarget": {
+      "type": ["string", "null"],
+      "enum": ["full", "executable", null],
+      "description": "'full' (default) or 'executable' — executable strips quoted strings before matching commandPatterns, preventing guards from triggering on quoted JSON argument values."
+    },
+    "modelPatterns": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": [],
+      "description": "Regex patterns AND-gated against the command or file path. If non-empty, the lesson only fires when at least one pattern also matches."
+    },
+    "scope": {
+      "type": ["string", "null"],
+      "description": "null = global (default). A project-ID string scopes the lesson to that project only."
+    },
     "priority": {
       "type": "integer",
       "minimum": 1,
@@ -99,6 +114,14 @@
       },
       "default": [],
       "description": "Datadog-style labeled tags. Categories: lang:, tool:, topic:, env:, severity:, platform:"
+    },
+    "requires": {
+      "type": ["object", "array", "null"],
+      "description": "Excludes the lesson from the manifest unless the named artifact is installed. Single descriptor or array (OR logic). Descriptor shape: {type: 'plugin'|'skill'|'mcp-server', name} or {type: 'github-issue', url}."
+    },
+    "duplicatedBy": {
+      "type": ["object", "null"],
+      "description": "Opposite of requires — excludes the lesson from the manifest when the named artifact IS installed. Same descriptor shape as requires, single object only."
     },
     "source": {
       "type": "string",

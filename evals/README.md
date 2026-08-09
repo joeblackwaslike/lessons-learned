@@ -7,12 +7,21 @@ Lesson injection effectiveness evals built on [Promptfoo](https://promptfoo.dev)
 ```text
 evals/
 ├── promptfooconfig.yaml          # Single config: all scenarios + extensions
+├── justfile                      # just eval-smoke / eval-run / eval-report / eval-clean / ...
 ├── providers/
 │   └── claude-agent.mjs          # Runs Claude Code, writes control transcript, calls Tier 3 judge
+├── tools/
+│   └── mock-serena.mjs           # Mock Serena MCP server for scenarios that need it stubbed
 ├── scripts/
 │   ├── assert-hidden-check.mjs   # Tier 1 — deterministic verify.mjs pass/fail
 │   ├── assert-judge.mjs          # Tier 3 — reads judgeResult from provider metadata
 │   ├── judge.mjs                 # Form A/B prompts, Claude API call, JSON output
+│   ├── probe-scenario.mjs        # One-off scenario debugging via the Anthropic SDK
+│   ├── gen-regression-traps.mjs  # Generates adversarial traps for data/obsoleted-lessons.json
+│   ├── repair-judge-errors.mjs   # Re-runs judge calls that failed with auth/transient errors
+│   ├── materialize-workspace.mjs # Copies seed-workspace/ + runs seed-setup.mjs before each arm
+│   ├── collect-artifacts.mjs     # Gathers tool-calls.jsonl / hook-events.ndjson after a run
+│   ├── scenario-helpers.mjs      # gitInit()/writeFiles() building blocks for seed-setup.mjs
 │   ├── hooks/
 │   │   ├── before-each.mjs       # Injects lessonSnapshot into test vars
 │   │   └── after-all.mjs         # Prints Tier 3 judge summary after all arms complete
@@ -24,11 +33,15 @@ evals/
 │       ├── scenario.json         # Metadata: lessonId, interventionType, lessonType
 │       ├── PROMPT.md             # Trigger prompt
 │       ├── seed-workspace/       # Starting filesystem state for the agent
+│       ├── seed-setup.mjs        # Optional: git state seeding via scenario-helpers.mjs
 │       └── hidden-checks/verify.mjs  # Tier 1 deterministic check
 └── results/
     ├── cache/                    # Arm result cache + control transcript cache
     └── reports/                  # Markdown reports
 ```
+
+`just --list` (from `evals/`) shows the full command surface: `eval-smoke`, `eval-run`,
+`eval-lesson`, `eval-scenario`, `eval-report`, `eval-report-file`, `eval-no-cache`, `eval-clean`.
 
 ## Grading Tiers
 
@@ -43,7 +56,7 @@ evals/
 ```bash
 cd evals
 
-# Full suite (9 control + 9 treatment arms)
+# Full suite (87 control + 87 treatment arms)
 npm run eval
 
 # Smoke test (TC-H3 + TC-G1 only, fast)
@@ -85,7 +98,7 @@ Generated scenarios are in the same Promptfoo-native format as hand-crafted ones
 The judge (`scripts/judge.mjs`) runs inside `claude-agent.mjs` for treatment arms. It:
 
 1. Determines form from lesson type: **Form A** (hint/guard) receives both control + treatment transcripts; **Form B** (protocol/directive) receives treatment only.
-2. Calls `claude-sonnet-4-6` at temperature 0 with a structured prompt.
+2. Calls `claude-sonnet-4-6` (override with `EVAL_JUDGE_MODEL`) with a structured prompt.
 3. Returns `{ outcome, reasoning, dimension_scores, delta }`.
 
 **Outcomes:**
@@ -95,7 +108,15 @@ The judge (`scripts/judge.mjs`) runs inside `claude-agent.mjs` for treatment arm
 - `CONTROL_CORRECT` — control agent already avoids the mistake; check the trigger prompt first, archive second
 - `SKIP` — ambiguous or judge error
 
-**Prerequisites:** No API key required — the judge spawns `claude --print` and reuses your existing `claude login` session. Control arms must run before treatment arms — guaranteed by `maxConcurrency: 1` in the config, with all controls listed before treatments.
+**Prerequisites:** `judge.mjs` calls the Anthropic SDK directly — it does not use your
+`claude login` session — so `ANTHROPIC_API_KEY` must be set (`ANTHROPIC_BASE_URL` too if routing
+through a proxy; this repo's dev setup uses the meridian proxy, `ANTHROPIC_API_KEY=meridian
+ANTHROPIC_BASE_URL=http://127.0.0.1:3456`). `probe-scenario.mjs`, `gen-regression-traps.mjs`, and
+`repair-judge-errors.mjs` need the same env vars. The **agent arm does not** — see
+[FINDINGS.md](FINDINGS.md) and `providers/claude-agent.mjs`'s `buildEnv()`, which deliberately
+excludes these vars so the agent runs via direct OAuth instead of the proxy. Control arms must
+run before treatment arms — guaranteed by `maxConcurrency: 1` in the config, with all controls
+listed before treatments.
 
 ## Cache Behavior
 

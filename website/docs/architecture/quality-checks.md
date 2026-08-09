@@ -1,13 +1,20 @@
 ---
 sidebar_position: 5
 title: Lesson Quality Anti-Patterns
-description: Reference for bd lint, doctor, and preflight — structural and semantic defects that degrade injection effectiveness.
+description: Reference for doctor and preflight — structural and semantic defects that degrade injection effectiveness.
 ---
 
 # Lesson Quality Anti-Patterns
 
-Reference for `bd lint`, `doctor --check=conventions`, and `preflight`. Each anti-pattern
-describes a structural or semantic defect that degrades injection effectiveness.
+Reference for `node scripts/lessons.mjs doctor` and `preflight`. Each anti-pattern below
+describes a structural or semantic defect that degrades injection effectiveness. There is no
+`bd lint` or `doctor --check=conventions` — the plugin's only `doctor` flag is
+`--check=upstream`, which refreshes `duplicatedBy: {type: "github-issue"}` status via `gh api`.
+
+Several of these anti-patterns are already caught automatically by `doctor`'s `auditLesson`/
+`auditStore` checks (noted inline below); the rest require the manual SQL review shown in each
+section. See [Additional automated checks](#additional-automated-checks) for the checks `doctor`
+runs that aren't one of the 12 anti-patterns below.
 
 ---
 
@@ -34,6 +41,8 @@ describes a structural or semantic defect that degrades injection effectiveness.
 
 ### 2. Directive with toolNames
 
+_Automated by `doctor` (`directive-with-toolNames` check)._
+
 **What it means:** A lesson has `type=directive` and a non-empty `toolNames` array.
 
 **Consequences:** `toolNames` is silently ignored for `directive` type — `matchLessons` is bypassed entirely. The lesson fires at every session start unconditionally, injecting irrelevant context in sessions that never use that tool. The declared trigger is never consulted.
@@ -54,6 +63,8 @@ WHERE type = 'directive'
 ---
 
 ### 3. Dead trigger
+
+_Automated by `doctor` (`missing toolNames` check)._
 
 **What it means:** A `hint` or `guard` has `commandPatterns` or `pathPatterns` but no `toolNames`.
 
@@ -99,6 +110,8 @@ WHERE type IN ('protocol', 'directive')
 
 ### 5. Weak problem-solution pair
 
+_Automated by `doctor` (`weak-pair`: short solution, and solution-restates-problem checks)._
+
 **What it means:** `problem` or `solution` is too terse; solution restates the problem; reader can't understand what actually happened without session context.
 
 **Consequences:** Lesson doesn't transfer the knowledge needed to avoid the mistake. May mislead or be ignored entirely.
@@ -137,6 +150,8 @@ WHERE (length(problem) < 80 OR length(solution) < 60)
 ---
 
 ### 7. Orphaned scope
+
+_Automated by `doctor` (`orphaned-scope` check)._
 
 **What it means:** A lesson is scoped to a project ID that no longer matches any directory under `~/.claude/projects/`.
 
@@ -180,6 +195,8 @@ WHERE status = 'active'
 
 ### 9. Solution staleness
 
+_Automated by `doctor` (`version-ref` check on `problem`/`solution`, plus a separate `temporal-language` check and a `stale-lesson` check for records untouched >180 days)._
+
 **What it means:** The solution field references a specific version, flag, or API that has since changed or been deprecated.
 
 **Consequences:** Following the solution causes the same problem it's meant to prevent. Worse than no lesson — it actively misleads.
@@ -200,6 +217,10 @@ WHERE solution LIKE '%v[0-9]%' OR solution LIKE '%@[0-9]%'
 ---
 
 ### 10. Overspecified trigger
+
+_Automated by `doctor` (`overspecified-trigger` check). A companion `underspecified-pattern`
+check flags the opposite failure — a bare, unanchored word like `tsc` that substring-matches
+inside larger words like `tsconfig`._
 
 **What it means:** `commandPatterns` is so specific that it only fires for one exact invocation rather than the general class of hazardous commands.
 
@@ -222,6 +243,8 @@ WHERE commandPatterns != '[]'
 
 ### 11. Context bleed
 
+_Automated by `doctor` (`context-bleed` check)._
+
 **What it means:** A lesson's `problem` or `solution` contains references to a specific project, person, or session ("in the foo repo", "Joe said", "the PR from last Tuesday") that make it meaningless outside the original session.
 
 **Consequences:** Lesson is injected globally but the context is uninterpretable. Noise with no signal.
@@ -243,6 +266,8 @@ WHERE (problem LIKE '%this repo%' OR problem LIKE '% I %' OR problem LIKE '%last
 ---
 
 ### 12. Priority homogeneity
+
+_Automated by `doctor` (`priority-homogeneity` store-level check — fires when ≥ 80% of lessons share one priority, with at least 5 active lessons)._
 
 **What it means:** All active lessons have the same priority value (default 5), making relative ordering meaningless.
 
@@ -287,3 +312,37 @@ SELECT 'nursery', id, summary FROM lessons
 WHERE tags LIKE '%in:nursery%' AND status = 'archived'
 ORDER BY check, id;
 ```
+
+---
+
+## Additional automated checks
+
+`doctor`'s `auditLesson`/`auditStore` functions (`scripts/lessons.mjs`) run several checks with
+no corresponding numbered anti-pattern above, because they catch mechanical mistakes rather than
+semantic drift:
+
+**Per-lesson (`auditLesson`):**
+
+| Check                   | Fires when                                                                                                                                    |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `summary-too-long`      | `summary` exceeds 80 chars — the injection formatter truncates it                                                                             |
+| `summary-truncated`     | `summary` ends with `...`                                                                                                                     |
+| `placeholder`           | `summary`/`problem`/`solution` still contains an unfilled template placeholder                                                                |
+| `no-patterns`           | A `hint`/`guard` has no `commandPatterns` and no `pathPatterns` — fires on every matching tool call                                           |
+| `edit-guard-overblocks` | A `guard` on `Edit`/`Write` gates only by `pathPatterns` with no `commandPatterns` — hard-blocks every edit to the file regardless of content |
+| `duplicatedBy-invalid`  | `duplicatedBy` is set but malformed — it will silently never suppress the lesson                                                              |
+| `requires-invalid`      | `requires` is set but malformed — it will silently never gate inclusion                                                                       |
+
+**Store-level (`auditStore`):**
+
+| Check                  | Fires when                                                                                                                                           |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `upstream-issue-shims` | A `duplicatedBy: {type: "github-issue"}` lesson's tracked issue is marked fixed (archive it) or its status needs a `doctor --check=upstream` refresh |
+| `uncovered-tools`      | With ≥ 10 active lessons, a common tool (`Bash`, `Read`, `Edit`, `Write`, `Agent`, `WebFetch`, `WebSearch`) has zero `hint`/`guard` coverage         |
+| `tool-concentration`   | With ≥ 8 `hint`/`guard` lessons, one tool accounts for ≥ 80% of them                                                                                 |
+| `blanket-bash`         | More than 3 `hint`/`guard` lessons target `Bash` with no `commandPatterns` at all                                                                    |
+| `untagged-majority`    | With ≥ 5 active lessons, more than 30% have no tags                                                                                                  |
+
+Run `node scripts/lessons.mjs doctor` to see all of these plus the 12 anti-patterns above in one
+pass; `--json` emits a machine-readable report, and a non-zero exit means at least one lesson or
+the store as a whole has an open issue.

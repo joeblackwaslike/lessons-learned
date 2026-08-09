@@ -92,16 +92,31 @@
           "default": [],
           "description": "Pre-compiled regex sources for command matching"
         },
+        "commandMatchTarget": {
+          "type": "string",
+          "enum": ["full", "executable"],
+          "description": "'full' or 'executable' — executable strips quoted strings before matching commandRegexSources. Defaults to 'executable' for guard lessons, 'full' otherwise."
+        },
         "pathRegexSources": {
           "type": "array",
           "items": { "$ref": "#/$defs/regexSource" },
           "default": [],
           "description": "Pre-compiled regex sources for file path matching. Globs converted to regex at build time."
         },
+        "modelRegexSources": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/regexSource" },
+          "default": [],
+          "description": "Pre-compiled regex sources AND-gated against the command or file path."
+        },
         "tags": {
           "type": "array",
           "items": { "type": "string" },
           "description": "For optional tag-based scoring"
+        },
+        "scope": {
+          "type": ["string", "null"],
+          "description": "null = global. A project-ID string scopes the lesson to that project only."
         },
         "message": {
           "type": "string",
@@ -110,6 +125,14 @@
         "summary": {
           "type": "string",
           "description": "Fallback if message exceeds remaining budget"
+        },
+        "problem": {
+          "type": "string",
+          "description": "Root cause explanation, carried through for citation-fallback rendering"
+        },
+        "solution": {
+          "type": "string",
+          "description": "Concrete fix, carried through for citation-fallback rendering"
         },
         "disabled": {
           "type": "boolean",

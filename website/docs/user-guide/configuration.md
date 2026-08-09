@@ -104,7 +104,7 @@ Maximum number of lessons injected per tool call, regardless of budget. Lessons 
 
 **Default:** `0.5` · **Env:** `LESSONS_MIN_CONFIDENCE`
 
-Lessons with `confidence` below this value are excluded from the manifest at build time. They still exist in `lessons.json` — they just don't inject.
+Lessons with `confidence` below this value are excluded from the manifest at build time. They still exist in `data/lessons.db` — they just don't inject.
 
 Set by the CLI at add time based on the quality of the trigger, mistake, and tag fields:
 
@@ -201,20 +201,18 @@ import TabItem from '@theme/TabItem';
 ```
 
   </TabItem>
-  <TabItem value="cli" label="CLI">
+  <TabItem value="cli" label="CLI (jq)">
+
+There is no `lessons.mjs config` subcommand — config is a plain JSON file. Edit fields in place with `jq`:
 
 ```bash
-node scripts/lessons.mjs config set injectionBudgetBytes 6144
+jq '.injectionBudgetBytes = 6144' data/config.json > /tmp/config.json && mv /tmp/config.json data/config.json
 ```
 
   </TabItem>
   <TabItem value="direct" label="Direct edit">
 
-Edit `data/config.json`, then verify with:
-
-```bash
-node scripts/lessons.mjs config
-```
+Edit `data/config.json` in your editor.
 
   </TabItem>
 </Tabs>

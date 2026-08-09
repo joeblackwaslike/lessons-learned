@@ -6,7 +6,7 @@ description: Mission, component map, and end-to-end pipeline overview for the le
 
 # Project Overview
 
-**Last updated:** 2026-04-01
+**Last updated:** 2026-08-08
 
 ---
 
@@ -32,31 +32,44 @@ The gap this plugin fills:
 
 ```
 hooks/
-  hooks.json                         Hook wiring — SessionStart, PreToolUse, SubagentStart
-  pretooluse-lesson-inject.mjs       Main injection pipeline (6 stages)
-  session-start-lesson-protocol.mjs  Injects #lesson protocol + sessionStart lessons
-  session-start-reset.mjs            Clears per-session dedup state on clear/compact
-  session-start-scan.mjs             Fires background scan on startup (fire-and-forget)
-  subagent-start-lesson-protocol.mjs Protocol injection for subagents
+  hooks.json                          Hook wiring — SessionStart, PreToolUse, PostToolUse, PreCompact, SubagentStart
+  pretooluse-lesson-inject.mjs        Main injection pipeline (6 stages)
+  posttooluse-directive-reinject.mjs  Re-injects directive lessons at context-usage thresholds
+  session-start-lesson-protocol.mjs   Injects #lesson protocol + session-start lessons
+  session-start-reset.mjs             Clears per-session dedup state on clear/compact
+  session-start-scan.mjs              Fires background scan on startup (fire-and-forget)
+  precompact-handoff.mjs              Optional: blocks /compact to generate a session handoff
+  subagent-start-lesson-protocol.mjs  Protocol injection for subagents
   lib/
-    dedup.mjs                        3-layer dedup (env var, temp file, O_EXCL lock)
-    output.mjs                       JSON output formatter for hook responses
-    matcher.mjs                      Lesson matching (command regex, path glob, tool name)
+    dedup.mjs                         3-layer dedup (env var, temp file, O_EXCL lock)
+    output.mjs                        JSON output formatter for hook responses
+    normalize-tool.mjs                Maps Codex/Gemini tool names to canonical CC names
+    stdin.mjs                         Hook stdin payload parsing
+    session-start.mjs                 Shared SessionStart/SubagentStart injection logic
+    precompact.mjs                    Transcript parsing for handoff generation
+
+core/
+  match.mjs                           Lesson matching (command regex, path glob, tool name, scope)
+  select.mjs                          Budget-aware selection and citation-fallback rendering
 
 scripts/
-  lessons.mjs                        Single CLI entry point — all management subcommands
+  lessons.mjs                         Single CLI entry point — all management subcommands
   scanner/
-    structured.mjs                   Tier 1: parses #lesson tags from JSONL lines
-    detector.mjs                     Tier 2: sliding-window heuristic detection
-    extractor.mjs                    Extracts normalized candidates from both tiers
-    incremental.mjs                  Byte-offset state for incremental file scanning
+    structured.mjs                    Tier 1: parses #lesson tags from JSONL lines
+    detector.mjs                      Tier 2: sliding-window heuristic detection
+    structural.mjs                    Tier 3: lexical pattern detection over semantic windows
+    embedder.mjs                      Tier 3: Ollama embedding wrapper for near-duplicate detection
+    deep-scan.mjs                     Tier 4: LLM-assisted extraction (requires ANTHROPIC_API_KEY)
+    extractor.mjs                     Extracts normalized candidates from all tiers
+    incremental.mjs                   Byte-offset state for incremental file scanning
 
 data/
-  lessons.json                       Source of truth — full lesson records
-  lesson-manifest.json               Pre-compiled runtime manifest (generated)
-  config.json                        Injection and scanning configuration
-  cross-project-candidates.json      T2 scan candidates awaiting review
-  scan-state.json                    Per-file byte offsets for incremental scanning
+  lessons.db                          Source of truth — all lesson and candidate records (SQLite)
+  lesson-manifest.json                Pre-compiled runtime manifest (generated)
+  config.json                         Injection and scanning configuration
+  scan-state.json                     Per-file byte offsets for incremental scanning
+  obsoleted-lessons.json              Append-only ledger of lessons the model has outgrown
+  lesson-sources.json                 External lesson libraries consulted for seed content
 ```
 
 ---
@@ -69,14 +82,16 @@ data/
 2. Claude emits a `#lesson … #/lesson` tag in its response (Tier 1, structured).
    — OR —
    The heuristic detector observes a tool-result error followed by a corrected assistant response (Tier 2).
+   — OR —
+   The structural (Tier 3) or LLM-assisted deep scan (Tier 4, requires `ANTHROPIC_API_KEY`) detects a pattern the first two tiers miss.
 3. On the next session startup, `session-start-scan.mjs` fires and spawns `lessons.mjs scan --auto` as a detached background process.
-4. The scanner reads JSONL files incrementally (resuming from saved byte offsets), extracts candidates, and writes them to `cross-project-candidates.json`.
+4. The scanner reads JSONL files incrementally (resuming from saved byte offsets), extracts candidates, and writes them to `lessons.db` with `status='candidate'`.
 
 ### Promotion (candidate → lesson)
 
 **Tier 1:** Interactive scan (`lessons scan`) auto-promotes structured candidates that pass intake validation and are not fuzzy duplicates.
 
-**Tier 2:** Human review via `lessons scan promote <index>`. The user supplies a summary and command pattern; the lesson is written to `lessons.json` and the manifest is rebuilt.
+**Tier 2+:** Human review via `/lessons:review` (conversational) or `node scripts/lessons.mjs scan aggregate` to list candidates followed by `node scripts/lessons.mjs promote --ids <id>` to promote one. The lesson row's `status` flips to `active` and the manifest is rebuilt.
 
 ### Injection (lesson → context)
 
@@ -84,45 +99,40 @@ When Claude invokes a tool, `pretooluse-lesson-inject.mjs` runs:
 
 1. **Parse** the hook payload — tool name, command, file path, session ID.
 2. **Load** `lesson-manifest.json` (pre-compiled, fast).
-3. **Match** lessons against the tool call — command regex, path glob, exact tool name.
-4. **Score and cap** — sort by priority, apply 3-lesson / 4KB budget.
+3. **Match** lessons against the tool call — command regex, path glob, exact tool name, model-pattern AND-gate, and project scope.
+4. **Score and cap** — sort by priority, apply the injection budget (default: 3 lessons / 4 KB).
 5. **Dedup** — skip slugs already injected this session (3-layer: env var → temp file → O_EXCL lock).
-6. **Output** — emit `{ hookSpecificOutput: { additionalContext: "..." } }` for Claude to receive as pre-tool context.
+6. **Output** — emit `{ hookSpecificOutput: { additionalContext: "..." } }` for Claude to receive as pre-tool context, or a block decision for `guard` lessons.
 
 ### Session start
 
-On `startup`, two hooks fire sequentially:
-
-- `session-start-reset.mjs` clears the dedup state file for the new session.
-- `session-start-lesson-protocol.mjs` injects the `#lesson` reporting protocol and any `sessionStart: true` lessons (reasoning reminders with no trigger).
-
-On `clear` or `compact`, only the reset hook fires (no new scan, no protocol re-injection).
+On `startup`, `resume`, `clear`, and `compact`, `session-start-reset.mjs` and `session-start-lesson-protocol.mjs` fire — the reset hook clears dedup state, and the protocol hook injects the `#lesson` reporting protocol and any session-start lessons. `session-start-scan.mjs` additionally fires on `startup` only, spawning the background scan.
 
 ---
 
 ## Lesson Scope
 
-Every lesson has a `scope` field:
+Every lesson has a `scope` column:
 
-| Scope            | Value                                    | Injected when                                   |
-| ---------------- | ---------------------------------------- | ----------------------------------------------- |
-| Global           | `{ type: 'global' }`                     | Any project, any session                        |
-| Project-specific | `{ type: 'project', path: '/abs/path' }` | Only when hook `cwd` is within the project path |
+| Scope            | Value                                             | Injected when                                         |
+| ---------------- | ------------------------------------------------- | ----------------------------------------------------- |
+| Global           | `null`                                            | Any project, any session                              |
+| Project-specific | a project-ID string (e.g. `Users-joe-github-foo`) | Only when hook `cwd` derives to a matching project ID |
 
-**How scope is assigned:** The scanner tracks `projectCount` per candidate — the number of distinct project directories where the pattern was observed. `projectCount >= 2` → global. `projectCount === 1` → project-specific. This is not a manual classification; it is derived from scan data.
-
-Project-specific lessons live in the same global `lessons.json` store, identified by scope. They are included in the manifest and filtered at injection time based on `cwd`.
+**How scope is assigned:** Scope is not automatically inferred from `projectCount` at promotion time for every lesson — `/lessons:review` performs scope detection when promoting scanned candidates, and `/lessons:scope` can retroactively scope an already-active (typically manually-added) lesson that appears project-specific. Project-specific lessons live in the same `lessons.db` store as global ones, identified by the `scope` column, and are filtered at injection time based on `cwd`.
 
 ---
 
 ## Scanning Tiers
 
-| Tier            | Source                                    | Fidelity                               | Promotion                                |
-| --------------- | ----------------------------------------- | -------------------------------------- | ---------------------------------------- |
-| T1 (structured) | `#lesson` tags emitted by Claude          | High — Claude authored them            | Auto-promote on interactive scan         |
-| T2 (heuristic)  | Sliding-window error→correction detection | Medium — pattern-matched, may be noisy | Manual review via `lessons scan promote` |
+| Tier            | Source                                                 | Fidelity                               | Promotion                                             |
+| --------------- | ------------------------------------------------------ | -------------------------------------- | ----------------------------------------------------- |
+| T1 (structured) | `#lesson` tags emitted by Claude                       | High — Claude authored them            | Auto-promote on interactive scan                      |
+| T2 (heuristic)  | Sliding-window error→correction detection              | Medium — pattern-matched, may be noisy | Manual review via `/lessons:review` / `promote --ids` |
+| T3 (structural) | Lexical pattern detection over semantic windows        | Medium — needs human triage            | Reviewed via `windows` subcommand                     |
+| T4 (deep scan)  | LLM-assisted extraction (requires `ANTHROPIC_API_KEY`) | High, but API-cost-gated               | Manual review via `/lessons:review` / `promote --ids` |
 
-T2 candidates require `sessionCount >= 2` to surface as cross-project (global) candidates. Single-session T2 candidates surface only via `lessons scan candidates --project`.
+All tiers write to `lessons.db` with `status='candidate'`.
 
 ---
 
@@ -138,13 +148,15 @@ T2 candidates require `sessionCount >= 2` to surface as cross-project (global) c
 | `minPriority`                    | 1       | Lessons below this are excluded from manifest           |
 | `compactionReinjectionThreshold` | 7       | Priority above which lessons re-inject after compaction |
 
+See the [Configuration Reference](../reference/configuration.md) for the full field list, including scan and scoring settings.
+
 ---
 
 ## Design Decisions
 
-**One manifest, not per-project files.** All lessons — global and project-specific — live in a single `lessons.json` and compile to a single `lesson-manifest.json`. Per-project lesson files would require the hook to discover and merge them at runtime, adding latency and complexity.
+**One manifest, not per-project files.** All lessons — global and project-specific — live in a single `lessons.db` and compile to a single `lesson-manifest.json`. Per-project lesson files would require the hook to discover and merge them at runtime, adding latency and complexity.
 
-**No LLM in the pipeline.** Candidate evaluation is fully deterministic (field length, placeholder detection, Jaccard similarity). This keeps the pipeline fast, offline-capable, and free of API costs.
+**Deterministic by default, LLM-assisted as an opt-in tier.** Tier 1/2 candidate evaluation is fully deterministic (field length, placeholder detection, Jaccard similarity), keeping the default pipeline fast, offline-capable, and free of API costs. Tier 4 deep scan is the one LLM-dependent stage, gated behind `ANTHROPIC_API_KEY` being set — it never runs by default.
 
 **Fire-and-forget scan.** The background scan spawns a detached child process and immediately unrefs it so the hook returns instantly. Session startup latency is not affected by scan duration.
 

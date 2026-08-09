@@ -98,8 +98,7 @@ When both conditions match within a configurable window, the detector extracts a
 
 - `problem` derived from the error message
 - `solution` derived from the correction
-- `confidence` in the 0.4–0.6 range (lower than Tier 1)
-- `needsReview: true` — always requires human confirmation
+- `confidence` in the 0.4–0.6 range (lower than Tier 1) — always requires human confirmation before it's promoted
 
 **Tier 2 candidates always require manual review** before promotion. They're noisier and need a summary, trigger pattern, and confirmation that the mistake is real and reusable.
 
@@ -144,7 +143,7 @@ The session-start hook reads this file and injects the key into the scan subproc
 ## Viewing candidates
 
 ```bash
-node scripts/lessons.mjs scan candidates   # cross-project recurring patterns
+node scripts/lessons.mjs scan aggregate   # ranked JSON view of all candidates
 node scripts/lessons.mjs list --status candidate  # all candidates
 ```
 
@@ -155,7 +154,9 @@ Or from Claude Code:
 /lessons:review
 ```
 
-`scan candidates` surfaces only patterns that appear in **2+ sessions**, which filters out single-occurrence noise.
+`scan aggregate` (formerly `scan candidates`, now a deprecated alias for the same thing) ranks
+every candidate by `sessionCount * projectCount * confidence` — it doesn't filter by session
+count, so single-occurrence candidates still appear, just lower in the list.
 
 ---
 
@@ -171,18 +172,19 @@ node scripts/lessons.mjs scan
 
 ### Tier 2 candidates
 
-Require manual review. Use `scan promote` with the candidate index:
+Require manual review. List candidates to find the `id` you want, then promote by ID —
+`scan promote <index>` has been removed since indexes are recomputed on every listing:
 
 ```bash
-node scripts/lessons.mjs scan candidates   # list with index numbers
-node scripts/lessons.mjs scan promote 3    # promote candidate #3
+node scripts/lessons.mjs scan aggregate           # list candidates (includes each one's id)
+node scripts/lessons.mjs promote --ids <id>       # promote that candidate
 ```
 
-During promotion, you'll be prompted for:
+To adjust fields at promotion time, pass `--patch`:
 
-- Summary (if not auto-derived)
-- Trigger pattern (command regex or glob)
-- Priority and tags
+```bash
+node scripts/lessons.mjs promote --ids <id> --patch '{"priority": 8, "tags": ["tool:git"]}'
+```
 
 After promotion, the manifest is rebuilt automatically.
 

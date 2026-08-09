@@ -2,6 +2,23 @@
 
 Durable record of important, non-obvious findings from eval sessions. Newest first.
 
+## 2026-06-26 — Sonnet re-validation of the 2026-06-22 archive completed; PROVISIONAL status closed out
+
+**Finding.** The full pinned-Sonnet re-validation promised in the 2026-06-22 entry below is
+done. Per `data/obsoleted-lessons.json`'s `revalidation` field: 30/35 originally-archived
+lessons reproduced `CONTROL_CORRECT` on `claude-sonnet-4-6` (genuinely obsolete, not an Opus
+artifact) and were re-archived. A further Sonnet re-baseline on 2026-06-26 archived 5 more
+`CONTROL_CORRECT` lessons (H1, H7, H10, H35, H59). One lesson (H12, bare `except`) was restored
+and rewritten — `except Exception` is still a real hazard on Sonnet, not obsolete; the lesson
+and its verify script were broadened to a specific-exceptions-plus-logging best practice.
+
+**Current state.** 22 PASS / 5 FAIL / 4 SKIP (H30, H38, H45, H50 — inconclusive pending a clean
+re-run) are kept active. `data/obsoleted-lessons.json` is no longer PROVISIONAL.
+
+**Impact.** The 2026-06-22 entry's caveat ("any archive decision based on that run is
+provisional until re-validated on a pinned model") is resolved — the archived subset is now
+Sonnet-confirmed, not an Opus-confounded read.
+
 ## 2026-06-22 — The agent model was unpinned (and silently became Opus): CONTROL_CORRECT results are confounded
 
 **Finding.** The eval provider (`providers/claude-agent.mjs`) ran the agent arm with

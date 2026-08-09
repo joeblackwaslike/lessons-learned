@@ -6,14 +6,18 @@ description: Lesson record schema, manifest format, config structure, candidate 
 
 # Data Model
 
-All data lives in `data/`. The SQLite database (`lessons.db`) is the source of truth; JSON files are either generated artifacts or human-editable config.
+All data lives in `data/`. The SQLite database (`lessons.db`) is the source of truth; JSON files are either generated artifacts or human-editable config. See also [Architecture: Data Model](../architecture/data-model.md) for the system-design view of the same records, and the [Schema Reference](../reference/schemas.md) for the authoritative field-by-field JSON Schema.
 
-| File                   | Edit directly? | Purpose                                             |
-| ---------------------- | -------------- | --------------------------------------------------- |
-| `lessons.db`           | No (use CLI)   | Source of truth — all lesson records (SQLite)       |
-| `lesson-manifest.json` | No             | Pre-compiled runtime manifest (run `lessons build`) |
-| `config.json`          | Yes            | Injection and scanning configuration                |
-| `scan-state.json`      | No             | Per-file byte offsets for incremental scanning      |
+| File                   | Edit directly? | Purpose                                                     |
+| ---------------------- | -------------- | ----------------------------------------------------------- |
+| `lessons.db`           | No (use CLI)   | Source of truth — all lesson and candidate records (SQLite) |
+| `lesson-manifest.json` | No             | Pre-compiled runtime manifest (run `lessons build`)         |
+| `config.json`          | Yes            | Injection and scanning configuration                        |
+| `scan-state.json`      | No             | Per-file byte offsets for incremental scanning              |
+
+There is no `lessons.json` file — this page shows lesson records as JSON for readability, but
+they are rows in `lessons.db`, edited through the CLI (`add`, `edit`, `promote`) rather than by
+hand.
 
 ---
 
@@ -21,96 +25,94 @@ All data lives in `data/`. The SQLite database (`lessons.db`) is the source of t
 
 ```jsonc
 {
-  "lessons": [
-    {
-      // ULID, generated on add
-      "id": "01JQSEED00000000000000001",
+  // ULID, generated on add
+  "id": "01JQSEED00000000000000001",
 
-      // kebab-case summary + 4-char random suffix
-      "slug": "pytest-tty-hanging-k9m2",
+  // kebab-case summary + 4-char random suffix
+  "slug": "pytest-tty-hanging-k9m2",
 
-      // One-line description, max 120 chars
-      "summary": "pytest hangs in non-interactive envs due to TTY detection",
+  // candidate | reviewed | active | disabled | archived
+  "status": "active",
 
-      // Root cause (required, min 20 chars)
-      "problem": "Running bare `pytest` in Claude Code causes the process to hang...",
+  // directive | guard | hint | protocol — the authoritative injection behavior
+  "type": "guard",
 
-      // Concrete fix (required, min 20 chars)
-      "solution": "Use `python -m pytest --no-header -p no:faulthandler`",
+  // One-line description, max 120 chars
+  "summary": "pytest hangs in non-interactive envs due to TTY detection",
 
-      // Optional — overrides default injection text
-      // Default: "## Lesson: {summary}\n{problem}\n**Fix**: {solution}"
-      "injection": "## REQUIRED: pytest flags for Claude Code\n...",
+  // Root cause (required, min 20 chars)
+  "problem": "Running bare `pytest` in Claude Code causes the process to hang...",
 
-      // Set true to deny the tool call instead of injecting context
-      "block": true,
-      // {command} substituted with actual command at block time (max 120 chars)
-      "blockReason": "pytest command is missing required flags. Rerun as: {command} --no-header -p no:faulthandler",
+  // Concrete fix (required, min 20 chars)
+  "solution": "Use `python -m pytest --no-header -p no:faulthandler`",
 
-      "triggers": {
-        // Exact tool name match — fires on any use of these tools
-        "toolNames": ["Bash"],
+  // Exact tool name match — fires on any use of these tools
+  "toolNames": ["Bash"],
 
-        // Regex patterns matched against the Bash command string
-        // Invalid regex is rejected at add time
-        "commandPatterns": ["\\bpytest\\b(?!.*(--no-header|-p no:faulthandler))"],
+  // Regex patterns matched against the Bash command string
+  // Invalid regex is rejected at add time
+  "commandPatterns": ["\\bpytest\\b(?!.*(--no-header|-p no:faulthandler))"],
 
-        // Glob patterns matched against Read/Edit/Write file paths
-        "pathPatterns": [],
+  // "full" (default) or "executable" — executable strips quoted strings
+  // before matching commandPatterns, so guards don't fire on quoted JSON values
+  "commandMatchTarget": "executable",
 
-        // Reserved for future use
-        "contentPatterns": [],
+  // Regex patterns AND-gated against the command or file path
+  "modelPatterns": [],
 
-        // true = inject at session start instead of PreToolUse
-        // Use for reasoning reminders with no valid command/path trigger
-        "sessionStart": false,
-      },
+  // Glob patterns matched against Read/Edit/Write file paths
+  "pathPatterns": [],
 
-      // Lesson scope — determines which projects receive this lesson
-      "scope": { "type": "global" },
-      // OR:
-      // "scope": { "type": "project", "path": "/abs/path/to/project" }
+  // null = global (default). A project-ID string scopes to that project only
+  "scope": null,
 
-      // 1–10; higher priority wins budget conflicts
-      "priority": 8,
+  // 1-10; higher priority wins budget conflicts
+  "priority": 8,
 
-      // 0.0–1.0; lessons below config.minConfidence excluded from manifest
-      "confidence": 0.95,
+  // 0.0-1.0; lessons below config.minConfidence excluded from manifest
+  "confidence": 0.95,
 
-      // true = excluded from manifest; set when confidence < 0.7 at add time
-      "needsReview": false,
+  // Excludes the lesson from the manifest unless the named artifact is installed
+  "requires": null,
 
-      // category:value taxonomy
-      "tags": ["lang:python", "tool:pytest", "severity:hang"],
+  // Excludes the lesson from the manifest when the named artifact IS installed
+  "duplicatedBy": null,
 
-      // Session IDs where this mistake was observed (up to 5)
-      "sourceSessionIds": [],
+  // category:value taxonomy
+  "tags": ["lang:python", "tool:pytest", "severity:hang"],
 
-      // How many times this pattern was seen across all scans
-      "occurrenceCount": 0,
+  // structured | heuristic | manual
+  "source": "manual",
 
-      "createdAt": "2026-03-29T00:00:00Z",
-      "updatedAt": "2026-03-29T00:00:00Z",
+  // Session IDs where this mistake was observed
+  "sourceSessionIds": [],
 
-      // sha256 of "mistake|remediation|JSON.stringify(triggers)"
-      // Used for exact duplicate detection at add time
-      "contentHash": "sha256:...",
-    },
-  ],
+  // How many times this pattern was seen across all scans
+  "occurrenceCount": 0,
+  "sessionCount": 0,
+  "projectCount": 0,
+
+  "createdAt": "2026-08-01T00:00:00Z",
+  "updatedAt": "2026-08-01T00:00:00Z",
+
+  // sha256 of (problem + solution + triggers) — used for dedup at scan time
+  "contentHash": "sha256:...",
 }
 ```
 
+For `guard`-type lessons, the rendered message supports a `{command}` placeholder substituted
+with the actual command (truncated to 120 chars) at block time.
+
 ### Field constraints
 
-| Field                      | Constraint                                                                          |
-| -------------------------- | ----------------------------------------------------------------------------------- |
-| `summary`                  | ≥ 20 chars, no `...` suffix, no template placeholders                               |
-| `problem`                  | ≥ 20 chars, no template placeholders                                                |
-| `solution`                 | ≥ 20 chars, no template placeholders                                                |
-| `triggers.commandPatterns` | Valid regex — invalid patterns rejected at add time, silently dropped at build time |
-| `triggers.sessionStart`    | Use sparingly — fires on every session startup with no per-call dedup               |
-| `confidence`               | < 0.7 → `needsReview: true`, excluded from manifest                                 |
-| `block` + `blockReason`    | Must be used together; `blockReason` supports `{command}` substitution              |
+| Field               | Constraint                                                                                  |
+| ------------------- | ------------------------------------------------------------------------------------------- |
+| `summary`           | >= 20 chars, no `...` suffix, no template placeholders                                      |
+| `problem`           | >= 20 chars, no template placeholders                                                       |
+| `solution`          | >= 20 chars, no template placeholders                                                       |
+| `commandPatterns`   | Valid regex — invalid patterns rejected at add time, dropped (with a warning) at build time |
+| `type = 'protocol'` | Use sparingly — fires on every session startup with no per-call dedup                       |
+| `confidence`        | Below `minConfidence` → excluded from the manifest at build time                            |
 
 ---
 
@@ -122,7 +124,7 @@ Generated by `lessons build`. This is what the injection hook reads at runtime.
 {
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-04-01T00:00:00Z",
+  "generatedAt": "2026-08-01T00:00:00Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -133,20 +135,21 @@ Generated by `lessons build`. This is what the injection hook reads at runtime.
   "lessons": {
     "<ulid>": {
       "slug": "pytest-tty-hanging-k9m2",
+      "type": "guard",
       "priority": 8,
       "toolNames": ["Bash"],
       // Regex stored as {source, flags} for JSON-safe serialization
       // Reconstructed with new RegExp(source, flags) at match time
       "commandRegexSources": [{ "source": "\\bpytest\\b(?!...)", "flags": "" }],
+      "commandMatchTarget": "executable",
       "pathRegexSources": [],
+      "modelRegexSources": [],
       "tags": ["lang:python", "tool:pytest", "severity:hang"],
-      "injection": "## REQUIRED: pytest flags...",
+      "scope": null,
+      "message": "## REQUIRED: pytest flags...",
       "summary": "pytest hangs in non-interactive envs due to TTY detection",
-      "block": true,
-      "blockReason": "...",
-      "sessionStart": false,
-      // Only present when scope.type === 'project'
-      "projectPath": null,
+      "problem": "...",
+      "solution": "...",
     },
   },
 }
@@ -156,7 +159,9 @@ Generated by `lessons build`. This is what the injection hook reads at runtime.
 
 - `confidence < config.minConfidence`
 - `priority < config.minPriority`
-- `needsReview: true`
+- a `duplicatedBy` artifact is detected as installed
+- a `requires` artifact is NOT detected as installed
+- `status === 'disabled'`
 
 **Regex serialization** — `commandRegexSources` stores `{ source, flags }` objects rather than regex strings. `RegExp` is not JSON-serializable. At match time, the hook reconstructs regex objects with `new RegExp(source, flags)`.
 
@@ -197,45 +202,49 @@ Generated by `lessons build`. This is what the injection hook reads at runtime.
 
 ---
 
-## Candidate record
+## Candidate records
 
-Written by `lessons scan`. Read by `lessons scan promote` and `lessons review`.
+Candidates are ordinary rows in `lessons.db` with `status='candidate'` — there is no separate
+candidate file. `node scripts/lessons.mjs scan aggregate` reads them and prints a ranked JSON view
+to stdout; `/lessons:review` and `promote --ids <id>` act on the same rows.
 
 ```jsonc
 {
-  "generatedAt": "2026-04-01T00:00:00Z",
+  "generatedAt": "2026-08-01T00:00:00Z",
+  "totalCandidates": 1,
   "candidates": [
     {
-      // 1-based, used by `lessons scan promote <index>`
+      // 1-based position in THIS output only — not stored, not a valid handle for any command
       "index": 1,
+      // the real, stable handle — use this with `promote --ids`
+      "id": "01JQSEED00000000000000001",
+      "slug": "git-stash-untracked-5x3q",
       "tool": "Bash",
       "confidence": 0.75,
       "priority": 6,
       "occurrenceCount": 3,
       // Distinct sessions where this pattern was observed
       "sessionCount": 2,
-      // Distinct project directories
+      // Distinct projects where this pattern was observed
       "projectCount": 1,
-      "projects": ["jobsearch-tracker"],
       "problem": "...",
       "solution": "...",
       "tags": [],
-      // Raw trigger text from the session
-      "trigger": "git stash",
       "sourceSessionIds": ["..."],
-      "signals": {
-        // Whether a user correction message was detected near the error
-        "userCorrection": true,
-      },
+      "createdAt": "...",
     },
   ],
 }
 ```
 
-**Scope inference:**
+**Scope inference (informal, for review purposes):**
 
-- `projectCount >= 2` → global lesson candidate
-- `projectCount === 1` → project-specific lesson candidate
+- `projectCount >= 2` → likely a global lesson candidate
+- `projectCount === 1` → likely a project-specific lesson candidate (`/lessons:scope` can scope
+  an already-active lesson after the fact)
+
+To promote a candidate, use `node scripts/lessons.mjs promote --ids <id>` — `scan promote <index>`
+has been removed.
 
 ---
 
@@ -246,7 +255,7 @@ Written by `lessons scan`. Read by `lessons scan promote` and `lessons review`.
   "files": {
     "/abs/path/to/session.jsonl": 184320,
   },
-  "lastFullScanAt": "2026-04-01T00:00:00Z",
+  "lastFullScanAt": "2026-08-01T00:00:00Z",
 }
 ```
 

@@ -1,12 +1,12 @@
 ---
 sidebar_position: 6
 title: Slash Commands
-description: The four slash commands for managing lessons, reviewing candidates, and configuring the plugin from within Claude Code.
+description: The eleven slash commands for managing lessons, reviewing candidates, running evals, and configuring the plugin from within Claude Code.
 ---
 
 # Slash Commands
 
-Four slash commands give you a conversational interface to the lessons-learned plugin from within any Claude Code session.
+Eleven slash commands give you a conversational interface to the lessons-learned plugin from within any Claude Code session.
 
 ---
 
@@ -131,10 +131,10 @@ Claude: Promoted. 1 more candidate.
 ### CLI equivalent
 
 ```bash
-node scripts/lessons.mjs review          # interactive review
-node scripts/lessons.mjs scan            # run the scanner manually
-node scripts/lessons.mjs scan candidates # show cross-project patterns
-node scripts/lessons.mjs scan promote 2  # promote candidate #2
+node scripts/lessons.mjs review           # interactive review
+node scripts/lessons.mjs scan             # run the scanner manually
+node scripts/lessons.mjs scan aggregate   # ranked JSON view of candidates
+node scripts/lessons.mjs promote --ids <id>  # promote a candidate by id
 ```
 
 ---
@@ -188,7 +188,7 @@ node scripts/lessons.mjs list                              # formatted table
 node scripts/lessons.mjs list --json                       # JSON array
 node scripts/lessons.mjs edit --id <id> --patch '{"priority": 9}'
 node scripts/lessons.mjs promote --archive "<id>:reason"
-node scripts/lessons.mjs restore --ids <id>
+node scripts/lessons.mjs restore --ids <id>                # there is no `--restore` flag on `promote`
 ```
 
 ---
@@ -228,10 +228,9 @@ Claude: When Claude Code compacts the conversation (its /compact command),
 
 ### CLI equivalent
 
-```bash
-node scripts/lessons.mjs config          # show all settings
-node scripts/lessons.mjs config set maxLessonsPerInjection 2
-```
+There is no `config` CLI subcommand — edit `data/config.json` directly (see
+[Configuration](configuration.md#editing-config) for a `jq` one-liner), or use this
+conversational command, which reads and writes the same file.
 
 ### All config fields
 
@@ -259,7 +258,7 @@ Each eval scenario has a **control** run (no intervention) and a **treatment** r
 
 Claude asks what to run:
 
-- **All scenarios** — full suite (~30–45 min)
+- **All scenarios** — full suite, all 87 scenario pairs
 - **Smoke test** — TC-H3 + TC-G1 only (~5–8 min)
 - **Specific scenarios** — e.g. `TC-D1, TC-H3`
 - **Generate new** — create scenarios for a specific lesson
@@ -281,4 +280,112 @@ See [Using the Eval Framework](../developer-guide/eval-usage.md) for setup detai
 cd evals
 ANTHROPIC_API_KEY=meridian ANTHROPIC_BASE_URL=http://127.0.0.1:3456 \
   npx promptfoo eval --config promptfooconfig.yaml
+```
+
+---
+
+## /lessons:doctor
+
+Audit the lessons DB for quality issues — dead triggers, misclassified types, truncated
+summaries, near-duplicates, and guards that fire too broadly. Reports findings and offers to
+fix them. See [Lesson Quality Anti-Patterns](../architecture/quality-checks.md) for the full
+list of checks.
+
+```text
+/lessons:doctor
+```
+
+### CLI equivalent
+
+```bash
+node scripts/lessons.mjs doctor          # human-readable report
+node scripts/lessons.mjs doctor --json   # machine-readable report
+node scripts/lessons.mjs doctor --check=upstream  # refresh github-issue duplicatedBy status
+```
+
+---
+
+## /lessons:cancel
+
+Retroactively cancel a lesson tag you just emitted — prevents it from being promoted, or
+removes it if already active. Works for lessons in the DB (any status) and for lessons
+emitted this session but not yet scanned.
+
+```text
+/lessons:cancel
+```
+
+Claude asks which lesson to cancel (by summary or slug), confirms, then archives the DB
+record and/or emits a `#lesson:cancel` marker for any not-yet-scanned emission.
+
+### CLI equivalent
+
+```bash
+node scripts/lessons.mjs promote --archive "<id>:canceled by user"
+```
+
+---
+
+## /lessons:scope
+
+Scan active global lessons for ones that appear project-specific — mentions project files,
+tools, or workflows unique to the current codebase — and offer to scope them to the current
+project only. Primarily useful for manually-added lessons, since `/lessons:review` now
+performs scope detection at promotion time for scanned candidates.
+
+```text
+/lessons:scope
+```
+
+### CLI equivalent
+
+```bash
+node scripts/lessons.mjs edit --id <id> --patch '{"scope": "Users-joe-github-myproject"}'
+```
+
+---
+
+## /lessons:help
+
+Print the full command and configuration reference for the lessons-learned plugin — slash
+commands with descriptions, all config options with current values, and what's been added
+recently.
+
+```text
+/lessons:help
+```
+
+---
+
+## /lessons:handoff
+
+Generate a structured session handoff prompt, or manage precompact automation. Run with no
+args to generate a handoff for the current session; run `auto` to enable automatic handoffs
+that block `/compact`.
+
+```text
+/lessons:handoff
+/lessons:handoff auto
+```
+
+### CLI equivalent
+
+There is no CLI equivalent — handoff generation reads the live session transcript, which is
+only available inside the running session.
+
+---
+
+## /lessons:onboard
+
+Batch-import lessons from a JSON file — choose approve-all, reject-all, batch, or one-by-one;
+supports early exit and resume.
+
+```text
+/lessons:onboard
+```
+
+### CLI equivalent
+
+```bash
+node scripts/lessons.mjs onboard --file lessons-to-import.json
 ```

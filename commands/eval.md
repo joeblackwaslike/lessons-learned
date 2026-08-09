@@ -1,6 +1,7 @@
 ---
-name: eval
+name: lessons:eval
 description: Run the lesson effectiveness eval suite. Asks for focus, auto-generates missing scenarios, runs evals, and generates a report.
+allowed-tools: ['Bash']
 ---
 
 You are running the `/eval` command to assess lesson injection effectiveness.
@@ -9,7 +10,7 @@ You are running the `/eval` command to assess lesson injection effectiveness.
 
 Ask the user: "What's the prime focus for this eval session?" and offer these options:
 
-1. **All lessons** — run all 9 existing scenario pairs
+1. **All lessons** — run all 87 existing scenario pairs
 2. **Specific scenario(s)** — enter TC-\* IDs (e.g. TC-H3, TC-G1)
 3. **Specific lesson IDs** — enter lesson slugs to test
 4. **Generate new scenarios** — auto-generate for lessons that lack scenarios
@@ -76,7 +77,7 @@ cd evals && npx promptfoo view
 
 ## Notes
 
-- **Tier 3 judge**: uses your existing `claude login` session via `claude --print` — no `ANTHROPIC_API_KEY` needed.
+- **Tier 3 judge**: `judge.mjs` calls the Anthropic SDK directly, so `ANTHROPIC_API_KEY` (and `ANTHROPIC_BASE_URL` if routing through a proxy) must be set — it does not use your `claude login` session. See [Using the Eval Framework](../website/docs/developer-guide/eval-usage.md) for this repo's dev setup.
 - **Control arms run first**: `maxConcurrency: 1` in config guarantees control transcript files exist before treatment arms call the judge.
 - **Cache**: arm results are cached in `evals/results/cache/`. Treatment arms re-run if the lesson's problem or solution changes. Use `npm run eval:clean` to clear all caches.
 - **MCP access**: `npx promptfoo mcp` exposes eval history to AI agents (configured in `.mcp.json`).

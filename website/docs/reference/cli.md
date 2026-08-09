@@ -30,18 +30,27 @@ node scripts/lessons.mjs add [options]
 
 ### Options
 
-| Option            | Description                               |
-| ----------------- | ----------------------------------------- |
-| (none)            | Interactive mode — prompts for all fields |
-| `--json '<json>'` | Inline JSON string                        |
-| `--file <path>`   | Read lesson from a JSON file              |
+| Option                 | Description                               |
+| ---------------------- | ----------------------------------------- |
+| (none)                 | Reads a JSON lesson object from stdin     |
+| `--interactive` / `-i` | Interactive mode — prompts for all fields |
+| `--json '<json>'`      | Inline JSON string                        |
+| `--file <path>`        | Read lesson from a JSON file              |
 
 ### Interactive mode
 
-Prompts for: summary, problem, solution, trigger, tags, priority.
+Prompts for: summary, problem, solution, type, tool(s), trigger, tags, priority, confidence.
 
 ```bash
-node scripts/lessons.mjs add
+node scripts/lessons.mjs add --interactive
+```
+
+### Stdin mode
+
+With no flags, `add` reads a JSON lesson object from stdin:
+
+```bash
+echo '{"summary": "...", "problem": "...", "solution": "..."}' | node scripts/lessons.mjs add
 ```
 
 ### JSON mode
@@ -206,29 +215,19 @@ node scripts/lessons.mjs scan [subcommand] [options]
 
 #### `scan aggregate`
 
-Show cross-project recurring patterns (seen in 2+ sessions):
+Show ranked candidates from the DB as JSON (formerly `scan candidates`, which is now a deprecated alias that prints a rename notice and calls this):
 
 ```bash
 node scripts/lessons.mjs scan aggregate
 ```
 
-Output is a ranked JSON list of candidates with metadata. The index number is used by `scan promote`.
-
-#### `scan promote <index>`
-
-Promote a specific candidate into the lesson store:
-
-```bash
-node scripts/lessons.mjs scan promote 3
-```
-
-The CLI prompts for any fields not already present (summary, trigger, priority, tags). The manifest is rebuilt after promotion.
+To promote a candidate found this way, use `promote --ids <id>` (see below) — `scan promote <index>` has been removed.
 
 ---
 
 ## `promote`
 
-Archive or restore a lesson.
+Promote candidates to active and/or archive lessons. Requires `--ids`, `--archive`, or both.
 
 ```bash
 node scripts/lessons.mjs promote [options]
@@ -236,30 +235,32 @@ node scripts/lessons.mjs promote [options]
 
 ### Options
 
-| Option                    | Description                             |
-| ------------------------- | --------------------------------------- |
-| `--archive "<id>:reason"` | Archive a lesson with a reason          |
-| `--restore`               | Restore an archived lesson              |
-| `--ids <id,...>`          | Comma-separated IDs for bulk operations |
+| Option                    | Description                                        |
+| ------------------------- | -------------------------------------------------- |
+| `--ids <id,...>`          | Comma-separated candidate IDs to promote to active |
+| `--archive "<id>:reason"` | Archive a lesson with a reason (repeatable)        |
+| `--patch '<json>'`        | JSON object of fields to apply to promoted lessons |
 
 ### Examples
 
 ```bash
-# Archive
+# Promote a candidate to active
+node scripts/lessons.mjs promote --ids 01JQSEED00000000000000001
+
+# Archive a lesson
 node scripts/lessons.mjs promote --archive "01JQSEED00000000000000001:resolved in npm 10"
 
-# Restore
-node scripts/lessons.mjs promote --restore --ids 01JQSEED00000000000000001
-
-# Bulk restore
-node scripts/lessons.mjs promote --restore --ids id1,id2,id3
+# Both in one call
+node scripts/lessons.mjs promote --ids id1,id2 --archive "id3:duplicate"
 ```
+
+There is no `--restore` flag on `promote` — use `restore` to bring an archived lesson back.
 
 ---
 
 ## `restore`
 
-Restore an archived lesson (alias for `promote --restore`).
+Restore archived lessons back to active.
 
 ```bash
 node scripts/lessons.mjs restore --ids <id,...>
@@ -303,56 +304,62 @@ node scripts/lessons.mjs preflight
 
 ## `purge`
 
-Remove all candidates from the store.
+Archive all candidates below a confidence threshold.
 
 ```bash
-node scripts/lessons.mjs purge [options]
+node scripts/lessons.mjs purge --below-conf <threshold>
 ```
 
 ### Options
 
-| Option      | Description                        |
-| ----------- | ---------------------------------- |
-| `--confirm` | Required to execute (safety guard) |
+| Option             | Description                                            |
+| ------------------ | ------------------------------------------------------ |
+| `--below-conf <n>` | Required. Archive candidates with confidence < n (0–1) |
+| `--dry-run`        | Show what would be archived without writing            |
+
+### Example
+
+```bash
+node scripts/lessons.mjs purge --below-conf 0.6
+```
 
 ---
 
 ## `windows`
 
-List all active dedup session windows (temp files in `TMPDIR`).
+List or archive pending Tier 3 structural/semantic windows (from lexical pattern detection),
+stored in the `pending_semantic_windows` table.
 
 ```bash
-node scripts/lessons.mjs windows
-```
-
-Useful for debugging dedup state — shows which sessions have active temp files and claim directories.
-
----
-
-## `config`
-
-View and edit configuration.
-
-```bash
-node scripts/lessons.mjs config [options]
+node scripts/lessons.mjs windows [options]
 ```
 
 ### Options
 
-| Option              | Description                         |
-| ------------------- | ----------------------------------- |
-| (none)              | Show all settings with descriptions |
-| `set <key> <value>` | Set a specific config field         |
+| Option                     | Description                                                        |
+| -------------------------- | ------------------------------------------------------------------ |
+| (none)                     | List all pending windows                                           |
+| `--type <lesson\|insight>` | Filter the listing by window type                                  |
+| `--show <id>`              | Print the full text of one pending window                          |
+| `--archive <id,...>`       | Mark one or more windows as processed                              |
+| `--archive-nearest <id>`   | Mark all pending windows nearest to a given lesson ID as processed |
 
-### Examples
+### Example
 
 ```bash
-node scripts/lessons.mjs config
-node scripts/lessons.mjs config set maxLessonsPerInjection 2
-node scripts/lessons.mjs config set injectionBudgetBytes 6144
+node scripts/lessons.mjs windows
+node scripts/lessons.mjs windows --show 01JQSEED00000000000000001
+node scripts/lessons.mjs windows --archive 01JQSEED00000000000000001
 ```
 
-Changes to `minConfidence` and `minPriority` require a manifest rebuild.
+---
+
+## Configuration
+
+There is no `config` CLI subcommand. Edit `data/config.json` directly, or use the
+conversational `/lessons:config` slash command, which reads and writes the same file. See
+[Configuration](../user-guide/configuration.md) for the full field reference. Changes to
+`minConfidence` or `minPriority` require a manifest rebuild (`node scripts/lessons.mjs build`).
 
 ---
 

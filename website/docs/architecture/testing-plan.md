@@ -6,7 +6,7 @@ description: Test strategy, unit/integration/E2E coverage targets, and test file
 
 # Testing Plan
 
-**Last updated:** 2026-04-01
+**Last updated:** 2026-08-08
 
 ---
 
@@ -52,11 +52,11 @@ Fixtures live in `tests/fixtures/`. Helpers in `tests/helpers/`.
 | `toolName filter`                      | Lesson with wrong `toolNames` is excluded even if pattern matches |
 | `priority sort`                        | Multiple matches returned sorted priority descending              |
 | `invalid regex skipped`                | Lesson with unparseable regex is silently skipped, no throw       |
-| `findBlocker returns first blocking`   | First `block: true` lesson returned, `{command}` substituted      |
-| `findBlocker skips non-blocking`       | No blocker if no lesson has `block: true`                         |
-| `findBlocker command truncated at 120` | `{command}` capped at 120 chars in blockReason                    |
+| `findBlocker returns first blocking`   | First `type: 'guard'` lesson returned, `{command}` substituted    |
+| `findBlocker skips non-blocking`       | No blocker if no matching lesson has `type: 'guard'`              |
+| `findBlocker command truncated at 120` | `{command}` capped at 120 chars in the rendered message           |
 | `empty lessons object`                 | Returns `[]` gracefully                                           |
-| `missing fields on lesson`             | Defaults applied correctly (`block: false`, `priority: 5`)        |
+| `missing fields on lesson`             | Defaults applied correctly (`type: 'hint'`, `priority: 5`)        |
 
 ### `core/select.mjs` — `selectCandidates`
 
@@ -189,19 +189,19 @@ Fixture: a minimal `lesson-manifest.json` with 2 lessons — one matching, one b
 
 ### CLI: `lessons add` + `lessons build`
 
-Tests use a temp copy of `lessons.json` to avoid polluting the real store.
+Tests use a temp store (via `LESSONS_DATA_DIR`) to avoid polluting the real `lessons.db`.
 
-| Test                                         | What it verifies                                 |
-| -------------------------------------------- | ------------------------------------------------ |
-| `add via --json`                             | Lesson appears in store after add                |
-| `add triggers manifest rebuild`              | `lesson-manifest.json` updated after add         |
-| `add: duplicate content hash rejected`       | Exit non-zero, lesson not duplicated             |
-| `add: fuzzy duplicate rejected`              | Jaccard ≥ 0.5 exits non-zero                     |
-| `add: validation failure rejects`            | Short mistake exits non-zero with message        |
-| `build: excluded lessons not in manifest`    | `needsReview: true` lesson absent from manifest  |
-| `build: included lessons have correct shape` | commandRegexSources, slug, injection all present |
-| `list: outputs all lessons`                  | Count matches lessons.json                       |
-| `list --json: valid JSON array`              | JSON.parse succeeds                              |
+| Test                                         | What it verifies                                  |
+| -------------------------------------------- | ------------------------------------------------- |
+| `add via --json`                             | Lesson appears in store after add                 |
+| `add triggers manifest rebuild`              | `lesson-manifest.json` updated after add          |
+| `add: duplicate content hash rejected`       | Exit non-zero, lesson not duplicated              |
+| `add: fuzzy duplicate rejected`              | Jaccard ≥ 0.5 exits non-zero                      |
+| `add: validation failure rejects`            | Short mistake exits non-zero with message         |
+| `build: excluded lessons not in manifest`    | Below-`minConfidence` lesson absent from manifest |
+| `build: included lessons have correct shape` | commandRegexSources, slug, message all present    |
+| `list: outputs all lessons`                  | Count matches the DB                              |
+| `list --json: valid JSON array`              | JSON.parse succeeds                               |
 
 ### Scanner: incremental scan against fixture JSONL
 
@@ -263,7 +263,7 @@ The adapter layer (or a normalization step) must map Codex tool names to the can
 | `unknown Codex tool → {}`          | Unsupported tool returns `{}`, no error                |
 
 :::note
-**Current status:** Not yet implemented. Requires tool-name normalization in `stdin.mjs` or a Codex-specific adapter.
+**Current status:** Implemented in `tests/e2e/codex.test.mjs`, using `LESSONS_AGENT_PLATFORM=codex` and the tool-name normalization in `hooks/lib/normalize-tool.mjs`.
 :::
 
 ### Gemini CLI
@@ -286,20 +286,20 @@ Gemini CLI uses its own hook protocol. Tool names may differ from Claude Code.
 | `unknown Gemini tool → {}`          | Returns `{}`, no error |
 
 :::note
-**Current status:** Not yet implemented. Requires a Gemini-specific stdin parser or adapter config.
+**Current status:** Implemented in `tests/e2e/gemini.test.mjs`, using `LESSONS_AGENT_PLATFORM=gemini` and the same normalization layer as Codex.
 :::
 
 ### Protocol schema validation
 
 Cross-agent tests also validate the output schema is well-formed regardless of which agent produced the input.
 
-| Test                                         | What it verifies                      |
-| -------------------------------------------- | ------------------------------------- |
-| `inject output is valid JSON`                | JSON.parse succeeds                   |
-| `inject output: only known keys present`     | No extra keys outside schema          |
-| `block output: permissionDecision is "deny"` | Exact string, not "block" or "reject" |
-| `block output: reason is non-empty string`   | No null or empty blockReason          |
-| `empty output is exactly "{}"`               | Not `null`, not `""`, not `"{ }"`     |
+| Test                                         | What it verifies                            |
+| -------------------------------------------- | ------------------------------------------- |
+| `inject output is valid JSON`                | JSON.parse succeeds                         |
+| `inject output: only known keys present`     | No extra keys outside schema                |
+| `block output: permissionDecision is "deny"` | Exact string, not "block" or "reject"       |
+| `block output: reason is non-empty string`   | No null or empty `permissionDecisionReason` |
+| `empty output is exactly "{}"`               | Not `null`, not `""`, not `"{ }"`           |
 
 ---
 
@@ -339,13 +339,19 @@ tests/
       output.test.mjs
       stdin.test.mjs
       dedup.test.mjs
+      normalize.test.mjs        # Codex/Gemini -> canonical tool name mapping
+      precompact.test.mjs       # transcript parsing for handoff generation
+      session-start.test.mjs    # shared SessionStart/SubagentStart injection logic
     scanner/
       structured.test.mjs
       extractor.test.mjs
       detector.test.mjs
+    plugin-integrity.test.mjs   # plugin.json / commands / hooks.json consistency
   integration/
     hook-pipeline.test.mjs    # stdin→stdout subprocess tests
     cli-lessons.test.mjs      # lessons add/build/list subprocess tests
+    cli-doctor.test.mjs       # doctor subprocess tests
+    precompact-hook.test.mjs  # PreCompact hook subprocess tests
     scan-incremental.test.mjs # scanner against fixture JSONL
   e2e/
     claude-code.test.mjs      # CC protocol round-trips
@@ -354,11 +360,12 @@ tests/
     schema.test.mjs           # Output schema validation across agents
   fixtures/
     minimal-manifest.json     # 2 lessons: 1 matching, 1 blocking
+    lessons-store.json        # Seed data for tmpstore.mjs — {lessons: [...]} loaded into a temp lessons.db
     session-with-lesson.jsonl # JSONL with embedded #lesson tag
     session-no-lesson.jsonl   # JSONL without any lesson tags
-    lessons-store.json        # Minimal lessons.json for CLI tests
+    session-precompact.jsonl  # JSONL fixture for PreCompact handoff tests
   helpers/
     subprocess.mjs            # spawn + collect stdout/stderr
-    tmpstore.mjs              # creates an isolated temp lessons store
+    tmpstore.mjs              # creates an isolated temp lessons store (LESSONS_DATA_DIR)
     fixtures.mjs              # loads fixture files by name
 ```

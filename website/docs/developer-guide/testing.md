@@ -77,7 +77,8 @@ tests/
     minimal-manifest.json    2 lessons: 1 matching, 1 blocking
     session-with-lesson.jsonl JSONL with embedded #lesson tag
     session-no-lesson.jsonl  JSONL without any lesson tags
-    lessons-store.json       Minimal lessons.json for CLI tests
+    lessons-store.json       Seed data loaded into a temp lessons.db by tmpstore.mjs
+    session-precompact.jsonl JSONL fixture for PreCompact handoff tests
   helpers/
     subprocess.mjs           spawn + collect stdout/stderr
     tmpstore.mjs             isolated temp lessons store

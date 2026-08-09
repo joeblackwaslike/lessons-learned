@@ -32,6 +32,33 @@ Every scenario that involves code or files must have a seed workspace in `seed-w
 
 For scenarios that don't involve existing files (e.g., asking the agent to write a new script from scratch), an empty seed workspace with `.gitkeep` is fine — but make sure the prompt creates a situation where the lesson's failure mode would naturally occur.
 
+### Seeding git state with `seed-setup.mjs`
+
+When a scenario needs the workspace to look like a real git checkout — commit history,
+branches, a stash, a dirty tree — write a `seed-setup.mjs` next to `seed-workspace/`.
+`materialize-workspace.mjs` runs it automatically after copying `seed-workspace/` into the eval
+workspace, passing the workspace path as `process.argv[2]`.
+
+Use the helpers in `evals/scripts/scenario-helpers.mjs` instead of hand-rolling git plumbing:
+
+```js
+// seed-setup.mjs
+import { gitInit } from '../../scripts/scenario-helpers.mjs';
+
+const ws = process.argv[2];
+gitInit(ws, {
+  commits: [{ message: 'initial', files: { 'README.md': '# proj\n' } }],
+  branches: ['feature/auth'],
+  stash: { message: 'wip', files: { 'src/auth.js': '// half-done\n' } },
+  dirty: { 'src/app.js': 'export const x = 1\n' },
+});
+```
+
+`gitInit` also accepts `dirty` (uncommitted modified files) and a `user` override; a plain
+`writeFiles(workspaceDir, { 'path': 'content' })` helper is available for filesystem-only setup
+that doesn't need git. See `evals/scenarios/TC-D9-*/seed-setup.mjs`, `TC-G7-*/seed-setup.mjs`,
+and `TC-H21-*/seed-setup.mjs` for real examples.
+
 ---
 
 ## Prompt Design

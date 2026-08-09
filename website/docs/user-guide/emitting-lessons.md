@@ -132,7 +132,7 @@ tags: topic:agents
 #/lesson
 ```
 
-(No `trigger` means it becomes a `protocol`/`sessionStart: true` lesson — injected at session startup, not on a specific tool call.)
+(No `trigger` means it becomes a `type: 'protocol'` lesson — injected at session startup, not on a specific tool call.)
 
 ---
 

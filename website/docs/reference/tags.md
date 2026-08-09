@@ -73,7 +73,7 @@ Multiple tags are a JSON array:
 Severity tags affect candidate scoring:
 
 - `severity:hang` and `severity:data-loss` each add `+1` to initial priority
-- Use `severity:hang` sparingly — it marks lessons that should potentially have `block: true`
+- Use `severity:hang` sparingly — it marks lessons that should potentially be `type: 'guard'`
 
 ---
 

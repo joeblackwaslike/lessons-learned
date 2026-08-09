@@ -14,7 +14,28 @@ The eval framework measures whether lesson injection actually changes Claude's b
 cd evals && npm install
 ```
 
-No API key required. The Tier 3 judge uses your existing `claude login` session.
+The Tier 3 judge (`scripts/judge.mjs`) calls the Anthropic SDK directly — it does **not** use
+your `claude login` session, so `ANTHROPIC_API_KEY` must be set (and `ANTHROPIC_BASE_URL` if
+you're routing through a proxy). In this repo's dev setup that's the meridian proxy:
+
+```bash
+export ANTHROPIC_API_KEY=meridian
+export ANTHROPIC_BASE_URL=http://127.0.0.1:3456
+```
+
+`probe-scenario.mjs`, `gen-regression-traps.mjs`, and `repair-judge-errors.mjs` need the same
+two env vars for the same reason. The **agent arm does not** — `providers/claude-agent.mjs`'s
+`buildEnv()` deliberately excludes `ANTHROPIC_API_KEY`/`ANTHROPIC_BASE_URL` so the agent runs
+through direct OAuth rather than the proxy (routing the agent through meridian spawns a
+full-settings CC worker that can 20-minute-timeout).
+
+**Model pinning:** the agent arm is pinned to `claude-sonnet-4-6` (override with
+`EVAL_AGENT_MODEL`) so eval results stay comparable across runs — without a pin, `claude --print`
+falls back to the OAuth session default, which has silently changed models before and confounded
+results (see [FINDINGS.md](https://github.com/joeblackwaslike/lessons-learned/blob/main/evals/FINDINGS.md)).
+The judge and scenario/trap generators are pinned the same way, overridable with
+`EVAL_JUDGE_MODEL` and `EVAL_TRAP_MODEL` respectively. After changing a pinned model, clear the
+cache (`npm run eval:clean`) so cached results from the old model aren't reused.
 
 ## The Fastest Path: `/eval`
 
@@ -25,7 +46,7 @@ Type `/eval` in Claude Code for an interactive session that handles the full wor
 ```bash
 cd evals
 
-# Full suite — all 9 scenario pairs (≈30–45 min)
+# Full suite — all 87 scenario pairs (174 arms; runs serially, control before treatment)
 npm run eval
 
 # Smoke test — TC-H3 + TC-G1 only (≈5–8 min)

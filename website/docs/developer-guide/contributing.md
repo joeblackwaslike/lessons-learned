@@ -71,15 +71,17 @@ node scripts/lessons.mjs add --json '{
 
 ### Option 3 — Direct edit
 
-Edit `data/lessons.json` directly, then rebuild:
+There is no `lessons.json` file to hand-edit — lessons live in `data/lessons.db` (SQLite). Edit
+an existing lesson's fields with `edit`, then rebuild:
 
 ```bash
+node scripts/lessons.mjs edit --id <id> --patch '{"priority": 9}'
 node scripts/lessons.mjs build
 ```
 
 ### Validation rules
 
-`lessons add` enforces these before writing. Direct edits should respect them too:
+`lessons add` enforces these before writing. Edits made via `edit --patch` should respect them too:
 
 - `summary`, `problem`, `solution` each ≥ 20 characters
 - No unfilled template placeholders (`<what_went_wrong>` etc.)

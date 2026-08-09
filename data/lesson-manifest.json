@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-07-31T04:23:33.957Z",
+  "generatedAt": "2026-08-09T02:18:42.985Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -1799,6 +1799,28 @@
       "summary": "Load the PR runbook before driving a PR, not from memory",
       "problem": "Drove a PR to merge from memory while a written runbook existed (agent-skills working-with-github, references/howto/driving-a-pr-to-approval.md) covering the exact steps skipped: enumerate threads via GraphQL, reply per thread, resolve, gate the merge on zero unresolved. Having the document and not reading it produced a worse outcome than not having it, because the gap was invisible until a human pointed it out.",
       "solution": "At the start of any PR work — create, review-triage, or merge — read `driving-a-pr-to-approval.md` in the working-with-github skill. Follow its ordered loop rather than an improvised one. The same applies to any task with an existing runbook: the cost of reading it is far below the cost of rediscovering its steps by omission."
+    },
+    "01KZCG6G2J9QDBNQ8XXYF32R36": {
+      "slug": "desktop-commander-interactwithprocess-si-86f4",
+      "type": "hint",
+      "priority": 8,
+      "toolNames": [
+        "desktop-commander"
+      ],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "mcp:desktop-commander",
+        "category:reliability",
+        "category:tool-choice"
+      ],
+      "scope": null,
+      "message": "## Lesson: desktop-commander interact_with_process silently drops multi-line REPL input\nUsing desktop-commander interact_with_process to drive an interactive REPL (python -i, node -i, etc.) is unreliable — multi-line or multi-statement input can silently fail to execute with no error surfaced. Variables never get defined, loops never run, and the tool reports success/waiting-for-input as if nothing was wrong, which wastes cycles debugging the wrong layer.\n**Fix**: Do not use interact_with_process to drive REPLs for real work. Instead write the logic to a script file (Python/Node/shell) and run it as a single one-shot start_process call. This is reliable and gives clear stdout/stderr on failure.",
+      "summary": "desktop-commander interact_with_process silently drops multi-line REPL input",
+      "problem": "Using desktop-commander interact_with_process to drive an interactive REPL (python -i, node -i, etc.) is unreliable — multi-line or multi-statement input can silently fail to execute with no error surfaced. Variables never get defined, loops never run, and the tool reports success/waiting-for-input as if nothing was wrong, which wastes cycles debugging the wrong layer.",
+      "solution": "Do not use interact_with_process to drive REPLs for real work. Instead write the logic to a script file (Python/Node/shell) and run it as a single one-shot start_process call. This is reliable and gives clear stdout/stderr on failure."
     },
     "01JQSEED00000000000000001": {
       "slug": "pytest-tty-hanging-k9m2",

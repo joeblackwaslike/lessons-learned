@@ -14,15 +14,15 @@ Hook configuration lives in `hooks/hooks.json`. For manual installation (without
 
 ## Summary table
 
-| Hook                             | Event         | Trigger                               | Result              |
-| -------------------------------- | ------------- | ------------------------------------- | ------------------- |
-| `session-start-lesson-protocol`  | SessionStart  | startup/resume/clear/compact          | ✦ inject            |
-| `session-start-reset`            | SessionStart  | startup/resume/clear/compact          | ◉ silent            |
-| `session-start-scan`             | SessionStart  | startup only, 5s timeout              | ◉ silent            |
-| `pretooluse-lesson-inject`       | PreToolUse    | Read/Edit/Write/Bash/Glob, 5s timeout | ✦ inject or ✕ block |
-| `posttooluse-directive-reinject` | PostToolUse   | all tools, 5s timeout                 | ✦ inject            |
-| `precompact-handoff`             | PreCompact    | 60s timeout                           | ✦ inject (opt-in)   |
-| `subagent-start-lesson-protocol` | SubagentStart | all subagents, 5s timeout             | ✦ inject            |
+| Hook                             | Event         | Trigger                                               | Result              |
+| -------------------------------- | ------------- | ----------------------------------------------------- | ------------------- |
+| `session-start-lesson-protocol`  | SessionStart  | startup/resume/clear/compact                          | ✦ inject            |
+| `session-start-reset`            | SessionStart  | startup/resume/clear/compact                          | ◉ silent            |
+| `session-start-scan`             | SessionStart  | startup only, 5s timeout                              | ◉ silent            |
+| `pretooluse-lesson-inject`       | PreToolUse    | Read/Edit/Write/Bash/Glob/Grep/Serena MCP, 5s timeout | ✦ inject or ✕ block |
+| `posttooluse-directive-reinject` | PostToolUse   | all tools, 5s timeout                                 | ✦ inject            |
+| `precompact-handoff`             | PreCompact    | 60s timeout                                           | ✦ inject (opt-in)   |
+| `subagent-start-lesson-protocol` | SubagentStart | all subagents, 5s timeout                             | ✦ inject            |
 
 ---
 
@@ -58,7 +58,7 @@ Hook configuration lives in `hooks/hooks.json`. For manual installation (without
     ],
     "PreToolUse": [
       {
-        "matcher": "Read|Edit|Write|Bash|Glob",
+        "matcher": "Read|Edit|Write|Bash|Glob|Grep|mcp__plugin_serena_serena__.*",
         "hooks": [
           {
             "type": "command",
@@ -70,7 +70,7 @@ Hook configuration lives in `hooks/hooks.json`. For manual installation (without
     ],
     "PostToolUse": [
       {
-        "matcher": ".*",
+        "matcher": ".+",
         "hooks": [
           {
             "type": "command",
@@ -127,7 +127,7 @@ Fires alongside the reset hook on every session event.
 **What it injects as `additionalContext`:**
 
 1. The `#lesson` tag format — tells Claude how to emit structured lesson tags when it makes and corrects a mistake
-2. Any lessons with `triggers.sessionStart: true` — reasoning reminders with no specific command or path trigger
+2. Any lessons with `type: 'protocol'` — reasoning reminders with no specific command or path trigger
 
 On `compact` events, the hook detects the `session_type` from stdin and emits a slim protocol-only output (directives only, no full protocol preamble) to avoid re-injecting redundant content into a just-compacted context.
 
@@ -190,7 +190,7 @@ Fires only on new session startup (not resume, clear, or compact).
 ### `pretooluse-lesson-inject.mjs`
 
 **Event:** PreToolUse  
-**Matcher:** `Read|Edit|Write|Bash|Glob`  
+**Matcher:** `Read|Edit|Write|Bash|Glob|Grep|mcp__plugin_serena_serena__.*`  
 **Timeout:** 5s  
 **Result:** ✦ inject or ✕ block
 
@@ -277,7 +277,7 @@ For file tools (`Read`, `Edit`, `Write`, `Glob`):
 ### `posttooluse-directive-reinject.mjs`
 
 **Event:** PostToolUse  
-**Matcher:** all tools (`.*`)  
+**Matcher:** all tools (`.+`)  
 **Timeout:** 5s  
 **Result:** ✦ inject
 

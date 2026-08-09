@@ -159,7 +159,7 @@ Check your Gemini CLI version. If `additionalContext` is not supported, advisory
 }
 ```
 
-Codex does not support advisory `additionalContext` injection. Use `sessionStart: true` lessons for important reminders that should be present in the system prompt.
+Codex does not support advisory `additionalContext` injection. Use `type: 'protocol'` lessons for important reminders that should be present in the system prompt.
 
 ### opencode
 
