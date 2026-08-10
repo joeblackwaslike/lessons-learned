@@ -48,6 +48,16 @@ The background scan respects `autoScanIntervalHours` — if the last scan was re
 
 ### Running a scan manually
 
+The background scan already runs automatically on session startup, so you rarely need to trigger one yourself. If you want to force a fresh scan before reviewing, run:
+
+```text
+/lessons:review
+```
+
+`/lessons:review` runs the scanner and walks you through whatever it finds — see [Interactive review](#interactive-review) below.
+
+### CLI equivalent
+
 ```bash
 node scripts/lessons.mjs scan              # incremental scan, interactive
 node scripts/lessons.mjs scan --auto       # non-interactive (background mode)
@@ -142,16 +152,16 @@ The session-start hook reads this file and injects the key into the scan subproc
 
 ## Viewing candidates
 
-```bash
-node scripts/lessons.mjs scan aggregate   # ranked JSON view of all candidates
-node scripts/lessons.mjs list --status candidate  # all candidates
-```
-
-Or from Claude Code:
-
 ```text
 /lessons:manage → "show pending candidates"
 /lessons:review
+```
+
+### CLI equivalent
+
+```bash
+node scripts/lessons.mjs scan aggregate   # ranked JSON view of all candidates
+node scripts/lessons.mjs list --status candidate  # all candidates
 ```
 
 `scan aggregate` (formerly `scan candidates`, now a deprecated alias for the same thing) ranks
@@ -162,9 +172,13 @@ count, so single-occurrence candidates still appear, just lower in the list.
 
 ## Promoting candidates
 
+`/lessons:review` is the recommended way to promote both Tier 1 and Tier 2 candidates — see [Interactive review](#interactive-review) below. The CLI equivalents in this section exist for scripting and local development.
+
 ### Tier 1 candidates
 
-Auto-promoted on interactive scan if they pass validation. Claude shows you a preview and you confirm or skip:
+Auto-promoted during `/lessons:review` if they pass validation. Claude shows you a preview and you confirm or skip.
+
+#### CLI equivalent
 
 ```bash
 node scripts/lessons.mjs scan
@@ -172,7 +186,11 @@ node scripts/lessons.mjs scan
 
 ### Tier 2 candidates
 
-Require manual review. List candidates to find the `id` you want, then promote by ID —
+Require manual review. `/lessons:review` prompts you for problem, solution, and trigger before promoting.
+
+#### CLI equivalent
+
+List candidates to find the `id` you want, then promote by ID —
 `scan promote <index>` has been removed since indexes are recomputed on every listing:
 
 ```bash
@@ -190,7 +208,11 @@ After promotion, the manifest is rebuilt automatically.
 
 ### Interactive review
 
-The `/lessons:review` slash command walks through all pending candidates with guided prompts. It's the recommended way to review a batch of candidates.
+```text
+/lessons:review
+```
+
+Walks through all pending candidates (Tier 1 and Tier 2) one at a time with guided prompts. It's the recommended way to review a batch of candidates.
 
 ---
 

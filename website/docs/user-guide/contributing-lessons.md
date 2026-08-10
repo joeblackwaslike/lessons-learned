@@ -195,6 +195,14 @@ tags: tool:osascript, topic:heredoc, severity:silent-failure
 
 ## Reviewing and promoting candidates
 
+```text
+/lessons:review
+```
+
+Walks through pending candidates one at a time, grouped by tag, with a suggested edit and a promote/skip/edit decision for each. This is the recommended way to review a batch of candidates.
+
+### CLI equivalent
+
 ```bash
 node scripts/lessons.mjs review        # list candidates grouped by tag
 node scripts/lessons.mjs promote --ids <id1>,<id2>        # promote to active
@@ -210,6 +218,18 @@ When reviewing, ask:
 5. Would a future session recognize this as relevant without the original context?
 
 ## Tuning existing lessons
+
+```text
+/lessons:doctor
+```
+
+Audits all active lessons for the quality issues below and offers to fix them. To edit a field directly:
+
+```text
+/lessons:manage → "edit priority on <slug> to <value>"
+```
+
+### CLI equivalent
 
 ```bash
 node scripts/lessons.mjs doctor                         # audit all active lessons

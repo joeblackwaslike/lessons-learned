@@ -26,7 +26,7 @@ Then run a raw DB query to get archived and reviewed records:
 
 ```bash
 node -e "
-import('./scripts/db.mjs').then(({ openDb, closeDb, deserializeRow }) => {
+import('${CLAUDE_PLUGIN_ROOT}/scripts/db.mjs').then(({ openDb, closeDb, deserializeRow }) => {
   const db = openDb();
   const archived = db.prepare(\"SELECT * FROM lessons WHERE status='archived' ORDER BY archivedAt DESC\").all().map(r => deserializeRow(r));
   const reviewed = db.prepare(\"SELECT * FROM lessons WHERE status='reviewed' ORDER BY updatedAt DESC\").all().map(r => deserializeRow(r));

@@ -50,6 +50,7 @@ problem: git stash silently omits untracked files — they stay in the working t
 solution: Use `git stash -u` (or `--include-untracked`) to capture all changes.
 tags: tool:git, severity:data-loss
 #/lesson
+
 ```
 
 **Step 2 — Next session, review and promote it with one command:**

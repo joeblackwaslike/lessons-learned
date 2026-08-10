@@ -225,28 +225,22 @@ The CLI enforces these before writing:
 
 ## Listing lessons
 
+```text
+/lessons:manage → "show active"
+```
+
+`/lessons:manage` browses lessons across every status — candidates, active, and archived — and supports search, e.g. `"find lessons about pytest"`.
+
+### CLI equivalent
+
 ```bash
 node scripts/lessons.mjs list           # formatted table
 node scripts/lessons.mjs list --json    # JSON array
 ```
 
-Or from Claude Code:
-
-```text
-/lessons:manage → "show active"
-```
-
 ---
 
 ## Editing a lesson
-
-From the CLI:
-
-```bash
-node scripts/lessons.mjs edit --id <id> --patch '{"priority": 9}'
-```
-
-Or conversationally:
 
 ```text
 /lessons:manage → "edit priority on pytest-tty-hanging to 9"
@@ -254,20 +248,28 @@ Or conversationally:
 
 After editing an active lesson, the manifest is rebuilt automatically.
 
+### CLI equivalent
+
+```bash
+node scripts/lessons.mjs edit --id <id> --patch '{"priority": 9}'
+```
+
 ---
 
 ## Archiving and restoring
 
-Archive a lesson (removes it from injection without deleting it):
-
-```bash
-node scripts/lessons.mjs promote --archive "<id>:reason here"
+```text
+/lessons:manage → "archive pytest-tty-hanging — no longer relevant"
+/lessons:manage → "restore pytest-tty-hanging"
 ```
 
-Restore an archived lesson:
+`/lessons:manage` asks for a reason if you don't give one, shows a confirmation, then archives or restores the lesson and rebuilds the manifest.
+
+### CLI equivalent
 
 ```bash
-node scripts/lessons.mjs restore --ids <id>
+node scripts/lessons.mjs promote --archive "<id>:reason here"   # archive
+node scripts/lessons.mjs restore --ids <id>                     # restore
 ```
 
 ---

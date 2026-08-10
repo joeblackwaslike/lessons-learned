@@ -113,30 +113,25 @@ An empty `{}` means no lesson matched — which is correct for commands that don
 
 ## Step 4 — Add your first lesson
 
-The fastest way to add a lesson is the interactive CLI:
-
-```bash
-cd ~/lessons-learned
-node scripts/lessons.mjs add
-```
-
-Or use the slash command from within Claude Code:
+From within Claude Code, run:
 
 ```text
 /lessons:add
 ```
 
-Claude will ask you five questions — what went wrong, how to fix it, what command triggers it, a summary, and optional tags/priority. The lesson is validated and written to `data/lessons.db`.
+Claude will ask you five questions — what went wrong, how to fix it, what command triggers it, a summary, and optional tags/priority. The lesson is validated, written to `data/lessons.db`, and the manifest is rebuilt automatically.
 
 ## Step 5 — Build the manifest
 
-After adding a lesson (or editing the store directly), rebuild the manifest:
+`/lessons:add` (and `/lessons:review`, `/lessons:manage`, and the other slash commands) rebuild the manifest for you automatically after every change — you shouldn't need to do this manually in normal use.
+
+The manual build step only matters if you edit `data/lessons.db` directly (e.g. scripting a batch import) or are working on the plugin itself:
 
 ```bash
 node scripts/lessons.mjs build
 ```
 
-The manifest is what the injection hook reads at runtime. You need to rebuild it after any change to lessons.
+The manifest is what the injection hook reads at runtime, so if you ever bypass the slash commands and the CLI to change lessons, rebuild it before the change takes effect.
 
 ---
 
