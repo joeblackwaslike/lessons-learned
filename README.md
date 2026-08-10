@@ -77,6 +77,17 @@ You: yes
 Claude: Promoted. Manifest rebuilt.
 ```
 
+That's the shape of it — here's the same idea, captured live and unstaged (real
+Claude Code, real plugin, a real scratch database) via `/lessons:manage`, the
+open-ended sibling command that browses and promotes candidates conversationally:
+
+![Live Claude Code session running /lessons:manage, showing the real candidate and its problem/solution text](website/static/img/demo-live.gif)
+
+Reproduce it with `vhs website/static/demo-live.tape` (requires
+[`vhs`](https://github.com/charmbracelet/vhs) and a `claude` login — budget a
+few minutes; it's a real model call, not a replay, so timing and wording vary
+between runs).
+
 <details>
 <summary>Equivalent CLI, for local development against a cloned checkout</summary>
 

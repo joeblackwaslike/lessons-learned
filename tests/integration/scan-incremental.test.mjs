@@ -90,6 +90,22 @@ describe('scan --tier1-only --dry-run', () => {
   });
 });
 
+describe('scan with LESSONS_SCAN_PATH env var (no --path flag)', () => {
+  it('scans the directory named by LESSONS_SCAN_PATH instead of the default', async () => {
+    const { stdout, stderr, exitCode } = await run(LESSONS_CLI, {
+      args: ['scan', '--tier1-only', '--dry-run', '--verbose'],
+      env: { ...env(), LESSONS_SCAN_PATH: FIXTURES_DIR },
+    });
+    assert.equal(exitCode, 0, `scan failed: ${stderr}`);
+    assert.ok(stdout.includes(FIXTURES_DIR), `expected scan path in output: ${stdout}`);
+    const combined = stdout + stderr;
+    assert.ok(
+      combined.includes('candidate') || combined.includes('Candidate'),
+      `expected candidate mention in output: ${combined}`
+    );
+  });
+});
+
 describe('scan on empty directory', () => {
   it('exits 0 with no JSONL files', async () => {
     const emptyDir = mkdtempSync(join(tmpdir(), 'scan-emptydir-'));

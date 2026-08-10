@@ -77,7 +77,7 @@ const PLUGIN_ROOT = join(__dirname, '..');
 const DATA_DIR = process.env.LESSONS_DATA_DIR ?? join(PLUGIN_ROOT, 'data');
 const MANIFEST_PATH = process.env.LESSONS_MANIFEST_PATH ?? join(DATA_DIR, 'lesson-manifest.json');
 const CONFIG_PATH = process.env.LESSONS_CONFIG_PATH ?? join(DATA_DIR, 'config.json');
-const DEFAULT_SCAN_PATH = join(homedir(), '.claude', 'projects');
+const DEFAULT_SCAN_PATH = process.env.LESSONS_SCAN_PATH ?? join(homedir(), '.claude', 'projects');
 
 // ─── ANSI colors ─────────────────────────────────────────────────────
 
