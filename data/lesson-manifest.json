@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-08-09T02:18:42.985Z",
+  "generatedAt": "2026-08-11T20:35:04.125Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -1064,7 +1064,7 @@
     },
     "01KS4PJY6TMFBAA4MQX3E3R5GZ": {
       "slug": "dont-assume-worktree-is-safe-to-prune-ba-8ac3",
-      "type": "guard",
+      "type": "hint",
       "priority": 8,
       "toolNames": [
         "Bash"
@@ -1821,6 +1821,42 @@
       "summary": "desktop-commander interact_with_process silently drops multi-line REPL input",
       "problem": "Using desktop-commander interact_with_process to drive an interactive REPL (python -i, node -i, etc.) is unreliable — multi-line or multi-statement input can silently fail to execute with no error surfaced. Variables never get defined, loops never run, and the tool reports success/waiting-for-input as if nothing was wrong, which wastes cycles debugging the wrong layer.",
       "solution": "Do not use interact_with_process to drive REPLs for real work. Instead write the logic to a script file (Python/Node/shell) and run it as a single one-shot start_process call. This is reliable and gives clear stdout/stderr on failure."
+    },
+    "01KZS2FNG60WWD7RCXV5B6HWEK": {
+      "slug": "a-fix-merged-to-main-is-not-deployed-unt-eb0b",
+      "type": "hint",
+      "priority": 8,
+      "toolNames": [
+        "Bash",
+        "Edit"
+      ],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [
+        {
+          "source": ".*/ensure-built\\.sh",
+          "flags": "i"
+        },
+        {
+          "source": ".*/package\\.json",
+          "flags": "i"
+        },
+        {
+          "source": ".*/plugin\\.json",
+          "flags": "i"
+        }
+      ],
+      "modelRegexSources": [],
+      "tags": [
+        "category:deployment",
+        "topic:plugin-distribution",
+        "severity:quota"
+      ],
+      "scope": null,
+      "message": "## Lesson: A fix merged to main is not deployed until the version string gating its installer cache changes\nIncident A (cc-recall self-indexing/quota-burn) was root-caused and fixed on GitHub (c0713ca, f0190fd), but the installed plugin cache continued running the pre-fix build for 6+ weeks, reproducing the identical symptom as an apparently new incident. Root cause: (1) the version-keyed plugin cache directory (.../cache/agent-marketplace/cc-recall/<version>/) never re-synced because package.json version stayed unbumped across the fix commit, so the installer had no signal to fetch anything new; (2) ensure-built.sh only builds dist/ once, iff it is missing, with zero staleness/content-hash check, so even a re-synced checkout would not rebuild from new source. \"Fixed on GitHub\" was silently treated as \"fixed in production\" with no verification step in between.\n**Fix**: Any fix that changes deployed runtime behavior must bump the version string that gates its distribution mechanism (semver bump + release for a versioned plugin/package installer). Any build/cache step invoked by that installer must key staleness off source content (hash or mtime), never mere existence of the build artifact. Before closing a bug as fixed, verify the artifact actually running in the deployed location, not just that the fix merged to main.",
+      "summary": "A fix merged to main is not deployed until the version string gating its installer cache changes",
+      "problem": "Incident A (cc-recall self-indexing/quota-burn) was root-caused and fixed on GitHub (c0713ca, f0190fd), but the installed plugin cache continued running the pre-fix build for 6+ weeks, reproducing the identical symptom as an apparently new incident. Root cause: (1) the version-keyed plugin cache directory (.../cache/agent-marketplace/cc-recall/<version>/) never re-synced because package.json version stayed unbumped across the fix commit, so the installer had no signal to fetch anything new; (2) ensure-built.sh only builds dist/ once, iff it is missing, with zero staleness/content-hash check, so even a re-synced checkout would not rebuild from new source. \"Fixed on GitHub\" was silently treated as \"fixed in production\" with no verification step in between.",
+      "solution": "Any fix that changes deployed runtime behavior must bump the version string that gates its distribution mechanism (semver bump + release for a versioned plugin/package installer). Any build/cache step invoked by that installer must key staleness off source content (hash or mtime), never mere existence of the build artifact. Before closing a bug as fixed, verify the artifact actually running in the deployed location, not just that the fix merged to main."
     },
     "01JQSEED00000000000000001": {
       "slug": "pytest-tty-hanging-k9m2",
@@ -3288,6 +3324,32 @@
       "summary": "Run plugin ops yourself via `claude plugin`; never tell the user to run /plugin",
       "problem": "Agents running inside VS Code or the CLI cannot invoke `/plugin` slash commands, so when a plugin needs updating or installing they punt to the user (e.g. \"run /plugin update agent-skills@agent-marketplace and restart\"). The user has to do it by hand every single time, even though a non-interactive CLI equivalent exists and the agent can run it directly.",
       "solution": "Run plugin operations yourself in Bash via `claude plugin <subcommand>`, which maps 1:1 to the `/plugin` slash forms: `claude plugin install X`, `claude plugin update X`, `claude plugin uninstall X`, plus `enable`/`disable`/`list`/`marketplace`. Use the `plugin@marketplace` form to disambiguate. Only the session restart afterward (to load/unload the plugin) requires the user — never the plugin command itself. Do NOT instruct the user to run `/plugin ...`."
+    },
+    "01KZS8JB98EVR7C1CSVT8Z67M1": {
+      "slug": "push-local-commits-on-the-base-branch-be-bad5",
+      "type": "hint",
+      "priority": 6,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "\\bgit\\s+worktree\\s+add\\b",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "category:git-workflow",
+        "severity:friction"
+      ],
+      "scope": null,
+      "message": "## Lesson: Push local commits on the base branch before creating a worktree from it\nCommitting directly to main (e.g. planning docs) and then creating a worktree/feature branch from that unpushed commit, without pushing main first, leaves local main and origin/main sharing no common tip once the branch is squash-merged later. The squash merge lands on origin as a brand-new commit with different parentage than local mains unpushed commit, so git pull fails with diverging branches and a git reset --hard (or manual intervention) is needed to resync -- even though no work was actually lost.\n**Fix**: Immediately after any direct commit to the base branch (main), run git push before creating a worktree/branch from it. If a worktree already exists and this is discovered later, verify the content is safe (git diff origin/main <branch> --stat is empty, or the file is confirmed merged) before running git reset --hard -- but the push-first habit avoids needing that step at all.",
+      "summary": "Push local commits on the base branch before creating a worktree from it",
+      "problem": "Committing directly to main (e.g. planning docs) and then creating a worktree/feature branch from that unpushed commit, without pushing main first, leaves local main and origin/main sharing no common tip once the branch is squash-merged later. The squash merge lands on origin as a brand-new commit with different parentage than local mains unpushed commit, so git pull fails with diverging branches and a git reset --hard (or manual intervention) is needed to resync -- even though no work was actually lost.",
+      "solution": "Immediately after any direct commit to the base branch (main), run git push before creating a worktree/branch from it. If a worktree already exists and this is discovered later, verify the content is safe (git diff origin/main <branch> --stat is empty, or the file is confirmed merged) before running git reset --hard -- but the push-first habit avoids needing that step at all."
     },
     "01KMZ3DB3W7VMWBVSXT4G0MTNF": {
       "slug": "nodejs-deprecationwarnings-pollute-cli-o-112c",
