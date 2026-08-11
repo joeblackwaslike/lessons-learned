@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en" dir="ltr" class="docs-wrapper plugin-docs plugin-id-default docs-version-current docs-doc-page docs-doc-id-post-mortems/codex-chat-history-sidebar-postmortem" data-has-hydrated="false">
+<head>
+<meta charset="UTF-8">
+<meta name="generator" content="Docusaurus v3.10.1">
+<title data-rh="true">Codex Desktop Chat History Sidebar | lessons-learned</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:image" content="https://joeblackwaslike.github.io/lessons-learned/img/social-card.png"><meta data-rh="true" name="twitter:image" content="https://joeblackwaslike.github.io/lessons-learned/img/social-card.png"><meta data-rh="true" property="og:url" content="https://joeblackwaslike.github.io/lessons-learned/docs/post-mortems/codex-chat-history-sidebar-postmortem"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Codex Desktop Chat History Sidebar | lessons-learned"><meta data-rh="true" name="description" content="Post-mortem for the Codex Desktop chat history sidebar bug where transferred sessions disappeared due to stale absolute path metadata."><meta data-rh="true" property="og:description" content="Post-mortem for the Codex Desktop chat history sidebar bug where transferred sessions disappeared due to stale absolute path metadata."><link data-rh="true" rel="icon" href="/lessons-learned/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://joeblackwaslike.github.io/lessons-learned/docs/post-mortems/codex-chat-history-sidebar-postmortem"><link data-rh="true" rel="alternate" href="https://joeblackwaslike.github.io/lessons-learned/docs/post-mortems/codex-chat-history-sidebar-postmortem" hreflang="en"><link data-rh="true" rel="alternate" href="https://joeblackwaslike.github.io/lessons-learned/docs/post-mortems/codex-chat-history-sidebar-postmortem" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Codex Desktop Chat History Sidebar","item":"https://joeblackwaslike.github.io/lessons-learned/docs/post-mortems/codex-chat-history-sidebar-postmortem"}]}</script><link rel="stylesheet" href="/lessons-learned/assets/css/styles.1194c03d.css">
+<script src="/lessons-learned/assets/js/runtime~main.2b62fc0a.js" defer="defer"></script>
+<script src="/lessons-learned/assets/js/main.a2a0efae.js" defer="defer"></script>
+</head>
+<body>
+<svg style="display: none;"><defs>
+<symbol id="theme-svg-external-link" viewBox="0 0 24 24"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"/></symbol>
+</defs></svg>
+<script>!function(){var t=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return window.localStorage.getItem("theme")}catch(t){}}();document.documentElement.setAttribute("data-theme",t||"light"),document.documentElement.setAttribute("data-theme-choice",t||"light")}(),function(){try{const c=new URLSearchParams(window.location.search).entries();for(var[t,e]of c)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}()</script><div id="__docusaurus"><div role="region" aria-label="Skip to main content"><a class="skipToContent_fXgn" href="#__docusaurus_skipToContent_fallback">Skip to main content</a></div><nav aria-label="Main" class="theme-layout-navbar navbar navbar--fixed-top"><div class="navbar__inner"><div class="theme-layout-navbar-left navbar__items"><button aria-label="Toggle navigation bar" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/lessons-learned/"><div class="navbar__logo"><img src="/lessons-learned/img/logo-512.png" alt="lessons-learned logo" class="themedComponent_mlkZ themedComponent--light_NVdE"><img src="/lessons-learned/img/logo-512.png" alt="lessons-learned logo" class="themedComponent_mlkZ themedComponent--dark_xIcU"></div><b class="navbar__title text--truncate">lessons-learned</b></a><a aria-current="page" class="navbar__item navbar__link navbar__link--active" href="/lessons-learned/docs/intro">Docs</a><a class="navbar__item navbar__link" href="/lessons-learned/docs/reference/cli">Reference</a></div><div class="theme-layout-navbar-right navbar__items navbar__items--right"><a href="https://github.com/joeblackwaslike/lessons-learned" target="_blank" rel="noopener noreferrer" class="navbar__item navbar__link">GitHub<svg width="13.5" height="13.5" aria-label="(opens in new tab)" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a><div class="toggle_vylO colorModeToggle_DEke"><button class="clean-btn toggleButton_gllP toggleButtonDisabled_aARS" type="button" disabled="" title="system mode" aria-label="Switch between dark and light mode (currently system mode)"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP lightToggleIcon_pyhR"><path fill="currentColor" d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP darkToggleIcon_wfgR"><path fill="currentColor" d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP systemToggleIcon_QzmC"><path fill="currentColor" d="m12 21c4.971 0 9-4.029 9-9s-4.029-9-9-9-9 4.029-9 9 4.029 9 9 9zm4.95-13.95c1.313 1.313 2.05 3.093 2.05 4.95s-0.738 3.637-2.05 4.95c-1.313 1.313-3.093 2.05-4.95 2.05v-14c1.857 0 3.637 0.737 4.95 2.05z"></path></svg></button></div><div class="navbarSearchContainer_Bca1"></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="theme-layout-main main-wrapper mainWrapper_z2l0"><div class="docsWrapper_hBAB"><button aria-label="Scroll back to top" class="clean-btn theme-back-to-top-button backToTopButton_sjWU" type="button"></button><div class="docRoot_UBD9"><aside class="theme-doc-sidebar-container docSidebarContainer_YfHR"><div class="sidebarViewport_aRkj"><div class="sidebar_njMd"><nav aria-label="Docs sidebar" class="menu thin-scrollbar menu_SIkG"><ul class="theme-doc-sidebar-menu menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/lessons-learned/docs/intro"><span title="Get Started" class="linkLabel_WmDU">Get Started</span></a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/lessons-learned/docs/user-guide/how-it-works"><span title="User Guide" class="categoryLinkLabel_W154">User Guide</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/lessons-learned/docs/developer-guide/architecture"><span title="Developer Guide" class="categoryLinkLabel_W154">Developer Guide</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/lessons-learned/docs/reference/cli"><span title="Reference" class="categoryLinkLabel_W154">Reference</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/lessons-learned/docs/architecture/constitution"><span title="Architecture" class="categoryLinkLabel_W154">Architecture</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/lessons-learned/docs/prds/lessons-learned-plugin"><span title="PRDs" class="categoryLinkLabel_W154">PRDs</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/lessons-learned/docs/research/real-world-demand"><span title="Research" class="categoryLinkLabel_W154">Research</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret menu__link--active" role="button" aria-expanded="true" href="/lessons-learned/docs/post-mortems/codex-chat-history-sidebar-postmortem"><span title="Post-Mortems" class="categoryLinkLabel_W154">Post-Mortems</span></a></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link menu__link--active" aria-current="page" tabindex="0" href="/lessons-learned/docs/post-mortems/codex-chat-history-sidebar-postmortem"><span title="Codex Desktop Chat History Sidebar" class="linkLabel_WmDU">Codex Desktop Chat History Sidebar</span></a></li></ul></li></ul></nav></div></div></aside><main class="docMainContainer_TBSr"><div class="container padding-top--md padding-bottom--lg"><div class="row"><div class="col docItemCol_VOVn"><div class="docItemContainer_Djhp"><article><nav class="theme-doc-breadcrumbs breadcrumbsContainer_Z_bl" aria-label="Breadcrumbs"><ul class="breadcrumbs"><li class="breadcrumbs__item"><a aria-label="Home page" class="breadcrumbs__link" href="/lessons-learned/"><svg viewBox="0 0 24 24" class="breadcrumbHomeIcon_YNFT"><path d="M10 19v-5h4v5c0 .55.45 1 1 1h3c.55 0 1-.45 1-1v-7h1.7c.46 0 .68-.57.33-.87L12.67 3.6c-.38-.34-.96-.34-1.34 0l-8.36 7.53c-.34.3-.13.87.33.87H5v7c0 .55.45 1 1 1h3c.55 0 1-.45 1-1z" fill="currentColor"></path></svg></a></li><li class="breadcrumbs__item"><span class="breadcrumbs__link">Post-Mortems</span></li><li class="breadcrumbs__item breadcrumbs__item--active"><span class="breadcrumbs__link">Codex Desktop Chat History Sidebar</span></li></ul></nav><div class="tocCollapsible_ETCw theme-doc-toc-mobile tocMobile_ITEo"><button type="button" class="clean-btn tocCollapsibleButton_TO0P">On this page</button></div><div class="theme-doc-markdown markdown"><header><h1>Codex Desktop Chat History Sidebar Postmortem</h1></header>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="summary">Summary<a href="#summary" class="hash-link" aria-label="Direct link to Summary" title="Direct link to Summary" translate="no">​</a></h2>
+<p>Transferred Codex chat history was present on disk and partly visible to the app, but most imported threads did not appear in the Desktop sidebar. The strongest current root-cause hypothesis is that the imported session files still carry old absolute workspace paths in <code>session_meta.payload.cwd</code>, while the new machine uses different local paths. The renderer appears to use those session-level paths when deciding which threads belong in current sidebar groups.</p>
+<p>This explains the split we observed:</p>
+<ul>
+<li class="">the four newly created threads on the new machine appear in the sidebar</li>
+<li class="">the older imported threads exist on disk and in the thread database</li>
+<li class="">project groups render as <code>No chats</code></li>
+</ul>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="impact">Impact<a href="#impact" class="hash-link" aria-label="Direct link to Impact" title="Direct link to Impact" translate="no">​</a></h2>
+<ul>
+<li class="">High-value historical chats became effectively inaccessible from normal sidebar navigation</li>
+<li class="">Repeated restarts and index rebuilds consumed substantial time without fixing the actual root mismatch</li>
+<li class="">Several local caches were repaired successfully, but those repairs did not address the session metadata the renderer most likely depends on</li>
+</ul>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="what-was-confirmed">What Was Confirmed<a href="#what-was-confirmed" class="hash-link" aria-label="Direct link to What Was Confirmed" title="Direct link to What Was Confirmed" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="history-files-existed">History files existed<a href="#history-files-existed" class="hash-link" aria-label="Direct link to History files existed" title="Direct link to History files existed" translate="no">​</a></h3>
+<p>The transferred history was not missing from disk.</p>
+<p>Repaired and/or verified local artifacts:</p>
+<ul>
+<li class=""><code>~/.codex/sessions/...</code></li>
+<li class=""><code>~/.codex/state_5.sqlite</code></li>
+<li class=""><code>~/.codex/session_index.jsonl</code></li>
+<li class=""><code>~/.codex/history.jsonl</code></li>
+<li class=""><code>~/.codex/.codex-global-state.json</code></li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="the-app-could-already-see-the-threads">The app could already see the threads<a href="#the-app-could-already-see-the-threads" class="hash-link" aria-label="Direct link to The app could already see the threads" title="Direct link to The app could already see the threads" translate="no">​</a></h3>
+<p>Runtime evidence showed the app was aware of the restored thread set:</p>
+<ul>
+<li class=""><code>thread_count_total=36</code></li>
+<li class=""><code>thread_count_loaded_recent=36</code></li>
+</ul>
+<p>That ruled out &quot;missing transferred data&quot; as the main failure.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="the-ui-failure-was-downstream-of-raw-thread-discovery">The UI failure was downstream of raw thread discovery<a href="#the-ui-failure-was-downstream-of-raw-thread-discovery" class="hash-link" aria-label="Direct link to The UI failure was downstream of raw thread discovery" title="Direct link to The UI failure was downstream of raw thread discovery" translate="no">​</a></h3>
+<p>The sidebar still showed only four recent threads. Project groups showed <code>No chats</code>.</p>
+<p>That proved the failure was in sidebar grouping/render selection, not in basic thread existence.</p>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="repairs-that-were-real-but-insufficient">Repairs That Were Real But Insufficient<a href="#repairs-that-were-real-but-insufficient" class="hash-link" aria-label="Direct link to Repairs That Were Real But Insufficient" title="Direct link to Repairs That Were Real But Insufficient" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="rebuilt-thread-state-database">Rebuilt thread state database<a href="#rebuilt-thread-state-database" class="hash-link" aria-label="Direct link to Rebuilt thread state database" title="Direct link to Rebuilt thread state database" translate="no">​</a></h3>
+<p><code>state_5.sqlite</code> was regenerated and <code>backfill_state</code> reached <code>complete</code>.</p>
+<p>This fixed stale derived state, but not the sidebar population bug.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="restored-lightweight-indexes">Restored lightweight indexes<a href="#restored-lightweight-indexes" class="hash-link" aria-label="Direct link to Restored lightweight indexes" title="Direct link to Restored lightweight indexes" translate="no">​</a></h3>
+<p><code>session_index.jsonl</code> and <code>history.jsonl</code> were recreated so the app had recent-history metadata again.</p>
+<p>This improved state consistency but did not populate the old imported threads in the rendered sidebar.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="repaired-global-sidebar-state">Repaired global sidebar state<a href="#repaired-global-sidebar-state" class="hash-link" aria-label="Direct link to Repaired global sidebar state" title="Direct link to Repaired global sidebar state" translate="no">​</a></h3>
+<p><code>~/.codex/.codex-global-state.json</code> was updated with:</p>
+<ul>
+<li class=""><code>project-order</code></li>
+<li class=""><code>thread-workspace-root-hints</code></li>
+<li class=""><code>active-workspace-roots</code></li>
+<li class=""><code>electron-saved-workspace-roots</code></li>
+<li class="">synthesized <code>sidebar-chat-thread-order</code></li>
+<li class="">synthesized <code>sidebar-project-thread-orders</code></li>
+</ul>
+<p>This was a meaningful repair, but it still did not make the old threads render.</p>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="key-breakthrough">Key Breakthrough<a href="#key-breakthrough" class="hash-link" aria-label="Direct link to Key Breakthrough" title="Direct link to Key Breakthrough" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="bundle-inspection-changed-the-model-of-the-bug">Bundle inspection changed the model of the bug<a href="#bundle-inspection-changed-the-model-of-the-bug" class="hash-link" aria-label="Direct link to Bundle inspection changed the model of the bug" title="Direct link to Bundle inspection changed the model of the bug" translate="no">​</a></h3>
+<p>Renderer bundle inspection showed project ordering is applied after the app builds sidebar thread groups. In other words:</p>
+<ul>
+<li class="">ordering data is not enough</li>
+<li class="">the renderer first needs a set of sidebar thread keys</li>
+<li class="">our missing 32 imported threads were not entering that upstream thread-key set</li>
+</ul>
+<p>This eliminated the earlier theory that the main bug was just bad ordering state.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="the-imported-sessions-still-reference-old-local-paths">The imported sessions still reference old local paths<a href="#the-imported-sessions-still-reference-old-local-paths" class="hash-link" aria-label="Direct link to The imported sessions still reference old local paths" title="Direct link to The imported sessions still reference old local paths" translate="no">​</a></h3>
+<p>The strongest evidence came from comparing session metadata:</p>
+<ul>
+<li class="">imported older sessions use <code>session_meta.payload.cwd</code> values rooted at old machine paths</li>
+<li class="">newly visible sessions use current-machine paths rooted at <code>/Users/joe/...</code></li>
+</ul>
+<p>Focused counts showed:</p>
+<ul>
+<li class=""><code>32</code> session files with <code>session_meta.payload.cwd</code> on the old path shape</li>
+<li class="">the visible sessions were created with current local paths</li>
+</ul>
+<p>This is the first hypothesis that explains the exact visibility split.</p>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="likely-root-cause">Likely Root Cause<a href="#likely-root-cause" class="hash-link" aria-label="Direct link to Likely Root Cause" title="Direct link to Likely Root Cause" translate="no">​</a></h2>
+<p>Codex Desktop appears to use <code>session_meta.payload.cwd</code> from session files, directly or indirectly, when materializing sidebar thread keys and assigning threads to workspace buckets.</p>
+<p>Because the imported threads still point at obsolete absolute paths:</p>
+<ul>
+<li class="">they do not match the current machine&#x27;s workspace roots</li>
+<li class="">they fail to enter the normal sidebar grouping path</li>
+<li class="">they remain present in the database but absent from rendered sidebar groups</li>
+</ul>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="why-earlier-fixes-did-not-solve-it">Why Earlier Fixes Did Not Solve It<a href="#why-earlier-fixes-did-not-solve-it" class="hash-link" aria-label="Direct link to Why Earlier Fixes Did Not Solve It" title="Direct link to Why Earlier Fixes Did Not Solve It" translate="no">​</a></h2>
+<p>Those earlier repairs mostly targeted derived state:</p>
+<ul>
+<li class="">database backfill status</li>
+<li class="">thread index files</li>
+<li class="">Electron local/session storage</li>
+<li class="">synthesized sidebar order maps</li>
+</ul>
+<p>But if the renderer derives grouping from the imported session files themselves, then repaired caches alone cannot fix the mismatch. The source metadata must be normalized first.</p>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="dead-ends-and-false-leads">Dead Ends And False Leads<a href="#dead-ends-and-false-leads" class="hash-link" aria-label="Direct link to Dead Ends And False Leads" title="Direct link to Dead Ends And False Leads" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="missing-history-files">&quot;Missing history files&quot;<a href="#missing-history-files" class="hash-link" aria-label="Direct link to &quot;Missing history files&quot;" title="Direct link to &quot;Missing history files&quot;" translate="no">​</a></h3>
+<p>False. The sessions were already present locally.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="broken-sidebar-order-only">&quot;Broken sidebar order only&quot;<a href="#broken-sidebar-order-only" class="hash-link" aria-label="Direct link to &quot;Broken sidebar order only&quot;" title="Direct link to &quot;Broken sidebar order only&quot;" translate="no">​</a></h3>
+<p>False or incomplete. Order state was missing and later repaired, but groups were still empty.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="electron-local-storage-as-source-of-truth">Electron Local Storage as source of truth<a href="#electron-local-storage-as-source-of-truth" class="hash-link" aria-label="Direct link to Electron Local Storage as source of truth" title="Direct link to Electron Local Storage as source of truth" translate="no">​</a></h3>
+<p>Local Storage inspection mostly showed Statsig keys, not the missing chat/sidebar source.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="renderer-bug-with-no-local-fix">Renderer bug with no local fix<a href="#renderer-bug-with-no-local-fix" class="hash-link" aria-label="Direct link to Renderer bug with no local fix" title="Direct link to Renderer bug with no local fix" translate="no">​</a></h3>
+<p>Too early. The renderer is closed-source, but by the end of the investigation there was a concrete, local, path-level mismatch with strong explanatory power.</p>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="current-best-repair-sequence">Current Best Repair Sequence<a href="#current-best-repair-sequence" class="hash-link" aria-label="Direct link to Current Best Repair Sequence" title="Direct link to Current Best Repair Sequence" translate="no">​</a></h2>
+<p>This is the repair path that best matches the evidence:</p>
+<ol>
+<li class="">Back up <code>~/.codex/sessions</code> and <code>~/.codex/state_5.sqlite*</code></li>
+<li class="">Rewrite imported session paths from the old absolute user path to the current one</li>
+<li class="">Update any thread titles in <code>state_5.sqlite</code> that still embed the old path</li>
+<li class="">Remove only the derived thread DB files:<!-- -->
+<ul>
+<li class=""><code>state_5.sqlite</code></li>
+<li class=""><code>state_5.sqlite-wal</code></li>
+<li class=""><code>state_5.sqlite-shm</code></li>
+</ul>
+</li>
+<li class="">Relaunch Codex so it reindexes from corrected session metadata</li>
+</ol>
+<div class="theme-admonition theme-admonition-warning admonition_xJq3 alert alert--warning"><div class="admonitionHeading_Gvgb"><span class="admonitionIcon_Rf37"><svg viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8.893 1.5c-.183-.31-.52-.5-.887-.5s-.703.19-.886.5L.138 13.499a.98.98 0 0 0 0 1.001c.193.31.53.501.886.501h13.964c.367 0 .704-.19.877-.5a1.03 1.03 0 0 0 .01-1.002L8.893 1.5zm.133 11.497H6.987v-2.003h2.039v2.003zm0-3.004H6.987V5.987h2.039v4.006z"></path></svg></span>warning</div><div class="admonitionContent_BuS1"><p>The rewrite should happen <strong>before</strong> rebuilding the DB, not after.</p></div></div>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="operational-lessons">Operational Lessons<a href="#operational-lessons" class="hash-link" aria-label="Direct link to Operational Lessons" title="Direct link to Operational Lessons" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="lesson-1">Lesson 1<a href="#lesson-1" class="hash-link" aria-label="Direct link to Lesson 1" title="Direct link to Lesson 1" translate="no">​</a></h3>
+<p>When transferred Codex history exists on disk but not in the sidebar, check session-file path metadata before spending hours on cache rebuilds.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="lesson-2">Lesson 2<a href="#lesson-2" class="hash-link" aria-label="Direct link to Lesson 2" title="Direct link to Lesson 2" translate="no">​</a></h3>
+<p>For this class of bug, distinguish:</p>
+<ul>
+<li class="">existence of thread data</li>
+<li class="">visibility of thread data in the renderer</li>
+</ul>
+<p>Those are separate systems.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="lesson-3">Lesson 3<a href="#lesson-3" class="hash-link" aria-label="Direct link to Lesson 3" title="Direct link to Lesson 3" translate="no">​</a></h3>
+<p>If the visible sidebar threads are exactly the newly created local ones, suspect stale absolute paths inside imported session metadata.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="lesson-4">Lesson 4<a href="#lesson-4" class="hash-link" aria-label="Direct link to Lesson 4" title="Direct link to Lesson 4" translate="no">​</a></h3>
+<p>Synthesizing UI order state is lower leverage than validating the upstream group-membership inputs.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="lesson-5">Lesson 5<a href="#lesson-5" class="hash-link" aria-label="Direct link to Lesson 5" title="Direct link to Lesson 5" translate="no">​</a></h3>
+<p>For desktop-agent migrations, absolute-path normalization should be part of the import checklist, especially when usernames or workspace roots changed across machines.</p>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="good-candidate-lessons-learned-entry">Good Candidate <code>lessons-learned</code> Entry<a href="#good-candidate-lessons-learned-entry" class="hash-link" aria-label="Direct link to good-candidate-lessons-learned-entry" title="Direct link to good-candidate-lessons-learned-entry" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="title">Title<a href="#title" class="hash-link" aria-label="Direct link to Title" title="Direct link to Title" translate="no">​</a></h3>
+<p><code>Codex Desktop imported chats can disappear from sidebar when session_meta cwd points at old machine paths</code></p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="trigger-pattern">Trigger Pattern<a href="#trigger-pattern" class="hash-link" aria-label="Direct link to Trigger Pattern" title="Direct link to Trigger Pattern" translate="no">​</a></h3>
+<ul>
+<li class="">user migrated <code>~/.codex/sessions</code> from another machine</li>
+<li class="">threads exist on disk and in <code>state_5.sqlite</code></li>
+<li class="">sidebar shows only newly created local chats</li>
+<li class="">project groups show <code>No chats</code></li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="detection-heuristic">Detection Heuristic<a href="#detection-heuristic" class="hash-link" aria-label="Direct link to Detection Heuristic" title="Direct link to Detection Heuristic" translate="no">​</a></h3>
+<p>Compare the first line of an old hidden session and a new visible session:</p>
+<ul>
+<li class="">look at <code>session_meta.payload.cwd</code></li>
+<li class="">if imported sessions still use old absolute roots, normalize them first</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="fix">Fix<a href="#fix" class="hash-link" aria-label="Direct link to Fix" title="Direct link to Fix" translate="no">​</a></h3>
+<p>Normalize imported session <code>cwd</code> paths, then rebuild only derived thread state.</p>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="suggested-follow-on-improvements">Suggested Follow-On Improvements<a href="#suggested-follow-on-improvements" class="hash-link" aria-label="Direct link to Suggested Follow-On Improvements" title="Direct link to Suggested Follow-On Improvements" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="product-level">Product-level<a href="#product-level" class="hash-link" aria-label="Direct link to Product-level" title="Direct link to Product-level" translate="no">​</a></h3>
+<ul>
+<li class="">Codex Desktop should not rely on raw absolute paths without migration normalization</li>
+<li class="">imported sessions should be path-remapped during first launch or backfill</li>
+<li class="">the sidebar should surface &quot;orphaned threads with unmatched workspace roots&quot; instead of hiding them silently</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="tooling-level">Tooling-level<a href="#tooling-level" class="hash-link" aria-label="Direct link to Tooling-level" title="Direct link to Tooling-level" translate="no">​</a></h3>
+<ul>
+<li class="">add a migration diagnostic command that reports mismatched session roots</li>
+<li class="">add a repair command that safely rewrites session roots with backup + dry run</li>
+</ul>
+<hr>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="status">Status<a href="#status" class="hash-link" aria-label="Direct link to Status" title="Direct link to Status" translate="no">​</a></h2>
+<p>This postmortem captures the investigation up to the breakthrough. At the time of writing, the path-normalization repair sequence had been identified and prepared, but the final rewrite/rebuild had not yet been executed in this thread.</p></div><footer class="theme-doc-footer docusaurus-mt-lg"><div class="row margin-top--sm theme-doc-footer-edit-meta-row"><div class="col noPrint_WFHX"><a href="https://github.com/joeblackwaslike/lessons-learned/tree/main/website/docs/post-mortems/codex-chat-history-sidebar-postmortem.md" target="_blank" rel="noopener noreferrer" class="theme-edit-this-page"><svg fill="currentColor" height="20" width="20" viewBox="0 0 40 40" class="iconEdit_Z9Sw" aria-hidden="true"><g><path d="m34.5 11.7l-3 3.1-6.3-6.3 3.1-3q0.5-0.5 1.2-0.5t1.1 0.5l3.9 3.9q0.5 0.4 0.5 1.1t-0.5 1.2z m-29.5 17.1l18.4-18.5 6.3 6.3-18.4 18.4h-6.3v-6.2z"></path></g></svg>Edit this page</a></div><div class="col lastUpdated_JAkA"></div></div></footer></article><nav class="docusaurus-mt-lg pagination-nav" aria-label="Docs pages"><a class="pagination-nav__link pagination-nav__link--prev" href="/lessons-learned/docs/research/context-and-degredation"><div class="pagination-nav__sublabel">Previous</div><div class="pagination-nav__label">Context Degradation Research</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#summary" class="table-of-contents__link toc-highlight">Summary</a></li><li><a href="#impact" class="table-of-contents__link toc-highlight">Impact</a></li><li><a href="#what-was-confirmed" class="table-of-contents__link toc-highlight">What Was Confirmed</a><ul><li><a href="#history-files-existed" class="table-of-contents__link toc-highlight">History files existed</a></li><li><a href="#the-app-could-already-see-the-threads" class="table-of-contents__link toc-highlight">The app could already see the threads</a></li><li><a href="#the-ui-failure-was-downstream-of-raw-thread-discovery" class="table-of-contents__link toc-highlight">The UI failure was downstream of raw thread discovery</a></li></ul></li><li><a href="#repairs-that-were-real-but-insufficient" class="table-of-contents__link toc-highlight">Repairs That Were Real But Insufficient</a><ul><li><a href="#rebuilt-thread-state-database" class="table-of-contents__link toc-highlight">Rebuilt thread state database</a></li><li><a href="#restored-lightweight-indexes" class="table-of-contents__link toc-highlight">Restored lightweight indexes</a></li><li><a href="#repaired-global-sidebar-state" class="table-of-contents__link toc-highlight">Repaired global sidebar state</a></li></ul></li><li><a href="#key-breakthrough" class="table-of-contents__link toc-highlight">Key Breakthrough</a><ul><li><a href="#bundle-inspection-changed-the-model-of-the-bug" class="table-of-contents__link toc-highlight">Bundle inspection changed the model of the bug</a></li><li><a href="#the-imported-sessions-still-reference-old-local-paths" class="table-of-contents__link toc-highlight">The imported sessions still reference old local paths</a></li></ul></li><li><a href="#likely-root-cause" class="table-of-contents__link toc-highlight">Likely Root Cause</a></li><li><a href="#why-earlier-fixes-did-not-solve-it" class="table-of-contents__link toc-highlight">Why Earlier Fixes Did Not Solve It</a></li><li><a href="#dead-ends-and-false-leads" class="table-of-contents__link toc-highlight">Dead Ends And False Leads</a><ul><li><a href="#missing-history-files" class="table-of-contents__link toc-highlight">&quot;Missing history files&quot;</a></li><li><a href="#broken-sidebar-order-only" class="table-of-contents__link toc-highlight">&quot;Broken sidebar order only&quot;</a></li><li><a href="#electron-local-storage-as-source-of-truth" class="table-of-contents__link toc-highlight">Electron Local Storage as source of truth</a></li><li><a href="#renderer-bug-with-no-local-fix" class="table-of-contents__link toc-highlight">Renderer bug with no local fix</a></li></ul></li><li><a href="#current-best-repair-sequence" class="table-of-contents__link toc-highlight">Current Best Repair Sequence</a></li><li><a href="#operational-lessons" class="table-of-contents__link toc-highlight">Operational Lessons</a><ul><li><a href="#lesson-1" class="table-of-contents__link toc-highlight">Lesson 1</a></li><li><a href="#lesson-2" class="table-of-contents__link toc-highlight">Lesson 2</a></li><li><a href="#lesson-3" class="table-of-contents__link toc-highlight">Lesson 3</a></li><li><a href="#lesson-4" class="table-of-contents__link toc-highlight">Lesson 4</a></li><li><a href="#lesson-5" class="table-of-contents__link toc-highlight">Lesson 5</a></li></ul></li><li><a href="#good-candidate-lessons-learned-entry" class="table-of-contents__link toc-highlight">Good Candidate <code>lessons-learned</code> Entry</a><ul><li><a href="#title" class="table-of-contents__link toc-highlight">Title</a></li><li><a href="#trigger-pattern" class="table-of-contents__link toc-highlight">Trigger Pattern</a></li><li><a href="#detection-heuristic" class="table-of-contents__link toc-highlight">Detection Heuristic</a></li><li><a href="#fix" class="table-of-contents__link toc-highlight">Fix</a></li></ul></li><li><a href="#suggested-follow-on-improvements" class="table-of-contents__link toc-highlight">Suggested Follow-On Improvements</a><ul><li><a href="#product-level" class="table-of-contents__link toc-highlight">Product-level</a></li><li><a href="#tooling-level" class="table-of-contents__link toc-highlight">Tooling-level</a></li></ul></li><li><a href="#status" class="table-of-contents__link toc-highlight">Status</a></li></ul></div></div></div></div></main></div></div></div><footer class="theme-layout-footer footer footer--dark"><div class="container container-fluid"><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2026 Joe Black. Built with Docusaurus.</div></div></div></footer></div>
+</body>
+</html>
