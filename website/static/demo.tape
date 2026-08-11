@@ -57,9 +57,9 @@ Enter
 Sleep 2600ms
 
 Type "clear" Enter
-Type "# 4. Next session: Claude is about to run git stash again..." Enter
+Type "# 4. Next session: Claude is about to combine cd with rm -rf again..." Enter
 Sleep 800ms
-Type@12ms `echo '{"tool_name":"Bash","tool_input":{"command":"git stash"},"session_id":"'"$DEMO_SESSION"'","cwd":"/Users/you/lessons-learned"}' | LESSONS_MANIFEST_PATH=.demo-data/lesson-manifest.json node hooks/pretooluse-lesson-inject.mjs | jq -r '.hookSpecificOutput.additionalContext'`
+Type@12ms `echo '{"tool_name":"Bash","tool_input":{"command":"cd /tmp/scratch && rm -rf old-build"},"session_id":"'"$DEMO_SESSION"'","cwd":"/Users/you/lessons-learned"}' | LESSONS_MANIFEST_PATH=.demo-data/lesson-manifest.json node hooks/pretooluse-lesson-inject.mjs | jq -r '.hookSpecificOutput.additionalContext'`
 Sleep 500ms
 Enter
 Sleep 5500ms

@@ -96,25 +96,29 @@ for the full set.
 
 </details>
 
-**Step 3 — Warning fires before the next `git stash`** (this is the actual
+**Step 3 — Warning fires before the next `cd`+`rm -rf`** (this is the actual
 `additionalContext` a `PreToolUse` hook injects, extracted with `jq`):
 
 ```text
 <details>
-<summary>[lessons-learned] 1 lesson matched for `git stash` — <em>Why am I seeing this?</em></summary>
+<summary>[lessons-learned] 1 lesson matched for `cd /tmp/scratch && rm -rf old-build` — <em>Why am I seeing this?</em></summary>
 
-The **lessons-learned** plugin matched this tool call against known pitfall
-patterns and injected the following warnings for Claude to consider before
-executing.
+The **[lessons-learned](https://github.com/joeblackwaslike/lessons-learned)**
+plugin matched this tool call against known pitfall patterns and injected
+the following warnings for Claude to consider before executing.
 
 ---
 
-## Lesson: git stash silently omits untracked files -- they stay in the working tree and are not stashed.
-git stash silently omits untracked files -- they stay in the working tree and
-are not stashed. Running git stash with new files present loses track of
-them across a branch switch.
-**Fix**: Use `git stash -u` (or `--include-untracked`) to capture all changes,
-including new files.
+## Lesson: Combining `cd` into a target directory with `rm -rf` in the same Bash call gets blocked by Claude Code's Safety Net...
+Combining `cd` into a target directory with `rm -rf` in the same Bash call
+gets blocked by Claude Code's Safety Net guard, even when the resulting path
+is otherwise a legitimate scratch/temp location -- the guard flags the
+cd+rm-rf co-occurrence pattern itself, not just literal out-of-cwd path
+resolution.
+**Fix**: Never combine `cd` and `rm -rf` in the same Bash invocation. Either
+`cd` first as its own call (the working directory persists across Bash
+calls), then issue `rm -rf` as a separate, later call -- or use
+`rm -rf <absolute-or-explicit-relative-path>` directly, no `cd`.
 
 </details>
 ```
