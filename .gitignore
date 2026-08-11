@@ -64,6 +64,5 @@ evals/.solidlsp-cache/
 website/build/
 website/.docusaurus/
 .demo-data*
-.demo-live-repo/
 .demo-live-workspace/
 .demo-session-id
