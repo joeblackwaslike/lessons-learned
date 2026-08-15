@@ -85,6 +85,22 @@ To edit a lesson field:
 node scripts/lessons.mjs edit --id <id> --patch '{"fieldName": "value"}'
 ```
 
+### `lessons.db` is untracked in git — back it up
+
+`data/lessons.db` is deliberately excluded from git (see `.gitignore`'s `*.db` rule) so that
+unreviewed candidates and personal/experimental lessons never ship to a fresh install — only the
+curated `lesson-manifest.json` travels with the repo. That means the DB has no git history and no
+built-in redundancy. Snapshot it regularly with:
+
+```bash
+node scripts/lessons.mjs backup          # snapshot to ~/.lessons-learned-backups/ (VACUUM INTO)
+node scripts/lessons.mjs backup --list   # list existing snapshots
+node scripts/lessons.mjs restore --db    # restore the newest snapshot (add --force to overwrite a healthy DB)
+```
+
+Also usable as `/lessons:backup` inside a session. A daily `launchd` LaunchAgent runs `backup`
+automatically on Joe's machine (`~/Library/LaunchAgents/`).
+
 ### Obsoleted-lessons ledger
 
 When a lesson is archived because the eval test model already handles it (a `CONTROL_CORRECT` result — the model applies the fix without the lesson injected), **also append its full record to `data/obsoleted-lessons.json`**. This is an append-only ledger that collects lessons the models have outgrown, so they can be reviewed or restored (`node scripts/lessons.mjs restore`) if a future model regresses. The DB remains the source of truth; the ledger is a durable, human-readable archive of _why_ each was retired (reason, eval scenario, model tested). Note: archiving a lesson orphans its eval scenario (the runtime injects only from the active manifest), so archived-lesson scenarios belong to the obsoleted-lessons regression suite, not the normal pass/fail suite.
@@ -334,4 +350,5 @@ bd close <id>         # Complete work
 - NEVER stop before pushing - that leaves work stranded locally
 - NEVER say "ready to push when you are" - YOU must push
 - If push fails, resolve and retry until it succeeds
+
 <!-- END BEADS INTEGRATION -->

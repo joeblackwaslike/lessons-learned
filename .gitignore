@@ -23,7 +23,11 @@ data/review-sessions/
 site/
 docs/_backlog.md
 
-# Beads / Dolt files (added by bd init)
+# Beads / Dolt files (added by bd init). *.db is kept deliberately even though this repo now
+# runs Beads with --shared-server (no local Dolt *.db files) -- it also covers data/lessons.db,
+# which must never be tracked: a git-tracked DB would ship unreviewed candidates and personal
+# lessons to every install. See website/docs/architecture/data-model.md and
+# `node scripts/lessons.mjs backup` for the (out-of-tree) recovery path instead.
 .dolt/
 *.db
 .beads-credential-key

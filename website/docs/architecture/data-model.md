@@ -29,6 +29,23 @@ All data lives in `data/` as a SQLite database and JSON support files.
 There is no `lessons.json` or `cross-project-candidates.json` file — both candidates and active
 lessons are rows in `lessons.db`, distinguished by `status`.
 
+### `lessons.db` is intentionally untracked in git
+
+`lessons.db` is never committed — `.gitignore`'s `*.db` rule covers it deliberately, not by
+accident. Every fresh install/clone should only ever inherit the curated `lesson-manifest.json`
+(active lessons above the confidence/priority thresholds, not flagged `needsReview`), never the
+full DB — which also holds unreviewed candidates and any personal/experimental lessons that
+shouldn't ship to other users. Tracking the raw `.db` file would also produce unmergeable binary
+diffs across this repo's git worktrees.
+
+This means `lessons.db` has no git history and no built-in redundancy — it is a single point of
+failure for candidates and archived-lesson reasoning that never made it into the manifest. Back
+it up with `node scripts/lessons.mjs backup` (or `/lessons:backup`), which snapshots it via
+SQLite's `VACUUM INTO` to an out-of-tree directory (default `~/.lessons-learned-backups/`,
+override with `LESSONS_BACKUP_DIR`), keeping the most recent 14 snapshots (`LESSONS_BACKUP_KEEP`).
+Restore with `node scripts/lessons.mjs restore --db [--file <path>]`. A daily `launchd`
+LaunchAgent runs this automatically on Joe's machine; see `AGENTS.md`'s "Lesson store" section.
+
 ---
 
 ## Lesson record (SQLite `lessons.db`)

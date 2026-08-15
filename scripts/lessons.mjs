@@ -5,11 +5,12 @@
  *
  * Subcommands:
  *   add               Add a new lesson (interactive, --json, or --file)
+ *   backup            Snapshot data/lessons.db to an out-of-tree backup directory
  *   build             Rebuild the lesson manifest from the DB
  *   edit              Edit fields on an existing lesson in place
  *   list              List all lessons with key fields
  *   promote           Promote candidates to active, archive, or patch fields
- *   restore           Restore archived lessons back to active
+ *   restore           Restore archived lessons back to active, or restore the DB file itself
  *   review            Review T2 scan candidates against intake validation rules
  *   scan              Incrementally scan session logs for new candidates
  *   scan aggregate    List ranked candidates from the DB
@@ -27,11 +28,15 @@ import {
   readdirSync,
   statSync,
   existsSync,
+  mkdirSync,
+  unlinkSync,
+  copyFileSync,
 } from 'node:fs';
 import { execSync } from 'node:child_process';
 import {
   openDb,
   closeDb,
+  DB_PATH,
   getActiveRecords,
   getManifestRecords,
   getCandidateRecords,
@@ -78,6 +83,8 @@ const DATA_DIR = process.env.LESSONS_DATA_DIR ?? join(PLUGIN_ROOT, 'data');
 const MANIFEST_PATH = process.env.LESSONS_MANIFEST_PATH ?? join(DATA_DIR, 'lesson-manifest.json');
 const CONFIG_PATH = process.env.LESSONS_CONFIG_PATH ?? join(DATA_DIR, 'config.json');
 const DEFAULT_SCAN_PATH = process.env.LESSONS_SCAN_PATH ?? join(homedir(), '.claude', 'projects');
+const BACKUP_DIR = process.env.LESSONS_BACKUP_DIR ?? join(homedir(), '.lessons-learned-backups');
+const BACKUP_KEEP = parseInt(process.env.LESSONS_BACKUP_KEEP ?? '14', 10);
 
 // ─── ANSI colors ─────────────────────────────────────────────────────
 
@@ -99,6 +106,7 @@ Usage:
 
 Subcommands:
   add               Add a new lesson interactively or from JSON
+  backup            Snapshot data/lessons.db to an out-of-tree backup directory
   build             Rebuild the lesson manifest from the DB
   edit              Edit fields on an existing lesson in place
   list              List all active lessons with their trigger patterns
@@ -106,7 +114,7 @@ Subcommands:
   promote           Promote candidates to active, archive, or patch fields
   purge             Archive all candidates below a confidence threshold
   windows           List or archive pending structural windows (from Tier 3 scan)
-  restore           Restore archived lessons back to active
+  restore           Restore archived lessons back to active, or restore the DB file itself
   review            Review candidates from the DB against validation rules
   doctor            Audit active lessons for quality issues
   preflight         Pre-PR gate: run all quality checks + manifest freshness check
@@ -338,18 +346,49 @@ Notes:
 `.trim(),
 
   restore: `
-lessons restore — Restore archived lessons back to active status.
+lessons restore — Restore archived lessons back to active status, or restore the DB file itself
+from a backup.
 
 Usage:
   node scripts/lessons.mjs restore --ids <id1>,<id2>,...
+  node scripts/lessons.mjs restore --db [--file <path>] [--force]
 
-Options:
+Options (lesson restore):
   --ids <id1,...>   Comma-separated IDs of archived lessons to restore
 
+Options (DB file restore):
+  --db              Restore data/lessons.db itself from a backup snapshot instead of
+                     restoring individual lessons
+  --file <path>     Backup file to restore from (defaults to the newest snapshot in
+                     \${LESSONS_BACKUP_DIR:-~/.lessons-learned-backups})
+  --force           Overwrite the current DB even if it looks healthy
+
 Notes:
-  - Only lessons with status='archived' can be restored.
-  - archivedAt and archiveReason are cleared on restore.
-  - The manifest is automatically rebuilt after restore.
+  - Only lessons with status='archived' can be restored via --ids.
+  - archivedAt and archiveReason are cleared on lesson restore.
+  - --db refuses to overwrite a healthy-looking DB unless --force is passed.
+  - The manifest is automatically rebuilt after either kind of restore.
+`.trim(),
+
+  backup: `
+lessons backup — Snapshot data/lessons.db to an out-of-tree backup directory.
+
+Usage:
+  node scripts/lessons.mjs backup
+  node scripts/lessons.mjs backup --list
+
+Options:
+  --list   List existing backups instead of creating a new one
+
+Notes:
+  - data/lessons.db is intentionally NOT tracked in git (a full DB dump would ship
+    unreviewed candidates and personal/experimental lessons to every install) — this is
+    the only durable copy of candidates and archived-lesson history.
+  - Snapshots are written with SQLite's VACUUM INTO for a consistent, WAL-safe copy.
+  - Default location: ~/.lessons-learned-backups/ (override with LESSONS_BACKUP_DIR).
+  - Only the most recent ${BACKUP_KEEP} backups are kept (override with LESSONS_BACKUP_KEEP);
+    older ones are pruned automatically after each run.
+  - Restore a snapshot with: lessons restore --db [--file <path>]
 `.trim(),
 
   purge: `
@@ -2131,6 +2170,11 @@ function cmdRestore(args) {
     return;
   }
 
+  if (args.includes('--db')) {
+    cmdRestoreDb(args);
+    return;
+  }
+
   const idsIdx = args.indexOf('--ids');
   if (idsIdx === -1 || !args[idsIdx + 1]) {
     console.error('restore: --ids is required');
@@ -2167,6 +2211,106 @@ function cmdRestore(args) {
   console.log(`Restored ${restored.length} lesson(s):`);
   for (const r of restored) console.log(`  + ${r.slug} (${r.id})`);
   buildManifest();
+}
+
+function cmdRestoreDb(args) {
+  const backups = listBackups();
+
+  const fileIdx = args.indexOf('--file');
+  let backupPath;
+  if (fileIdx !== -1 && args[fileIdx + 1]) {
+    backupPath = args[fileIdx + 1];
+    if (!existsSync(backupPath)) {
+      console.error(`restore --db: backup file not found: ${backupPath}`);
+      process.exit(1);
+    }
+  } else {
+    if (backups.length === 0) {
+      console.error(`restore --db: no backups found in ${BACKUP_DIR}`);
+      console.error(`Run 'lessons backup' first to create one.`);
+      process.exit(1);
+    }
+    backupPath = backups[0].path;
+  }
+
+  if (isDbHealthy(DB_PATH) && !args.includes('--force')) {
+    console.error(`restore --db: ${DB_PATH} exists and looks healthy.`);
+    console.error(`Refusing to overwrite without --force.`);
+    process.exit(1);
+  }
+
+  copyFileSync(backupPath, DB_PATH);
+  console.log(`Restored ${DB_PATH}`);
+  console.log(`  from: ${backupPath}`);
+  buildManifest();
+}
+
+// ─── Backup subcommand ─────────────────────────────────────────────
+
+function listBackups() {
+  if (!existsSync(BACKUP_DIR)) return [];
+  return readdirSync(BACKUP_DIR)
+    .filter(f => /^lessons-.*\.db$/.test(f))
+    .map(f => {
+      const path = join(BACKUP_DIR, f);
+      return { file: f, path, mtimeMs: statSync(path).mtimeMs };
+    })
+    .sort((a, b) => b.mtimeMs - a.mtimeMs);
+}
+
+function isDbHealthy(path) {
+  if (!existsSync(path)) return false;
+  try {
+    const db = openDb(path);
+    db.prepare('SELECT count(*) AS c FROM lessons').get();
+    closeDb(db);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function cmdBackup(args) {
+  if (args.includes('--help') || args.includes('-h')) {
+    console.log(HELP.backup);
+    return;
+  }
+
+  if (args.includes('--list')) {
+    const backups = listBackups();
+    if (backups.length === 0) {
+      console.log(`No backups found in ${BACKUP_DIR}.`);
+      return;
+    }
+    console.log(`Backups in ${BACKUP_DIR} (newest first):`);
+    for (const b of backups) {
+      console.log(`  ${b.file}  (${formatBytes(statSync(b.path).size)})`);
+    }
+    return;
+  }
+
+  if (!existsSync(DB_PATH)) {
+    console.error(`backup: no DB found at ${DB_PATH}`);
+    process.exit(1);
+  }
+
+  mkdirSync(BACKUP_DIR, { recursive: true });
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const backupPath = join(BACKUP_DIR, `lessons-${timestamp}.db`);
+
+  const db = openDb();
+  db.exec(`VACUUM INTO '${backupPath.replace(/'/g, "''")}'`);
+  closeDb(db);
+
+  console.log(`Backed up ${DB_PATH}`);
+  console.log(`  to: ${backupPath}`);
+
+  const backups = listBackups();
+  const toPrune = backups.slice(BACKUP_KEEP);
+  for (const b of toPrune) unlinkSync(b.path);
+  if (toPrune.length > 0) {
+    console.log(`Pruned ${toPrune.length} old backup(s), keeping ${BACKUP_KEEP}.`);
+  }
 }
 
 // ─── Windows subcommand ──────────────────────────────────────────────
@@ -2840,6 +2984,9 @@ async function main() {
       break;
     case 'restore':
       cmdRestore(rest);
+      break;
+    case 'backup':
+      cmdBackup(rest);
       break;
     case 'purge':
       cmdPurge(rest);
