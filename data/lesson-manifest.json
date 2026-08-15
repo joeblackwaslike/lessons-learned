@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-08-11T20:35:04.125Z",
+  "generatedAt": "2026-08-15T23:35:27.813Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -434,11 +434,7 @@
       ],
       "commandRegexSources": [
         {
-          "source": "\\bgit\\b",
-          "flags": ""
-        },
-        {
-          "source": "\\bgit commit\\b",
+          "source": "\\bgit\\s+commit\\b",
           "flags": ""
         }
       ],
@@ -1858,6 +1854,28 @@
       "problem": "Incident A (cc-recall self-indexing/quota-burn) was root-caused and fixed on GitHub (c0713ca, f0190fd), but the installed plugin cache continued running the pre-fix build for 6+ weeks, reproducing the identical symptom as an apparently new incident. Root cause: (1) the version-keyed plugin cache directory (.../cache/agent-marketplace/cc-recall/<version>/) never re-synced because package.json version stayed unbumped across the fix commit, so the installer had no signal to fetch anything new; (2) ensure-built.sh only builds dist/ once, iff it is missing, with zero staleness/content-hash check, so even a re-synced checkout would not rebuild from new source. \"Fixed on GitHub\" was silently treated as \"fixed in production\" with no verification step in between.",
       "solution": "Any fix that changes deployed runtime behavior must bump the version string that gates its distribution mechanism (semver bump + release for a versioned plugin/package installer). Any build/cache step invoked by that installer must key staleness off source content (hash or mtime), never mere existence of the build artifact. Before closing a bug as fixed, verify the artifact actually running in the deployed location, not just that the fix merged to main."
     },
+    "01KZYFHCXQ0W4YZGBFRX9T42QB": {
+      "slug": "plugin-registry-disable-only-stops-new-s-b1d6",
+      "type": "hint",
+      "priority": 8,
+      "toolNames": [
+        "claude-code"
+      ],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "category:plugin-management",
+        "category:reliability",
+        "mcp:claude-mem"
+      ],
+      "scope": null,
+      "message": "## Lesson: Plugin-registry disable only stops NEW sessions; already-running sessions keep calling out\nDisabling a Claude Code plugin via enabledPlugins in ~/.claude/settings.json only prevents the plugin from loading into sessions started after the change. A session already running has the plugin hooks baked into its launch args and can still trigger the plugin background service (e.g. restart a daemon) on its next hook event, undoing the disable.\n**Fix**: When a live session must be preserved (cannot be killed/restarted) but its plugin-triggered background service must stop, the registry flag alone is not enough. Add a process-level or network-level block on the specific service (kill the process, occupy its port) for immediate effect, in addition to the registry flag for future sessions. Also check whether any watchdog/keep-alive script for that service distinguishes administratively-stopped from crashed before loading it during remediation — a pure liveness watchdog will restart what you just stopped.",
+      "summary": "Plugin-registry disable only stops NEW sessions; already-running sessions keep calling out",
+      "problem": "Disabling a Claude Code plugin via enabledPlugins in ~/.claude/settings.json only prevents the plugin from loading into sessions started after the change. A session already running has the plugin hooks baked into its launch args and can still trigger the plugin background service (e.g. restart a daemon) on its next hook event, undoing the disable.",
+      "solution": "When a live session must be preserved (cannot be killed/restarted) but its plugin-triggered background service must stop, the registry flag alone is not enough. Add a process-level or network-level block on the specific service (kill the process, occupy its port) for immediate effect, in addition to the registry flag for future sessions. Also check whether any watchdog/keep-alive script for that service distinguishes administratively-stopped from crashed before loading it during remediation — a pure liveness watchdog will restart what you just stopped."
+    },
     "01JQSEED00000000000000001": {
       "slug": "pytest-tty-hanging-k9m2",
       "type": "guard",
@@ -2958,6 +2976,33 @@
       "summary": "Pin any tool launched from an unpinned VCS ref",
       "problem": "An MCP server launched via `uvx --from git+https://github.com/org/repo` with no ref resolved upstream main on every start. Five distinct builds landed in the local cache in two days, and one made a config field required - silently breaking project activation across the machine. Nothing reported the tool was degraded; work simply continued without it.",
       "solution": "Treat `--from git+<url>` with no @ref, and any `@latest` or unpinned install, as a live dependency on someone else's unreleased main. Pin to a tag or SHA so upgrades are deliberate. Where a docs or reference artifact also pins a version, both must use the SAME coordinate system - a skill pinning a PyPI version while the runtime tracks git main cannot detect its own drift."
+    },
+    "01KZS9D32DE4EGBHHRKDFV3V24": {
+      "slug": "writeedit-plan-or-spec-docs-inside-a-wor-efb4",
+      "type": "hint",
+      "priority": 7,
+      "toolNames": [
+        "Write",
+        "Edit"
+      ],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [
+        {
+          "source": "^(?!.*/\\.worktrees/).*docs/superpowers/(plans|specs)/.*\\.md$",
+          "flags": "i"
+        }
+      ],
+      "modelRegexSources": [],
+      "tags": [
+        "category:git-workflow",
+        "severity:friction"
+      ],
+      "scope": null,
+      "message": "## Lesson: Write/edit plan or spec docs inside a worktree, not the main checkout\nThe writing-plans and brainstorming skills say plan/spec docs should be authored inside a dedicated worktree, but nothing stops writing them directly in the main checkout instead. When that happens, the doc gets committed to main and (if not pushed immediately) diverges from origin once the eventual feature worktree/branch is squash-merged -- forcing a manual git reset --hard to resync. Caught late (at git-command time) instead of at the moment the file is first written.\n**Fix**: Before writing a plan or spec doc, confirm the current working directory is inside a git worktree (path contains /.worktrees/, or `git rev-parse --show-toplevel` differs from the repos primary checkout). If not, create the worktree first (superpowers:using-git-worktrees), then write the doc there. Exception: a plan thats genuinely docs-only and will be executed directly on main per the docs-only override in claude-extras.md does not need a worktree -- but commit AND push it immediately if so, to avoid divergence.",
+      "summary": "Write/edit plan or spec docs inside a worktree, not the main checkout",
+      "problem": "The writing-plans and brainstorming skills say plan/spec docs should be authored inside a dedicated worktree, but nothing stops writing them directly in the main checkout instead. When that happens, the doc gets committed to main and (if not pushed immediately) diverges from origin once the eventual feature worktree/branch is squash-merged -- forcing a manual git reset --hard to resync. Caught late (at git-command time) instead of at the moment the file is first written.",
+      "solution": "Before writing a plan or spec doc, confirm the current working directory is inside a git worktree (path contains /.worktrees/, or `git rev-parse --show-toplevel` differs from the repos primary checkout). If not, create the worktree first (superpowers:using-git-worktrees), then write the doc there. Exception: a plan thats genuinely docs-only and will be executed directly on main per the docs-only override in claude-extras.md does not need a worktree -- but commit AND push it immediately if so, to avoid divergence."
     },
     "01KMZ3C0KEE5ZCSQWZZXQZZH67": {
       "slug": "chrome-devtools-econnrefused-when-chrome-5079",
@@ -4207,7 +4252,7 @@
       ],
       "commandRegexSources": [
         {
-          "source": "\\bgit\\b",
+          "source": "\\bgit\\s+commit\\b",
           "flags": ""
         }
       ],
