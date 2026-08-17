@@ -265,21 +265,16 @@ Claude asks what to run:
 
 ### Prerequisites
 
-The eval suite routes judge calls through a local proxy. Set these before running:
-
-```bash
-export ANTHROPIC_API_KEY=meridian
-export ANTHROPIC_BASE_URL=http://127.0.0.1:3456
-```
-
-See [Using the Eval Framework](../developer-guide/eval-usage.md) for setup details and how to read results.
+Judge calls run through an isolated `claude -p` subprocess authenticated via your `claude login`
+session — no env vars required. See
+[Using the Eval Framework](../developer-guide/eval-usage.md) for setup details and how to read
+results.
 
 ### CLI equivalent
 
 ```bash
 cd evals
-ANTHROPIC_API_KEY=meridian ANTHROPIC_BASE_URL=http://127.0.0.1:3456 \
-  npx promptfoo eval --config promptfooconfig.yaml
+npx promptfoo eval --config promptfooconfig.yaml
 ```
 
 ---
@@ -354,24 +349,6 @@ recently.
 ```text
 /lessons:help
 ```
-
----
-
-## /lessons:handoff
-
-Generate a structured session handoff prompt, or manage precompact automation. Run with no
-args to generate a handoff for the current session; run `auto` to enable automatic handoffs
-that block `/compact`.
-
-```text
-/lessons:handoff
-/lessons:handoff auto
-```
-
-### CLI equivalent
-
-There is no CLI equivalent — handoff generation reads the live session transcript, which is
-only available inside the running session.
 
 ---
 

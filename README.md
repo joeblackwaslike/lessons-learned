@@ -204,7 +204,6 @@ graph LR
 | 3-layer atomic dedup                            | ✅         |
 | Budget-aware injection (3 lessons / 4 KB)       | ✅         |
 | PostToolUse context re-injection at 30/52/70%   | ✅         |
-| PreCompact session handoff                      | 🚧 Beta    |
 | Subagent lesson protocol                        | ✅         |
 | Cross-platform (CC / Codex / Gemini / opencode) | ✅         |
 | MCP server adapter                              | 🗺 Roadmap |
@@ -285,12 +284,11 @@ npm run lint              # eslint
 npm run typecheck         # tsc --noEmit
 ```
 
-For evals (routes through meridian proxy):
+For evals (auth via your `claude login` session, no env vars required):
 
 ```bash
 cd evals
-ANTHROPIC_API_KEY=meridian ANTHROPIC_BASE_URL=http://127.0.0.1:3456 \
-  npx promptfoo eval --config promptfooconfig.yaml --filter-pattern "TC-H1"
+npx promptfoo eval --config promptfooconfig.yaml --filter-pattern "TC-H1"
 ```
 
 See [docs](https://joeblackwaslike.github.io/lessons-learned) for the full reference and [CONTRIBUTING.md](CONTRIBUTING.md) for the dev workflow.

@@ -15,7 +15,6 @@
     "commands/config.md",
     "commands/doctor.md",
     "commands/eval.md",
-    "commands/handoff.md",
     "commands/help.md",
     "commands/manage.md",
     "commands/onboard.md",

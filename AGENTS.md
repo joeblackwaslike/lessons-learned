@@ -29,7 +29,6 @@ hooks/                          # Claude Code hook handlers
   session-start-lesson-protocol.mjs  # Injects #lesson protocol + session-start lessons
   session-start-reset.mjs       # Clears per-session dedup state on reset
   session-start-scan.mjs        # Fires background scan on startup (Tier 4 requires ANTHROPIC_API_KEY)
-  precompact-handoff.mjs        # PreCompact hook: context banner or handoff generation
   subagent-start-lesson-protocol.mjs
   lib/                          # Hook shared utilities (dedup, output, matching)
 
@@ -177,12 +176,6 @@ Guards should always set `commandMatchTarget: "executable"` to avoid matching tr
 
 **Review grouping**: `lessons review` groups candidates by first tag with `── <tag> (<count>) ─────` headers, sorted alphabetically with `(untagged)` last.
 
-**PreCompact handoff** (`/lessons:handoff`): Intercepts `/compact` to generate a session handoff summary. Three modes:
-
-- No env var set: emits a context-capacity warning banner, allows compaction
-- `LESSONS_PRECOMPACT_HANDOFF=1`: generates handoff, blocks compaction (exit 2)
-- On-demand via `/lessons:handoff` command: generates handoff, allows compaction
-
 ## `#lesson` tag format
 
 Emit this in any response when you discover a problem→solution sequence:
@@ -249,12 +242,10 @@ All four tiers write to `candidate` status. Use `/lessons:review` to promote can
 ## Running Evals
 
 The Tier 3 judge and `evals/scripts/probe-scenario.mjs`, `evals/scripts/gen-regression-traps.mjs`,
-and `evals/scripts/repair-judge-errors.mjs` all call the Anthropic SDK directly and route through
-the meridian proxy. Always set these env vars in your shell or those calls will fail with auth errors — the
-agent arm does **not** use them (`evals/providers/claude-agent.mjs`'s `buildEnv()` deliberately
-excludes them from the CC subprocess so the agent runs via direct OAuth instead of the proxy),
-so it's safe to have them set in the environment while `npx promptfoo eval` also drives the
-agent arm:
+`evals/scripts/generate-scenarios.mjs`, and `evals/scripts/repair-judge-errors.mjs` all call an
+isolated `claude -p` subprocess (see `evals/lib/claude-spawn.mjs`) — auth via your `claude login`
+session (the default `~/.claude/` config dir), same as the agent arm
+(`evals/providers/claude-agent.mjs`). No env vars required, no meridian proxy needed:
 
 ```bash
 cd evals
@@ -263,13 +254,11 @@ cd evals
 ps aux | grep promptfoo | grep -v grep
 
 # Run scenarios
-ANTHROPIC_API_KEY=meridian ANTHROPIC_BASE_URL=http://127.0.0.1:3456 \
-  npx promptfoo eval --config promptfooconfig.yaml \
+npx promptfoo eval --config promptfooconfig.yaml \
   --filter-pattern "TC-..." 2>&1 | tee results/<run-name>.log
 
 # Repair judge errors after a run with auth failures
-ANTHROPIC_API_KEY=meridian ANTHROPIC_BASE_URL=http://127.0.0.1:3456 \
-  node scripts/repair-judge-errors.mjs
+node scripts/repair-judge-errors.mjs
 ```
 
 **Pin the agent model.** The agent arm is pinned to `claude-sonnet-4-6` (provider passes `--model`; override with `EVAL_AGENT_MODEL`). This is deliberate: without it, `claude --print` uses the OAuth session default, which silently became Opus and confounded earlier results (see `evals/FINDINGS.md`). Keep eval/regression runs on **Sonnet** for now so results are comparable and target the model many sessions actually run. After changing the pinned model, clear the cache (`npm run eval:clean`) so cached Opus-era arms are not reused.

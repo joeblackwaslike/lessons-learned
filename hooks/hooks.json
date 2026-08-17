@@ -49,18 +49,6 @@
         ]
       }
     ],
-    "PreCompact": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/precompact-handoff.mjs\"",
-            "timeout": 60
-          }
-        ]
-      }
-    ],
     "SubagentStart": [
       {
         "matcher": ".+",

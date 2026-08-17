@@ -26,7 +26,6 @@ graph TD
         H4["session-start-scan.mjs\n(SessionStart)"]
         H5["session-start-reset.mjs\n(SessionStart)"]
         H6["subagent-start-lesson-protocol.mjs\n(SubagentStart)"]
-        H7["precompact-handoff.mjs\n(PreCompact)"]
     end
     subgraph "Data Layer"
         DB["lessons.db\n(SQLite source of truth)"]
@@ -74,13 +73,12 @@ graph TB
 
 ```
 hooks/
-  hooks.json                         Hook wiring (SessionStart, PreToolUse, PostToolUse, PreCompact, SubagentStart)
+  hooks.json                         Hook wiring (SessionStart, PreToolUse, PostToolUse, SubagentStart)
   pretooluse-lesson-inject.mjs       Main injection pipeline (6 stages)
   posttooluse-directive-reinject.mjs Re-injects directives at context degradation thresholds
   session-start-lesson-protocol.mjs  Injects #lesson protocol + sessionStart lessons
   session-start-reset.mjs            Clears per-session dedup state on clear/compact
   session-start-scan.mjs             Fires background scan on startup (fire-and-forget)
-  precompact-handoff.mjs             Intercepts /compact to generate structured handoff
   subagent-start-lesson-protocol.mjs Protocol injection for subagents
   lib/
     stdin.mjs          parsePayload() pure; parseHookInput() reads fd 0
@@ -88,7 +86,6 @@ hooks/
     dedup.mjs          3-layer dedup: env var, temp file, O_EXCL lock
     output.mjs         formatHookOutput() / formatEmptyOutput()
     session-start.mjs  Shared SessionStart/SubagentStart injection logic
-    precompact.mjs     Transcript parsing for handoff generation
 
 core/
   match.mjs            matchLessons(manifest, toolName, command, path) → LessonMatch[]

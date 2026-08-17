@@ -32,13 +32,12 @@ The gap this plugin fills:
 
 ```
 hooks/
-  hooks.json                          Hook wiring — SessionStart, PreToolUse, PostToolUse, PreCompact, SubagentStart
+  hooks.json                          Hook wiring — SessionStart, PreToolUse, PostToolUse, SubagentStart
   pretooluse-lesson-inject.mjs        Main injection pipeline (6 stages)
   posttooluse-directive-reinject.mjs  Re-injects directive lessons at context-usage thresholds
   session-start-lesson-protocol.mjs   Injects #lesson protocol + session-start lessons
   session-start-reset.mjs             Clears per-session dedup state on clear/compact
   session-start-scan.mjs              Fires background scan on startup (fire-and-forget)
-  precompact-handoff.mjs              Optional: blocks /compact to generate a session handoff
   subagent-start-lesson-protocol.mjs  Protocol injection for subagents
   lib/
     dedup.mjs                         3-layer dedup (env var, temp file, O_EXCL lock)
@@ -46,7 +45,6 @@ hooks/
     normalize-tool.mjs                Maps Codex/Gemini tool names to canonical CC names
     stdin.mjs                         Hook stdin payload parsing
     session-start.mjs                 Shared SessionStart/SubagentStart injection logic
-    precompact.mjs                    Transcript parsing for handoff generation
 
 core/
   match.mjs                           Lesson matching (command regex, path glob, tool name, scope)

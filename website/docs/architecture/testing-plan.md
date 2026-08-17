@@ -340,7 +340,6 @@ tests/
       stdin.test.mjs
       dedup.test.mjs
       normalize.test.mjs        # Codex/Gemini -> canonical tool name mapping
-      precompact.test.mjs       # transcript parsing for handoff generation
       session-start.test.mjs    # shared SessionStart/SubagentStart injection logic
     scanner/
       structured.test.mjs
@@ -351,7 +350,6 @@ tests/
     hook-pipeline.test.mjs    # stdin→stdout subprocess tests
     cli-lessons.test.mjs      # lessons add/build/list subprocess tests
     cli-doctor.test.mjs       # doctor subprocess tests
-    precompact-hook.test.mjs  # PreCompact hook subprocess tests
     scan-incremental.test.mjs # scanner against fixture JSONL
   e2e/
     claude-code.test.mjs      # CC protocol round-trips
@@ -363,7 +361,6 @@ tests/
     lessons-store.json        # Seed data for tmpstore.mjs — {lessons: [...]} loaded into a temp lessons.db
     session-with-lesson.jsonl # JSONL with embedded #lesson tag
     session-no-lesson.jsonl   # JSONL without any lesson tags
-    session-precompact.jsonl  # JSONL fixture for PreCompact handoff tests
   helpers/
     subprocess.mjs            # spawn + collect stdout/stderr
     tmpstore.mjs              # creates an isolated temp lessons store (LESSONS_DATA_DIR)
