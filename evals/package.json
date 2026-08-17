@@ -17,7 +17,6 @@
     "eval:clean": "rm -rf results/cache/*.json results/cache/control-*.json"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.54.0",
     "promptfoo": "^0.121.0",
     "ulid": "^2.3.0",
     "js-yaml": "^4.1.0"

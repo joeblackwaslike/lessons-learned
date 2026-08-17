@@ -6,8 +6,9 @@
  * judgeResult.error === true. Patches the cache file in place.
  *
  * Usage:
- *   ANTHROPIC_API_KEY=meridian ANTHROPIC_BASE_URL=http://127.0.0.1:3456 \
- *     node evals/scripts/repair-judge-errors.mjs
+ *   node evals/scripts/repair-judge-errors.mjs
+ *
+ * Auth via judge.mjs's isolated claude -p subprocess (OAuth, no env vars required).
  */
 
 import { readFileSync, writeFileSync, readdirSync, existsSync } from 'node:fs';

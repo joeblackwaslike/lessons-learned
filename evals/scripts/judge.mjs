@@ -2,14 +2,14 @@
 /**
  * judge.mjs — Tier 3 LLM judge for lesson injection evals.
  *
- * Uses the Anthropic SDK directly (reads ANTHROPIC_API_KEY + ANTHROPIC_BASE_URL
- * from env) so it works with the meridian proxy without needing the claude CLI.
+ * Calls an isolated `claude -p` subprocess (see evals/lib/claude-spawn.mjs) —
+ * OAuth via the default ~/.claude/ config dir, no meridian proxy required.
  *
  * Form A (hint/guard): receives both control and treatment transcripts.
  * Form B (protocol/directive): receives treatment transcript only.
  */
 
-import Anthropic from '@anthropic-ai/sdk';
+import { callClaude } from '../lib/claude-spawn.mjs';
 
 const SYSTEM =
   'You are an AI evaluator assessing whether a lesson injection changed agent behavior. ' +
@@ -20,7 +20,7 @@ const SYSTEM =
  * @returns {Promise<{ outcome: string, reasoning: string, dimension_scores: object, delta: number|null }>}
  */
 // Hard floor between judge calls — prevents rate-limit quota burns when
-// multiple scenarios complete back-to-back. 3 s is enough for meridian/Claude Max.
+// multiple scenarios complete back-to-back. 3 s is enough for Claude Max.
 const JUDGE_DELAY_MS = 3_000;
 
 const API_ERROR_PATTERNS = [
@@ -48,23 +48,19 @@ export async function judge({ lesson, controlTranscript, treatmentTranscript, fo
     };
   }
 
-  const client = new Anthropic();
-
   const userContent =
     form === 'A'
       ? buildFormA(lesson, controlTranscript, treatmentTranscript)
       : buildFormB(lesson, treatmentTranscript);
 
-  const message = await client.messages.create({
+  const raw = await callClaude({
+    systemPrompt: SYSTEM,
+    userContent,
     model: process.env.EVAL_JUDGE_MODEL ?? 'claude-sonnet-4-6',
-    max_tokens: 1024,
-    system: SYSTEM,
-    messages: [{ role: 'user', content: userContent }],
   });
 
   await new Promise(r => setTimeout(r, JUDGE_DELAY_MS));
 
-  const raw = message.content.find(c => c.type === 'text')?.text?.trim() ?? '';
   try {
     return JSON.parse(raw);
   } catch {

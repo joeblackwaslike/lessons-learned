@@ -145,9 +145,11 @@ async function runArm({
     ];
     // Pass explicit MCP config for treatment arms so Serena loads in --print mode.
     // Project-level mcpServers in settings.json are not loaded by CC in --print mode.
+    // --strict-mcp-config ensures only this explicit config is used, in case the
+    // workspace's own settings.json also defines mcpServers.
     const mcpConfigPath = join(workspaceDir, '.eval', 'mcp-config.json');
     if (!isControl && existsSync(mcpConfigPath)) {
-      claudeArgs.push('--mcp-config', mcpConfigPath);
+      claudeArgs.push('--mcp-config', mcpConfigPath, '--strict-mcp-config');
     }
     claudeArgs.push('-p', prompt);
     const claudeResult = spawnSync(findClaudeBin(), claudeArgs, {
@@ -172,7 +174,8 @@ async function runArm({
       writeControlTranscript(controlTranscriptFile, enrichedOutput);
     }
 
-    // Judge uses claude --print (OAuth) — no ANTHROPIC_API_KEY required
+    // Judge uses an isolated `claude -p` subprocess (evals/lib/claude-spawn.mjs) —
+    // OAuth via the default ~/.claude/ config dir, no ANTHROPIC_API_KEY required.
     const judgeResult =
       !isControl && lesson
         ? await runJudge({ lesson, controlTranscriptFile, output: enrichedOutput })

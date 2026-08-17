@@ -10,14 +10,14 @@
  * (lesson still needed). Traps are written to data/obsoleted-traps.json keyed
  * by lesson slug. Idempotent: existing traps are kept unless --force.
  *
- * Reads ANTHROPIC_API_KEY + ANTHROPIC_BASE_URL (meridian) like judge.mjs.
- *   ANTHROPIC_API_KEY=meridian ANTHROPIC_BASE_URL=http://127.0.0.1:3456 \
- *     node evals/scripts/gen-regression-traps.mjs [--force] [--only <slug,...>]
+ * Calls an isolated `claude -p` subprocess (see evals/lib/claude-spawn.mjs) —
+ * OAuth via the default ~/.claude/ config dir, no env vars required.
+ *   node evals/scripts/gen-regression-traps.mjs [--force] [--only <slug,...>]
  */
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import Anthropic from '@anthropic-ai/sdk';
+import { callClaude } from '../lib/claude-spawn.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DATA = join(__dirname, '..', '..', 'data');
@@ -49,16 +49,12 @@ Write ONE realistic, self-contained developer task (2-5 sentences) that:
 OUTPUT (JSON only): {"trap":"<the task prompt>","triggers":"<one line: what naive output would fail>"}`;
 }
 
-const client = new Anthropic();
-
 async function genTrap(lesson) {
-  const msg = await client.messages.create({
+  const raw = await callClaude({
+    systemPrompt: SYSTEM,
+    userContent: buildPrompt(lesson),
     model: MODEL,
-    max_tokens: 600,
-    system: SYSTEM,
-    messages: [{ role: 'user', content: buildPrompt(lesson) }],
   });
-  const raw = msg.content.find(c => c.type === 'text')?.text?.trim() ?? '';
   await new Promise(r => setTimeout(r, 2000));
   return JSON.parse(raw);
 }

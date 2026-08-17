@@ -108,14 +108,12 @@ The judge (`scripts/judge.mjs`) runs inside `claude-agent.mjs` for treatment arm
 - `CONTROL_CORRECT` — control agent already avoids the mistake; check the trigger prompt first, archive second
 - `SKIP` — ambiguous or judge error
 
-**Prerequisites:** `judge.mjs` calls the Anthropic SDK directly — it does not use your
-`claude login` session — so `ANTHROPIC_API_KEY` must be set (`ANTHROPIC_BASE_URL` too if routing
-through a proxy; this repo's dev setup uses the meridian proxy, `ANTHROPIC_API_KEY=meridian
-ANTHROPIC_BASE_URL=http://127.0.0.1:3456`). `probe-scenario.mjs`, `gen-regression-traps.mjs`, and
-`repair-judge-errors.mjs` need the same env vars. The **agent arm does not** — see
-[FINDINGS.md](FINDINGS.md) and `providers/claude-agent.mjs`'s `buildEnv()`, which deliberately
-excludes these vars so the agent runs via direct OAuth instead of the proxy. Control arms must
-run before treatment arms — guaranteed by `maxConcurrency: 1` in the config, with all controls
+**Prerequisites:** `judge.mjs`, `probe-scenario.mjs`, `gen-regression-traps.mjs`,
+`generate-scenarios.mjs`, and `repair-judge-errors.mjs` all call an isolated `claude -p`
+subprocess (see `lib/claude-spawn.mjs`) — OAuth via your `claude login` session (the default
+`~/.claude/` config dir), no env vars required, no meridian proxy needed. This matches the
+agent arm's auth path — see `providers/claude-agent.mjs`'s `buildEnv()`. Control arms must run
+before treatment arms — guaranteed by `maxConcurrency: 1` in the config, with all controls
 listed before treatments.
 
 ## Cache Behavior

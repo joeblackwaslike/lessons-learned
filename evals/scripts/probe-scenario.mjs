@@ -2,23 +2,22 @@
 /**
  * probe-scenario.mjs — Lightweight single-call probe for scenario prompt design.
  *
- * Makes a direct Anthropic API call with a scenario's PROMPT.md content —
- * no Claude CLI, no workspace setup, no lesson injection. Useful for rapidly
- * iterating on scenario prompts before committing to a full (expensive) eval run.
+ * Makes an isolated `claude -p` call (see evals/lib/claude-spawn.mjs) with a
+ * scenario's PROMPT.md content — no workspace setup, no lesson injection.
+ * Useful for rapidly iterating on scenario prompts before committing to a full
+ * (expensive) eval run.
  *
  * Usage:
- *   ANTHROPIC_API_KEY=meridian ANTHROPIC_BASE_URL=http://127.0.0.1:3456 \
- *     node evals/scripts/probe-scenario.mjs <scenario-dir> [--model <model-id>]
+ *   node evals/scripts/probe-scenario.mjs <scenario-dir> [--model <model-id>]
  *
- * Reads ANTHROPIC_API_KEY and ANTHROPIC_BASE_URL from env (SDK auto-picks them up).
+ * Auth via OAuth (default ~/.claude/ config dir) — no env vars required.
  */
 
-import Anthropic from '@anthropic-ai/sdk';
+import { callClaude } from '../lib/claude-spawn.mjs';
 import { readFile } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 
 const DEFAULT_MODEL = 'claude-sonnet-4-6';
-const MAX_TOKENS = 2000;
 const RUBRIC_PREVIEW_CHARS = 500;
 
 // Default system prompt for probing — forces a direct implementation response
@@ -83,24 +82,19 @@ async function main() {
   const rubricPath = join(absScenarioDir, 'hidden-checks', 'rubric.md');
   const rubricContent = await readFileOptional(rubricPath);
 
-  // Make the API call
-  const client = new Anthropic();
-
-  let message;
+  // Make the call
+  let responseText;
   try {
-    const createParams = {
+    responseText = await callClaude({
+      systemPrompt: system ?? undefined,
+      userContent: promptContent.trim(),
       model,
-      max_tokens: MAX_TOKENS,
-      messages: [{ role: 'user', content: promptContent.trim() }],
-    };
-    if (system) createParams.system = system;
-    message = await client.messages.create(createParams);
+    });
   } catch (err) {
-    console.error(`Error: API call failed — ${err.message}`);
+    console.error(`Error: claude -p call failed — ${err.message}`);
     process.exit(1);
   }
 
-  const responseText = message.content.find(c => c.type === 'text')?.text ?? '';
   process.stdout.write(responseText);
   process.stdout.write('\n');
 

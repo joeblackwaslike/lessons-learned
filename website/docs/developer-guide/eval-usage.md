@@ -14,20 +14,13 @@ The eval framework measures whether lesson injection actually changes Claude's b
 cd evals && npm install
 ```
 
-The Tier 3 judge (`scripts/judge.mjs`) calls the Anthropic SDK directly — it does **not** use
-your `claude login` session, so `ANTHROPIC_API_KEY` must be set (and `ANTHROPIC_BASE_URL` if
-you're routing through a proxy). In this repo's dev setup that's the meridian proxy:
-
-```bash
-export ANTHROPIC_API_KEY=meridian
-export ANTHROPIC_BASE_URL=http://127.0.0.1:3456
-```
-
-`probe-scenario.mjs`, `gen-regression-traps.mjs`, and `repair-judge-errors.mjs` need the same
-two env vars for the same reason. The **agent arm does not** — `providers/claude-agent.mjs`'s
-`buildEnv()` deliberately excludes `ANTHROPIC_API_KEY`/`ANTHROPIC_BASE_URL` so the agent runs
-through direct OAuth rather than the proxy (routing the agent through meridian spawns a
-full-settings CC worker that can 20-minute-timeout).
+The Tier 3 judge (`scripts/judge.mjs`) and `probe-scenario.mjs`, `gen-regression-traps.mjs`,
+`generate-scenarios.mjs`, and `repair-judge-errors.mjs` all call an isolated `claude -p`
+subprocess (see `lib/claude-spawn.mjs`) — auth is via your `claude login` session (the default
+`~/.claude/` config dir), same as the agent arm. No env vars required, no meridian proxy needed.
+`providers/claude-agent.mjs`'s `buildEnv()` similarly excludes `ANTHROPIC_API_KEY`/
+`ANTHROPIC_BASE_URL` so the agent runs through direct OAuth (routing through meridian would spawn
+a full-settings CC worker that can 20-minute-timeout).
 
 **Model pinning:** the agent arm is pinned to `claude-sonnet-4-6` (override with
 `EVAL_AGENT_MODEL`) so eval results stay comparable across runs — without a pin, `claude --print`

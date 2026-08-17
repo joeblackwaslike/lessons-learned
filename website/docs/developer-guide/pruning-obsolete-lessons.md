@@ -17,7 +17,7 @@ Archiving these is the lesson system working as designed: it removes guidance ne
 
 ```bash
 cd evals
-# (see eval-usage.md for meridian + env setup)
+# (see eval-usage.md for setup — auth via claude login, no env vars required)
 npx promptfoo eval --config promptfooconfig.yaml --filter-pattern 'TC-...'
 ```
 

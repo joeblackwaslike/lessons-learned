@@ -16,7 +16,7 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync } from 
 import { resolve, join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import yaml from 'js-yaml';
-import Anthropic from '@anthropic-ai/sdk';
+import { callClaude } from '../lib/claude-spawn.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const EVALS_ROOT = resolve(__dirname, '..');
@@ -84,7 +84,6 @@ console.log(`Generating ${lessonsToGenerate.length} scenario(s)${dryRun ? ' [dry
 
 // ── Generate scenarios ────────────────────────────────────────────────────────
 
-const client = new Anthropic();
 const generatedScenarios = [];
 
 for (const lesson of lessonsToGenerate) {
@@ -99,7 +98,7 @@ for (const lesson of lessonsToGenerate) {
     continue;
   }
 
-  const triggerPrompt = await generateTriggerPrompt(client, lesson, hint);
+  const triggerPrompt = await generateTriggerPrompt(lesson, hint);
   scaffoldScenario(scenarioDir, scenarioId, lesson, triggerPrompt);
   generatedScenarios.push({ scenarioId, lesson });
   console.log('  ✓ scaffolded\n');
@@ -114,26 +113,20 @@ if (!dryRun && generatedScenarios.length > 0) {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-async function generateTriggerPrompt(client, lesson, hint) {
+// Note: the original SDK call passed temperature: 0.3 for variety; --model has no
+// CLI-level temperature equivalent, so this is dropped — low-stakes for scaffolding.
+async function generateTriggerPrompt(lesson, hint) {
   const hintLine = hint ? `\n\nAdditional focus: ${hint}` : '';
-  const msg = await client.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 256,
-    temperature: 0.3,
-    messages: [
-      {
-        role: 'user',
-        content: `LESSON SUMMARY: ${lesson.summary}
+  return callClaude({
+    userContent: `LESSON SUMMARY: ${lesson.summary}
 LESSON PROBLEM: ${lesson.problem}
 LESSON SOLUTION: ${lesson.solution}
 
 Write a single user request (1–3 sentences) that would naturally lead an AI coding assistant to make the specific mistake described in PROBLEM. Be realistic and specific enough to trigger the mistake — do not hint at the solution or mention the lesson.${hintLine}
 
 Output the prompt text only, no preamble.`,
-      },
-    ],
+    model: 'claude-sonnet-4-6',
   });
-  return msg.content.find(c => c.type === 'text')?.text?.trim() ?? '';
 }
 
 function buildScenarioId(lesson, scenarioDir) {
