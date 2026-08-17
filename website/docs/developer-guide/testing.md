@@ -78,7 +78,6 @@ tests/
     session-with-lesson.jsonl JSONL with embedded #lesson tag
     session-no-lesson.jsonl  JSONL without any lesson tags
     lessons-store.json       Seed data loaded into a temp lessons.db by tmpstore.mjs
-    session-precompact.jsonl JSONL fixture for PreCompact handoff tests
   helpers/
     subprocess.mjs           spawn + collect stdout/stderr
     tmpstore.mjs             isolated temp lessons store

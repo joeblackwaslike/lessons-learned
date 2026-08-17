@@ -43,15 +43,23 @@ function main() {
 
   // Tier 4 LLM deep scan — needs an API key; reads from env or data/.api-key file
   const keyFile = join(PLUGIN_ROOT, 'data', '.api-key');
+  const usingEnvKey = Boolean(process.env.ANTHROPIC_API_KEY);
   const scanApiKey =
     process.env.ANTHROPIC_API_KEY ||
     (existsSync(keyFile) ? readFileSync(keyFile, 'utf8').trim() : null);
 
   if (scanApiKey) {
+    // The data/.api-key fallback is a dedicated scan credential and must always hit the
+    // real API — don't let a stray ANTHROPIC_BASE_URL (e.g. left exported from eval work
+    // in a long-lived shell) silently redirect routine background scans through a proxy.
+    const { ANTHROPIC_BASE_URL, ...restEnv } = process.env;
+    const deepEnv = usingEnvKey
+      ? { ...process.env, ANTHROPIC_API_KEY: scanApiKey }
+      : { ...restEnv, ANTHROPIC_API_KEY: scanApiKey };
     const deepChild = spawn(
       process.execPath,
       [LESSONS_CLI, 'scan', '--deep', '--auto', '--max-sessions', '3'],
-      { detached: true, stdio: 'ignore', env: { ...process.env, ANTHROPIC_API_KEY: scanApiKey } }
+      { detached: true, stdio: 'ignore', env: deepEnv }
     );
     deepChild.unref();
   }
