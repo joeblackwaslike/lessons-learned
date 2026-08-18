@@ -1,7 +1,7 @@
 ---
 sidebar_position: 0
 title: Installation
-description: Install lessons-learned on Claude Code, Codex, Gemini CLI, opencode, and Cursor.
+description: Install lessons-learned on Claude Code, Codex, Gemini CLI, and opencode.
 ---
 
 # Installation
@@ -36,7 +36,7 @@ codex plugin install lessons-learned@agent-marketplace
 
 The `marketplace add` step registers the marketplace source — it only needs to run once. After that, `plugin install` resolves directly.
 
-For Gemini CLI, opencode, and Cursor, use the manual setup below.
+For Gemini CLI and opencode, use the manual setup below.
 
 ---
 
@@ -220,11 +220,15 @@ opencode uses the same tool name set as Claude Code (`Bash`, `Read`, `Edit`, `Wr
 ```
 
   </TabItem>
-  <TabItem value="cursor" label="Cursor">
+  <TabItem value="cursor" label="Cursor (export only)">
 
-Cursor uses a similar hook system to Claude Code. Wire the hooks in your Cursor settings using the same `PreToolUse` pattern as Claude Code, substituting your clone path.
+Cursor doesn't have a live PreToolUse-equivalent injection path yet — tracked in ll-rzo. In the meantime, export active lessons as a static rules file:
 
-Refer to the Cursor documentation for the hook configuration file location — it may differ from `~/.claude/settings.json`.
+```bash
+node scripts/lessons.mjs list --json > .cursorrules
+```
+
+This is a one-time snapshot, not live injection — rerun it after promoting new lessons to pick up updates.
 
   </TabItem>
 </Tabs>
