@@ -88,33 +88,38 @@ Type "# 2. Next session: review and promote it — the manifest rebuilds automat
 Sleep 1200ms
 
 # ── Scene 1: /lessons:manage discovers the candidate (tool calls hidden,
-# only the conversational turn shown) ──
+# only the conversational turn shown — and only the candidate excerpt, not
+# manage.md's full opening status board / suggestion-list boilerplate, so
+# there's less to read per beat) ──
 Hide
 Type `MSG='/lessons:manage'` Enter
 Type `RESPONSE=$(node "$REPO_ROOT/website/static/record-turn.mjs" --session-file .demo-session-id "$MSG")` Enter
 Sleep 60s
-Type `clear && printf 'You: %s\n\nClaude: %s\n' "$MSG" "$RESPONSE"` Enter
+Type `DISPLAY=$(printf '%s\n' "$RESPONSE" | grep -A5 'The one candidate:')` Enter
+Type `clear && printf 'You: %s\n\nClaude: %s\n' "$MSG" "$DISPLAY"` Enter
 Sleep 300ms
 Show
-Sleep 4s
+Sleep 6s
 
 Hide
 Type `MSG='promote 1'` Enter
 Type `RESPONSE=$(node "$REPO_ROOT/website/static/record-turn.mjs" --session-file .demo-session-id "$MSG")` Enter
 Sleep 25s
-Type `clear && printf 'You: %s\n\nClaude: %s\n' "$MSG" "$RESPONSE"` Enter
+Type `DISPLAY=$(printf '%s\n' "$RESPONSE" | sed 's/ (.*)//')` Enter
+Type `clear && printf 'You: %s\n\nClaude: %s\n' "$MSG" "$DISPLAY"` Enter
 Sleep 300ms
 Show
-Sleep 3s
+Sleep 5s
 
 Hide
 Type `MSG='yes'` Enter
 Type `RESPONSE=$(node "$REPO_ROOT/website/static/record-turn.mjs" --session-file .demo-session-id "$MSG")` Enter
 Sleep 25s
-Type `clear && printf 'You: %s\n\nClaude: %s\n' "$MSG" "$RESPONSE"` Enter
+Type `DISPLAY=$(printf '%s\n' "$RESPONSE" | head -n1)` Enter
+Type `clear && printf 'You: %s\n\nClaude: %s\n' "$MSG" "$DISPLAY"` Enter
 Sleep 300ms
 Show
-Sleep 3s
+Sleep 4s
 
 # ── Scene 2: PreToolUse hook injection preview — direct pipeline, see the
 # header comment for why this one stays raw ──
@@ -124,10 +129,10 @@ Show
 
 Type "# 3. Next session: Claude is about to combine cd with rm -rf again..." Enter
 Sleep 800ms
-Type@12ms `echo '{"tool_name":"Bash","tool_input":{"command":"cd /tmp/scratch && rm -rf old-build"},"session_id":"'"$DEMO_SESSION"'","cwd":"/Users/you/lessons-learned"}' | node hooks/pretooluse-lesson-inject.mjs | jq -r '.hookSpecificOutput.additionalContext'`
+Type@12ms `echo '{"tool_name":"Bash","tool_input":{"command":"cd /tmp/scratch && rm -rf old-build"},"session_id":"'"$DEMO_SESSION"'","cwd":"/Users/you/lessons-learned"}' | node hooks/pretooluse-lesson-inject.mjs | jq -r '.hookSpecificOutput.additionalContext' | grep -A2 '^## Lesson:'`
 Sleep 500ms
 Enter
-Sleep 5500ms
+Sleep 8s
 
 Hide
 Type "rm -rf .demo-data-src .demo-workspace" Enter
