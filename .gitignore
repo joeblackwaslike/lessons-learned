@@ -62,6 +62,11 @@ evals/.solidlsp-cache/
 # Eval workspace artifacts (written by materialize-workspace.mjs; must not land in repo root)
 .eval/
 
+# Stray local Python venvs from manually running a scenario's seed-workspace directly
+# (found polluting evals/scenarios/TC-G1-pytest-hang/seed-workspace/.venv/ — untracked,
+# but was leaking into prettier's file scan)
+.venv/
+
 # Git worktrees
 .worktrees/
 

@@ -8,7 +8,7 @@ on:
 
 jobs:
   ci:
-    name: Lint, typecheck, test
+    name: Format, lint, typecheck, test
     runs-on: ubuntu-latest
 
     steps:
@@ -35,6 +35,8 @@ jobs:
             ${{ runner.os }}-pnpm-store-
 
       - run: pnpm install --frozen-lockfile
+
+      - run: pnpm run format:check
 
       - run: pnpm run lint
 

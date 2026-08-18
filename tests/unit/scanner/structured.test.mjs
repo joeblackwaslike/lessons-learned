@@ -1,6 +1,10 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseLessonTags, parseCancelTags, scanLineForLessons } from '../../../scripts/scanner/structured.mjs';
+import {
+  parseLessonTags,
+  parseCancelTags,
+  scanLineForLessons,
+} from '../../../scripts/scanner/structured.mjs';
 
 // ─── parseLessonTags ───────────────────────────────────────────────────────
 

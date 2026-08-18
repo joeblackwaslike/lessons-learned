@@ -32,17 +32,11 @@ function HomepageHero() {
           claude plugin install lessons-learned@agent-marketplace
         </div>
         <div className={styles.buttons}>
-          <Link
-            className="button button--secondary button--lg"
-            to="/docs/intro"
-          >
+          <Link className="button button--secondary button--lg" to="/docs/intro">
             Get Started
           </Link>
           <Link
-            className={clsx(
-              'button button--outline button--lg',
-              styles.buttonGhost,
-            )}
+            className={clsx('button button--outline button--lg', styles.buttonGhost)}
             href="https://github.com/joeblackwaslike/lessons-learned"
           >
             GitHub
@@ -54,13 +48,7 @@ function HomepageHero() {
 }
 
 function PlatformSupport() {
-  const platforms = [
-    'Claude Code',
-    'Codex CLI',
-    'Gemini CLI',
-    'opencode',
-    'Cursor',
-  ];
+  const platforms = ['Claude Code', 'Codex CLI', 'Gemini CLI', 'opencode', 'Cursor'];
   return (
     <section className={styles.platformSection}>
       <div className="container">
@@ -68,7 +56,7 @@ function PlatformSupport() {
           Platform Support
         </Heading>
         <div className={styles.platformGrid}>
-          {platforms.map((platform) => (
+          {platforms.map(platform => (
             <span key={platform} className={styles.platformBadge}>
               {platform}
             </span>

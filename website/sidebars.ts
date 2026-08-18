@@ -71,18 +71,13 @@ const sidebars: SidebarsConfig = {
       type: 'category',
       label: 'Research',
       collapsed: true,
-      items: [
-        'research/real-world-demand',
-        'research/context-and-degredation',
-      ],
+      items: ['research/real-world-demand', 'research/context-and-degredation'],
     },
     {
       type: 'category',
       label: 'Post-Mortems',
       collapsed: true,
-      items: [
-        'post-mortems/codex-chat-history-sidebar-postmortem',
-      ],
+      items: ['post-mortems/codex-chat-history-sidebar-postmortem'],
     },
   ],
 };

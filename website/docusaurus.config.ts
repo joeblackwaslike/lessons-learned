@@ -33,8 +33,7 @@ const config: Config = {
       {
         docs: {
           sidebarPath: './sidebars.ts',
-          editUrl:
-            'https://github.com/joeblackwaslike/lessons-learned/tree/main/website/',
+          editUrl: 'https://github.com/joeblackwaslike/lessons-learned/tree/main/website/',
         },
         blog: false,
         theme: {
