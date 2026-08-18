@@ -9,7 +9,7 @@
 
 ![Animated terminal demo of lessons-learned capturing a mistake and preventing it from repeating](website/static/img/demo.gif)
 
-_Real terminal output, not staged — see [`website/static/demo.tape`](website/static/demo.tape) to reproduce it._
+_Real `/lessons:manage` conversation and a real PreToolUse injection, not staged — see [`website/static/demo.tape`](website/static/demo.tape) to reproduce it._
 
 **137 active lessons** · **87 eval scenarios** measuring whether injection actually changes behavior · **37 pages** of docs · **4 platforms** (Claude Code, Codex CLI, Gemini CLI, opencode)
 
@@ -123,11 +123,13 @@ calls), then issue `rm -rf` as a separate, later call -- or use
 </details>
 ```
 
-The demo GIF at the top of this page shows this same flow at the CLI level —
-useful if you're developing the plugin itself against a clone. Reproduce it
-with `vhs website/static/demo.tape` (requires [`vhs`](https://github.com/charmbracelet/vhs)
-and `jq` on `PATH`). Day to day, inside Claude Code, `/lessons:review` is what
-you'd actually type.
+The demo GIF at the top of this page is a real `/lessons:manage` conversation
+— discovering and promoting a genuinely captured `#lesson` tag — followed by
+this same PreToolUse injection. Reproduce it with `vhs website/static/demo.tape`
+(requires [`vhs`](https://github.com/charmbracelet/vhs), `jq`, and a `claude`
+login on `PATH`; budget a couple of minutes and real API usage). For reviewing
+a full batch of pending candidates one at a time, `/lessons:review` is the
+recommended day-to-day command.
 
 ---
 
