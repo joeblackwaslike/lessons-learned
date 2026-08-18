@@ -1,8 +1,13 @@
 # lessons-learned
 
 [![CI](https://github.com/joeblackwaslike/lessons-learned/actions/workflows/ci.yml/badge.svg)](https://github.com/joeblackwaslike/lessons-learned/actions/workflows/ci.yml)
+[![Docs](https://github.com/joeblackwaslike/lessons-learned/actions/workflows/docs.yml/badge.svg)](https://joeblackwaslike.github.io/lessons-learned/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D22.5-brightgreen)](package.json)
+[![Claude Code](https://img.shields.io/badge/Claude_Code-D97757)](https://joeblackwaslike.github.io/lessons-learned/docs/user-guide/installation)
+[![Codex CLI](https://img.shields.io/badge/Codex_CLI-412991)](https://joeblackwaslike.github.io/lessons-learned/docs/user-guide/installation)
+[![Gemini CLI](https://img.shields.io/badge/Gemini_CLI-4285F4)](https://joeblackwaslike.github.io/lessons-learned/docs/user-guide/installation)
+[![opencode](https://img.shields.io/badge/opencode-14b8a6)](https://joeblackwaslike.github.io/lessons-learned/docs/user-guide/installation)
 [![Discord](https://img.shields.io/discord/1486035859747897414?logo=discord&label=Discord&color=5865F2)](https://discord.gg/Fjc9zYHZyV)
 
 > Stop repeating Claude's mistakes. Every session, automatically.
