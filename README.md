@@ -128,11 +128,17 @@ calls), then issue `rm -rf` as a separate, later call -- or use
 </details>
 ```
 
-The demo GIF at the top of this page is a real `/lessons:manage` conversation
-— discovering and promoting a genuinely captured `#lesson` tag — followed by
-this same PreToolUse injection. Reproduce it with `vhs website/static/demo.tape`
-(requires [`vhs`](https://github.com/charmbracelet/vhs), `jq`, and a `claude`
-login on `PATH`; budget a couple of minutes and real API usage). For reviewing
+The demo GIF at the top of this page is one continuous real `/lessons:manage`
+conversation — discovering and promoting a genuinely captured `#lesson` tag —
+then asking that same live session to clean up a scratch build directory.
+The just-promoted lesson is genuinely active in that session's manifest, so
+real injected context (not a simulation) steers the agent away from
+combining `cd` and `rm -rf`, the same prevention Step 3 shows the raw
+injected text for above, demonstrated live instead of extracted. Reproduce
+it with `vhs website/static/demo.tape` (requires
+[`vhs`](https://github.com/charmbracelet/vhs) and a `claude` login on
+`PATH`; budget a few minutes and real API usage — it's a real model session,
+not a replay, so timing and exact wording vary between runs). For reviewing
 a full batch of pending candidates one at a time, `/lessons:review` is the
 recommended day-to-day command.
 

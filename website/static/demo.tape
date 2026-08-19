@@ -4,61 +4,87 @@
 #   vhs website/static/demo.tape
 #
 # Run from the repo root. Requires a `claude` login session (real API usage,
-# budget ~2-3 minutes) and `jq` on PATH.
+# budget a few minutes).
 #
-# ── Why this drives a real `claude -p` session instead of a plain shell ──
+# ── History ──
 #
-# The original version of this tape (through 2026-08-10) typed raw
-# `node scripts/lessons.mjs scan/review/promote` commands into a plain
-# shell — vhs just replayed hardcoded keystrokes, no agent involved. That
-# was carved out of the same-day fix (commit 3b039ce) that removed the CLI
-# as the presented interface everywhere else in this repo's docs, because
-# doing it properly meant rebuilding this tape the way `demo-live.tape` was
-# built, not just editing text — see the
-# `public-api-is-slash-commands-not-cli` memory/decision this repo's docs
-# follow. This version closes that gap: the review/promote scene is driven
-# through `/lessons:manage`, using the exact technique validated in
-# `demo-live.tape` (`website/static/record-turn.mjs`, which runs a real
-# `claude -p --output-format stream-json` call and prints only the final
-# `result` event's text — no tool-call/CLI output leaks through).
+# v1 (through 2026-08-10) typed raw `node scripts/lessons.mjs ...` into a
+# plain shell — no agent involved, carved out of that day's public-API fix
+# (commit 3b039ce) because fixing it properly meant a full rebuild.
 #
-# The closing PreToolUse hook-injection preview (scene 3) is the one
-# deliberate exception: it's demonstrating an automatic runtime mechanism
-# that fires with zero typed command, not "how a user manages lessons",
-# and there's no slash-command wrapper for "preview what the hook would
-# inject" — so it stays a direct, transparent pipeline invocation, same as
-# `demo-live.tape` shows real `git` commands normally in its own mistake
-# scene.
+# v2 (2026-08-18) replaced that with `record-turn.mjs`-driven `claude -p`
+# calls reconstructed into "You: ... Claude: ..." printf blocks. This hid
+# the internal CLI calls but, per direct feedback, didn't look like a real
+# Claude Code session at all (no TUI chrome, no natural tool-call
+# rendering) and the closing PreToolUse-preview scene — a raw
+# `echo ... | node hooks/pretooluse-lesson-inject.mjs | jq ...` pipeline
+# typed into bash — had no agent in it whatsoever.
 #
-# ── Isolation ──
+# v3 (this version) drives one continuous REAL interactive `claude` session
+# throughout, captured natively — no printf reconstruction, no synthetic
+# hook-simulation pipeline. `/lessons:manage`'s underlying Bash tool calls
+# render as Claude Code's own default collapsed tool-call cards
+# (`Bash(node ...)` + truncated preview + "ctrl+o to expand") — genuinely
+# how the agent using its own tools looks, not "the CLI as the interface."
+# The closing scene asks the SAME live agent to clean up a scratch build
+# directory — a task that naturally invites combining `cd` with `rm -rf` —
+# and the just-promoted lesson (real injected context, not simulated)
+# steers it to the safe single-command form instead. Real prevention, live.
 #
-# Sources the review/promote scene from the same real, historical session
-# transcript `demo-live.tape` uses (a genuine `#lesson` tag for the
-# cd+rm-rf Safety Net near-miss) rather than the old hand-crafted
-# website/static/demo/session.jsonl fixture — a live agent asked to
-# discuss candidates has previously called out that fixture's
-# `demo-session-001` id as looking synthetic mid-recording (see the
-# project_vhs-live-session-recording-playbook memory), which this avoids
-# entirely. `claude -p` runs from .demo-workspace/, a directory with no
-# real `data/` visible, so the model never notices/comments on the real
-# `data/lessons.db` sitting at the repo root.
+# ── Isolation & technique notes (v3 build, 2026-08-18/19) ──
 #
-# DEMO_SESSION is derived from the shell PID ($$), not hardcoded, because
-# the PreToolUse hook's dedup state lives under $TMPDIR keyed by
-# session_id — a fixed session_id would silently return {} (already
-# "seen") on a second recording.
+# - Workspace is a FIXED path (/tmp/ll-demo-workspace), not a fresh $$-
+#   suffixed one per run, and pre-trusted once via a throwaway zero-API-cost
+#   vhs run (launch claude, accept the trust dialog, exit — never sends a
+#   message). A fresh path means a first-time "trust this folder?" dialog
+#   Claude Code shows for any never-seen directory, which stalled an entire
+#   recording attempt when the blind dismissal keystroke missed it.
+# - Workspace is OUTSIDE the repo tree entirely (/tmp, not a subdirectory of
+#   the checkout). An earlier attempt nested it under the repo root and the
+#   agent, on seeing `list --json` correctly return `[]` (nothing promoted
+#   yet — expected), got curious, `cd`'d to the real repo root, and spent 5
+#   tool calls reading the real 14MB data/lessons.db before answering.
+#   Moving fully outside the repo removed the easy "just look around"
+#   affordance and that derailment did not recur.
+# - Never `Type "clear" Enter` between scenes while the interactive claude
+#   session is still focused — there is no shell to receive it, so "clear"
+#   is submitted as a real chat message instead ("Do you mean clear/archive
+#   the active lesson(s)...?"), burning a confused turn. Just let the
+#   transcript scroll between scenes; it reads fine.
+# - `--effort low` on the claude launch: default effort made even the
+#   correctly-behaved 3-call manage.md startup sequence slow. Low effort
+#   handled the same sequence in ~17s without changing the actual tool
+#   calls made.
+# - A 2s pause between typing a slash command and pressing Enter (not
+#   500ms) is required — a shorter pause raced Claude Code's own
+#   command-autocomplete dropdown and silently submitted a DIFFERENT
+#   command than what was typed (`/lessons:add` instead of `/lessons:manage`,
+#   confirmed via captured frames: the wrong command fully executed as its
+#   own real turn). This explains several earlier "timeout" failures in
+#   this file's history that looked like slow generation but were actually
+#   the response to a submitted command whose text never matched the
+#   completion marker being waited for.
+# - Fixed `Sleep` after each turn, not `Wait+Screen` on response text.
+#   `manage.md`'s exact closing phrasing isn't guaranteed verbatim, and a
+#   failed `Wait+Screen` match is a hard abort with zero captured frames —
+#   a fixed Sleep always produces something to inspect even when timing
+#   needs adjusting.
+# - Source data: scans the same real, historical session transcript
+#   `demo-live.tape` uses (a genuine `#lesson` tag for the cd+rm-rf Safety
+#   Net near-miss), not a hand-crafted fixture — a live agent has
+#   previously called out a synthetic-looking `demo-session-001` id in the
+#   old fixture mid-recording.
 
 Require node
 Require claude
-Require jq
 
 Output website/static/img/demo.gif
 
 Set Shell "bash"
-Set FontSize 16
+Set FontSize 15
 Set FontFamily "Menlo"
 Set Width 1180
-Set Height 820
+Set Height 900
 Set Padding 24
 Set BorderRadius 10
 Set WindowBar Colorful
@@ -66,74 +92,62 @@ Set TypingSpeed 20ms
 Set Theme {"name":"lessons-learned","black":"#0d1117","red":"#f85149","green":"#2ea44f","yellow":"#d29922","blue":"#58a6ff","purple":"#bc8cff","cyan":"#39c5cf","white":"#c9d1d9","brightBlack":"#6e7681","brightRed":"#ff7b72","brightGreen":"#3fb950","brightYellow":"#e3b341","brightBlue":"#79c0ff","brightPurple":"#d2a8ff","brightCyan":"#56d4dd","brightWhite":"#f0f6fc","background":"#0d1117","foreground":"#c9d1d9","cursor":"#2ea44f","selection":"#264f78"}
 
 # ── Setup (hidden): copy the real session transcript, scan it for real
-# (Tier 1 only — the full transcript covers far more than the one tagged
-# mistake), build the isolated sandbox ──
+# (Tier 1 only), build the isolated sandbox at the pre-trusted fixed path ──
 Hide
-Type `export PS1='lessons-learned $ ' && export DEMO_SESSION=demo-$$` Enter
+Type `export PS1='lessons-learned $ '` Enter
 Type `REPO_ROOT="$(pwd)"` Enter
-Type `rm -rf .demo-data-src .demo-workspace` Enter
-Type `mkdir -p .demo-data-src/source .demo-data-src/db .demo-workspace` Enter
-Type `cp "$HOME/.claude/projects/-Users-joe-github-joeblackwaslike-lessons-learned/f1e32775-9109-4658-94c3-2bf61ff07612.jsonl" .demo-data-src/source/` Enter
-Type `LESSONS_DATA_DIR="$REPO_ROOT/.demo-data-src/db" LESSONS_MANIFEST_PATH="$REPO_ROOT/.demo-data-src/db/lesson-manifest.json" node "$REPO_ROOT/scripts/lessons.mjs" scan --path "$REPO_ROOT/.demo-data-src/source" --tier1-only >/dev/null 2>&1` Enter
-Type `LESSONS_DATA_DIR="$REPO_ROOT/.demo-data-src/db" LESSONS_MANIFEST_PATH="$REPO_ROOT/.demo-data-src/db/lesson-manifest.json" node "$REPO_ROOT/scripts/lessons.mjs" build >/dev/null 2>&1` Enter
-Type `cd .demo-workspace` Enter
-Type `export CLAUDE_PLUGIN_ROOT="$REPO_ROOT" LESSONS_DATA_DIR="$REPO_ROOT/.demo-data-src/db" LESSONS_SCAN_PATH="$REPO_ROOT/.demo-data-src/source" LESSONS_MANIFEST_PATH="$REPO_ROOT/.demo-data-src/db/lesson-manifest.json"` Enter
+Type `WS="/tmp/ll-demo-workspace"` Enter
+Type `rm -rf "$WS/source" "$WS/db"` Enter
+Type `mkdir -p "$WS/source" "$WS/db"` Enter
+Type `rm -rf /tmp/scratch && mkdir -p /tmp/scratch/old-build && echo "stale artifact" > /tmp/scratch/old-build/output.bin` Enter
+Type `cp "$HOME/.claude/projects/-Users-joe-github-joeblackwaslike-lessons-learned/f1e32775-9109-4658-94c3-2bf61ff07612.jsonl" "$WS/source/"` Enter
+Type `LESSONS_DATA_DIR="$WS/db" LESSONS_MANIFEST_PATH="$WS/db/lesson-manifest.json" node "$REPO_ROOT/scripts/lessons.mjs" scan --path "$WS/source" --tier1-only >/dev/null 2>&1` Enter
+Type `LESSONS_DATA_DIR="$WS/db" LESSONS_MANIFEST_PATH="$WS/db/lesson-manifest.json" node "$REPO_ROOT/scripts/lessons.mjs" build >/dev/null 2>&1` Enter
+Type `cd "$WS"` Enter
+Type `export CLAUDE_PLUGIN_ROOT="$REPO_ROOT" LESSONS_DATA_DIR="$WS/db" LESSONS_SCAN_PATH="$WS/source" LESSONS_MANIFEST_PATH="$WS/db/lesson-manifest.json"` Enter
 Type `clear` Enter
 Sleep 500ms
 Show
 
-Type "# 1. Claude reports a mistake as a #lesson tag in the session log" Enter
-Sleep 800ms
-Type "# 2. Next session: review and promote it — the manifest rebuilds automatically" Enter
-Sleep 1200ms
-
-# ── Scene 1: /lessons:manage discovers the candidate (tool calls hidden,
-# only the conversational turn shown — and only the candidate excerpt, not
-# manage.md's full opening status board / suggestion-list boilerplate, so
-# there's less to read per beat) ──
-Hide
-Type `MSG='/lessons:manage'` Enter
-Type `RESPONSE=$(node "$REPO_ROOT/website/static/record-turn.mjs" --session-file .demo-session-id "$MSG")` Enter
-Sleep 60s
-Type `DISPLAY=$(printf '%s\n' "$RESPONSE" | grep -A5 'The one candidate:')` Enter
-Type `clear && printf 'You: %s\n\nClaude: %s\n' "$MSG" "$DISPLAY"` Enter
-Sleep 300ms
-Show
-Sleep 6s
-
-Hide
-Type `MSG='promote 1'` Enter
-Type `RESPONSE=$(node "$REPO_ROOT/website/static/record-turn.mjs" --session-file .demo-session-id "$MSG")` Enter
-Sleep 25s
-Type `DISPLAY=$(printf '%s\n' "$RESPONSE" | sed 's/ (.*)//')` Enter
-Type `clear && printf 'You: %s\n\nClaude: %s\n' "$MSG" "$DISPLAY"` Enter
-Sleep 300ms
-Show
-Sleep 5s
-
-Hide
-Type `MSG='yes'` Enter
-Type `RESPONSE=$(node "$REPO_ROOT/website/static/record-turn.mjs" --session-file .demo-session-id "$MSG")` Enter
-Sleep 25s
-Type `DISPLAY=$(printf '%s\n' "$RESPONSE" | head -n1)` Enter
-Type `clear && printf 'You: %s\n\nClaude: %s\n' "$MSG" "$DISPLAY"` Enter
-Sleep 300ms
-Show
-Sleep 4s
-
-# ── Scene 2: PreToolUse hook injection preview — direct pipeline, see the
-# header comment for why this one stays raw ──
-Hide
-Type `cd "$REPO_ROOT" && clear` Enter
-Show
-
-Type "# 3. Next session: Claude is about to combine cd with rm -rf again..." Enter
-Sleep 800ms
-Type@12ms `echo '{"tool_name":"Bash","tool_input":{"command":"cd /tmp/scratch && rm -rf old-build"},"session_id":"'"$DEMO_SESSION"'","cwd":"/Users/you/lessons-learned"}' | node hooks/pretooluse-lesson-inject.mjs | jq -r '.hookSpecificOutput.additionalContext' | grep -A2 '^## Lesson:'`
-Sleep 500ms
+Type `claude --dangerously-skip-permissions --effort low`
 Enter
-Sleep 8s
+Sleep 3s
+Enter
+Wait+Screen@30s /bypass permissions/
+
+# ── Scene 1: /lessons:manage discovers the real candidate ──
+Type "/lessons:manage"
+Sleep 2s
+Enter
+Sleep 30s
+
+# ── Scene 2: promote it — manifest rebuilds automatically ──
+Type "promote 1"
+Sleep 2s
+Enter
+Sleep 20s
+
+Type "yes"
+Sleep 2s
+Enter
+Sleep 20s
+
+# ── Scene 3: the SAME live agent is asked to clean up a scratch build dir
+# — a task that naturally invites combining cd+rm-rf. The lesson just
+# promoted above is now genuinely active in this session's manifest, so
+# real injected context (not a simulation) should steer it to the safe
+# single-command form instead. ──
+Type "Can you clean up the old build output in /tmp/scratch? It's the old-build folder, I don't need it anymore."
+Sleep 2s
+Enter
+Sleep 30s
 
 Hide
-Type "rm -rf .demo-data-src .demo-workspace" Enter
+Type "" Ctrl+C
+Sleep 500ms
+Type "exit" Enter
+Show
+
+Hide
+Type `rm -rf "$WS/source" "$WS/db" /tmp/scratch` Enter
 Show
