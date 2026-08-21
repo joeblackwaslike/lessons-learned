@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-08-15T23:35:27.813Z",
+  "generatedAt": "2026-08-21T14:11:28.261Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -1796,28 +1796,6 @@
       "problem": "Drove a PR to merge from memory while a written runbook existed (agent-skills working-with-github, references/howto/driving-a-pr-to-approval.md) covering the exact steps skipped: enumerate threads via GraphQL, reply per thread, resolve, gate the merge on zero unresolved. Having the document and not reading it produced a worse outcome than not having it, because the gap was invisible until a human pointed it out.",
       "solution": "At the start of any PR work — create, review-triage, or merge — read `driving-a-pr-to-approval.md` in the working-with-github skill. Follow its ordered loop rather than an improvised one. The same applies to any task with an existing runbook: the cost of reading it is far below the cost of rediscovering its steps by omission."
     },
-    "01KZCG6G2J9QDBNQ8XXYF32R36": {
-      "slug": "desktop-commander-interactwithprocess-si-86f4",
-      "type": "hint",
-      "priority": 8,
-      "toolNames": [
-        "desktop-commander"
-      ],
-      "commandRegexSources": [],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
-      "modelRegexSources": [],
-      "tags": [
-        "mcp:desktop-commander",
-        "category:reliability",
-        "category:tool-choice"
-      ],
-      "scope": null,
-      "message": "## Lesson: desktop-commander interact_with_process silently drops multi-line REPL input\nUsing desktop-commander interact_with_process to drive an interactive REPL (python -i, node -i, etc.) is unreliable — multi-line or multi-statement input can silently fail to execute with no error surfaced. Variables never get defined, loops never run, and the tool reports success/waiting-for-input as if nothing was wrong, which wastes cycles debugging the wrong layer.\n**Fix**: Do not use interact_with_process to drive REPLs for real work. Instead write the logic to a script file (Python/Node/shell) and run it as a single one-shot start_process call. This is reliable and gives clear stdout/stderr on failure.",
-      "summary": "desktop-commander interact_with_process silently drops multi-line REPL input",
-      "problem": "Using desktop-commander interact_with_process to drive an interactive REPL (python -i, node -i, etc.) is unreliable — multi-line or multi-statement input can silently fail to execute with no error surfaced. Variables never get defined, loops never run, and the tool reports success/waiting-for-input as if nothing was wrong, which wastes cycles debugging the wrong layer.",
-      "solution": "Do not use interact_with_process to drive REPLs for real work. Instead write the logic to a script file (Python/Node/shell) and run it as a single one-shot start_process call. This is reliable and gives clear stdout/stderr on failure."
-    },
     "01KZS2FNG60WWD7RCXV5B6HWEK": {
       "slug": "a-fix-merged-to-main-is-not-deployed-unt-eb0b",
       "type": "hint",
@@ -1849,14 +1827,14 @@
         "severity:quota"
       ],
       "scope": null,
-      "message": "## Lesson: A fix merged to main is not deployed until the version string gating its installer cache changes\nIncident A (cc-recall self-indexing/quota-burn) was root-caused and fixed on GitHub (c0713ca, f0190fd), but the installed plugin cache continued running the pre-fix build for 6+ weeks, reproducing the identical symptom as an apparently new incident. Root cause: (1) the version-keyed plugin cache directory (.../cache/agent-marketplace/cc-recall/<version>/) never re-synced because package.json version stayed unbumped across the fix commit, so the installer had no signal to fetch anything new; (2) ensure-built.sh only builds dist/ once, iff it is missing, with zero staleness/content-hash check, so even a re-synced checkout would not rebuild from new source. \"Fixed on GitHub\" was silently treated as \"fixed in production\" with no verification step in between.\n**Fix**: Any fix that changes deployed runtime behavior must bump the version string that gates its distribution mechanism (semver bump + release for a versioned plugin/package installer). Any build/cache step invoked by that installer must key staleness off source content (hash or mtime), never mere existence of the build artifact. Before closing a bug as fixed, verify the artifact actually running in the deployed location, not just that the fix merged to main.",
-      "summary": "A fix merged to main is not deployed until the version string gating its installer cache changes",
+      "message": "## Lesson: A merged fix isn't deployed until the version string gating its cache changes\nIncident A (cc-recall self-indexing/quota-burn) was root-caused and fixed on GitHub (c0713ca, f0190fd), but the installed plugin cache continued running the pre-fix build for 6+ weeks, reproducing the identical symptom as an apparently new incident. Root cause: (1) the version-keyed plugin cache directory (.../cache/agent-marketplace/cc-recall/<version>/) never re-synced because package.json version stayed unbumped across the fix commit, so the installer had no signal to fetch anything new; (2) ensure-built.sh only builds dist/ once, iff it is missing, with zero staleness/content-hash check, so even a re-synced checkout would not rebuild from new source. \"Fixed on GitHub\" was silently treated as \"fixed in production\" with no verification step in between.\n**Fix**: Any fix that changes deployed runtime behavior must bump the version string that gates its distribution mechanism (semver bump + release for a versioned plugin/package installer). Any build/cache step invoked by that installer must key staleness off source content (hash or mtime), never mere existence of the build artifact. Before closing a bug as fixed, verify the artifact actually running in the deployed location, not just that the fix merged to main.",
+      "summary": "A merged fix isn't deployed until the version string gating its cache changes",
       "problem": "Incident A (cc-recall self-indexing/quota-burn) was root-caused and fixed on GitHub (c0713ca, f0190fd), but the installed plugin cache continued running the pre-fix build for 6+ weeks, reproducing the identical symptom as an apparently new incident. Root cause: (1) the version-keyed plugin cache directory (.../cache/agent-marketplace/cc-recall/<version>/) never re-synced because package.json version stayed unbumped across the fix commit, so the installer had no signal to fetch anything new; (2) ensure-built.sh only builds dist/ once, iff it is missing, with zero staleness/content-hash check, so even a re-synced checkout would not rebuild from new source. \"Fixed on GitHub\" was silently treated as \"fixed in production\" with no verification step in between.",
       "solution": "Any fix that changes deployed runtime behavior must bump the version string that gates its distribution mechanism (semver bump + release for a versioned plugin/package installer). Any build/cache step invoked by that installer must key staleness off source content (hash or mtime), never mere existence of the build artifact. Before closing a bug as fixed, verify the artifact actually running in the deployed location, not just that the fix merged to main."
     },
     "01KZYFHCXQ0W4YZGBFRX9T42QB": {
       "slug": "plugin-registry-disable-only-stops-new-s-b1d6",
-      "type": "hint",
+      "type": "protocol",
       "priority": 8,
       "toolNames": [
         "claude-code"
@@ -1871,8 +1849,8 @@
         "mcp:claude-mem"
       ],
       "scope": null,
-      "message": "## Lesson: Plugin-registry disable only stops NEW sessions; already-running sessions keep calling out\nDisabling a Claude Code plugin via enabledPlugins in ~/.claude/settings.json only prevents the plugin from loading into sessions started after the change. A session already running has the plugin hooks baked into its launch args and can still trigger the plugin background service (e.g. restart a daemon) on its next hook event, undoing the disable.\n**Fix**: When a live session must be preserved (cannot be killed/restarted) but its plugin-triggered background service must stop, the registry flag alone is not enough. Add a process-level or network-level block on the specific service (kill the process, occupy its port) for immediate effect, in addition to the registry flag for future sessions. Also check whether any watchdog/keep-alive script for that service distinguishes administratively-stopped from crashed before loading it during remediation — a pure liveness watchdog will restart what you just stopped.",
-      "summary": "Plugin-registry disable only stops NEW sessions; already-running sessions keep calling out",
+      "message": "## Lesson: Plugin-registry disable only stops NEW sessions, not already-running ones\nDisabling a Claude Code plugin via enabledPlugins in ~/.claude/settings.json only prevents the plugin from loading into sessions started after the change. A session already running has the plugin hooks baked into its launch args and can still trigger the plugin background service (e.g. restart a daemon) on its next hook event, undoing the disable.\n**Fix**: When a live session must be preserved (cannot be killed/restarted) but its plugin-triggered background service must stop, the registry flag alone is not enough. Add a process-level or network-level block on the specific service (kill the process, occupy its port) for immediate effect, in addition to the registry flag for future sessions. Also check whether any watchdog/keep-alive script for that service distinguishes administratively-stopped from crashed before loading it during remediation — a pure liveness watchdog will restart what you just stopped.",
+      "summary": "Plugin-registry disable only stops NEW sessions, not already-running ones",
       "problem": "Disabling a Claude Code plugin via enabledPlugins in ~/.claude/settings.json only prevents the plugin from loading into sessions started after the change. A session already running has the plugin hooks baked into its launch args and can still trigger the plugin background service (e.g. restart a daemon) on its next hook event, undoing the disable.",
       "solution": "When a live session must be preserved (cannot be killed/restarted) but its plugin-triggered background service must stop, the registry flag alone is not enough. Add a process-level or network-level block on the specific service (kill the process, occupy its port) for immediate effect, in addition to the registry flag for future sessions. Also check whether any watchdog/keep-alive script for that service distinguishes administratively-stopped from crashed before loading it during remediation — a pure liveness watchdog will restart what you just stopped."
     },
@@ -1925,8 +1903,8 @@
         "severity:silent-failure"
       ],
       "scope": null,
-      "message": "## Lesson: Catch specific exceptions and log them; bare except: and unlogged except Exception hide failures\nBare `except:` catches BaseException too (KeyboardInterrupt, SystemExit) — it breaks Ctrl-C and clean shutdown. `except Exception` is still overly broad: it swallows nearly every error, and when the handler does not log (or worse, `pass`es), real bugs become invisible and undebuggable.\n**Fix**: Catch the specific exception types you actually expect (e.g. `except (psycopg2.OperationalError, ConnectionError) as e`). Never use bare `except:`. Reserve broad `except Exception` for a top-level boundary (a request handler or a retry loop) and even then ALWAYS log it with `logger.exception(...)` (captures the traceback), then re-raise or handle deliberately — never silently `pass`. Let KeyboardInterrupt/SystemExit propagate.",
-      "summary": "Catch specific exceptions and log them; bare except: and unlogged except Exception hide failures",
+      "message": "## Lesson: bare except: and unlogged except Exception hide failures\nBare `except:` catches BaseException too (KeyboardInterrupt, SystemExit) — it breaks Ctrl-C and clean shutdown. `except Exception` is still overly broad: it swallows nearly every error, and when the handler does not log (or worse, `pass`es), real bugs become invisible and undebuggable.\n**Fix**: Catch the specific exception types you actually expect (e.g. `except (psycopg2.OperationalError, ConnectionError) as e`). Never use bare `except:`. Reserve broad `except Exception` for a top-level boundary (a request handler or a retry loop) and even then ALWAYS log it with `logger.exception(...)` (captures the traceback), then re-raise or handle deliberately — never silently `pass`. Let KeyboardInterrupt/SystemExit propagate.",
+      "summary": "bare except: and unlogged except Exception hide failures",
       "problem": "Bare `except:` catches BaseException too (KeyboardInterrupt, SystemExit) — it breaks Ctrl-C and clean shutdown. `except Exception` is still overly broad: it swallows nearly every error, and when the handler does not log (or worse, `pass`es), real bugs become invisible and undebuggable.",
       "solution": "Catch the specific exception types you actually expect (e.g. `except (psycopg2.OperationalError, ConnectionError) as e`). Never use bare `except:`. Reserve broad `except Exception` for a top-level boundary (a request handler or a retry loop) and even then ALWAYS log it with `logger.exception(...)` (captures the traceback), then re-raise or handle deliberately — never silently `pass`. Let KeyboardInterrupt/SystemExit propagate."
     },
@@ -3396,6 +3374,45 @@
       "problem": "Committing directly to main (e.g. planning docs) and then creating a worktree/feature branch from that unpushed commit, without pushing main first, leaves local main and origin/main sharing no common tip once the branch is squash-merged later. The squash merge lands on origin as a brand-new commit with different parentage than local mains unpushed commit, so git pull fails with diverging branches and a git reset --hard (or manual intervention) is needed to resync -- even though no work was actually lost.",
       "solution": "Immediately after any direct commit to the base branch (main), run git push before creating a worktree/branch from it. If a worktree already exists and this is discovered later, verify the content is safe (git diff origin/main <branch> --stat is empty, or the file is confirmed merged) before running git reset --hard -- but the push-first habit avoids needing that step at all."
     },
+    "01M0AHCD6XKV7HGPA9JNW5QW29": {
+      "slug": "osascript-heredocs-and-python-interpolat-acf6",
+      "type": "hint",
+      "priority": 6,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "\\bosascript\\b",
+          "flags": ""
+        },
+        {
+          "source": "\\bheredoc\\b",
+          "flags": ""
+        },
+        {
+          "source": "string interpolation",
+          "flags": ""
+        },
+        {
+          "source": "write file",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "tool:osascript",
+        "tool:python",
+        "severity:data-corruption"
+      ],
+      "scope": null,
+      "message": "## Lesson: osascript heredocs and Python interpolation mangle $ in files\nosascript heredocs and Python string interpolation both mangle $ variables when writing files, silently corrupting output.\n**Fix**: Write files directly — never use osascript heredocs or Python string interpolation for file creation.",
+      "summary": "osascript heredocs and Python interpolation mangle $ in files",
+      "problem": "osascript heredocs and Python string interpolation both mangle $ variables when writing files, silently corrupting output.",
+      "solution": "Write files directly — never use osascript heredocs or Python string interpolation for file creation."
+    },
     "01KMZ3DB3W7VMWBVSXT4G0MTNF": {
       "slug": "nodejs-deprecationwarnings-pollute-cli-o-112c",
       "type": "hint",
@@ -3977,6 +3994,87 @@
       "summary": "iCloud shared folders use com~apple~CloudDocs, not iCloud~bundle namespace",
       "problem": "Apple's iCloud CloudDocs integration uses a different namespace than app-specific iCloud directories (e.g., `iCloud~md~obsidian`). When a path appears empty or unwritable but you expect it to be in iCloud, check if you're using the wrong namespace.",
       "solution": "For cross-device iCloud folders, prefer the `~/Library/Mobile Documents/com~apple~CloudDocs/` prefix. For app-specific iCloud, use `~/Library/Mobile Documents/iCloud~{bundle-id}/`."
+    },
+    "01M0AHAZJ3580JW3ZXQ5DXZFMM": {
+      "slug": "biome-rewrites-race-vs-code-file-watch-o-3d77",
+      "type": "hint",
+      "priority": 5,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "\\bbiome\\b",
+          "flags": ""
+        },
+        {
+          "source": "biome.json",
+          "flags": ""
+        },
+        {
+          "source": "\\bcode-workspace\\b",
+          "flags": ""
+        },
+        {
+          "source": "files.ignore",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "tool:biome",
+        "tool:vscode",
+        "severity:workflow-disruption"
+      ],
+      "scope": null,
+      "message": "## Lesson: Biome rewrites race VS Code file-watch on .code-workspace files\nBiome's atomic temp+rename rewrite races VS Code's file-watch on .code-workspace, forcing a window reload that drops the open folder\n**Fix**: Exclude *.code-workspace in biome.json files.ignore, never .gitignore. spinup-ts template already includes this. Diagnosed 2026-06-17 in pieces-dev.",
+      "summary": "Biome rewrites race VS Code file-watch on .code-workspace files",
+      "problem": "Biome's atomic temp+rename rewrite races VS Code's file-watch on .code-workspace, forcing a window reload that drops the open folder",
+      "solution": "Exclude *.code-workspace in biome.json files.ignore, never .gitignore. spinup-ts template already includes this. Diagnosed 2026-06-17 in pieces-dev."
+    },
+    "01M0AHC5NQ9KZ6MXD3BM2W93FR": {
+      "slug": "launchd-does-not-inherit-shell-env-set-h-5a1f",
+      "type": "hint",
+      "priority": 5,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "\\bLaunchAgent\\b",
+          "flags": ""
+        },
+        {
+          "source": "\\blaunchd\\b",
+          "flags": ""
+        },
+        {
+          "source": "\\bplist\\b",
+          "flags": ""
+        },
+        {
+          "source": "\\bEnvironmentVariables\\b",
+          "flags": ""
+        },
+        {
+          "source": "\\blaunchctl\\b",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "tool:launchd",
+        "platform:macos"
+      ],
+      "scope": null,
+      "message": "## Lesson: launchd does not inherit shell env — set HOME in plist\nLaunchAgent scripts fail when HOME is unset because launchd does not inherit the shell environment. No need to wrap in env bash if the script has a shebang.\n**Fix**: Always set HOME in EnvironmentVariables in the plist. Only add env bash wrapper if the script lacks a shebang.",
+      "summary": "launchd does not inherit shell env — set HOME in plist",
+      "problem": "LaunchAgent scripts fail when HOME is unset because launchd does not inherit the shell environment. No need to wrap in env bash if the script has a shebang.",
+      "solution": "Always set HOME in EnvironmentVariables in the plist. Only add env bash wrapper if the script lacks a shebang."
     },
     "01KN38M1NYYV4Z92DZQPGTEWHK": {
       "slug": "used-decision-deny-reason-systemmessage-f9e4",
