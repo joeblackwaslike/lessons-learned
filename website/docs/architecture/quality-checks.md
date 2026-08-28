@@ -22,6 +22,8 @@ runs that aren't one of the 12 anti-patterns below.
 
 ### 1. Cluster over-weighting
 
+_Automated by `doctor` (`cluster-over-weighting` store-level check)._
+
 **What it means:** Three or more lessons occupy the same behavioral cluster (similar summaries, same behavioral domain).
 
 **Consequences:** When 3+ lessons occupy the same behavioral cluster, each gets proportionally less attention in context. The model pattern-matches the cluster and averages the nuances together — the distinctive guidance in each lesson is compressed into a gestalt, and the specific constraint that makes each one valuable gets lost. The more similar the summaries look at a glance, the worse the effect.
@@ -33,8 +35,9 @@ runs that aren't one of the 12 anti-patterns below.
 **SQL check:**
 
 ```sql
--- No direct SQL check — requires semantic similarity grouping.
--- Use: bd lint (Jaccard similarity across all active lesson summaries)
+-- No direct SQL check — doctor unions all active-lesson pairs whose summary
+-- Jaccard similarity is >= 0.3 (union-find), then flags any resulting group
+-- of 3 or more members as over-weighted.
 ```
 
 ---
@@ -88,6 +91,8 @@ WHERE type IN ('hint', 'guard')
 
 ### 4. Global scope for narrow concept
 
+_Partially automated by `doctor` (`narrow-global-scope` check)._
+
 **What it means:** A `protocol` or `directive` is global (`scope=null`) but applies only to a specific domain, project type, or tool ecosystem.
 
 **Consequences:** Injects irrelevant context in most sessions — wastes context budget and dilutes signal from relevant lessons.
@@ -103,7 +108,9 @@ SELECT id, summary, scope FROM lessons
 WHERE type IN ('protocol', 'directive')
   AND scope IS NULL
   AND status = 'active';
--- Review each result manually for domain specificity
+-- doctor automates the tag-based heuristic (flags a tool:/lang:/mcp:-tagged
+-- protocol/directive with scope=null) but still requires manual review —
+-- a narrow-sounding lesson without one of those tag prefixes isn't caught.
 ```
 
 ---
@@ -132,19 +139,21 @@ WHERE (length(problem) < 80 OR length(solution) < 60)
 
 ### 6. Similarity flooding
 
+_Automated by `doctor` (`similarity-flooding` store-level check) for the active set; also caught at intake for new lessons._
+
 **What it means:** A lesson has Jaccard similarity > 0.5 versus an existing active lesson.
 
 **Consequences:** Near-duplicate lesson adds noise without adding signal.
 
-**Origin:** Multiple sessions hit the same mistake; each emits a `#lesson` tag; only the first one matters.
+**Origin:** Multiple sessions hit the same mistake; each emits a `#lesson` tag; only the first one matters. Edits can also drift two already-active lessons toward each other after both were independently accepted.
 
-**Fix:** Already caught at `lessons add` intake — Jaccard check blocks duplicates at write time. For the DB: find pairs with high overlap and archive the weaker one.
+**Fix:** Caught at `lessons add` intake for new lessons — the Jaccard check blocks duplicates at write time. `doctor` re-checks the full active set on every run (edits aren't gated at intake), reporting every pair >= 0.5 so the weaker one can be archived.
 
 **SQL check:**
 
 ```sql
--- No direct SQL check — requires pairwise Jaccard computation.
--- Caught by intake validation at lessons add time.
+-- No direct SQL check — doctor computes pairwise problem-field Jaccard
+-- similarity across every pair of active lessons and reports any >= 0.5.
 ```
 
 ---

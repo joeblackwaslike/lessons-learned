@@ -1692,6 +1692,10 @@ const TEMPORAL_LANGUAGE_RE =
   /\bdeprecat(ed|ion)\b|\bremoved in\b|\bformerly\b|\bwas renamed\b|\bno longer supported\b|\bas of \d{4}\b|\bin \d{4}\b|\bsince v\d/i;
 const STALE_LESSON_DAYS = 180;
 const PROJECTS_DIR = join(homedir(), '.claude', 'projects');
+const NARROW_SCOPE_TAG_PREFIXES = ['tool:', 'lang:', 'mcp:'];
+const CLUSTER_SIMILARITY_THRESHOLD = 0.3;
+const CLUSTER_MIN_SIZE = 3;
+const SIMILARITY_FLOODING_THRESHOLD = 0.5;
 
 function auditLesson(lesson) {
   const issues = [];
@@ -1829,6 +1833,18 @@ function auditLesson(lesson) {
       );
   }
 
+  // narrow-global-scope: a session-start lesson tagged to a specific tool/lang/mcp ecosystem
+  // but left global injects irrelevant context in every session that doesn't use it.
+  if (isSessionStart && !lesson.scope) {
+    const narrowTag = (lesson.tags ?? []).find(t =>
+      NARROW_SCOPE_TAG_PREFIXES.some(p => t.startsWith(p))
+    );
+    if (narrowTag)
+      issues.push(
+        `global scope but tagged "${narrowTag}" — review whether this ${type} truly generalizes, or scope it to projects using that ecosystem`
+      );
+  }
+
   // duplicated-by-invalid: malformed descriptor that will silently never suppress
   if (lesson.duplicatedBy !== null && lesson.duplicatedBy !== undefined) {
     const { type, name, url } = lesson.duplicatedBy ?? {};
@@ -1865,6 +1881,54 @@ function auditLesson(lesson) {
 function auditStore(lessons) {
   const warnings = [];
   const injectOnMatch = lessons.filter(l => l.type === 'hint' || l.type === 'guard');
+
+  // similarity-flooding: near-duplicate active lessons add noise without adding signal.
+  // Jaccard intake validation only blocks this for NEW lessons at write time (see cmdAdd) —
+  // this re-checks the full active set, since edits can drift two lessons toward each other
+  // after they were both already accepted.
+  for (let i = 0; i < lessons.length; i++) {
+    for (let j = i + 1; j < lessons.length; j++) {
+      const sim = jaccardSimilarity(lessons[i].problem, lessons[j].problem);
+      if (sim >= SIMILARITY_FLOODING_THRESHOLD)
+        warnings.push(
+          `similarity flooding (${(sim * 100).toFixed(0)}%): "${lessons[i].slug}" and "${lessons[j].slug}" have near-duplicate problem text — merge or archive the weaker one`
+        );
+    }
+  }
+
+  // cluster-over-weighting: 3+ lessons in the same behavioral cluster (similar summaries) get
+  // pattern-matched together at injection time — the model averages their nuances into a
+  // gestalt and the distinctive constraint in each one gets lost. Group by summary similarity
+  // via union-find; flag any resulting cluster of CLUSTER_MIN_SIZE or more.
+  {
+    const parent = lessons.map((_, i) => i);
+    const find = i => (parent[i] === i ? i : (parent[i] = find(parent[i])));
+    const union = (i, j) => {
+      const ri = find(i),
+        rj = find(j);
+      if (ri !== rj) parent[ri] = rj;
+    };
+    for (let i = 0; i < lessons.length; i++) {
+      for (let j = i + 1; j < lessons.length; j++) {
+        if (
+          jaccardSimilarity(lessons[i].summary, lessons[j].summary) >= CLUSTER_SIMILARITY_THRESHOLD
+        )
+          union(i, j);
+      }
+    }
+    const clusters = new Map();
+    for (let i = 0; i < lessons.length; i++) {
+      const root = find(i);
+      if (!clusters.has(root)) clusters.set(root, []);
+      clusters.get(root).push(lessons[i]);
+    }
+    for (const members of clusters.values()) {
+      if (members.length >= CLUSTER_MIN_SIZE)
+        warnings.push(
+          `cluster over-weighting: ${members.length} lessons share similar summaries and will be pattern-matched together, blurring their distinct guidance — differentiate summaries or merge: ${members.map(m => m.slug).join(', ')}`
+        );
+    }
+  }
 
   // priority-homogeneity: if >80% of lessons share the same priority, ordering is arbitrary
   // Only meaningful with enough lessons to form a real distribution.

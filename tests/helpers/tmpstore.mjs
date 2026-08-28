@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS lessons (
   projectCount INTEGER NOT NULL DEFAULT 0, contentHash TEXT NOT NULL,
   createdAt TEXT NOT NULL, updatedAt TEXT NOT NULL,
   reviewedAt TEXT, archivedAt TEXT, archiveReason TEXT,
-  duplicatedBy TEXT, requires TEXT
+  duplicatedBy TEXT, requires TEXT, scope TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_lessons_status ON lessons(status);
 CREATE INDEX IF NOT EXISTS idx_lessons_hash ON lessons(contentHash);

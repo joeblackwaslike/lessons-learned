@@ -33,10 +33,12 @@ function insertLesson(dbPath, overrides = {}) {
     status: 'active',
     type: 'hint',
     summary: 'A valid summary under 80 chars',
+    // Deliberately unrelated to the fixture-seeded git-stash lesson (tests/fixtures/lessons-store.json)
+    // so unrelated doctor checks don't accidentally collide with the similarity-flooding check.
     problem:
-      'Running git stash without the -u flag silently leaves untracked files behind, risking data loss when the stash is applied elsewhere.',
+      'Docker build cache silently reuses a stale layer when only file mtimes change but content hashes stay the same, so the new dependency version never actually installs in the image.',
     solution:
-      'Use git stash -u or git stash --include-untracked to include untracked files in every stash operation.',
+      'Use --no-cache for the specific layer or bump a cache-busting ARG before the install step to force Docker to rebuild the dependency layer from scratch.',
     injection: null,
     injectOn: JSON.stringify(['PreToolUse']),
     toolNames: JSON.stringify(['Bash']),
@@ -56,6 +58,7 @@ function insertLesson(dbPath, overrides = {}) {
     updatedAt: new Date().toISOString(),
     duplicatedBy: null,
     requires: null,
+    scope: null,
   };
   const row = { ...defaults, ...overrides };
   const db = new DatabaseSync(dbPath);
@@ -66,13 +69,13 @@ function insertLesson(dbPath, overrides = {}) {
       injectOn, toolNames, commandPatterns, pathPatterns, block,
       priority, confidence, tags, source, sourceSessionIds,
       occurrenceCount, sessionCount, projectCount, contentHash,
-      createdAt, updatedAt, duplicatedBy, requires
+      createdAt, updatedAt, duplicatedBy, requires, scope
     ) VALUES (
       :id, :slug, :status, :type, :summary, :problem, :solution, :injection,
       :injectOn, :toolNames, :commandPatterns, :pathPatterns, :block,
       :priority, :confidence, :tags, :source, :sourceSessionIds,
       :occurrenceCount, :sessionCount, :projectCount, :contentHash,
-      :createdAt, :updatedAt, :duplicatedBy, :requires
+      :createdAt, :updatedAt, :duplicatedBy, :requires, :scope
     )
   `
   ).run(row);
@@ -659,5 +662,141 @@ describe('lessons doctor', () => {
       env: env(),
     });
     assert.doesNotMatch(stdout, /lesson not updated in/);
+  });
+
+  it('flags near-duplicate active lessons as similarity flooding', async () => {
+    insertLesson(store.dbPath, {
+      slug: 'test-lesson-flood-a',
+      problem:
+        'Calling execSync with a shell command built from unvalidated user input allows arbitrary command injection through unescaped metacharacters.',
+    });
+    insertLesson(store.dbPath, {
+      slug: 'test-lesson-flood-b',
+      problem:
+        'Calling execSync with a shell command built from unsanitized user input allows arbitrary command injection through unescaped shell metacharacters.',
+    });
+
+    const { exitCode, stdout } = await run(LESSONS_CLI, {
+      args: ['doctor'],
+      env: env(),
+    });
+    assert.equal(exitCode, 1);
+    assert.match(
+      stdout,
+      /similarity flooding \(\d+%\): "test-lesson-flood-a" and "test-lesson-flood-b"/
+    );
+  });
+
+  it('does not flag lessons with distinct problem text', async () => {
+    insertLesson(store.dbPath, {
+      slug: 'test-lesson-distinct-a',
+      problem:
+        'Calling execSync with a shell command built from unvalidated user input allows arbitrary command injection.',
+    });
+    insertLesson(store.dbPath, {
+      slug: 'test-lesson-distinct-b',
+      problem:
+        'Rate limit headers from the payment provider API reset on a rolling window, not a fixed calendar minute, so naive retry logic undercounts remaining quota.',
+    });
+
+    const { stdout } = await run(LESSONS_CLI, {
+      args: ['doctor'],
+      env: env(),
+    });
+    assert.doesNotMatch(stdout, /similarity flooding/);
+  });
+
+  it('flags 3+ lessons with similar summaries as cluster over-weighting', async () => {
+    insertLesson(store.dbPath, {
+      slug: 'test-lesson-cluster-a',
+      summary: 'vitest hangs in CI when reporter flag is missing from the command',
+      problem: 'Docker layer caching problem A, unrelated to the other cluster members here.',
+    });
+    insertLesson(store.dbPath, {
+      slug: 'test-lesson-cluster-b',
+      summary: 'vitest hangs in CI when pool flag is missing from the command',
+      problem: 'Docker layer caching problem B, unrelated to the other cluster members here.',
+    });
+    insertLesson(store.dbPath, {
+      slug: 'test-lesson-cluster-c',
+      summary: 'vitest hangs in CI when timeout flag is missing from the command',
+      problem: 'Docker layer caching problem C, unrelated to the other cluster members here.',
+    });
+
+    const { exitCode, stdout } = await run(LESSONS_CLI, {
+      args: ['doctor'],
+      env: env(),
+    });
+    assert.equal(exitCode, 1);
+    assert.match(stdout, /cluster over-weighting: 3 lessons share similar summaries/);
+    assert.match(stdout, /test-lesson-cluster-a/);
+    assert.match(stdout, /test-lesson-cluster-b/);
+    assert.match(stdout, /test-lesson-cluster-c/);
+  });
+
+  it('does not flag only 2 lessons with similar summaries', async () => {
+    insertLesson(store.dbPath, {
+      slug: 'test-lesson-pair-a',
+      summary: 'vitest hangs in CI when reporter flag is missing from the command',
+      problem: 'Docker layer caching problem A, unrelated.',
+    });
+    insertLesson(store.dbPath, {
+      slug: 'test-lesson-pair-b',
+      summary: 'vitest hangs in CI when pool flag is missing from the command',
+      problem: 'Docker layer caching problem B, unrelated.',
+    });
+
+    const { stdout } = await run(LESSONS_CLI, {
+      args: ['doctor'],
+      env: env(),
+    });
+    assert.doesNotMatch(stdout, /cluster over-weighting/);
+  });
+
+  it('flags a global directive tagged to a specific tool ecosystem', async () => {
+    insertLesson(store.dbPath, {
+      type: 'directive',
+      toolNames: JSON.stringify([]),
+      commandPatterns: JSON.stringify([]),
+      pathPatterns: JSON.stringify([]),
+      tags: JSON.stringify(['tool:vitest']),
+    });
+
+    const { exitCode, stdout } = await run(LESSONS_CLI, {
+      args: ['doctor'],
+      env: env(),
+    });
+    assert.equal(exitCode, 1);
+    assert.match(stdout, /global scope but tagged "tool:vitest"/);
+  });
+
+  it('does not flag a scoped directive tagged to a specific tool ecosystem', async () => {
+    insertLesson(store.dbPath, {
+      type: 'directive',
+      toolNames: JSON.stringify([]),
+      commandPatterns: JSON.stringify([]),
+      pathPatterns: JSON.stringify([]),
+      tags: JSON.stringify(['tool:vitest']),
+      scope: 'Users-joe-github-someproject',
+    });
+
+    const { stdout } = await run(LESSONS_CLI, {
+      args: ['doctor'],
+      env: env(),
+    });
+    assert.doesNotMatch(stdout, /global scope but tagged/);
+  });
+
+  it('does not flag a global hint tagged to a specific tool ecosystem', async () => {
+    insertLesson(store.dbPath, {
+      type: 'hint',
+      tags: JSON.stringify(['tool:vitest']),
+    });
+
+    const { stdout } = await run(LESSONS_CLI, {
+      args: ['doctor'],
+      env: env(),
+    });
+    assert.doesNotMatch(stdout, /global scope but tagged/);
   });
 });
