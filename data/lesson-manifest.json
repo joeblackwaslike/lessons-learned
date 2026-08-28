@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-08-23T03:39:39.881Z",
+  "generatedAt": "2026-08-28T08:13:13.149Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -1836,9 +1836,7 @@
       "slug": "plugin-registry-disable-only-stops-new-s-b1d6",
       "type": "protocol",
       "priority": 8,
-      "toolNames": [
-        "claude-code"
-      ],
+      "toolNames": [],
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],

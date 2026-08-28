@@ -1693,6 +1693,20 @@ const TEMPORAL_LANGUAGE_RE =
 const STALE_LESSON_DAYS = 180;
 const PROJECTS_DIR = join(homedir(), '.claude', 'projects');
 const NARROW_SCOPE_TAG_PREFIXES = ['tool:', 'lang:', 'mcp:'];
+// Ecosystems common enough to show up across most/all projects — a lesson tagged with one of
+// these isn't "narrow" in the anti-pattern-4 sense (a niche dependency scoped to one project).
+// Real-world doctor run turned up 3/3 false positives on exactly this class before the
+// exclusion existed (lang:python, tool:claude-code) — narrow the signal to genuinely niche tags.
+const UBIQUITOUS_SCOPE_TAGS = new Set([
+  'lang:python',
+  'lang:javascript',
+  'lang:typescript',
+  'tool:git',
+  'tool:claude-code',
+  'tool:node',
+  'tool:pytest',
+  'tool:vitest',
+]);
 const CLUSTER_SIMILARITY_THRESHOLD = 0.3;
 const CLUSTER_MIN_SIZE = 3;
 const SIMILARITY_FLOODING_THRESHOLD = 0.5;
@@ -1836,8 +1850,8 @@ function auditLesson(lesson) {
   // narrow-global-scope: a session-start lesson tagged to a specific tool/lang/mcp ecosystem
   // but left global injects irrelevant context in every session that doesn't use it.
   if (isSessionStart && !lesson.scope) {
-    const narrowTag = (lesson.tags ?? []).find(t =>
-      NARROW_SCOPE_TAG_PREFIXES.some(p => t.startsWith(p))
+    const narrowTag = (lesson.tags ?? []).find(
+      t => NARROW_SCOPE_TAG_PREFIXES.some(p => t.startsWith(p)) && !UBIQUITOUS_SCOPE_TAGS.has(t)
     );
     if (narrowTag)
       issues.push(

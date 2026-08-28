@@ -759,7 +759,9 @@ describe('lessons doctor', () => {
       toolNames: JSON.stringify([]),
       commandPatterns: JSON.stringify([]),
       pathPatterns: JSON.stringify([]),
-      tags: JSON.stringify(['tool:vitest']),
+      // A niche, single-project dependency (unlike tool:vitest/lang:python, which are
+      // ubiquitous enough across projects to be excluded — see UBIQUITOUS_SCOPE_TAGS).
+      tags: JSON.stringify(['tool:snoowrap']),
     });
 
     const { exitCode, stdout } = await run(LESSONS_CLI, {
@@ -767,7 +769,7 @@ describe('lessons doctor', () => {
       env: env(),
     });
     assert.equal(exitCode, 1);
-    assert.match(stdout, /global scope but tagged "tool:vitest"/);
+    assert.match(stdout, /global scope but tagged "tool:snoowrap"/);
   });
 
   it('does not flag a scoped directive tagged to a specific tool ecosystem', async () => {
@@ -776,7 +778,7 @@ describe('lessons doctor', () => {
       toolNames: JSON.stringify([]),
       commandPatterns: JSON.stringify([]),
       pathPatterns: JSON.stringify([]),
-      tags: JSON.stringify(['tool:vitest']),
+      tags: JSON.stringify(['tool:snoowrap']),
       scope: 'Users-joe-github-someproject',
     });
 
@@ -790,7 +792,7 @@ describe('lessons doctor', () => {
   it('does not flag a global hint tagged to a specific tool ecosystem', async () => {
     insertLesson(store.dbPath, {
       type: 'hint',
-      tags: JSON.stringify(['tool:vitest']),
+      tags: JSON.stringify(['tool:snoowrap']),
     });
 
     const { stdout } = await run(LESSONS_CLI, {
@@ -798,5 +800,25 @@ describe('lessons doctor', () => {
       env: env(),
     });
     assert.doesNotMatch(stdout, /global scope but tagged/);
+  });
+
+  it('does not flag a global directive tagged to a ubiquitous ecosystem (lang:python)', async () => {
+    insertLesson(store.dbPath, {
+      type: 'directive',
+      toolNames: JSON.stringify([]),
+      commandPatterns: JSON.stringify([]),
+      pathPatterns: JSON.stringify([]),
+      tags: JSON.stringify(['lang:python']),
+    });
+
+    const { stdout } = await run(LESSONS_CLI, {
+      args: ['doctor'],
+      env: env(),
+    });
+    assert.doesNotMatch(
+      stdout,
+      /global scope but tagged/,
+      'lang:python is used across too many projects to count as "narrow"'
+    );
   });
 });
