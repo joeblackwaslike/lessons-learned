@@ -69,10 +69,13 @@ Do NOT force lesson tags where none apply. Only tag genuine problem→solution s
 
 function main() {
   let sessionType = '';
+  let projectId = null;
   try {
     const stdin = readFileSync(0, 'utf8');
     const data = JSON.parse(stdin);
     sessionType = data.session_type ?? '';
+    const cwd = data.cwd ?? '';
+    if (cwd) projectId = cwd.replace(/\//g, '-').replace(/^-/, '');
   } catch {
     // If stdin is empty or malformed, treat as startup
   }
@@ -91,13 +94,37 @@ function main() {
   try {
     const manifest = JSON.parse(readFileSync(MANIFEST_PATH, 'utf8'));
     const reasoningLessons = Object.values(manifest.lessons).filter(
-      l => (l.type === 'protocol' || l.type === 'directive') && !l.disabled
+      l =>
+        (l.type === 'protocol' || l.type === 'directive') &&
+        !l.disabled &&
+        (l.scope == null || l.scope === projectId)
     );
 
-    const directives = reasoningLessons
+    const cfg = manifest.config ?? {};
+    const ssMaxLessons = cfg.maxSessionStartLessons ?? 20;
+    const ssMaxBytes = cfg.sessionStartBudgetBytes ?? 8192;
+
+    // Sort all by priority desc, then greedily select within count + byte budgets
+    const allSorted = reasoningLessons
+      .slice()
+      .sort((a, b) => (b.priority ?? 5) - (a.priority ?? 5));
+    let ssBytesUsed = 0;
+    const ssSelected = [];
+    for (const lesson of allSorted) {
+      if (ssSelected.length >= ssMaxLessons) break;
+      const lessonBytes =
+        (lesson.summary || '').length +
+        (lesson.problem || '').length +
+        (lesson.solution || '').length;
+      if (ssBytesUsed + lessonBytes > ssMaxBytes) continue;
+      ssSelected.push(lesson);
+      ssBytesUsed += lessonBytes;
+    }
+
+    const directives = ssSelected
       .filter(l => l.type === 'directive')
       .sort((a, b) => (b.priority ?? 5) - (a.priority ?? 5));
-    const protocols = reasoningLessons
+    const protocols = ssSelected
       .filter(l => l.type === 'protocol')
       .sort((a, b) => (b.priority ?? 5) - (a.priority ?? 5));
 

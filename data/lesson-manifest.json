@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-08-28T08:13:13.149Z",
+  "generatedAt": "2026-08-30T11:29:14.245Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -3063,9 +3063,11 @@
     },
     "01KNH365KM7YW7KRB1HMT2TQCE": {
       "slug": "agents-expand-scope-during-execution-int-1274",
-      "type": "directive",
+      "type": "hint",
       "priority": 6,
-      "toolNames": [],
+      "toolNames": [
+        "Agent"
+      ],
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
@@ -3083,9 +3085,11 @@
     },
     "01KNH36NCH76JR86ET2A8TANG4": {
       "slug": "file-reads-at-batch-start-become-stale-a-d847",
-      "type": "directive",
+      "type": "hint",
       "priority": 6,
-      "toolNames": [],
+      "toolNames": [
+        "Read"
+      ],
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
@@ -3130,9 +3134,11 @@
     },
     "01KNH37YW5BS58WXXTA45S2RZR": {
       "slug": "tasks-without-a-verification-command-pas-fc8f",
-      "type": "directive",
+      "type": "hint",
       "priority": 6,
-      "toolNames": [],
+      "toolNames": [
+        "Agent"
+      ],
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
@@ -3441,9 +3447,11 @@
     },
     "01KMZ3ERT3Q1Q1CKMDSMZTY9DP": {
       "slug": "subagents-may-not-have-access-to-bash-to-6a73",
-      "type": "directive",
+      "type": "hint",
       "priority": 5,
-      "toolNames": [],
+      "toolNames": [
+        "Agent"
+      ],
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],
@@ -3550,9 +3558,11 @@
     },
     "01KNH37A72SZMHJ4YS1V6PDZ2E": {
       "slug": "batches-over-5-tasks-or-250-lines-produc-2f49",
-      "type": "directive",
+      "type": "hint",
       "priority": 5,
-      "toolNames": [],
+      "toolNames": [
+        "Agent"
+      ],
       "commandRegexSources": [],
       "commandMatchTarget": "full",
       "pathRegexSources": [],

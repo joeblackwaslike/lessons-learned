@@ -86,14 +86,36 @@ function percentageFromTranscript(transcriptPath) {
   return null;
 }
 
-function buildOutput(manifest) {
-  const lessons = Object.values(manifest.lessons).filter(
-    l => (l.type === 'directive' || l.type === 'protocol') && !l.disabled
+function buildOutput(manifest, projectId = null) {
+  const cfg = manifest.config ?? {};
+  const ssMaxLessons = cfg.maxSessionStartLessons ?? 20;
+  const ssMaxBytes = cfg.sessionStartBudgetBytes ?? 8192;
+
+  const allLessons = Object.values(manifest.lessons).filter(
+    l =>
+      (l.type === 'directive' || l.type === 'protocol') &&
+      !l.disabled &&
+      (l.scope == null || l.scope === projectId)
   );
-  const directives = lessons
+
+  const allSorted = allLessons.slice().sort((a, b) => (b.priority ?? 5) - (a.priority ?? 5));
+  let ssBytesUsed = 0;
+  const ssSelected = [];
+  for (const lesson of allSorted) {
+    if (ssSelected.length >= ssMaxLessons) break;
+    const lessonBytes =
+      (lesson.summary || '').length +
+      (lesson.problem || '').length +
+      (lesson.solution || '').length;
+    if (ssBytesUsed + lessonBytes > ssMaxBytes) continue;
+    ssSelected.push(lesson);
+    ssBytesUsed += lessonBytes;
+  }
+
+  const directives = ssSelected
     .filter(l => l.type === 'directive')
     .sort((a, b) => (b.priority ?? 5) - (a.priority ?? 5));
-  const protocols = lessons
+  const protocols = ssSelected
     .filter(l => l.type === 'protocol')
     .sort((a, b) => (b.priority ?? 5) - (a.priority ?? 5));
 
@@ -138,6 +160,9 @@ function main() {
   const sessionId = input?.session_id;
   if (!sessionId) return;
 
+  const cwd = input?.cwd ?? '';
+  const projectId = cwd ? cwd.replace(/\//g, '-').replace(/^-/, '') : null;
+
   const thresholds = process.env.LESSONS_REINJECT_THRESHOLDS
     ? process.env.LESSONS_REINJECT_THRESHOLDS.split(',').map(Number).filter(isFinite)
     : DEFAULT_THRESHOLDS;
@@ -179,7 +204,7 @@ function main() {
     return;
   }
 
-  const output = buildOutput(manifest);
+  const output = buildOutput(manifest, projectId);
   if (output) process.stdout.write(output);
 }
 
