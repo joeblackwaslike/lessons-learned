@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-08-30T21:01:54.929Z",
+  "generatedAt": "2026-08-30T22:37:13.483Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -1927,26 +1927,6 @@
       "problem": "Each tool call result accumulates in context; by the time the session is long, inference quality visibly degrades and error rate increases because attention is spread across too much history",
       "solution": "Start a new conversation for each major task. Pass a concise handoff document as context rather than letting session history grow unbounded. CLI scripts and skill files reduce per-session tool call volume."
     },
-    "01KPARNMAH5CES414KT3CT5FVZ": {
-      "slug": "read-the-pi-cluster-skill-file-before-an-2d79",
-      "type": "protocol",
-      "priority": 7,
-      "toolNames": [],
-      "commandRegexSources": [],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
-      "modelRegexSources": [],
-      "tags": [
-        "workflow:cluster",
-        "domain:raspberry-pi",
-        "severity:repeated-mistakes"
-      ],
-      "scope": "Users-joe-github-joeblackwaslike-rpi-cluster-bootstrap",
-      "message": "## Lesson: Read the pi-cluster skill before any cluster task — don't re-derive\nPi 5 EEPROM behavior, PXE boot quirks, and cluster-specific constraints (bind mount persistence, /tmp size, HAOS limitations) are re-derived each session, causing the same mistakes repeatedly\n**Fix**: Read ~/.claude/skills/pi-cluster.md at the start of any Pi cluster task. Use pi-* CLI scripts instead of exploratory SSH one-liners. Update the skill file immediately when new constraints are discovered.",
-      "summary": "Read the pi-cluster skill before any cluster task — don't re-derive",
-      "problem": "Pi 5 EEPROM behavior, PXE boot quirks, and cluster-specific constraints (bind mount persistence, /tmp size, HAOS limitations) are re-derived each session, causing the same mistakes repeatedly",
-      "solution": "Read ~/.claude/skills/pi-cluster.md at the start of any Pi cluster task. Use pi-* CLI scripts instead of exploratory SSH one-liners. Update the skill file immediately when new constraints are discovered."
-    },
     "01KPDWH7JQQ1RS300B7QMFY96J": {
       "slug": "plan-approval-without-a-refine-then-exec-5b24",
       "type": "directive",
@@ -2802,25 +2782,6 @@
       "problem": "Projects initialized without a pre-commit hook accumulate formatting drift, type errors, and broken tests that only surface at PR review or in CI. Fixing many violations at once creates noisy diffs and is expensive to untangle.",
       "solution": "At project init, install a hook runner (Husky, lefthook, or git-native hooks) and wire: (1) auto-formatter in fix mode (prettier/biome/ruff), (2) linter + typechecker as blocking checks, (3) fast unit tests. Exclude e2e and slow integration tests — those belong in CI. Target: hook completes in under 10s."
     },
-    "01KTDP06W59FYF4Z2J3Z3T8ZVR": {
-      "slug": "write-minimum-code-that-solves-the-probl-c264",
-      "type": "directive",
-      "priority": 7,
-      "toolNames": [],
-      "commandRegexSources": [],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
-      "modelRegexSources": [],
-      "tags": [
-        "category:agent-behavior",
-        "severity:over-engineering"
-      ],
-      "scope": null,
-      "message": "## Lesson: Write minimum code that solves the problem; no abstractions nobody asked for\nAgents default to patterns that feel like good engineering — abstraction layers, extensibility hooks, dependency injection — even when none was requested. A 3-line solution becomes a class with 8 methods.\n**Fix**: Write the minimum code that solves the problem as stated. No speculative abstractions, no flexibility nobody asked for. If a senior engineer would call it overcomplicated, simplify it.",
-      "summary": "Write minimum code that solves the problem; no abstractions nobody asked for",
-      "problem": "Agents default to patterns that feel like good engineering — abstraction layers, extensibility hooks, dependency injection — even when none was requested. A 3-line solution becomes a class with 8 methods.",
-      "solution": "Write the minimum code that solves the problem as stated. No speculative abstractions, no flexibility nobody asked for. If a senior engineer would call it overcomplicated, simplify it."
-    },
     "01KTDP0NFZRKCEKCV8EDHHXABR": {
       "slug": "only-change-what-the-task-requires-do-no-ec52",
       "type": "hint",
@@ -2981,6 +2942,47 @@
       "summary": "Write/edit plan or spec docs inside a worktree, not the main checkout",
       "problem": "The writing-plans and brainstorming skills say plan/spec docs should be authored inside a dedicated worktree, but nothing stops writing them directly in the main checkout instead. When that happens, the doc gets committed to main and (if not pushed immediately) diverges from origin once the eventual feature worktree/branch is squash-merged -- forcing a manual git reset --hard to resync. Caught late (at git-command time) instead of at the moment the file is first written.",
       "solution": "Before writing a plan or spec doc, confirm the current working directory is inside a git worktree (path contains /.worktrees/, or `git rev-parse --show-toplevel` differs from the repos primary checkout). If not, create the worktree first (superpowers:using-git-worktrees), then write the doc there. Exception: a plan thats genuinely docs-only and will be executed directly on main per the docs-only override in claude-extras.md does not need a worktree -- but commit AND push it immediately if so, to avoid divergence."
+    },
+    "01KPARNMAH5CES414KT3CT5FVZ": {
+      "slug": "read-the-pi-cluster-skill-file-before-an-2d79",
+      "type": "protocol",
+      "priority": 7,
+      "toolNames": [],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "workflow:cluster",
+        "domain:raspberry-pi",
+        "severity:repeated-mistakes"
+      ],
+      "scope": "Users-joe-github-joeblackwaslike-rpi-cluster-bootstrap",
+      "message": "## Lesson: Read the pi-cluster skill before any cluster task — don't re-derive\nPi 5 EEPROM behavior, PXE boot quirks, and cluster-specific constraints (bind mount persistence, /tmp size, HAOS limitations) are re-derived each session, causing the same mistakes repeatedly\n**Fix**: Read ~/.claude/skills/pi-cluster.md at the start of any Pi cluster task. Use pi-* CLI scripts instead of exploratory SSH one-liners. Update the skill file immediately when new constraints are discovered.",
+      "summary": "Read the pi-cluster skill before any cluster task — don't re-derive",
+      "problem": "Pi 5 EEPROM behavior, PXE boot quirks, and cluster-specific constraints (bind mount persistence, /tmp size, HAOS limitations) are re-derived each session, causing the same mistakes repeatedly",
+      "solution": "Read ~/.claude/skills/pi-cluster.md at the start of any Pi cluster task. Use pi-* CLI scripts instead of exploratory SSH one-liners. Update the skill file immediately when new constraints are discovered.",
+      "disabled": true
+    },
+    "01KTDP06W59FYF4Z2J3Z3T8ZVR": {
+      "slug": "write-minimum-code-that-solves-the-probl-c264",
+      "type": "directive",
+      "priority": 7,
+      "toolNames": [],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "category:agent-behavior",
+        "severity:over-engineering"
+      ],
+      "scope": null,
+      "message": "## Lesson: Write minimum code that solves the problem; no abstractions nobody asked for\nAgents default to patterns that feel like good engineering — abstraction layers, extensibility hooks, dependency injection — even when none was requested. A 3-line solution becomes a class with 8 methods.\n**Fix**: Write the minimum code that solves the problem as stated. No speculative abstractions, no flexibility nobody asked for. If a senior engineer would call it overcomplicated, simplify it.",
+      "summary": "Write minimum code that solves the problem; no abstractions nobody asked for",
+      "problem": "Agents default to patterns that feel like good engineering — abstraction layers, extensibility hooks, dependency injection — even when none was requested. A 3-line solution becomes a class with 8 methods.",
+      "solution": "Write the minimum code that solves the problem as stated. No speculative abstractions, no flexibility nobody asked for. If a senior engineer would call it overcomplicated, simplify it.",
+      "disabled": true
     },
     "01KMZ3C0KEE5ZCSQWZZXQZZH67": {
       "slug": "chrome-devtools-econnrefused-when-chrome-5079",
@@ -3643,27 +3645,6 @@
       "problem": "Running bare pytest without a timeout flag causes the test suite to hang indefinitely in non-interactive environments when tests block on I/O, user input, or network calls. CI jobs must be killed externally with no useful failure output.",
       "solution": "Add --timeout=30 -p no:cacheprovider to the pytest command and retry. Example: .venv/bin/python -m pytest --timeout=30 -p no:cacheprovider [paths]. Do not run bare pytest — always add --timeout."
     },
-    "01KR5BQ1RRM862559YJN0YK2EM": {
-      "slug": "always-add-timeout-and-p-nocacheprovider-013f",
-      "type": "protocol",
-      "priority": 5,
-      "toolNames": [],
-      "commandRegexSources": [],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
-      "modelRegexSources": [],
-      "tags": [
-        "lang:python",
-        "tool:pytest",
-        "severity:hang",
-        "category:testing"
-      ],
-      "scope": null,
-      "message": "## Lesson: Always add --timeout and -p no:cacheprovider when running pytest\nRunning pytest without --timeout causes test suites to hang indefinitely in non-interactive environments. CI and eval runners have no TTY, so pytest may hang waiting for input or on a blocking test with no timeout enforcement.\n**Fix**: Always run pytest with --timeout=30 -p no:cacheprovider flags: `.venv/bin/python -m pytest --timeout=30 -p no:cacheprovider tests/` or `.venv/bin/pytest --timeout=30 -p no:cacheprovider`. Never run bare pytest without these flags.",
-      "summary": "Always add --timeout and -p no:cacheprovider when running pytest",
-      "problem": "Running pytest without --timeout causes test suites to hang indefinitely in non-interactive environments. CI and eval runners have no TTY, so pytest may hang waiting for input or on a blocking test with no timeout enforcement.",
-      "solution": "Always run pytest with --timeout=30 -p no:cacheprovider flags: `.venv/bin/python -m pytest --timeout=30 -p no:cacheprovider tests/` or `.venv/bin/pytest --timeout=30 -p no:cacheprovider`. Never run bare pytest without these flags."
-    },
     "01KS4PGDWDB7B4EE059K0HKAR4": {
       "slug": "file-name-case-sensitivity-varies-across-fb63",
       "type": "hint",
@@ -4085,6 +4066,28 @@
       "summary": "launchd does not inherit shell env — set HOME in plist",
       "problem": "LaunchAgent scripts fail when HOME is unset because launchd does not inherit the shell environment. No need to wrap in env bash if the script has a shebang.",
       "solution": "Always set HOME in EnvironmentVariables in the plist. Only add env bash wrapper if the script lacks a shebang."
+    },
+    "01KR5BQ1RRM862559YJN0YK2EM": {
+      "slug": "always-add-timeout-and-p-nocacheprovider-013f",
+      "type": "protocol",
+      "priority": 5,
+      "toolNames": [],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "lang:python",
+        "tool:pytest",
+        "severity:hang",
+        "category:testing"
+      ],
+      "scope": null,
+      "message": "## Lesson: Always add --timeout and -p no:cacheprovider when running pytest\nRunning pytest without --timeout causes test suites to hang indefinitely in non-interactive environments. CI and eval runners have no TTY, so pytest may hang waiting for input or on a blocking test with no timeout enforcement.\n**Fix**: Always run pytest with --timeout=30 -p no:cacheprovider flags: `.venv/bin/python -m pytest --timeout=30 -p no:cacheprovider tests/` or `.venv/bin/pytest --timeout=30 -p no:cacheprovider`. Never run bare pytest without these flags.",
+      "summary": "Always add --timeout and -p no:cacheprovider when running pytest",
+      "problem": "Running pytest without --timeout causes test suites to hang indefinitely in non-interactive environments. CI and eval runners have no TTY, so pytest may hang waiting for input or on a blocking test with no timeout enforcement.",
+      "solution": "Always run pytest with --timeout=30 -p no:cacheprovider flags: `.venv/bin/python -m pytest --timeout=30 -p no:cacheprovider tests/` or `.venv/bin/pytest --timeout=30 -p no:cacheprovider`. Never run bare pytest without these flags.",
+      "disabled": true
     },
     "01KN38M1NYYV4Z92DZQPGTEWHK": {
       "slug": "used-decision-deny-reason-systemmessage-f9e4",
