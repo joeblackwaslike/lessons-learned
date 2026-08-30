@@ -23,9 +23,9 @@ Also consult `website/docs/architecture/` for design context:
 
 ```
 hooks/                          # Claude Code hook handlers
-  hooks.json                    # Hook wiring (SessionStart, PreToolUse, PostToolUse, SubagentStart)
+  hooks.json                    # Hook wiring definition (see Local Dev Wiring below)
   pretooluse-lesson-inject.mjs  # Matches lessons against tool calls, injects context
-  posttooluse-directive-reinject.mjs  # Re-injects directives at 30/52/70% context thresholds
+  posttooluse-directive-reinject.mjs  # UNWIRED — retained if context_window.used_percentage ever lands
   session-start-lesson-protocol.mjs  # Injects #lesson protocol + session-start lessons
   session-start-reset.mjs       # Clears per-session dedup state on reset
   session-start-scan.mjs        # Fires background scan on startup (Tier 4 requires ANTHROPIC_API_KEY)
@@ -42,6 +42,45 @@ data/
   config.json                   # Injection and scanning configuration
   scan-state.json               # Byte offsets for incremental scanning (generated)
 ```
+
+## Local Dev Wiring
+
+This plugin is **not installed via the marketplace**. The three plugin surfaces (commands, hooks, skills) are each wired differently:
+
+| Surface  | Live location                                                                | Sync behavior                                                                     |
+| -------- | ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Commands | `~/.claude/commands/lessons` → symlink to `commands/`                        | **Auto-syncs** — edits to `commands/*.md` are live immediately                    |
+| Hooks    | Entries in `~/.claude/settings.json` pointing to hook files by absolute path | **Manual sync required** — `hooks.json` is the definition, not the runtime source |
+| Skills   | `skills/lessons-learned/` in repo                                            | Not currently wired into `~/.claude/skills/`                                      |
+
+### Updating hooks
+
+`hooks.json` defines what should be wired. **It is not read at runtime.** The live hooks are entries in `~/.claude/settings.json`. Editing `hooks.json` alone does nothing.
+
+- **Adding a hook:** add the corresponding entry to `~/.claude/settings.json` under the right event key, matching the structure in `hooks.json`.
+- **Removing a hook:** delete it from `~/.claude/settings.json`. If you only remove it from `hooks.json`, the hook keeps firing.
+
+To audit live wiring vs. definition and find orphans or missing entries:
+
+```bash
+node -e "
+const s = JSON.parse(require('fs').readFileSync(require('os').homedir()+'/.claude/settings.json','utf8'));
+for (const [e,entries] of Object.entries(s.hooks??{}))
+  for (const g of entries) for (const h of g.hooks??[])
+    if (h.command?.includes('lessons-learned')) console.log('LIVE  ',e,'|',h.command.split('/').pop());
+"
+
+node -e "
+const h = JSON.parse(require('fs').readFileSync('./hooks/hooks.json','utf8'));
+for (const [e,entries] of Object.entries(h.hooks??{}))
+  for (const g of entries) for (const hook of g.hooks??[])
+    console.log('DEFN  ',e,'|',hook.command.split('/').pop());
+"
+```
+
+### Why `posttooluse-directive-reinject.mjs` is unwired
+
+It was an orphan in `settings.json` — removed from `hooks.json` but never cleaned out of `settings.json`. It fired every 20 tool calls via a fallback path (because `context_window.used_percentage` is never populated by the runtime), injecting ~21 KB per fire. In a 1,193-tool session this produced 1.2 MB of duplicate content. See [docs/postmortems/2026-08-30-posttooluse-reinject-runaway.md](docs/postmortems/2026-08-30-posttooluse-reinject-runaway.md).
 
 ## CLI
 
