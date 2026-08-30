@@ -30,6 +30,7 @@ const MANIFEST_PATH =
 
 const DEFAULT_THRESHOLDS = [30, 52, 70];
 const DEFAULT_TOOL_COUNT_INTERVAL = 20;
+const DEFAULT_FIRE_CAP = 3;
 
 function sessionHash(sessionId) {
   return createHash('sha256').update(sessionId).digest('hex').slice(0, 16);
@@ -43,7 +44,7 @@ function loadState(sessionId) {
   try {
     return JSON.parse(readFileSync(reinjectStatePath(sessionId), 'utf8'));
   } catch {
-    return { fired: [], toolCount: 0 };
+    return { fired: [], toolCount: 0, totalFired: 0 };
   }
 }
 
@@ -61,7 +62,13 @@ function percentageFromInput(input) {
   return typeof pct === 'number' ? pct : null;
 }
 
-/** Layer 2: parse transcript JSONL for the most recent Token usage: X/Y entry */
+const MODEL_CONTEXT_LIMITS = { default: 200_000 };
+
+function contextLimitForModel(modelId) {
+  return MODEL_CONTEXT_LIMITS[modelId] ?? MODEL_CONTEXT_LIMITS.default;
+}
+
+/** Layer 2: parse transcript JSONL for the most recent assistant message usage block */
 function percentageFromTranscript(transcriptPath) {
   if (!transcriptPath || !existsSync(transcriptPath)) return null;
   try {
@@ -69,12 +76,14 @@ function percentageFromTranscript(transcriptPath) {
     for (let i = lines.length - 1; i >= 0; i--) {
       try {
         const entry = JSON.parse(lines[i]);
-        const text = JSON.stringify(entry);
-        const m = text.match(/Token usage: (\d+)\/(\d+)/);
-        if (m) {
-          const used = parseInt(m[1], 10);
-          const total = parseInt(m[2], 10);
-          if (total > 0) return (used / total) * 100;
+        const usage = entry?.message?.usage;
+        if (usage && entry?.message?.role === 'assistant') {
+          const total =
+            (usage.input_tokens ?? 0) +
+            (usage.cache_creation_input_tokens ?? 0) +
+            (usage.cache_read_input_tokens ?? 0);
+          const limit = contextLimitForModel(entry?.message?.model);
+          if (total > 0 && limit > 0) return (total / limit) * 100;
         }
       } catch {
         continue;
@@ -169,6 +178,9 @@ function main() {
   const toolCountInterval = process.env.LESSONS_REINJECT_TOOL_COUNT
     ? parseInt(process.env.LESSONS_REINJECT_TOOL_COUNT, 10)
     : DEFAULT_TOOL_COUNT_INTERVAL;
+  const fireCap = process.env.LESSONS_REINJECT_FIRE_CAP
+    ? parseInt(process.env.LESSONS_REINJECT_FIRE_CAP, 10)
+    : DEFAULT_FIRE_CAP;
 
   const state = loadState(sessionId);
   state.toolCount = (state.toolCount ?? 0) + 1;
@@ -182,13 +194,15 @@ function main() {
   if (pct !== null) {
     // Threshold-based: find the highest threshold that has been crossed but not yet fired
     const nextThreshold = thresholds.find(t => pct >= t && !(state.fired ?? []).includes(t));
-    if (nextThreshold !== undefined) {
+    if (nextThreshold !== undefined && (state.totalFired ?? 0) < fireCap) {
       state.fired = [...(state.fired ?? []), nextThreshold];
+      state.totalFired = (state.totalFired ?? 0) + 1;
       shouldFire = true;
     }
   } else {
     // Tool-count fallback: fire every N calls
-    if (state.toolCount % toolCountInterval === 0) {
+    if (state.toolCount % toolCountInterval === 0 && (state.totalFired ?? 0) < fireCap) {
+      state.totalFired = (state.totalFired ?? 0) + 1;
       shouldFire = true;
     }
   }
