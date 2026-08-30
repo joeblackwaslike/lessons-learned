@@ -2,10 +2,12 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-08-30T11:29:14.245Z",
+  "generatedAt": "2026-08-30T21:01:54.929Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
+    "sessionStartBudgetBytes": 8192,
+    "maxSessionStartLessons": 20,
     "minConfidence": 0.5,
     "minPriority": 1,
     "compactionReinjectionThreshold": 7

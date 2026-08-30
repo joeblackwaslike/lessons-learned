@@ -842,6 +842,8 @@ function buildManifest() {
     config: {
       injectionBudgetBytes: config.injectionBudgetBytes ?? 4096,
       maxLessonsPerInjection: config.maxLessonsPerInjection ?? 3,
+      sessionStartBudgetBytes: config.sessionStartBudgetBytes ?? 8192,
+      maxSessionStartLessons: config.maxSessionStartLessons ?? 20,
       minConfidence,
       minPriority,
       compactionReinjectionThreshold: config.compactionReinjectionThreshold ?? 7,
