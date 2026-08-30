@@ -6,11 +6,13 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start-reset.mjs\""
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start-reset.mjs\"",
+            "timeout": 5
           },
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start-lesson-protocol.mjs\""
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start-lesson-protocol.mjs\"",
+            "timeout": 10
           }
         ]
       },
