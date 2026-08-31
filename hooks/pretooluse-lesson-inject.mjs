@@ -99,6 +99,18 @@ if (blocker) {
 
 // ─── Stage 4–5: Dedup, rank, budget ─────────────────────────────────
 
+// Fast-path: if every hint in `matches` is already in the env-var seen list,
+// skip the file I/O entirely. Guards were already checked above and are never
+// in the seen set, so this check is safe to apply to hint matches only.
+const hintMatches = matches.filter(m => m.type !== 'guard');
+if (hintMatches.length > 0) {
+  const seenFromEnv = new Set((process.env.LESSONS_SEEN ?? '').split(',').filter(Boolean));
+  if (hintMatches.every(m => seenFromEnv.has(m.slug))) {
+    process.stdout.write(formatEmptyOutput());
+    process.exit(0);
+  }
+}
+
 const seenSet = loadSeenSet(sessionId);
 const { injected, dropped, seen } = selectCandidates(matches, seenSet, {
   maxLessons,
