@@ -1,13 +1,16 @@
 #!/usr/bin/env node
 
 /**
- * Tier 2 Heuristic Detector: Identifies error→correction patterns without #lesson tags.
+ * Tier 2 Heuristic Detector: Identifies reasoning→correction patterns without #lesson tags.
  *
  * This is the fallback scanner tier. It uses a sliding window over conversation turns
  * to detect sequences where:
- *   1. An assistant makes a tool call
- *   2. The tool result or next exchange reveals a failure (error, hang, retry)
- *   3. The assistant corrects course (different command, fix applied)
+ *   1. An assistant makes a reasoning decision (text or thinking turn)
+ *   2. The assistant (or user) recognizes the decision was wrong and corrects course
+ *   3. The correction is followed by a new action (tool call or explicit fix)
+ *
+ * The detector targets ASSISTANT REASONING, not tool output. The "problem" source
+ * is always the preceding assistant or thinking turn — never raw tool stdout/stderr.
  *
  * The detector does NOT classify or structure lessons — it produces raw
  * "candidate windows" that are passed to the extractor for structuring.
@@ -19,33 +22,8 @@
 // ─── Signal patterns ────────────────────────────────────────────────
 
 /**
- * Patterns that suggest an error or failure occurred.
- * Tested against tool results, user messages, and assistant text.
- */
-const ERROR_SIGNALS = [
-  /\bError\b/i,
-  /\bTraceback\b/,
-  /\bexception\b/i,
-  /\bcommand\s+(?:failed|not found)\b/i,
-  /\bprocess\s+(?:exited|failed|killed)\b/i,
-  /\btimeout\b/i,
-  /\bhang(?:s|ing|ed)?\b/i,
-  /\bcommand not found\b/i,
-  /\bNo such file or directory\b/,
-  /\bPermission denied\b/,
-  /\bEACCES\b/,
-  /\bENOENT\b/,
-  /\bsyntax error\b/i,
-  /\bSegmentation fault\b/,
-  /\bkilled\b/i,
-  /\bOOM\b/,
-  /exit code [1-9]\d*/,
-  /\bnon-zero exit\b/i,
-];
-
-/**
  * Patterns that suggest the assistant recognized and corrected a mistake.
- * Tested against assistant text following an error.
+ * These are the PRIMARY trigger — tested against assistant text turns.
  */
 const CORRECTION_SIGNALS = [
   /\bI see the (?:issue|problem|error)\b/i,
@@ -84,13 +62,13 @@ const USER_CORRECTION_SIGNALS = [
  */
 
 /**
- * A candidate window — a sequence of turns that looks like a mistake→correction.
- * @typedef {{ turns: Turn[], errorTurnIndex: number, correctionTurnIndex: number, signals: { errorSignals: string[], correctionSignals: string[], userCorrection: boolean }, sessionId: string|null, timestamp: string|null }} CandidateWindow
+ * A candidate window — a sequence of turns that looks like a reasoning-mistake→correction.
+ * @typedef {{ turns: Turn[], problemTurnIndex: number, correctionTurnIndex: number, toolContextIndex: number|null, signals: { correctionSignals: string[], userCorrection: boolean, thinkingBlock: boolean }, sessionId: string|null, timestamp: string|null }} CandidateWindow
  */
 
 const WINDOW_SIZE = 8;
 
-// Tools that return file content, not runtime output — errors here are false positives
+// Tools that return file content — their output is excluded as toolContext to avoid noise
 const FILE_CONTENT_TOOLS = new Set(['Read', 'Write', 'Edit', 'Glob', 'LS']);
 
 export class HeuristicDetector {
@@ -99,8 +77,8 @@ export class HeuristicDetector {
     this.window = [];
     /** @type {CandidateWindow[]} */
     this.candidates = [];
-    /** @type {Set<string>} — dedup by error turn messageId */
-    this.seenErrorIds = new Set();
+    /** @type {Set<string>} — dedup by correction turn identity */
+    this.seenCorrectionIds = new Set();
     /** @type {Map<string, string>} — tool_use_id → tool name, for annotating tool_result turns */
     this.toolUseIdToName = new Map();
   }
@@ -150,7 +128,15 @@ export class HeuristicDetector {
 
       const turns = [];
       for (const block of content) {
-        if (block.type === 'text' && block.text) {
+        if (block.type === 'thinking' && block.thinking) {
+          turns.push({
+            ...base,
+            type: 'thinking',
+            text: block.thinking,
+            toolName: null,
+            toolInput: null,
+          });
+        } else if (block.type === 'text' && block.text) {
           turns.push({ ...base, type: 'assistant', text: block.text });
         } else if (block.type === 'tool_use') {
           const toolName = block.name ?? null;
@@ -216,81 +202,119 @@ export class HeuristicDetector {
   }
 
   /**
-   * Check the current window for error→correction patterns.
+   * Check the current window for reasoning→correction patterns.
+   *
+   * Primary trigger: correction signals in assistant turns.
+   * Problem source: the nearest preceding assistant or thinking turn (agent reasoning).
+   * Tool output is supplementary context only — never the problem source.
    */
   _detectPattern() {
     if (this.window.length < 2) return;
 
-    // Look for error signals in tool results and progress events (not user/assistant text)
-    for (let i = 0; i < this.window.length - 1; i++) {
-      const turn = this.window[i];
+    // Self-correction path: scan for assistant turns with correction signals.
+    // Look backward for the nearest preceding reasoning turn as the problem source.
+    for (let i = this.window.length - 1; i >= 1; i--) {
+      const correctionTurn = this.window[i];
+      if (correctionTurn.type !== 'assistant') continue;
 
-      // Skip file-content tools — their output is source code, not runtime errors
-      // Unknown tool name (null) is allowed through — MCP tools and other runtime tools should be checked
-      if (turn.type !== 'tool_result') continue;
-      if (turn.toolName && FILE_CONTENT_TOOLS.has(turn.toolName)) continue;
+      const correctionSignals = this._matchSignals(correctionTurn.text, CORRECTION_SIGNALS);
+      if (correctionSignals.length === 0) continue;
 
-      const errorSignals = this._matchSignals(turn.text, ERROR_SIGNALS);
-      if (errorSignals.length === 0) continue;
+      // Dedup by correction turn identity
+      const correctionKey = `${correctionTurn.messageId ?? ''}:${correctionTurn.text.slice(0, 50)}`;
+      if (this.seenCorrectionIds.has(correctionKey)) continue;
 
-      // Dedup: skip if we already reported a candidate for this error
-      const errorKey = `${turn.messageId ?? ''}:${i}:${turn.text.slice(0, 50)}`;
-      if (this.seenErrorIds.has(errorKey)) continue;
+      // Require a subsequent tool_call — confirms behavioral change, not just commentary
+      const nextAction = this.window.slice(i + 1).find(t => t.type === 'tool_call');
+      if (!nextAction) continue;
 
-      // Look for correction signals in subsequent turns
-      for (let j = i + 1; j < this.window.length; j++) {
-        const later = this.window[j];
-
-        // Check for assistant self-correction followed by a new tool call
-        if (later.type === 'assistant') {
-          const correctionSignals = this._matchSignals(later.text, CORRECTION_SIGNALS);
-          if (correctionSignals.length > 0) {
-            // Require a subsequent tool_call to confirm behavioral change, not just explanation
-            const nextAction = this.window.slice(j + 1).find(t => t.type === 'tool_call');
-            if (!nextAction) break;
-
-            this.seenErrorIds.add(errorKey);
-            this.candidates.push({
-              turns: this.window.slice(Math.max(0, i - 1), Math.min(this.window.length, j + 2)),
-              errorTurnIndex: i - Math.max(0, i - 1),
-              correctionTurnIndex: j - Math.max(0, i - 1),
-              signals: {
-                errorSignals,
-                correctionSignals,
-                userCorrection: false,
-              },
-              sessionId: turn.sessionId,
-              timestamp: turn.timestamp,
-            });
-            break;
-          }
-        }
-
-        // Check for user correction followed by assistant fix
-        if (later.type === 'user') {
-          const userSignals = this._matchSignals(later.text, USER_CORRECTION_SIGNALS);
-          if (userSignals.length > 0) {
-            // Look one more turn ahead for the assistant's fix
-            const fixTurn = this.window[j + 1];
-            if (fixTurn?.type === 'assistant') {
-              this.seenErrorIds.add(errorKey);
-              this.candidates.push({
-                turns: this.window.slice(Math.max(0, i - 1), Math.min(this.window.length, j + 3)),
-                errorTurnIndex: i - Math.max(0, i - 1),
-                correctionTurnIndex: j + 1 - Math.max(0, i - 1),
-                signals: {
-                  errorSignals,
-                  correctionSignals: userSignals,
-                  userCorrection: true,
-                },
-                sessionId: turn.sessionId,
-                timestamp: turn.timestamp,
-              });
-              break;
-            }
-          }
+      // Find the nearest preceding assistant or thinking turn (the reasoning problem source)
+      let problemTurnIdx = -1;
+      for (let j = i - 1; j >= 0; j--) {
+        if (this.window[j].type === 'assistant' || this.window[j].type === 'thinking') {
+          problemTurnIdx = j;
+          break;
         }
       }
+      if (problemTurnIdx === -1) continue;
+
+      // Find the nearest non-file-content tool_result between problem and correction as context
+      let toolContextIdx = null;
+      for (let k = i - 1; k > problemTurnIdx; k--) {
+        const t = this.window[k];
+        if (t.type === 'tool_result' && (!t.toolName || !FILE_CONTENT_TOOLS.has(t.toolName))) {
+          toolContextIdx = k;
+          break;
+        }
+      }
+
+      this.seenCorrectionIds.add(correctionKey);
+      this.candidates.push({
+        turns: this.window.slice(0),
+        problemTurnIndex: problemTurnIdx,
+        correctionTurnIndex: i,
+        toolContextIndex: toolContextIdx,
+        signals: {
+          correctionSignals,
+          userCorrection: false,
+          thinkingBlock: this.window[problemTurnIdx].type === 'thinking',
+        },
+        sessionId: correctionTurn.sessionId,
+        timestamp: correctionTurn.timestamp,
+      });
+    }
+
+    // User correction path: scan for user turns with correction signals.
+    // Problem source: nearest preceding reasoning turn.
+    // Solution source: the assistant's fix turn immediately after.
+    for (let i = 0; i < this.window.length - 1; i++) {
+      const userTurn = this.window[i];
+      if (userTurn.type !== 'user') continue;
+
+      const userSignals = this._matchSignals(userTurn.text, USER_CORRECTION_SIGNALS);
+      if (userSignals.length === 0) continue;
+
+      const fixTurn = this.window[i + 1];
+      if (fixTurn?.type !== 'assistant') continue;
+
+      // Dedup by fix turn identity
+      const correctionKey = `${fixTurn.messageId ?? ''}:${fixTurn.text.slice(0, 50)}`;
+      if (this.seenCorrectionIds.has(correctionKey)) continue;
+
+      // Find the nearest preceding assistant or thinking turn (the reasoning problem source)
+      let problemTurnIdx = -1;
+      for (let j = i - 1; j >= 0; j--) {
+        if (this.window[j].type === 'assistant' || this.window[j].type === 'thinking') {
+          problemTurnIdx = j;
+          break;
+        }
+      }
+      if (problemTurnIdx === -1) continue;
+
+      // Find the nearest non-file-content tool_result between problem and user correction
+      let toolContextIdx = null;
+      for (let k = i - 1; k > problemTurnIdx; k--) {
+        const t = this.window[k];
+        if (t.type === 'tool_result' && (!t.toolName || !FILE_CONTENT_TOOLS.has(t.toolName))) {
+          toolContextIdx = k;
+          break;
+        }
+      }
+
+      this.seenCorrectionIds.add(correctionKey);
+      this.candidates.push({
+        turns: this.window.slice(0),
+        problemTurnIndex: problemTurnIdx,
+        correctionTurnIndex: i + 1, // the assistant fix turn, not the user complaint
+        toolContextIndex: toolContextIdx,
+        signals: {
+          correctionSignals: userSignals,
+          userCorrection: true,
+          thinkingBlock: this.window[problemTurnIdx].type === 'thinking',
+        },
+        sessionId: userTurn.sessionId,
+        timestamp: userTurn.timestamp,
+      });
     }
   }
 

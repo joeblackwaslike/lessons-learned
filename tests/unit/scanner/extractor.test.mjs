@@ -27,22 +27,32 @@ function makeHeuristicWindow(overrides = {}) {
   return {
     sessionId: 'sess-001',
     timestamp: '2026-04-01T00:00:00Z',
-    errorTurnIndex: 1,
-    correctionTurnIndex: 2,
+    problemTurnIndex: 0,
+    correctionTurnIndex: 3,
+    toolContextIndex: 2,
     turns: [
+      // index 0: reasoning (problem source)
+      {
+        type: 'assistant',
+        text: 'I think running pytest tests/ directly should work.',
+        messageId: 'msg-001',
+      },
+      // index 1: tool call (causal action)
       { type: 'tool_call', toolName: 'Bash', toolInput: { command: 'pytest tests/' } },
+      // index 2: tool result (context, not problem source)
       {
         type: 'tool_result',
         toolName: 'Bash',
         text: 'Error: TTY detection failed',
         messageId: 'msg-002',
       },
+      // index 3: correction
       { type: 'assistant', text: 'Use python -m pytest instead', messageId: 'msg-003' },
     ],
     signals: {
       userCorrection: false,
-      errorSignals: ['TTY detection failed'],
       correctionSignals: ['Use'],
+      thinkingBlock: false,
     },
     ...overrides,
   };
@@ -122,9 +132,16 @@ describe('extractFromHeuristic', () => {
     assert.equal(result.source, 'heuristic');
   });
 
-  it('extracts problem from error turn text', () => {
+  it('extracts problem from reasoning turn text, not tool output', () => {
     const result = extractFromHeuristic(makeHeuristicWindow());
-    assert.ok(result.problem.includes('TTY detection failed'));
+    assert.ok(
+      result.problem.includes('I think running pytest'),
+      'problem should be agent reasoning'
+    );
+    assert.ok(
+      !result.problem.includes('TTY detection failed'),
+      'problem should not be raw tool output'
+    );
   });
 
   it('extracts solution from correction turn text', () => {

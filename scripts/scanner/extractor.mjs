@@ -33,7 +33,8 @@ import { createHash } from 'node:crypto';
  *   priority: number,
  *   needsReview: boolean,
  *   contentHash: string,
- *   signals: object
+ *   signals: object,
+ *   toolContext: { tool: string|null, text: string }|null
  * }} LessonCandidate
  */
 
@@ -60,6 +61,7 @@ export function extractFromStructured(tag) {
     needsReview: true,
     contentHash: '',
     signals: { source: 'structured' },
+    toolContext: null,
   };
 
   candidate.contentHash = computeContentHash(candidate);
@@ -80,27 +82,45 @@ export function extractFromStructured(tag) {
  * @returns {LessonCandidate}
  */
 export function extractFromHeuristic(window) {
-  const errorTurn = window.turns[window.errorTurnIndex];
+  const problemTurn = window.turns[window.problemTurnIndex];
   const correctionTurn = window.turns[window.correctionTurnIndex];
+  const toolContextTurn =
+    window.toolContextIndex != null ? window.turns[window.toolContextIndex] : null;
 
-  // Use the tool that produced the error (from tool_result toolName), not the first tool in the window
-  let tool = errorTurn?.toolName ?? null;
+  // Find tool and trigger: search forward from problem to correction first (the causal tool call),
+  // then backward for prior context if not found.
+  let tool = null;
   let trigger = null;
-
-  // Find the tool_call immediately before the error turn to get the trigger command/path
-  for (let i = window.errorTurnIndex - 1; i >= 0; i--) {
+  for (let i = window.problemTurnIndex + 1; i < window.correctionTurnIndex; i++) {
     const t = window.turns[i];
-    if (t.type === 'tool_call' && (t.toolName === tool || !tool)) {
-      tool = tool ?? t.toolName;
+    if (t.type === 'tool_call') {
+      tool = t.toolName ?? null;
       if (t.toolInput?.command) trigger = t.toolInput.command;
       else if (t.toolInput?.file_path) trigger = t.toolInput.file_path;
       break;
     }
   }
+  if (!tool) {
+    for (let i = window.problemTurnIndex - 1; i >= 0; i--) {
+      const t = window.turns[i];
+      if (t.type === 'tool_call') {
+        tool = t.toolName ?? null;
+        if (t.toolInput?.command) trigger = t.toolInput.command;
+        else if (t.toolInput?.file_path) trigger = t.toolInput.file_path;
+        break;
+      }
+    }
+  }
 
-  // Extract problem and solution text from the error and correction turns
-  const problem = errorTurn?.text?.slice(0, 1500) ?? 'Unknown error';
+  // Fall back to toolContext tool name if no call found anywhere
+  if (!tool && toolContextTurn?.toolName) tool = toolContextTurn.toolName;
+
+  // Problem is the agent's reasoning text, not tool output
+  const problem = problemTurn?.text?.slice(0, 1500) ?? 'Unknown reasoning';
   const solution = correctionTurn?.text?.slice(0, 1500) ?? 'See correction';
+  const toolContext = toolContextTurn
+    ? { tool: toolContextTurn.toolName ?? null, text: toolContextTurn.text.slice(0, 300) }
+    : null;
 
   /** @type {LessonCandidate} */
   const candidate = {
@@ -109,15 +129,16 @@ export function extractFromHeuristic(window) {
     trigger,
     problem,
     solution,
-    tags: inferTags(tool, trigger, window.signals),
+    tags: inferTags(tool, trigger),
     sessionId: window.sessionId ?? null,
-    messageId: errorTurn?.messageId ?? null,
+    messageId: problemTurn?.messageId ?? null,
     timestamp: window.timestamp ?? null,
     confidence: 0,
     priority: 0,
     needsReview: true,
     contentHash: '',
     signals: window.signals,
+    toolContext,
   };
 
   candidate.contentHash = computeContentHash(candidate);
@@ -162,11 +183,11 @@ export function scoreCandidateConfidence(candidate) {
     if (signals?.userCorrection) {
       confidence += 0.15;
     }
-    // Multiple error signals = clearer pattern
-    if (signals?.errorSignals?.length >= 2) {
+    // Thinking block = higher fidelity problem source (explicit internal reasoning)
+    if (signals?.thinkingBlock) {
       confidence += 0.1;
     }
-    // Multiple correction signals
+    // Multiple correction signals = clearer pattern
     if (signals?.correctionSignals?.length >= 2) {
       confidence += 0.05;
     }
@@ -220,7 +241,7 @@ function computeContentHash(candidate) {
 /**
  * Infer tags from tool name, trigger, and signals.
  */
-function inferTags(tool, trigger, signals) {
+function inferTags(tool, trigger) {
   const tags = [];
 
   // Tool tag
@@ -240,13 +261,6 @@ function inferTags(tool, trigger, signals) {
     if (/\bruby|gem|rake|bundle\b/i.test(trigger)) tags.push('lang:ruby');
     if (/\bgo\s+(?:build|test|run|get)\b/i.test(trigger)) tags.push('lang:go');
     if (/\bcargo|rustc\b/i.test(trigger)) tags.push('lang:rust');
-  }
-
-  // Severity from error signals
-  if (signals?.errorSignals) {
-    const joined = signals.errorSignals.join(' ');
-    if (/hang|timeout/i.test(joined)) tags.push('severity:hang');
-    if (/OOM|killed/i.test(joined)) tags.push('severity:crash');
   }
 
   return [...new Set(tags)];

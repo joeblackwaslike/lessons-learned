@@ -52,24 +52,31 @@ function textBlock(text) {
   return { type: 'text', text };
 }
 
-// A complete error→correction sequence:
-// 1. assistant calls Bash (pytest)
-// 2. user message carries tool_result with error text
-// 3. assistant recognizes the issue and calls a new tool
-function fullErrorCorrectionSequence(prefix = '') {
+function thinkingBlock(thinking) {
+  return { type: 'thinking', thinking };
+}
+
+// A complete reasoning→correction sequence:
+// 1. assistant emits reasoning text then calls a tool
+// 2. user message carries tool_result
+// 3. assistant recognizes the issue (correction signal) and calls a new tool
+function fullReasoningCorrectionSequence(prefix = '') {
   const toolId = `${prefix}tool-001`;
   const lines = [
-    // Assistant calls pytest
+    // Assistant reasons then calls pytest
     assistantLine({
       id: `${prefix}msg-a1`,
-      blocks: [toolUseBlock(toolId, 'Bash', { command: 'pytest tests/' })],
+      blocks: [
+        textBlock('I think running pytest tests/ should cover everything here.'),
+        toolUseBlock(toolId, 'Bash', { command: 'pytest tests/' }),
+      ],
     }),
-    // User turn: tool result with an error
+    // User turn: tool result (non-error, just output)
     userLine({
       id: `${prefix}msg-u1`,
       blocks: [toolResultBlock(toolId, 'Error: process exited with exit code 1\nTraceback: ...\n')],
     }),
-    // Assistant recognizes the error and corrects course
+    // Assistant recognizes the issue and corrects course
     assistantLine({
       id: `${prefix}msg-a2`,
       blocks: [
@@ -95,7 +102,7 @@ describe('HeuristicDetector: basic detection', () => {
     assert.deepEqual(d.flush(), []);
   });
 
-  it('emits no candidates when only tool call, no error result', () => {
+  it('emits no candidates when only a tool call and clean result', () => {
     const d = new HeuristicDetector();
     const toolId = 'tool-x';
     d.feedLine(assistantLine({ blocks: [toolUseBlock(toolId, 'Bash', { command: 'ls -la' })] }));
@@ -103,34 +110,136 @@ describe('HeuristicDetector: basic detection', () => {
     assert.equal(d.flush().length, 0);
   });
 
-  it('detects a complete error→self-correction→retry sequence', () => {
+  it('detects a complete reasoning→self-correction→retry sequence', () => {
     const d = new HeuristicDetector();
-    for (const line of fullErrorCorrectionSequence()) {
+    for (const line of fullReasoningCorrectionSequence()) {
       d.feedLine(line);
     }
     const candidates = d.flush();
     assert.equal(candidates.length, 1);
   });
 
-  it('candidate has errorTurnIndex and correctionTurnIndex', () => {
+  it('candidate has problemTurnIndex and correctionTurnIndex', () => {
     const d = new HeuristicDetector();
-    for (const line of fullErrorCorrectionSequence()) {
+    for (const line of fullReasoningCorrectionSequence()) {
       d.feedLine(line);
     }
     const [candidate] = d.flush();
-    assert.ok(typeof candidate.errorTurnIndex === 'number');
-    assert.ok(typeof candidate.correctionTurnIndex === 'number');
-    assert.ok(candidate.correctionTurnIndex > candidate.errorTurnIndex);
+    assert.ok(typeof candidate.problemTurnIndex === 'number', 'expected problemTurnIndex');
+    assert.ok(typeof candidate.correctionTurnIndex === 'number', 'expected correctionTurnIndex');
+    assert.ok(candidate.correctionTurnIndex > candidate.problemTurnIndex);
   });
 
-  it('candidate signals include matched error pattern strings', () => {
+  it('problem source is agent reasoning, not tool output', () => {
     const d = new HeuristicDetector();
-    for (const line of fullErrorCorrectionSequence()) {
+    for (const line of fullReasoningCorrectionSequence()) {
       d.feedLine(line);
     }
     const [candidate] = d.flush();
-    assert.ok(candidate.signals.errorSignals.length > 0, 'expected error signals');
+    const problemTurn = candidate.turns[candidate.problemTurnIndex];
+    assert.ok(
+      problemTurn.type === 'assistant' || problemTurn.type === 'thinking',
+      `problem turn type should be assistant or thinking, got: ${problemTurn.type}`
+    );
+    assert.ok(
+      !problemTurn.text.includes('exit code 1'),
+      'problem turn should not contain raw tool output'
+    );
+  });
+
+  it('candidate signals include matched correction pattern strings', () => {
+    const d = new HeuristicDetector();
+    for (const line of fullReasoningCorrectionSequence()) {
+      d.feedLine(line);
+    }
+    const [candidate] = d.flush();
     assert.ok(candidate.signals.correctionSignals.length > 0, 'expected correction signals');
+  });
+
+  it('emits no candidate when correction signal has no preceding reasoning turn', () => {
+    const d = new HeuristicDetector();
+    // Correction appears as the first assistant turn — nothing to look back to
+    d.feedLine(
+      assistantLine({
+        id: 'msg-a1',
+        blocks: [
+          textBlock('I see the issue. Let me fix it.'),
+          toolUseBlock('tool-001', 'Bash', { command: 'pytest' }),
+        ],
+      })
+    );
+    assert.equal(d.flush().length, 0, 'no preceding reasoning turn means no candidate');
+  });
+
+  it('emits no candidate when tool_result has error-like text but no correction signal', () => {
+    const d = new HeuristicDetector();
+    const toolId = 'tool-err';
+    // Reasoning turn
+    d.feedLine(
+      assistantLine({
+        blocks: [
+          textBlock('I will run the suite.'),
+          toolUseBlock(toolId, 'Bash', { command: 'npm test' }),
+        ],
+      })
+    );
+    // Error result
+    d.feedLine(userLine({ blocks: [toolResultBlock(toolId, 'Error: exit code 1\nfailed')] }));
+    // Next assistant turn without a correction signal
+    d.feedLine(
+      assistantLine({
+        id: 'msg-a2',
+        blocks: [
+          textBlock('The tests have run.'),
+          toolUseBlock('tool-002', 'Bash', { command: 'ls' }),
+        ],
+      })
+    );
+    assert.equal(d.flush().length, 0, 'tool_result error alone should not trigger detection');
+  });
+});
+
+// ─── Thinking block detection ──────────────────────────────────────────────
+
+describe('HeuristicDetector: thinking block as problem source', () => {
+  it('uses a thinking block as the problem source', () => {
+    const d = new HeuristicDetector();
+    const toolId = 'tool-t1';
+
+    // Assistant turn: thinking block → tool call
+    d.feedLine(
+      assistantLine({
+        id: 'msg-a1',
+        blocks: [
+          thinkingBlock('I should use git stash here to save the changes.'),
+          toolUseBlock(toolId, 'Bash', { command: 'git stash' }),
+        ],
+      })
+    );
+    // Tool result
+    d.feedLine(
+      userLine({
+        blocks: [toolResultBlock(toolId, 'Saved working directory and index state')],
+      })
+    );
+    // Assistant recognizes the stash missed untracked files
+    d.feedLine(
+      assistantLine({
+        id: 'msg-a2',
+        blocks: [
+          textBlock(
+            'Actually, I should have used git stash -u to include untracked files. Let me fix that.'
+          ),
+          toolUseBlock('tool-t2', 'Bash', { command: 'git stash pop && git stash -u' }),
+        ],
+      })
+    );
+
+    const candidates = d.flush();
+    assert.equal(candidates.length, 1);
+    const problemTurn = candidates[0].turns[candidates[0].problemTurnIndex];
+    assert.equal(problemTurn.type, 'thinking', 'problem source should be a thinking block');
+    assert.equal(candidates[0].signals.thinkingBlock, true, 'thinkingBlock signal should be true');
   });
 });
 
@@ -141,13 +250,16 @@ describe('HeuristicDetector: user correction path', () => {
     const d = new HeuristicDetector();
     const toolId = 'tool-u1';
 
-    // Assistant calls a tool
+    // Assistant reasons and calls a tool
     d.feedLine(
       assistantLine({
-        blocks: [toolUseBlock(toolId, 'Bash', { command: 'npm install' })],
+        blocks: [
+          textBlock('I think npm install is the right approach here.'),
+          toolUseBlock(toolId, 'Bash', { command: 'npm install' }),
+        ],
       })
     );
-    // Tool result with error
+    // Tool result
     d.feedLine(
       userLine({
         blocks: [toolResultBlock(toolId, 'Error: EACCES permission denied')],
@@ -172,61 +284,102 @@ describe('HeuristicDetector: user correction path', () => {
     assert.equal(candidates.length, 1);
     assert.equal(candidates[0].signals.userCorrection, true);
   });
+
+  it('problem source is reasoning turn, not user complaint', () => {
+    const d = new HeuristicDetector();
+    const toolId = 'tool-u2';
+
+    d.feedLine(
+      assistantLine({
+        id: 'msg-a1',
+        blocks: [
+          textBlock('Running npm install should work fine.'),
+          toolUseBlock(toolId, 'Bash', { command: 'npm install' }),
+        ],
+      })
+    );
+    d.feedLine(userLine({ blocks: [toolResultBlock(toolId, 'ok')] }));
+    d.feedLine(userLine({ id: 'msg-u2', blocks: [textBlock("No, that's wrong — use npm ci")] }));
+    d.feedLine(
+      assistantLine({ id: 'msg-a2', blocks: [textBlock('You are right. Using npm ci.')] })
+    );
+
+    const [candidate] = d.flush();
+    const problemTurn = candidate.turns[candidate.problemTurnIndex];
+    assert.ok(
+      problemTurn.type === 'assistant' || problemTurn.type === 'thinking',
+      'problem source should be an assistant/thinking turn'
+    );
+  });
 });
 
-// ─── File content tool exclusion ──────────────────────────────────────────
+// ─── File content tool exclusion from toolContext ─────────────────────────
 
-describe('HeuristicDetector: file-content tool exclusion', () => {
-  it('does not emit a candidate for error-like text from Read tool result', () => {
+describe('HeuristicDetector: file-content tool excluded from toolContext', () => {
+  it('emits a candidate but sets toolContextIndex to null when only Read result is between problem and correction', () => {
     const d = new HeuristicDetector();
-    const toolId = 'tool-r1';
+    const readToolId = 'tool-r1';
 
-    // Assistant calls Read
+    // Reasoning turn + Read call
     d.feedLine(
       assistantLine({
-        blocks: [toolUseBlock(toolId, 'Read', { file_path: '/src/app.py' })],
+        id: 'msg-a1',
+        blocks: [
+          textBlock('I need to read the file to understand the structure.'),
+          toolUseBlock(readToolId, 'Read', { file_path: '/src/app.py' }),
+        ],
       })
     );
-    // Read result contains error-like text (e.g., file has error handling code)
+    // Read result (file content, may contain error-like text)
     d.feedLine(
       userLine({
-        blocks: [toolResultBlock(toolId, 'raise Exception("something failed with exit code 1")')],
+        blocks: [
+          toolResultBlock(readToolId, 'raise Exception("something failed with exit code 1")'),
+        ],
       })
     );
-    // Assistant makes a follow-up correction (irrelevant to Read result)
+    // Assistant correction
     d.feedLine(
       assistantLine({
+        id: 'msg-a2',
         blocks: [
-          textBlock('I see the issue. Let me fix it.'),
+          textBlock('I see the issue now. Let me fix the exception handling.'),
           toolUseBlock('tool-r2', 'Edit', { file_path: '/src/app.py' }),
         ],
       })
     );
 
-    assert.equal(d.flush().length, 0, 'Read tool results should not trigger detection');
+    const candidates = d.flush();
+    assert.equal(candidates.length, 1, 'should emit a candidate');
+    assert.equal(candidates[0].toolContextIndex, null, 'Read results excluded from toolContext');
   });
 
-  it('does emit a candidate for a Bash tool result with errors', () => {
+  it('emits a candidate with toolContextIndex set for a Bash result between problem and correction', () => {
     const d = new HeuristicDetector();
-    for (const line of fullErrorCorrectionSequence('bash-')) {
+    for (const line of fullReasoningCorrectionSequence('bash-')) {
       d.feedLine(line);
     }
-    assert.equal(d.flush().length, 1);
+    const [candidate] = d.flush();
+    assert.equal(
+      candidate.toolContextIndex != null,
+      true,
+      'Bash result should populate toolContextIndex'
+    );
   });
 });
 
 // ─── Dedup ─────────────────────────────────────────────────────────────────
 
 describe('HeuristicDetector: dedup', () => {
-  it('emits exactly one candidate per error→correction sequence', () => {
-    // The detector should not double-emit when _detectPattern() is called multiple
-    // times on the same window as new turns arrive after the correction.
+  it('emits exactly one candidate per reasoning→correction sequence', () => {
     const d = new HeuristicDetector();
     const toolId = 'tool-dd1';
 
-    // Build the error→correction sequence
     d.feedLine(
-      assistantLine({ id: 'dd-a1', blocks: [toolUseBlock(toolId, 'Bash', { command: 'pytest' })] })
+      assistantLine({
+        id: 'dd-a1',
+        blocks: [textBlock('Trying pytest.'), toolUseBlock(toolId, 'Bash', { command: 'pytest' })],
+      })
     );
     d.feedLine(userLine({ id: 'dd-u1', blocks: [toolResultBlock(toolId, 'Error: exit code 1')] }));
     d.feedLine(
@@ -238,7 +391,7 @@ describe('HeuristicDetector: dedup', () => {
         ],
       })
     );
-    // A few more unrelated turns arrive — should not trigger re-detection of same error
+    // More turns arrive — should not re-emit the same correction
     d.feedLine(
       userLine({ id: 'dd-u2', blocks: [toolResultBlock('tool-dd2', 'All tests passed')] })
     );
@@ -255,7 +408,6 @@ describe('HeuristicDetector: window management', () => {
   it('does not throw when fed many lines (window sliding)', () => {
     const d = new HeuristicDetector();
     assert.doesNotThrow(() => {
-      // Feed 20 tool call/result pairs with no errors
       for (let i = 0; i < 20; i++) {
         const id = `tool-w${i}`;
         d.feedLine(
@@ -268,11 +420,11 @@ describe('HeuristicDetector: window management', () => {
 
   it('flush resets the candidates list', () => {
     const d = new HeuristicDetector();
-    for (const line of fullErrorCorrectionSequence()) {
+    for (const line of fullReasoningCorrectionSequence()) {
       d.feedLine(line);
     }
-    d.flush(); // first flush
-    assert.deepEqual(d.flush(), []); // second flush should be empty
+    d.flush();
+    assert.deepEqual(d.flush(), []);
   });
 });
 
