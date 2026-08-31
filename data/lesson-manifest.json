@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-08-30T22:37:13.483Z",
+  "generatedAt": "2026-08-31T21:28:26.246Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -1806,7 +1806,32 @@
         "Bash",
         "Edit"
       ],
-      "commandRegexSources": [],
+      "commandRegexSources": [
+        {
+          "source": "git\\s+push",
+          "flags": ""
+        },
+        {
+          "source": "git\\s+tag",
+          "flags": ""
+        },
+        {
+          "source": "npm\\s+publish",
+          "flags": ""
+        },
+        {
+          "source": "gh\\s+release",
+          "flags": ""
+        },
+        {
+          "source": "vercel\\s+deploy",
+          "flags": ""
+        },
+        {
+          "source": "claude\\s+plugin",
+          "flags": ""
+        }
+      ],
       "commandMatchTarget": "full",
       "pathRegexSources": [
         {
@@ -1952,7 +1977,8 @@
       "type": "hint",
       "priority": 7,
       "toolNames": [
-        "Bash"
+        "Edit",
+        "Write"
       ],
       "commandRegexSources": [],
       "commandMatchTarget": "full",
