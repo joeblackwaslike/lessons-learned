@@ -17,8 +17,10 @@
     "eval:clean": "rm -rf results/cache/*.json results/cache/control-*.json"
   },
   "dependencies": {
-    "promptfoo": "^0.121.0",
-    "ulid": "^2.3.0",
-    "js-yaml": "^4.1.0"
+    "js-yaml": "^4.1.0",
+    "ulid": "^2.3.0"
+  },
+  "devDependencies": {
+    "promptfoo": "^0.121.10"
   }
 }

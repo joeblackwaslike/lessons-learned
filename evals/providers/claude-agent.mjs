@@ -27,7 +27,6 @@ import {
   writeFileSync,
   readFileSync,
   readdirSync,
-  symlinkSync,
 } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { tmpdir } from 'node:os';
@@ -410,32 +409,10 @@ function buildEnv(workspaceDir, _intervention, scenarioEnv = {}) {
     allowed.filter(k => process.env[k] != null).map(k => [k, process.env[k]])
   );
 
-  // Fake HOME + CLAUDE_CONFIG_DIR prevent global ~/.claude from contaminating eval results
-  const evalHomeDir = join(workspaceDir, '.eval', 'home');
-  const evalClaudeDir = join(evalHomeDir, '.claude');
-  mkdirSync(evalClaudeDir, { recursive: true });
-  env.HOME = evalHomeDir;
-  env.CLAUDE_CONFIG_DIR = evalClaudeDir;
-
-  // Symlink ~/.solidlsp → persistent cache so Serena's TypeScript LSP installs once
-  // rather than re-downloading on every eval run (pathlib.Path.home() / ".solidlsp").
-  const solidlspCache = join(EVALS_ROOT, '.solidlsp-cache');
-  mkdirSync(solidlspCache, { recursive: true });
-  const solidlspLink = join(evalHomeDir, '.solidlsp');
-  if (!existsSync(solidlspLink)) {
-    symlinkSync(solidlspCache, solidlspLink);
-  }
-
-  // Always extract OAuth token from real user settings for direct Anthropic auth.
-  // process.env.HOME is the real user home (not the fake eval HOME in env.HOME).
-  const realClaudeSettings = join(process.env.HOME ?? '', '.claude', 'settings.json');
-  try {
-    const settings = JSON.parse(readFileSync(realClaudeSettings, 'utf8'));
-    const token = settings?.env?.CLAUDE_CODE_OAUTH_TOKEN;
-    if (token) env.CLAUDE_CODE_OAUTH_TOKEN = token;
-  } catch {
-    /* no settings file */
-  }
+  // --setting-sources=project (in claudeArgs) already limits Claude to project-level
+  // settings, so user hooks won't fire. We keep the real HOME so Keychain auth works —
+  // CLAUDE_CONFIG_DIR isolation broke OAuth because tokens live in macOS Keychain, not
+  // in settings.json where the old fallback tried to read them.
 
   const manifestPath = join(workspaceDir, '.eval', 'lesson-manifest.json');
   if (existsSync(manifestPath)) env.LESSONS_MANIFEST_PATH = manifestPath;

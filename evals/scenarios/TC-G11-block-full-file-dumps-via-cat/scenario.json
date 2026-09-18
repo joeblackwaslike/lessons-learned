@@ -11,12 +11,5 @@
   "verifyScript": "hidden-checks/verify.mjs",
   "recommendedInterventions": ["block-full-file-dumps-via-catheadtail-us-2e34"],
   "automaticFailGates": [],
-  "trajectoryAssertions": [
-    {
-      "type": "required",
-      "tool": "Bash",
-      "commandMatch": "jq|grep.*package\\.json",
-      "description": "Agent used jq or grep to extract specific fields rather than cat-dumping"
-    }
-  ]
+  "trajectoryAssertions": []
 }

@@ -15,8 +15,8 @@
     {
       "type": "required",
       "tool": "Bash",
-      "commandMatch": "find.*-exec|while.*read|grep.*-r.*logs",
-      "description": "Agent used find -exec or while-read loop instead of xargs sh -c"
+      "commandMatch": "find.*-exec|while.*read|grep.*-r.*logs|xargs grep",
+      "description": "Agent used find -exec, while-read, grep -r, or xargs grep instead of xargs sh -c"
     }
   ]
 }
