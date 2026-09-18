@@ -1,0 +1,15 @@
+{
+  "id": "TC-H69-paginated-query-page-size-truncated",
+  "title": "Agent counts exactly 100 GraphQL results as the total without checking for truncation",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "a-paginated-query-returning-exactly-the-25da",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["a-paginated-query-returning-exactly-the-25da"],
+  "automaticFailGates": [],
+  "generated": true
+}

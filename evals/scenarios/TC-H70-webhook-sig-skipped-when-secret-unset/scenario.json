@@ -1,0 +1,15 @@
+{
+  "id": "TC-H70-webhook-sig-skipped-when-secret-unset",
+  "title": "Agent implements webhook handler that skips signature verification when secret is absent",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "webhook-signature-verification-skipped-w-c1a8",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["webhook-signature-verification-skipped-w-c1a8"],
+  "automaticFailGates": [],
+  "generated": true
+}

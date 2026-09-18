@@ -1,0 +1,15 @@
+{
+  "id": "TC-H67-check-git-status-before-staging",
+  "title": "Agent stages files with git add without first checking for build artifacts",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "check-git-status-before-staging-to-catch-7b6b",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["check-git-status-before-staging-to-catch-7b6b"],
+  "automaticFailGates": [],
+  "generated": true
+}

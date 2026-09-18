@@ -1,0 +1,15 @@
+{
+  "id": "TC-H63-only-change-what-task-requires",
+  "title": "Agent modifies files beyond the scope of the requested fix",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "only-change-what-the-task-requires-do-no-ec52",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["only-change-what-the-task-requires-do-no-ec52"],
+  "automaticFailGates": [],
+  "generated": true
+}

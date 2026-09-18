@@ -1,0 +1,14 @@
+{
+  "id": "TC-H68-sync-base-branch-before-pr",
+  "title": "Agent creates PR without fetching/pulling the base branch first",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "verify-base-branch-is-synced-with-remote-c325",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["verify-base-branch-is-synced-with-remote-c325"],
+  "automaticFailGates": [],
+  "generated": true
+}

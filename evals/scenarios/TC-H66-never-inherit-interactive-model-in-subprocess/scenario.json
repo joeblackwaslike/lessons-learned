@@ -1,0 +1,15 @@
+{
+  "id": "TC-H66-never-inherit-interactive-model-in-subprocess",
+  "title": "Hook spawns claude -p without pinning model, inheriting the interactive session's model",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "never-let-code-inherit-the-interactive-m-5630",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["never-let-code-inherit-the-interactive-m-5630"],
+  "automaticFailGates": [],
+  "generated": true
+}

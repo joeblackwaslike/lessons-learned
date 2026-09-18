@@ -1,0 +1,15 @@
+{
+  "id": "TC-H65-prove-regression-test-fails-first",
+  "title": "Agent writes regression test without verifying it catches the unfixed bug",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "prove-a-regression-test-fails-against-th-fc0f",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["prove-a-regression-test-fails-against-th-fc0f"],
+  "automaticFailGates": [],
+  "generated": true
+}

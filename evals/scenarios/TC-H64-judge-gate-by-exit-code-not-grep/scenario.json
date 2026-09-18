@@ -1,0 +1,15 @@
+{
+  "id": "TC-H64-judge-gate-by-exit-code-not-grep",
+  "title": "Agent treats linter warning output as a failure when exit code is 0",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "judge-a-verification-gate-by-its-exit-co-885e",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["judge-a-verification-gate-by-its-exit-co-885e"],
+  "automaticFailGates": [],
+  "generated": true
+}

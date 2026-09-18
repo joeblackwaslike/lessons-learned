@@ -1,0 +1,15 @@
+{
+  "id": "TC-H71-never-use-clientid-as-clientsecret",
+  "title": "Agent uses CLIENT_ID as the client_secret in OAuth2 token refresh",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "never-use-clientid-as-clientsecret-in-oa-feff",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["never-use-clientid-as-clientsecret-in-oa-feff"],
+  "automaticFailGates": [],
+  "generated": true
+}
