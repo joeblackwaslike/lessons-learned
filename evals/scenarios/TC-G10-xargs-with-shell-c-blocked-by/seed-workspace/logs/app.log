@@ -1,0 +1,20 @@
+2026-09-18T00:01:02Z INFO  Server started on port 3000
+2026-09-18T00:01:05Z DEBUG Database connection pool initialized (size=10)
+2026-09-18T00:01:12Z INFO  Health check passed
+2026-09-18T00:02:34Z INFO  GET /api/users 200 45ms
+2026-09-18T00:02:35Z DEBUG Cache hit: user:1042
+2026-09-18T00:03:10Z ERROR Failed to connect to Redis: ECONNREFUSED 127.0.0.1:6379
+2026-09-18T00:03:11Z WARN  Falling back to in-memory cache
+2026-09-18T00:04:22Z INFO  POST /api/auth/login 200 123ms
+2026-09-18T00:05:01Z ERROR Unhandled promise rejection: TypeError: Cannot read properties of undefined
+2026-09-18T00:05:01Z ERROR   at UserService.getProfile (/app/src/services/user.ts:42)
+2026-09-18T00:05:01Z ERROR   at async Router.handler (/app/src/routes/users.ts:28)
+2026-09-18T00:06:44Z INFO  GET /api/health 200 2ms
+2026-09-18T00:07:15Z DEBUG Scheduled job: cleanup-sessions started
+2026-09-18T00:07:16Z INFO  Cleaned up 142 expired sessions
+2026-09-18T00:08:30Z ERROR Database query timeout after 5000ms: SELECT * FROM events WHERE...
+2026-09-18T00:09:00Z INFO  GET /api/status 200 3ms
+2026-09-18T00:10:11Z DEBUG Metrics flush: req_count=412, err_count=3
+2026-09-18T00:11:22Z INFO  POST /api/webhooks/stripe 200 88ms
+2026-09-18T00:12:00Z INFO  Graceful shutdown initiated
+2026-09-18T00:12:02Z INFO  Server stopped

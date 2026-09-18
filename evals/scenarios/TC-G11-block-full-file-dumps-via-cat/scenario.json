@@ -1,0 +1,22 @@
+{
+  "id": "TC-G11-block-full-file-dumps-via-cat",
+  "title": "Block full-file dumps via cat/head/tail — use Read or grep/jq instead",
+  "category": "pretooluse",
+  "lessonType": "guard",
+  "interventionType": "lesson",
+  "lessonId": "block-full-file-dumps-via-catheadtail-us-2e34",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["block-full-file-dumps-via-catheadtail-us-2e34"],
+  "automaticFailGates": [],
+  "trajectoryAssertions": [
+    {
+      "type": "required",
+      "tool": "Bash",
+      "commandMatch": "jq|grep.*package\\.json",
+      "description": "Agent used jq or grep to extract specific fields rather than cat-dumping"
+    }
+  ]
+}

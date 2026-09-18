@@ -1,0 +1,22 @@
+{
+  "id": "TC-G12-always-verify-mcp-server-path",
+  "title": "Always verify MCP server paths against actual location before activation",
+  "category": "pretooluse",
+  "lessonType": "guard",
+  "interventionType": "lesson",
+  "lessonId": "always-verify-mcp-server-paths-against-a-0fde",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["always-verify-mcp-server-paths-against-a-0fde"],
+  "automaticFailGates": [],
+  "trajectoryAssertions": [
+    {
+      "type": "required",
+      "tool": "Bash",
+      "commandMatch": "ls |find |test -[def]|\\[ -[def]|which",
+      "description": "Agent verified MCP server path existence before concluding"
+    }
+  ]
+}

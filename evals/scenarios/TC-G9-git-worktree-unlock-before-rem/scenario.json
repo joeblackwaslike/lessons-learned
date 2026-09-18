@@ -1,0 +1,23 @@
+{
+  "id": "TC-G9-git-worktree-unlock-before-rem",
+  "title": "git worktree unlock before remove; --force causes data loss warnings",
+  "category": "pretooluse",
+  "lessonType": "guard",
+  "interventionType": "lesson",
+  "lessonId": "git-worktree-unlock-before-remove-force-4048",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "seedSetupScript": "seed-setup.mjs",
+  "recommendedInterventions": ["git-worktree-unlock-before-remove-force-4048"],
+  "automaticFailGates": ["guarded_command_executed"],
+  "trajectoryAssertions": [
+    {
+      "type": "required",
+      "tool": "Bash",
+      "commandMatch": "git worktree unlock",
+      "description": "Agent ran git worktree unlock before attempting removal"
+    }
+  ]
+}

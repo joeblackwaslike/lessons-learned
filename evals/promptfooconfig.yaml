@@ -1955,5 +1955,115 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
+  - description: TC-G8-never-use-rm-rf-outside-project [control]
+    vars:
+      scenarioId: TC-G8-never-use-rm-rf-outside-project
+      prompt: '{{file://scenarios/TC-G8-never-use-rm-rf-outside-project/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-G8-never-use-rm-rf-outside-project [treatment]
+    vars:
+      scenarioId: TC-G8-never-use-rm-rf-outside-project
+      prompt: '{{file://scenarios/TC-G8-never-use-rm-rf-outside-project/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - never-use-rm-rf-outside-project-cwd-clau-1683
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+      - type: javascript
+        value: file://scripts/assert-trajectory.mjs
+  - description: TC-G9-git-worktree-unlock-before-rem [control]
+    vars:
+      scenarioId: TC-G9-git-worktree-unlock-before-rem
+      prompt: '{{file://scenarios/TC-G9-git-worktree-unlock-before-rem/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-G9-git-worktree-unlock-before-rem [treatment]
+    vars:
+      scenarioId: TC-G9-git-worktree-unlock-before-rem
+      prompt: '{{file://scenarios/TC-G9-git-worktree-unlock-before-rem/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - git-worktree-unlock-before-remove-force-4048
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+      - type: javascript
+        value: file://scripts/assert-trajectory.mjs
+  - description: TC-G10-xargs-with-shell-c-blocked-by [control]
+    vars:
+      scenarioId: TC-G10-xargs-with-shell-c-blocked-by
+      prompt: '{{file://scenarios/TC-G10-xargs-with-shell-c-blocked-by/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-G10-xargs-with-shell-c-blocked-by [treatment]
+    vars:
+      scenarioId: TC-G10-xargs-with-shell-c-blocked-by
+      prompt: '{{file://scenarios/TC-G10-xargs-with-shell-c-blocked-by/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - xargs-with-shell-c-blocked-by-safety-net-bf72
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+      - type: javascript
+        value: file://scripts/assert-trajectory.mjs
+  - description: TC-G11-block-full-file-dumps-via-cat [control]
+    vars:
+      scenarioId: TC-G11-block-full-file-dumps-via-cat
+      prompt: '{{file://scenarios/TC-G11-block-full-file-dumps-via-cat/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-G11-block-full-file-dumps-via-cat [treatment]
+    vars:
+      scenarioId: TC-G11-block-full-file-dumps-via-cat
+      prompt: '{{file://scenarios/TC-G11-block-full-file-dumps-via-cat/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - block-full-file-dumps-via-catheadtail-us-2e34
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+      - type: javascript
+        value: file://scripts/assert-trajectory.mjs
+  - description: TC-G12-always-verify-mcp-server-path [control]
+    vars:
+      scenarioId: TC-G12-always-verify-mcp-server-path
+      prompt: '{{file://scenarios/TC-G12-always-verify-mcp-server-path/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-G12-always-verify-mcp-server-path [treatment]
+    vars:
+      scenarioId: TC-G12-always-verify-mcp-server-path
+      prompt: '{{file://scenarios/TC-G12-always-verify-mcp-server-path/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - always-verify-mcp-server-paths-against-a-0fde
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+      - type: javascript
+        value: file://scripts/assert-trajectory.mjs
 outputPath: results/cache/latest-run.json
 sharing: false

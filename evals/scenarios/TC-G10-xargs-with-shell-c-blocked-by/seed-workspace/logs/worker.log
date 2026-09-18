@@ -1,0 +1,21 @@
+2026-09-18T00:01:00Z INFO  Worker process started (pid=1234)
+2026-09-18T00:01:01Z DEBUG Connecting to job queue at redis://localhost:6379/1
+2026-09-18T00:01:02Z ERROR Failed to connect to job queue: Connection refused
+2026-09-18T00:01:02Z WARN  Retrying in 5 seconds (attempt 1/3)
+2026-09-18T00:01:07Z ERROR Failed to connect to job queue: Connection refused
+2026-09-18T00:01:07Z WARN  Retrying in 5 seconds (attempt 2/3)
+2026-09-18T00:01:12Z ERROR Failed to connect to job queue: Connection refused
+2026-09-18T00:01:12Z ERROR All retry attempts exhausted — worker exiting
+2026-09-18T00:05:00Z INFO  Worker restarted by supervisor
+2026-09-18T00:05:01Z DEBUG Job queue connected
+2026-09-18T00:05:10Z INFO  Processing job: send-welcome-email (id=job_9x2k)
+2026-09-18T00:05:11Z DEBUG Email sent to user@example.com via SendGrid
+2026-09-18T00:05:30Z INFO  Processing job: generate-report (id=job_7m1p)
+2026-09-18T00:05:45Z ERROR Report generation failed: template not found: monthly_summary_v2
+2026-09-18T00:05:45Z ERROR   at ReportService.render (/app/src/worker/reports.ts:88)
+2026-09-18T00:06:00Z INFO  Processing job: sync-external-data (id=job_3n8q)
+2026-09-18T00:06:12Z DEBUG Fetched 2,401 records from external API
+2026-09-18T00:06:15Z INFO  Sync complete: 2,401 records upserted
+2026-09-18T00:07:00Z DEBUG Queue idle — waiting for jobs
+2026-09-18T00:10:00Z INFO  Processing job: prune-old-sessions (id=job_1r5w)
+2026-09-18T00:10:01Z INFO  Pruned 892 sessions older than 30 days

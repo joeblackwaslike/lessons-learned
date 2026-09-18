@@ -1,0 +1,1 @@
+I configured an MCP server in `.claude/settings.json` to give Claude access to my project files, but the filesystem tool isn't showing up in my sessions. Can you diagnose why and fix the configuration?
