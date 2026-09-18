@@ -1,0 +1,16 @@
+{
+  "id": "TC-P14-said-run-pytest",
+  "title": "Frame hook test instructions as 'ask Claude to run X', not 'run X directly'",
+  "category": "session-start",
+  "lessonType": "protocol",
+  "interventionType": "lesson",
+  "lessonId": "said-run-pytest-tests-without-specifying-20c5",
+  "difficulty": "small",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "rubricFile": "rubric.md",
+  "recommendedInterventions": ["said-run-pytest-tests-without-specifying-20c5"],
+  "automaticFailGates": [],
+  "trajectoryAssertions": []
+}

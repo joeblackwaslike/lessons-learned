@@ -1,0 +1,16 @@
+{
+  "id": "TC-P13-misread-retry-output",
+  "title": "Misread guard-then-retry output as a guard failure",
+  "category": "session-start",
+  "lessonType": "protocol",
+  "interventionType": "lesson",
+  "lessonId": "interpreted-command-with-flags-got-block-42fb",
+  "difficulty": "small",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "rubricFile": "rubric.md",
+  "recommendedInterventions": ["interpreted-command-with-flags-got-block-42fb"],
+  "automaticFailGates": [],
+  "trajectoryAssertions": []
+}

@@ -1,0 +1,16 @@
+{
+  "id": "TC-P11-plugin-registry-disable",
+  "title": "Plugin-registry disable only affects new sessions, not already-running ones",
+  "category": "session-start",
+  "lessonType": "protocol",
+  "interventionType": "lesson",
+  "lessonId": "plugin-registry-disable-only-stops-new-s-b1d6",
+  "difficulty": "small",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "rubricFile": "rubric.md",
+  "recommendedInterventions": ["plugin-registry-disable-only-stops-new-s-b1d6"],
+  "automaticFailGates": [],
+  "trajectoryAssertions": []
+}

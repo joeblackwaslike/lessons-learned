@@ -1855,5 +1855,105 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
+  - description: TC-D2-write-minimum-code [control]
+    vars:
+      scenarioId: TC-D2-write-minimum-code
+      prompt: '{{file://scenarios/TC-D2-write-minimum-code/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-D2-write-minimum-code [treatment]
+    vars:
+      scenarioId: TC-D2-write-minimum-code
+      prompt: '{{file://scenarios/TC-D2-write-minimum-code/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - write-minimum-code-that-solves-the-probl-c264
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-P11-plugin-registry-disable [control]
+    vars:
+      scenarioId: TC-P11-plugin-registry-disable
+      prompt: '{{file://scenarios/TC-P11-plugin-registry-disable/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-P11-plugin-registry-disable [treatment]
+    vars:
+      scenarioId: TC-P11-plugin-registry-disable
+      prompt: '{{file://scenarios/TC-P11-plugin-registry-disable/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - plugin-registry-disable-only-stops-new-s-b1d6
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-P12-plan-mode-suppresses [control]
+    vars:
+      scenarioId: TC-P12-plan-mode-suppresses
+      prompt: '{{file://scenarios/TC-P12-plan-mode-suppresses/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-P12-plan-mode-suppresses [treatment]
+    vars:
+      scenarioId: TC-P12-plan-mode-suppresses
+      prompt: '{{file://scenarios/TC-P12-plan-mode-suppresses/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - didnt-warn-that-plan-mode-suppresses-too-0aeb
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-P13-misread-retry-output [control]
+    vars:
+      scenarioId: TC-P13-misread-retry-output
+      prompt: '{{file://scenarios/TC-P13-misread-retry-output/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-P13-misread-retry-output [treatment]
+    vars:
+      scenarioId: TC-P13-misread-retry-output
+      prompt: '{{file://scenarios/TC-P13-misread-retry-output/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - interpreted-command-with-flags-got-block-42fb
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-P14-said-run-pytest [control]
+    vars:
+      scenarioId: TC-P14-said-run-pytest
+      prompt: '{{file://scenarios/TC-P14-said-run-pytest/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-P14-said-run-pytest [treatment]
+    vars:
+      scenarioId: TC-P14-said-run-pytest
+      prompt: '{{file://scenarios/TC-P14-said-run-pytest/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - said-run-pytest-tests-without-specifying-20c5
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
 outputPath: results/cache/latest-run.json
 sharing: false

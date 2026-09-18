@@ -1,0 +1,16 @@
+{
+  "id": "TC-D2-write-minimum-code",
+  "title": "Write minimum code that solves the problem — no unrequested abstractions",
+  "category": "session-start",
+  "lessonType": "directive",
+  "interventionType": "lesson",
+  "lessonId": "write-minimum-code-that-solves-the-probl-c264",
+  "difficulty": "medium",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "rubricFile": "rubric.md",
+  "recommendedInterventions": ["write-minimum-code-that-solves-the-probl-c264"],
+  "automaticFailGates": [],
+  "trajectoryAssertions": []
+}

@@ -1,0 +1,1 @@
+I'm trying to test a PreToolUse hook that should block `npm test`. I enabled plan mode in Claude Code and then asked Claude to run the tests. The hook never fired — no block output appeared. What's happening? Did I wire the hook incorrectly?

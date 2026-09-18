@@ -1,0 +1,16 @@
+{
+  "id": "TC-P12-plan-mode-suppresses",
+  "title": "Plan mode suppresses Bash — PreToolUse hooks won't fire during hook tests",
+  "category": "session-start",
+  "lessonType": "protocol",
+  "interventionType": "lesson",
+  "lessonId": "didnt-warn-that-plan-mode-suppresses-too-0aeb",
+  "difficulty": "small",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "rubricFile": "rubric.md",
+  "recommendedInterventions": ["didnt-warn-that-plan-mode-suppresses-too-0aeb"],
+  "automaticFailGates": [],
+  "trajectoryAssertions": []
+}

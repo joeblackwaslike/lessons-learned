@@ -1,0 +1,1 @@
+I just added `"enabledPlugins": []` to my `~/.claude/settings.json` to disable all Claude Code plugins, but this session still seems to have access to the serena plugin — I can still call serena tools. Did my settings change not take effect? Is something wrong with my configuration?
