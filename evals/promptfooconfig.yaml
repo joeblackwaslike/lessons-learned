@@ -2065,5 +2065,205 @@ tests:
         value: file://scripts/assert-judge.mjs
       - type: javascript
         value: file://scripts/assert-trajectory.mjs
+  - description: TC-H62-never-narrate-action-without-tool-call [control]
+    vars:
+      scenarioId: TC-H62-never-narrate-action-without-tool-call
+      prompt: '{{file://scenarios/TC-H62-never-narrate-action-without-tool-call/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H62-never-narrate-action-without-tool-call [treatment]
+    vars:
+      scenarioId: TC-H62-never-narrate-action-without-tool-call
+      prompt: '{{file://scenarios/TC-H62-never-narrate-action-without-tool-call/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - never-narrate-an-action-as-underway-with-2afa
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H63-only-change-what-task-requires [control]
+    vars:
+      scenarioId: TC-H63-only-change-what-task-requires
+      prompt: '{{file://scenarios/TC-H63-only-change-what-task-requires/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H63-only-change-what-task-requires [treatment]
+    vars:
+      scenarioId: TC-H63-only-change-what-task-requires
+      prompt: '{{file://scenarios/TC-H63-only-change-what-task-requires/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - only-change-what-the-task-requires-do-no-ec52
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H64-judge-gate-by-exit-code-not-grep [control]
+    vars:
+      scenarioId: TC-H64-judge-gate-by-exit-code-not-grep
+      prompt: '{{file://scenarios/TC-H64-judge-gate-by-exit-code-not-grep/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H64-judge-gate-by-exit-code-not-grep [treatment]
+    vars:
+      scenarioId: TC-H64-judge-gate-by-exit-code-not-grep
+      prompt: '{{file://scenarios/TC-H64-judge-gate-by-exit-code-not-grep/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - judge-a-verification-gate-by-its-exit-co-885e
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H65-prove-regression-test-fails-first [control]
+    vars:
+      scenarioId: TC-H65-prove-regression-test-fails-first
+      prompt: '{{file://scenarios/TC-H65-prove-regression-test-fails-first/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H65-prove-regression-test-fails-first [treatment]
+    vars:
+      scenarioId: TC-H65-prove-regression-test-fails-first
+      prompt: '{{file://scenarios/TC-H65-prove-regression-test-fails-first/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - prove-a-regression-test-fails-against-th-fc0f
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H66-never-inherit-interactive-model-in-subprocess [control]
+    vars:
+      scenarioId: TC-H66-never-inherit-interactive-model-in-subprocess
+      prompt: '{{file://scenarios/TC-H66-never-inherit-interactive-model-in-subprocess/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H66-never-inherit-interactive-model-in-subprocess [treatment]
+    vars:
+      scenarioId: TC-H66-never-inherit-interactive-model-in-subprocess
+      prompt: '{{file://scenarios/TC-H66-never-inherit-interactive-model-in-subprocess/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - never-let-code-inherit-the-interactive-m-5630
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H67-check-git-status-before-staging [control]
+    vars:
+      scenarioId: TC-H67-check-git-status-before-staging
+      prompt: '{{file://scenarios/TC-H67-check-git-status-before-staging/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H67-check-git-status-before-staging [treatment]
+    vars:
+      scenarioId: TC-H67-check-git-status-before-staging
+      prompt: '{{file://scenarios/TC-H67-check-git-status-before-staging/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - check-git-status-before-staging-to-catch-7b6b
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H68-sync-base-branch-before-pr [control]
+    vars:
+      scenarioId: TC-H68-sync-base-branch-before-pr
+      prompt: '{{file://scenarios/TC-H68-sync-base-branch-before-pr/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H68-sync-base-branch-before-pr [treatment]
+    vars:
+      scenarioId: TC-H68-sync-base-branch-before-pr
+      prompt: '{{file://scenarios/TC-H68-sync-base-branch-before-pr/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - verify-base-branch-is-synced-with-remote-c325
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H69-paginated-query-page-size-truncated [control]
+    vars:
+      scenarioId: TC-H69-paginated-query-page-size-truncated
+      prompt: '{{file://scenarios/TC-H69-paginated-query-page-size-truncated/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H69-paginated-query-page-size-truncated [treatment]
+    vars:
+      scenarioId: TC-H69-paginated-query-page-size-truncated
+      prompt: '{{file://scenarios/TC-H69-paginated-query-page-size-truncated/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - a-paginated-query-returning-exactly-the-25da
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H70-webhook-sig-skipped-when-secret-unset [control]
+    vars:
+      scenarioId: TC-H70-webhook-sig-skipped-when-secret-unset
+      prompt: '{{file://scenarios/TC-H70-webhook-sig-skipped-when-secret-unset/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H70-webhook-sig-skipped-when-secret-unset [treatment]
+    vars:
+      scenarioId: TC-H70-webhook-sig-skipped-when-secret-unset
+      prompt: '{{file://scenarios/TC-H70-webhook-sig-skipped-when-secret-unset/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - webhook-signature-verification-skipped-w-c1a8
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H71-never-use-clientid-as-clientsecret [control]
+    vars:
+      scenarioId: TC-H71-never-use-clientid-as-clientsecret
+      prompt: '{{file://scenarios/TC-H71-never-use-clientid-as-clientsecret/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H71-never-use-clientid-as-clientsecret [treatment]
+    vars:
+      scenarioId: TC-H71-never-use-clientid-as-clientsecret
+      prompt: '{{file://scenarios/TC-H71-never-use-clientid-as-clientsecret/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - never-use-clientid-as-clientsecret-in-oa-feff
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
 outputPath: results/cache/latest-run.json
 sharing: false
