@@ -1,0 +1,24 @@
+{
+  "request_id": "req_a7f2b",
+  "endpoint": "GET /api/users/dashboard",
+  "total_ms": 580,
+  "breakdown": {
+    "auth_ms": 15,
+    "db_query_ms": 420,
+    "render_ms": 80,
+    "serialization_ms": 65
+  },
+  "sql_calls": [
+    { "query": "SELECT * FROM users WHERE id = ?", "ms": 12, "params": [42] },
+    { "query": "SELECT * FROM posts WHERE user_id = ?", "ms": 45, "params": [42] },
+    { "query": "SELECT * FROM posts WHERE user_id = ?", "ms": 44, "params": [17] },
+    { "query": "SELECT * FROM posts WHERE user_id = ?", "ms": 43, "params": [9] },
+    { "query": "SELECT * FROM posts WHERE user_id = ?", "ms": 46, "params": [31] },
+    { "query": "SELECT * FROM posts WHERE user_id = ?", "ms": 48, "params": [55] },
+    { "query": "SELECT * FROM posts WHERE user_id = ?", "ms": 47, "params": [62] },
+    { "query": "SELECT * FROM posts WHERE user_id = ?", "ms": 45, "params": [88] },
+    { "query": "SELECT tag_name FROM tags WHERE post_id IN (?)", "ms": 90, "params": [[1,2,3,4,5,6,7,8]] }
+  ],
+  "cache_hits": 0,
+  "memory_mb": 24.3
+}

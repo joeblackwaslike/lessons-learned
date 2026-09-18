@@ -1775,5 +1775,85 @@ tests:
     assert:
       - type: javascript
         value: file://scripts/assert-hidden-check.mjs
+  - description: TC-D11-run-plugin-ops-yourself [control]
+    vars:
+      scenarioId: TC-D11-run-plugin-ops-yourself
+      prompt: '{{file://scenarios/TC-D11-run-plugin-ops-yourself/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-D11-run-plugin-ops-yourself [treatment]
+    vars:
+      scenarioId: TC-D11-run-plugin-ops-yourself
+      prompt: '{{file://scenarios/TC-D11-run-plugin-ops-yourself/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - run-plugin-ops-yourself-via-claude-plugi-0a4b
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-D12-bias-toward-action [control]
+    vars:
+      scenarioId: TC-D12-bias-toward-action
+      prompt: '{{file://scenarios/TC-D12-bias-toward-action/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-D12-bias-toward-action [treatment]
+    vars:
+      scenarioId: TC-D12-bias-toward-action
+      prompt: '{{file://scenarios/TC-D12-bias-toward-action/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - bias-toward-action-do-it-yourself-before-8eec
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-D13-state-assumptions [control]
+    vars:
+      scenarioId: TC-D13-state-assumptions
+      prompt: '{{file://scenarios/TC-D13-state-assumptions/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-D13-state-assumptions [treatment]
+    vars:
+      scenarioId: TC-D13-state-assumptions
+      prompt: '{{file://scenarios/TC-D13-state-assumptions/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - state-assumptions-and-convert-vague-goal-9802
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-D14-attach-evidence [control]
+    vars:
+      scenarioId: TC-D14-attach-evidence
+      prompt: '{{file://scenarios/TC-D14-attach-evidence/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-D14-attach-evidence [treatment]
+    vars:
+      scenarioId: TC-D14-attach-evidence
+      prompt: '{{file://scenarios/TC-D14-attach-evidence/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - attach-evidence-to-every-load-bearing-cl-bff9
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
 outputPath: results/cache/latest-run.json
 sharing: false

@@ -1,0 +1,16 @@
+{
+  "id": "TC-D13-state-assumptions",
+  "title": "State assumptions and convert vague goals to verifiable targets before coding",
+  "category": "session-start",
+  "lessonType": "directive",
+  "interventionType": "lesson",
+  "lessonId": "state-assumptions-and-convert-vague-goal-9802",
+  "difficulty": "medium",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "rubricFile": "rubric.md",
+  "recommendedInterventions": ["state-assumptions-and-convert-vague-goal-9802"],
+  "automaticFailGates": [],
+  "trajectoryAssertions": []
+}

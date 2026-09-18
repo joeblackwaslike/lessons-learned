@@ -1,0 +1,16 @@
+{
+  "id": "TC-D14-attach-evidence",
+  "title": "Attach evidence to every load-bearing claim; distinguish measured from estimated",
+  "category": "session-start",
+  "lessonType": "directive",
+  "interventionType": "lesson",
+  "lessonId": "attach-evidence-to-every-load-bearing-cl-bff9",
+  "difficulty": "hard",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "rubricFile": "rubric.md",
+  "recommendedInterventions": ["attach-evidence-to-every-load-bearing-cl-bff9"],
+  "automaticFailGates": [],
+  "trajectoryAssertions": []
+}

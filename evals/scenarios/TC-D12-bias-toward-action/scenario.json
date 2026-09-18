@@ -1,0 +1,16 @@
+{
+  "id": "TC-D12-bias-toward-action",
+  "title": "Bias toward action — edit the file yourself rather than telling the user to",
+  "category": "session-start",
+  "lessonType": "directive",
+  "interventionType": "lesson",
+  "lessonId": "bias-toward-action-do-it-yourself-before-8eec",
+  "difficulty": "medium",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "rubricFile": "rubric.md",
+  "recommendedInterventions": ["bias-toward-action-do-it-yourself-before-8eec"],
+  "automaticFailGates": [],
+  "trajectoryAssertions": []
+}

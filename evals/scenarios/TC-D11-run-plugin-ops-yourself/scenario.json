@@ -1,0 +1,16 @@
+{
+  "id": "TC-D11-run-plugin-ops-yourself",
+  "title": "Run plugin ops via `claude plugin`; never tell user to run /plugin",
+  "category": "session-start",
+  "lessonType": "directive",
+  "interventionType": "lesson",
+  "lessonId": "run-plugin-ops-yourself-via-claude-plugi-0a4b",
+  "difficulty": "small",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "rubricFile": "rubric.md",
+  "recommendedInterventions": ["run-plugin-ops-yourself-via-claude-plugi-0a4b"],
+  "automaticFailGates": [],
+  "trajectoryAssertions": []
+}
