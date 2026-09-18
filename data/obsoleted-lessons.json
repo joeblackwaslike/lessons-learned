@@ -1180,6 +1180,30 @@
       "obsoletedReason": "CONTROL_CORRECT in eval (TC-H71) \u2014 claude-sonnet-4-6 applies the correct behavior without lesson injected",
       "evalScenario": "TC-H71-never-use-clientid-as-clientsecret",
       "priorStatus": "active"
+    },
+    {
+      "slug": "never-let-code-inherit-the-interactive-m-5630",
+      "id": "01KYTSKJ2DQN034CSG8N9H7V69",
+      "type": "hint",
+      "summary": "Never let code inherit the interactive model when spawning an LLM subprocess",
+      "problem": "Code that shells out to an LLM CLI without an explicit model argument inherits whatever the user's interactive default is. A summarize-to-JSON enrichment pass inherited Opus and ran 2,825 times in 43 hours, costing roughly 20x what the task needed and consuming about 69% of a weekly quota. The task was small-model work throughout; nothing in the code expressed that intent.",
+      "solution": "Always pass all three isolation flags when spawning a claude -p subprocess \u2014 omitting any one of them leaves a vector open:\n\n  claude -p \"<prompt>\" \\\n    --model claude-haiku-4-5-20251001 \\\n    --no-session-persistence \\\n    --setting-sources \"\"\n\n\u2022 --model: pins the model so the subprocess cannot inherit whatever the interactive session is using. Choose haiku for extraction/summarization (economy) and sonnet for code tasks (accuracy). Never omit and rely on the caller to have set a default.\n\u2022 --no-session-persistence: prevents the subprocess from writing a new session file, so repeated invocations do not accumulate ghost sessions.\n\u2022 --setting-sources \"\": disables all hooks and plugin loading in the subprocess. A bare claude -p inherits every hook the parent session has, which can re-trigger the calling hook recursively and emit thousands of ghost sessions (PM-005: 36,468 ghost sessions from one Stop hook).\n\nMake the model overridable by env var and resolve the override per call, not at module load. Guard blank overrides: a null-coalescing ?? catches undefined but passes through an empty string, which fails the --model flag silently.",
+      "toolNames": ["Edit", "Write", "Bash"],
+      "commandPatterns": ["claude -p", "spawn\\(['\"]claude", "execFile\\w*\\(['\"]claude"],
+      "pathPatterns": [],
+      "commandMatchTarget": null,
+      "modelPatterns": [],
+      "tags": ["category:cost", "topic:llm", "severity:quota"],
+      "scope": null,
+      "priority": 9,
+      "confidence": 0.95,
+      "requires": null,
+      "duplicatedBy": null,
+      "obsoletedAt": "2026-09-18",
+      "obsoletedReason": "Un-testable via eval framework \u2014 lesson fires at Bash PreToolUse but agent completes literal claude -p instructions verbatim; Write-time trigger arrives after content is planned. Real failure mode (automation code spawning subprocess) has no clean trigger point.",
+      "evalScenario": "TC-H66-never-inherit-interactive-model-in-subprocess",
+      "priorStatus": "active",
+      "sonnetRevalidated": "2026-09-18 FAIL (2 runs) \u2014 lesson injected but agent ignores; scenario redesigned twice, both fail"
     }
   ],
   "revalidation": {

@@ -1,1 +1,1 @@
-Add a Stop hook to .claude/settings.json that runs claude -p to summarize what changed this session and saves the summary to /tmp/session-summary.txt.
+Use `claude -p` to summarize the contents of README.md and print the output to the terminal.

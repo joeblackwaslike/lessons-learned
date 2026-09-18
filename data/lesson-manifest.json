@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-09-18T16:23:52.430Z",
+  "generatedAt": "2026-09-18T16:58:18.694Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -166,43 +166,6 @@
       "summary": "Webhook signature verification skipped when secret is unset",
       "problem": "The Etsy webhook handler skips signature verification when ETSY_WEBHOOK_SECRET is undefined or empty. The guard condition `if (ETSY_WEBHOOK_SECRET && !verifyEtsySignature(...))` allows requests through without validation when the secret is missing, creating a security bypass that permits spoofed events.",
       "solution": "Invert the logic to require valid signature verification before processing any webhook. Fail fast with 401/403 if the secret is missing or signature verification fails, rather than logging a warning after processing begins."
-    },
-    "01KYTSKJ2DQN034CSG8N9H7V69": {
-      "slug": "never-let-code-inherit-the-interactive-m-5630",
-      "type": "hint",
-      "priority": 9,
-      "toolNames": [
-        "Edit",
-        "Write",
-        "Bash"
-      ],
-      "commandRegexSources": [
-        {
-          "source": "claude -p",
-          "flags": ""
-        },
-        {
-          "source": "spawn\\(['\"]claude",
-          "flags": ""
-        },
-        {
-          "source": "execFile\\w*\\(['\"]claude",
-          "flags": ""
-        }
-      ],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
-      "modelRegexSources": [],
-      "tags": [
-        "category:cost",
-        "topic:llm",
-        "severity:quota"
-      ],
-      "scope": null,
-      "message": "## Lesson: Never let code inherit the interactive model when spawning an LLM subprocess\nCode that shells out to an LLM CLI without an explicit model argument inherits whatever the user's interactive default is. A summarize-to-JSON enrichment pass inherited Opus and ran 2,825 times in 43 hours, costing roughly 20x what the task needed and consuming about 69% of a weekly quota. The task was small-model work throughout; nothing in the code expressed that intent.\n**Fix**: Always pass all three isolation flags when spawning a claude -p subprocess — omitting any one of them leaves a vector open:\n\n  claude -p \"<prompt>\" \\\n    --model claude-haiku-4-5-20251001 \\\n    --no-session-persistence \\\n    --setting-sources \"\"\n\n• --model: pins the model so the subprocess cannot inherit whatever the interactive session is using. Choose haiku for extraction/summarization (economy) and sonnet for code tasks (accuracy). Never omit and rely on the caller to have set a default.\n• --no-session-persistence: prevents the subprocess from writing a new session file, so repeated invocations do not accumulate ghost sessions.\n• --setting-sources \"\": disables all hooks and plugin loading in the subprocess. A bare claude -p inherits every hook the parent session has, which can re-trigger the calling hook recursively and emit thousands of ghost sessions (PM-005: 36,468 ghost sessions from one Stop hook).\n\nMake the model overridable by env var and resolve the override per call, not at module load. Guard blank overrides: a null-coalescing ?? catches undefined but passes through an empty string, which fails the --model flag silently.",
-      "summary": "Never let code inherit the interactive model when spawning an LLM subprocess",
-      "problem": "Code that shells out to an LLM CLI without an explicit model argument inherits whatever the user's interactive default is. A summarize-to-JSON enrichment pass inherited Opus and ran 2,825 times in 43 hours, costing roughly 20x what the task needed and consuming about 69% of a weekly quota. The task was small-model work throughout; nothing in the code expressed that intent.",
-      "solution": "Always pass all three isolation flags when spawning a claude -p subprocess — omitting any one of them leaves a vector open:\n\n  claude -p \"<prompt>\" \\\n    --model claude-haiku-4-5-20251001 \\\n    --no-session-persistence \\\n    --setting-sources \"\"\n\n• --model: pins the model so the subprocess cannot inherit whatever the interactive session is using. Choose haiku for extraction/summarization (economy) and sonnet for code tasks (accuracy). Never omit and rely on the caller to have set a default.\n• --no-session-persistence: prevents the subprocess from writing a new session file, so repeated invocations do not accumulate ghost sessions.\n• --setting-sources \"\": disables all hooks and plugin loading in the subprocess. A bare claude -p inherits every hook the parent session has, which can re-trigger the calling hook recursively and emit thousands of ghost sessions (PM-005: 36,468 ghost sessions from one Stop hook).\n\nMake the model overridable by env var and resolve the override per call, not at module load. Guard blank overrides: a null-coalescing ?? catches undefined but passes through an empty string, which fails the --model flag silently."
     },
     "01KYTTNRMC5QHV91XMCP8AA6RB": {
       "slug": "never-merge-a-pr-with-unresolved-review-3920",

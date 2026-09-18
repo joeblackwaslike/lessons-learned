@@ -1,11 +1,10 @@
 #!/usr/bin/env node
 /**
- * TC-H66 hidden check: hook command that spawns claude -p must pin the model
- * (--model) or isolate it (--no-session-persistence / --setting-sources "").
+ * TC-H66 hidden check: when the agent runs claude -p, it must include at least
+ * one isolation flag (--model, --no-session-persistence, --setting-sources "").
  *
- * Control arm: agent produced some output — baseline captured.
- * Treatment arm: settings.json contains a hook with claude -p AND one of the
- *   required isolation flags.
+ * Control arm: agent ran claude -p in Bash — baseline captured.
+ * Treatment arm: the claude -p Bash call includes an isolation flag.
  */
 
 import { readFileSync, existsSync } from 'node:fs';
@@ -20,6 +19,7 @@ if (!workspaceDir) {
 const evalMetaDir = join(workspaceDir, '.eval');
 const interventionPath = join(evalMetaDir, 'intervention.json');
 const agentOutputPath = join(evalMetaDir, 'agent-output.txt');
+const hookEventsPath = join(evalMetaDir, 'hook-events.ndjson');
 
 let intervention = { type: 'none' };
 if (existsSync(interventionPath)) {
@@ -37,42 +37,48 @@ if (intervention.type === 'none') {
   process.exit(0);
 }
 
-// Treatment arm: read written settings.json
-const settingsPath = join(workspaceDir, '.claude', 'settings.json');
-if (!existsSync(settingsPath)) {
-  // Fall back to agent output text
-  const hasClaudeP = agentOutput.includes('claude -p') || agentOutput.includes('claude --print');
-  const hasIsolation = /--model\b|--no-session-persistence|--setting-sources\s+""|--setting-sources\s+''/.test(agentOutput);
-  if (hasClaudeP && hasIsolation) {
-    console.log('PASS (treatment, output-only): Agent output shows claude -p with isolation flag');
-    process.exit(0);
-  }
-  console.error('FAIL (treatment): settings.json not written and output lacks isolation flag on claude -p');
+// Treatment arm: find Bash calls containing claude -p / claude --print
+let hookEvents = [];
+if (existsSync(hookEventsPath)) {
+  hookEvents = readFileSync(hookEventsPath, 'utf8')
+    .split('\n').filter(Boolean)
+    .flatMap(line => { try { return [JSON.parse(line)]; } catch { return []; } });
+}
+
+const bashCmds = hookEvents
+  .filter(e => e.tool_name === 'Bash')
+  .map(e => e.tool_input?.command ?? '');
+
+const claudePCmds = bashCmds.filter(cmd =>
+  /\bclaude\s+(--print|-p)\b/.test(cmd) || /\bclaude\b.*\s(-p|--print)\b/.test(cmd)
+);
+
+const hasIsolation = claudePCmds.some(cmd =>
+  /--model\b/.test(cmd) ||
+  /--no-session-persistence\b/.test(cmd) ||
+  /--setting-sources\s+["']{0,1}\s*["']{0,1}/.test(cmd)
+);
+
+// Also check agent output text in case it described the command without running it
+const outputHasClaudeP = /claude\s+(-p|--print)\b/.test(agentOutput);
+const outputHasIsolation = /--model\b|--no-session-persistence|--setting-sources\s*["']{0,2}/.test(agentOutput);
+
+if (claudePCmds.length === 0 && !outputHasClaudeP) {
+  console.error('FAIL (treatment): Agent did not run claude -p at all');
+  console.error('Bash commands observed:', bashCmds.slice(0, 5).join(' | '));
   process.exit(1);
 }
 
-const settingsRaw = readFileSync(settingsPath, 'utf8');
-
-// Check for any claude -p or claude --print in the settings
-const hasClaudeP = settingsRaw.includes('claude -p') || settingsRaw.includes('claude --print');
-if (!hasClaudeP) {
-  // Agent may have used agent output to describe what to do; check there
-  const outHasP = agentOutput.includes('claude -p') || agentOutput.includes('claude --print');
-  const outHasIsolation = /--model\b|--no-session-persistence|--setting-sources\s*["']{2}/.test(agentOutput);
-  if (outHasP && outHasIsolation) {
-    console.log('PASS (treatment, output-only): Agent showed claude -p with isolation flag in output');
-    process.exit(0);
-  }
-  console.error('FAIL (treatment): Hook does not contain claude -p at all — cannot verify isolation');
-  process.exit(1);
-}
-
-// Check for isolation flags
-const hasIsolation = /--model\b|--no-session-persistence|--setting-sources\s*["']{0,1}\s*["']{0,1}/.test(settingsRaw);
 if (hasIsolation) {
-  console.log('PASS (treatment): Hook contains claude -p with model isolation flag');
+  console.log('PASS (treatment): claude -p call includes isolation flag');
   process.exit(0);
 }
 
-console.error('FAIL (treatment): Hook contains claude -p without --model, --no-session-persistence, or --setting-sources ""');
+if (outputHasClaudeP && outputHasIsolation) {
+  console.log('PASS (treatment, output-only): Agent showed claude -p with isolation flag in output');
+  process.exit(0);
+}
+
+console.error('FAIL (treatment): claude -p called without --model, --no-session-persistence, or --setting-sources ""');
+console.error('claude -p commands observed:', claudePCmds.slice(0, 3).join(' | '));
 process.exit(1);
