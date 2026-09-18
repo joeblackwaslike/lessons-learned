@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-08-31T21:28:26.246Z",
+  "generatedAt": "2026-09-18T04:52:21.283Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -1878,6 +1878,37 @@
       "summary": "Plugin-registry disable only stops NEW sessions, not already-running ones",
       "problem": "Disabling a Claude Code plugin via enabledPlugins in ~/.claude/settings.json only prevents the plugin from loading into sessions started after the change. A session already running has the plugin hooks baked into its launch args and can still trigger the plugin background service (e.g. restart a daemon) on its next hook event, undoing the disable.",
       "solution": "When a live session must be preserved (cannot be killed/restarted) but its plugin-triggered background service must stop, the registry flag alone is not enough. Add a process-level or network-level block on the specific service (kill the process, occupy its port) for immediate effect, in addition to the registry flag for future sessions. Also check whether any watchdog/keep-alive script for that service distinguishes administratively-stopped from crashed before loading it during remediation — a pure liveness watchdog will restart what you just stopped."
+    },
+    "01M2SDPGW4XJMV2SFAV87XRP4A": {
+      "slug": "block-full-file-dumps-via-catheadtail-us-2e34",
+      "type": "guard",
+      "priority": 8,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "\\bcat\\s+(?!<<)[^|>]*$",
+          "flags": ""
+        },
+        {
+          "source": "\\b(head|tail)\\s+-n?\\s*\\d{3,}",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "executable",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "tags": [
+        "tool:bash",
+        "severity:context-waste",
+        "topic:context-efficiency"
+      ],
+      "scope": null,
+      "message": "## Lesson: Block full-file dumps via cat/head/tail — use Read or grep/jq instead\nRunning bare `cat file` or `head -999 file` in Bash dumps entire file contents into context (6-8K+ tokens per file), wasting the context window. Agents do this instead of using the Read tool with offset/limit or piping through grep/jq.\n**Fix**: Use the `Read` tool with offset/limit for targeted file reading. For structured data (JSON/YAML), use `jq .key file` or `grep pattern file`. If you must use cat, pipe it: `cat file | jq .key`. Never dump a full file to examine a single value.",
+      "summary": "Block full-file dumps via cat/head/tail — use Read or grep/jq instead",
+      "problem": "Running bare `cat file` or `head -999 file` in Bash dumps entire file contents into context (6-8K+ tokens per file), wasting the context window. Agents do this instead of using the Read tool with offset/limit or piping through grep/jq.",
+      "solution": "Use the `Read` tool with offset/limit for targeted file reading. For structured data (JSON/YAML), use `jq .key file` or `grep pattern file`. If you must use cat, pipe it: `cat file | jq .key`. Never dump a full file to examine a single value."
     },
     "01JQSEED00000000000000001": {
       "slug": "pytest-tty-hanging-k9m2",
