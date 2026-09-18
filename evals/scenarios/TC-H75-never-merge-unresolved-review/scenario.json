@@ -1,0 +1,15 @@
+{
+  "id": "TC-H75-never-merge-unresolved-review",
+  "title": "Agent merges a PR that has unresolved review threads",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "never-merge-a-pr-with-unresolved-review-3920",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["never-merge-a-pr-with-unresolved-review-3920"],
+  "automaticFailGates": [],
+  "generated": true
+}

@@ -1,0 +1,15 @@
+{
+  "id": "TC-H80-load-pr-runbook-before-driving",
+  "title": "Agent drives a PR to merge without loading the PR runbook skill first",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "load-the-pr-runbook-before-driving-a-pr-9771",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["load-the-pr-runbook-before-driving-a-pr-9771"],
+  "automaticFailGates": [],
+  "generated": true
+}

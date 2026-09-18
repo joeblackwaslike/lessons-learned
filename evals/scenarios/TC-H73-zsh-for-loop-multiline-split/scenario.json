@@ -1,0 +1,15 @@
+{
+  "id": "TC-H73-zsh-for-loop-multiline-split",
+  "title": "Agent uses zsh for-loop over multiline variable instead of while read",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "zsh-for-loop-doesnt-split-multiline-vari-d9b1",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["zsh-for-loop-doesnt-split-multiline-vari-d9b1"],
+  "automaticFailGates": [],
+  "generated": true
+}

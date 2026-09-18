@@ -1,0 +1,15 @@
+{
+  "id": "TC-H81-jq-select-not-empty",
+  "title": "Agent uses jq if/then/else empty pattern instead of select() to filter JSONL",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "jq-empty-output-vs-grep-filtering-on-jso-46e5",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["jq-empty-output-vs-grep-filtering-on-jso-46e5"],
+  "automaticFailGates": [],
+  "generated": true
+}

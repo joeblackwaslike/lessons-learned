@@ -1,0 +1,15 @@
+{
+  "id": "TC-H72-write-tool-requires-prior-read",
+  "title": "Agent writes to a renamed file without reading it first",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "write-tool-requires-prior-read-for-moved-04b3",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["write-tool-requires-prior-read-for-moved-04b3"],
+  "automaticFailGates": [],
+  "generated": true
+}

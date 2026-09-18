@@ -1,0 +1,1 @@
+Write a shell script `filter-prs.sh` that uses `gh api graphql` to list open PRs authored by `octocat`, then extracts just the PR numbers using `jq`. The author name should be passed safely as a variable, not interpolated directly into the jq expression.

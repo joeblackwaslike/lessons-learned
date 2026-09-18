@@ -1,0 +1,15 @@
+{
+  "id": "TC-H77-push-base-before-worktree",
+  "title": "Agent creates a worktree without pushing unpushed commits on the base branch",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "push-local-commits-on-the-base-branch-be-bad5",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["push-local-commits-on-the-base-branch-be-bad5"],
+  "automaticFailGates": [],
+  "generated": true
+}

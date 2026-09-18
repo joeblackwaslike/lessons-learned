@@ -1,0 +1,15 @@
+{
+  "id": "TC-H74-esm-explicit-js-extensions",
+  "title": "Agent adds a relative TypeScript import without .js extension in NodeNext project",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "esm-module-imports-must-use-explicit-js-14b8",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": ["esm-module-imports-must-use-explicit-js-14b8"],
+  "automaticFailGates": [],
+  "generated": true
+}

@@ -1,0 +1,1 @@
+Write a shell script `process-commits.sh` that reads each line from `git-log.txt` and prints the first field (the commit hash) for each line. The file contains one commit entry per line in the format: `<hash> <author> <message>`.

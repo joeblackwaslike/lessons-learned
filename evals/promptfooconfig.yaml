@@ -2265,5 +2265,205 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
+  - description: TC-H72-write-tool-requires-prior-read [control]
+    vars:
+      scenarioId: TC-H72-write-tool-requires-prior-read
+      prompt: '{{file://scenarios/TC-H72-write-tool-requires-prior-read/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H72-write-tool-requires-prior-read [treatment]
+    vars:
+      scenarioId: TC-H72-write-tool-requires-prior-read
+      prompt: '{{file://scenarios/TC-H72-write-tool-requires-prior-read/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - write-tool-requires-prior-read-for-moved-04b3
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H73-zsh-for-loop-multiline-split [control]
+    vars:
+      scenarioId: TC-H73-zsh-for-loop-multiline-split
+      prompt: '{{file://scenarios/TC-H73-zsh-for-loop-multiline-split/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H73-zsh-for-loop-multiline-split [treatment]
+    vars:
+      scenarioId: TC-H73-zsh-for-loop-multiline-split
+      prompt: '{{file://scenarios/TC-H73-zsh-for-loop-multiline-split/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - zsh-for-loop-doesnt-split-multiline-vari-d9b1
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H74-esm-explicit-js-extensions [control]
+    vars:
+      scenarioId: TC-H74-esm-explicit-js-extensions
+      prompt: '{{file://scenarios/TC-H74-esm-explicit-js-extensions/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H74-esm-explicit-js-extensions [treatment]
+    vars:
+      scenarioId: TC-H74-esm-explicit-js-extensions
+      prompt: '{{file://scenarios/TC-H74-esm-explicit-js-extensions/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - esm-module-imports-must-use-explicit-js-14b8
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H75-never-merge-unresolved-review [control]
+    vars:
+      scenarioId: TC-H75-never-merge-unresolved-review
+      prompt: '{{file://scenarios/TC-H75-never-merge-unresolved-review/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H75-never-merge-unresolved-review [treatment]
+    vars:
+      scenarioId: TC-H75-never-merge-unresolved-review
+      prompt: '{{file://scenarios/TC-H75-never-merge-unresolved-review/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - never-merge-a-pr-with-unresolved-review-3920
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H76-drop-constraint-if-exists [control]
+    vars:
+      scenarioId: TC-H76-drop-constraint-if-exists
+      prompt: '{{file://scenarios/TC-H76-drop-constraint-if-exists/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H76-drop-constraint-if-exists [treatment]
+    vars:
+      scenarioId: TC-H76-drop-constraint-if-exists
+      prompt: '{{file://scenarios/TC-H76-drop-constraint-if-exists/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - drop-constraint-without-if-exists-fails-80d4
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H77-push-base-before-worktree [control]
+    vars:
+      scenarioId: TC-H77-push-base-before-worktree
+      prompt: '{{file://scenarios/TC-H77-push-base-before-worktree/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H77-push-base-before-worktree [treatment]
+    vars:
+      scenarioId: TC-H77-push-base-before-worktree
+      prompt: '{{file://scenarios/TC-H77-push-base-before-worktree/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - push-local-commits-on-the-base-branch-be-bad5
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H78-worktree-prune-safety [control]
+    vars:
+      scenarioId: TC-H78-worktree-prune-safety
+      prompt: '{{file://scenarios/TC-H78-worktree-prune-safety/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H78-worktree-prune-safety [treatment]
+    vars:
+      scenarioId: TC-H78-worktree-prune-safety
+      prompt: '{{file://scenarios/TC-H78-worktree-prune-safety/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - dont-assume-worktree-is-safe-to-prune-ba-8ac3
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H79-gh-arg-jq-strings [control]
+    vars:
+      scenarioId: TC-H79-gh-arg-jq-strings
+      prompt: '{{file://scenarios/TC-H79-gh-arg-jq-strings/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H79-gh-arg-jq-strings [treatment]
+    vars:
+      scenarioId: TC-H79-gh-arg-jq-strings
+      prompt: '{{file://scenarios/TC-H79-gh-arg-jq-strings/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - gh-cli-arg-flag-auto-quotes-jq-arguments-274c
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H80-load-pr-runbook-before-driving [control]
+    vars:
+      scenarioId: TC-H80-load-pr-runbook-before-driving
+      prompt: '{{file://scenarios/TC-H80-load-pr-runbook-before-driving/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H80-load-pr-runbook-before-driving [treatment]
+    vars:
+      scenarioId: TC-H80-load-pr-runbook-before-driving
+      prompt: '{{file://scenarios/TC-H80-load-pr-runbook-before-driving/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - load-the-pr-runbook-before-driving-a-pr-9771
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H81-jq-select-not-empty [control]
+    vars:
+      scenarioId: TC-H81-jq-select-not-empty
+      prompt: '{{file://scenarios/TC-H81-jq-select-not-empty/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H81-jq-select-not-empty [treatment]
+    vars:
+      scenarioId: TC-H81-jq-select-not-empty
+      prompt: '{{file://scenarios/TC-H81-jq-select-not-empty/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - jq-empty-output-vs-grep-filtering-on-jso-46e5
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
 outputPath: results/cache/latest-run.json
 sharing: false

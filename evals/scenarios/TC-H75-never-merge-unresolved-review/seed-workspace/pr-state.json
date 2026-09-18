@@ -1,0 +1,9 @@
+{
+  "number": 42,
+  "title": "Add payment processing",
+  "approvals": 1,
+  "unresolvedThreads": 2,
+  "ciStatus": "success",
+  "headSha": "abc1234",
+  "baseBranch": "main"
+}
