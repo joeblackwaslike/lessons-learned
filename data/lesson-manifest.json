@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-09-18T04:52:21.283Z",
+  "generatedAt": "2026-09-18T14:28:20.151Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -679,46 +679,6 @@
       "problem": "GitHub App private keys download as PKCS#1 (`-----BEGIN RSA PRIVATE KEY-----`), but Node.js JWT/crypto libraries require PKCS#8 (`-----BEGIN PRIVATE KEY-----`). Using the wrong format silently breaks JWT signing.",
       "solution": "Check the header: `BEGIN RSA PRIVATE KEY` = PKCS#1, needs conversion; `BEGIN PRIVATE KEY` = PKCS#8, ready to use.\nConvert with: `openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt < key.pem > key-pkcs8.pem`"
     },
-    "01KS4PEMW3QN43HK9YZ8EYTVR0": {
-      "slug": "never-use-rm-rf-outside-project-cwd-clau-1683",
-      "type": "guard",
-      "priority": 8,
-      "toolNames": [
-        "Bash"
-      ],
-      "commandRegexSources": [
-        {
-          "source": "rm -rf ~/",
-          "flags": ""
-        },
-        {
-          "source": "rm -rf /Users",
-          "flags": ""
-        },
-        {
-          "source": "rm -rf ~/\\.",
-          "flags": ""
-        },
-        {
-          "source": "rm -rf ~$",
-          "flags": ""
-        }
-      ],
-      "commandMatchTarget": "executable",
-      "pathRegexSources": [],
-      "modelRegexSources": [],
-      "tags": [
-        "source:deep-scan",
-        "tool:bash",
-        "severity:data-loss",
-        "promotion_risk:high"
-      ],
-      "scope": null,
-      "message": "## Lesson: Never use rm -rf outside project cwd; Claude Code safety net blocks destructive \nRunning `rm -rf` on system or home directories outside the project CWD (e.g. ~/.*, /opt/, /usr/) is blocked by Claude Code's safety net and should never be attempted by the agent.\n**Fix**: Never issue destructive operations outside the project repository. If the user needs files removed from system directories, surface the exact command and ask them to run it manually. For tracked files within the repo, use `git rm` instead — it stages the deletion properly and avoids absolute-path safety net blocks.",
-      "summary": "Never use rm -rf outside project cwd; Claude Code safety net blocks destructive ",
-      "problem": "Running `rm -rf` on system or home directories outside the project CWD (e.g. ~/.*, /opt/, /usr/) is blocked by Claude Code's safety net and should never be attempted by the agent.",
-      "solution": "Never issue destructive operations outside the project repository. If the user needs files removed from system directories, surface the exact command and ask them to run it manually. For tracked files within the repo, use `git rm` instead — it stages the deletion properly and avoids absolute-path safety net blocks."
-    },
     "01KS4PF1BEWPVQKHS79QGVSJ9Y": {
       "slug": "gh-graphql-mutations-require-variables-d-d03e",
       "type": "hint",
@@ -746,37 +706,6 @@
       "summary": "gh GraphQL mutations require variables; direct string interpolation fails silent",
       "problem": "When using `gh api graphql` with mutations containing string variables, directly interpolating shell variables into the query string causes the mutation to fail without clear error output. The GraphQL parser doesn't interpret the interpolated values.",
       "solution": "Pass query and variables separately using `-f query='...'` with a parameterized mutation (`$var`), then use `-f varname='value'` flags. This ensures proper GraphQL variable substitution."
-    },
-    "01KS4PF1BGAQ7SFGRP0AHYHNKW": {
-      "slug": "git-worktree-unlock-before-remove-force-4048",
-      "type": "guard",
-      "priority": 8,
-      "toolNames": [
-        "Bash"
-      ],
-      "commandRegexSources": [
-        {
-          "source": "git worktree remove --force",
-          "flags": ""
-        },
-        {
-          "source": "git worktree remove -f",
-          "flags": ""
-        }
-      ],
-      "commandMatchTarget": "executable",
-      "pathRegexSources": [],
-      "modelRegexSources": [],
-      "tags": [
-        "source:deep-scan",
-        "tool:git",
-        "severity:data-loss"
-      ],
-      "scope": null,
-      "message": "## Lesson: git worktree unlock before remove; --force causes data loss warnings\nLocked git worktrees cannot be removed with `git worktree remove` even if the directory is clean. Using `--force` to bypass the lock triggers safety hooks.\n**Fix**: Run `git worktree unlock <path>` first, then `git worktree remove <path>` without --force.",
-      "summary": "git worktree unlock before remove; --force causes data loss warnings",
-      "problem": "Locked git worktrees cannot be removed with `git worktree remove` even if the directory is clean. Using `--force` to bypass the lock triggers safety hooks.",
-      "solution": "Run `git worktree unlock <path>` first, then `git worktree remove <path>` without --force."
     },
     "01KS4PF1BHXSB5R6062HP3CFDZ": {
       "slug": "clean-serena-dirs-from-worktrees-before-f65b",
@@ -887,38 +816,6 @@
       "summary": "Run supabase db push before deploying — unsynced migrations cause prod failures",
       "problem": "The project uses Supabase migrations (0001, 0002, 0003) stored in supabase/migrations/. If a newer migration (e.g., 0003_photos_confirmed.sql) has not been applied to the K8s Supabase instance, the deployed app may fail when it queries or writes to those columns.",
       "solution": "Before redeploying, verify all migrations in supabase/migrations/ have been applied to the K8s Supabase instance. Use Supabase CLI or K8s job to run `supabase db push` or equivalent. Check git log for recent schema changes and confirm they are in prod."
-    },
-    "01KS4PH724EMYYYPKB1PJ0K60C": {
-      "slug": "xargs-with-shell-c-blocked-by-safety-net-bf72",
-      "type": "guard",
-      "priority": 8,
-      "toolNames": [
-        "Bash"
-      ],
-      "commandRegexSources": [
-        {
-          "source": "xargs.*sh -c",
-          "flags": ""
-        },
-        {
-          "source": "xargs.*bash -c",
-          "flags": ""
-        }
-      ],
-      "commandMatchTarget": "executable",
-      "pathRegexSources": [],
-      "modelRegexSources": [],
-      "tags": [
-        "source:deep-scan",
-        "tool:bash",
-        "tool:xargs",
-        "security:injection"
-      ],
-      "scope": null,
-      "message": "## Lesson: xargs with shell -c blocked by safety net for dynamic input\nUsing `xargs -I {} sh -c` to execute commands from dynamic input is blocked by Claude Code's PreToolUse safety net — piping dynamic data into `sh -c` enables arbitrary command injection.\n**Fix**: Use safer alternatives:\n  (1) find with -exec: `find . -name \"*.txt\" -exec cmd {} \\;`\n  (2) A while-read loop: `some_cmd | while IFS= read -r line; do ...; done`\n  (3) A dedicated script with explicit argument handling.",
-      "summary": "xargs with shell -c blocked by safety net for dynamic input",
-      "problem": "Using `xargs -I {} sh -c` to execute commands from dynamic input is blocked by Claude Code's PreToolUse safety net — piping dynamic data into `sh -c` enables arbitrary command injection.",
-      "solution": "Use safer alternatives:\n  (1) find with -exec: `find . -name \"*.txt\" -exec cmd {} \\;`\n  (2) A while-read loop: `some_cmd | while IFS= read -r line; do ...; done`\n  (3) A dedicated script with explicit argument handling."
     },
     "01KS4PJ0YDK2C4DQAJ3GY7JHFY": {
       "slug": "drop-constraint-without-if-exists-fails-80d4",
