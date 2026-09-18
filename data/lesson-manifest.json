@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-09-18T14:28:20.151Z",
+  "generatedAt": "2026-09-18T16:23:52.430Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -91,47 +91,6 @@
       "problem": "Verified facts and unchecked inferences get written in the same confident register, so the reader cannot tell which is which and cannot calibrate. In one session this produced four wrong high-confidence assertions: a token-cost estimate off by two orders of magnitude that was embedded in a decision prompt, a root cause attributed to the wrong config file, a blast radius inflated 17x by an unfiltered find, and a claim that two agent runtimes lacked a feature they demonstrably have. Two came from relaying subagent output as fact. Every one was cheap to check and none was checked.",
       "solution": "Four rules. (1) A quantity that feeds a decision must be computed, or explicitly labelled as not computed - if a number is going into a recommendation or an AskUserQuestion option, it is load-bearing. (2) Mark evidentiary status inline: measured / derived / estimated / unverified. (3) A diagnosis must state what would falsify it and whether that check was run. (4) Counts from find/grep are raw until filtered - report the filter with the number or omit the number. Subagent and tool output is evidence, not fact; relaying it inherits its uncertainty."
     },
-    "01KYV2WZYERY69NNV3EF6DFXKV": {
-      "slug": "never-narrate-an-action-as-underway-with-2afa",
-      "type": "hint",
-      "priority": 10,
-      "toolNames": [
-        "Bash",
-        "Task",
-        "Agent"
-      ],
-      "commandRegexSources": [
-        {
-          "source": "\\bsleep\\b",
-          "flags": ""
-        },
-        {
-          "source": "gh pr view",
-          "flags": ""
-        },
-        {
-          "source": "gh pr checks",
-          "flags": ""
-        },
-        {
-          "source": "\\b--watch\\b",
-          "flags": ""
-        }
-      ],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
-      "modelRegexSources": [],
-      "tags": [
-        "category:honesty",
-        "topic:claimed-actions",
-        "severity:trust"
-      ],
-      "scope": null,
-      "message": "## Lesson: Never narrate an action as underway without the tool call in the same turn\nEnded a message with 'polling for that pass now' without starting any poll. The user had to notice and ask. This is worse than a wrong fact: a wrong fact can be checked against the code, but a claimed action is invisible until someone independently discovers nothing happened — and in the meantime they are waiting on work that does not exist. The same shape covers 'kicking off X', 'running Y in the background', 'watching for Z', and 'I'll monitor that' when no monitor, background command, or scheduled wakeup was created.\n**Fix**: Before writing that an action is in progress, confirm the tool call for it appears in the same turn. If it does not, either make the call or change the tense: 'I'll poll next' is honest, 'polling now' is a claim. Present-progressive and 'now' are the tells. For anything asynchronous — background commands, monitors, subagents, scheduled wakeups — the claim is only true if a tool call returned an id or handle; quote or act on that handle rather than asserting the work is running.",
-      "summary": "Never narrate an action as underway without the tool call in the same turn",
-      "problem": "Ended a message with 'polling for that pass now' without starting any poll. The user had to notice and ask. This is worse than a wrong fact: a wrong fact can be checked against the code, but a claimed action is invisible until someone independently discovers nothing happened — and in the meantime they are waiting on work that does not exist. The same shape covers 'kicking off X', 'running Y in the background', 'watching for Z', and 'I'll monitor that' when no monitor, background command, or scheduled wakeup was created.",
-      "solution": "Before writing that an action is in progress, confirm the tool call for it appears in the same turn. If it does not, either make the call or change the tense: 'I'll poll next' is honest, 'polling now' is a claim. Present-progressive and 'now' are the tells. For anything asynchronous — background commands, monitors, subagents, scheduled wakeups — the claim is only true if a tool call returned an id or handle; quote or act on that handle rather than asserting the work is running."
-    },
     "01KP9WGC4PZ2E9S7SAMARR0JDC": {
       "slug": "time-box-debugging-theories-30-minutes-then-search-b1zn",
       "type": "directive",
@@ -173,39 +132,6 @@
       "summary": "Fetch exact-version docs before implementing — training-data sigs are stale",
       "problem": "Library APIs, CLI flags, and framework config schemas change between versions. Proceeding directly from memory without checking current documentation produces plans and code that fail on version-specific details — wrong method names, removed options, new required config keys. Training data has a knowledge cutoff and is routinely months or years behind.",
       "solution": "Before writing any code that uses a library, framework, or external API: call context7 MCP (resolve-library-id then query-docs) or WebSearch/WebFetch to verify current API signatures for the exact installed version. Do NOT write implementation from training-data memory — invoke one of these tools first, before opening any file or writing any code. Name the tool you used in your response."
-    },
-    "01KS4PREY1TPCAHNE0JKN6Z3RJ": {
-      "slug": "never-use-clientid-as-clientsecret-in-oa-feff",
-      "type": "hint",
-      "priority": 9,
-      "toolNames": [
-        "Edit",
-        "Write"
-      ],
-      "commandRegexSources": [],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [
-        {
-          "source": ".*/[^/]*\\.ts",
-          "flags": "i"
-        },
-        {
-          "source": ".*/[^/]*\\.js",
-          "flags": "i"
-        }
-      ],
-      "modelRegexSources": [],
-      "tags": [
-        "source:deep-scan",
-        "tool:oauth",
-        "severity:auth-failure",
-        "security:credentials"
-      ],
-      "scope": "Users-joe-github-joeblackwaslike-ai-listings",
-      "message": "## Lesson: Never use clientId as clientSecret in OAuth2 token refresh\nPassing client_id as both the client_id and client_secret in an OAuth2 token request causes silent auth failures — token endpoints validate client_secret separately and reject requests where the two values are identical.\n**Fix**: Store client_id and client_secret as separate credentials. Never substitute one for the other. If client_secret is missing, surface an explicit error rather than using client_id as a fallback.",
-      "summary": "Never use clientId as clientSecret in OAuth2 token refresh",
-      "problem": "Passing client_id as both the client_id and client_secret in an OAuth2 token request causes silent auth failures — token endpoints validate client_secret separately and reject requests where the two values are identical.",
-      "solution": "Store client_id and client_secret as separate credentials. Never substitute one for the other. If client_secret is missing, surface an explicit error rather than using client_id as a fallback."
     },
     "01KS4PT6QZWR87TJ5V2DCR2TS9": {
       "slug": "webhook-signature-verification-skipped-w-c1a8",
@@ -273,10 +199,10 @@
         "severity:quota"
       ],
       "scope": null,
-      "message": "## Lesson: Never let code inherit the interactive model when spawning an LLM subprocess\nCode that shells out to an LLM CLI without an explicit model argument inherits whatever the user's interactive default is. A summarize-to-JSON enrichment pass inherited Opus and ran 2,825 times in 43 hours, costing roughly 20x what the task needed and consuming about 69% of a weekly quota. The task was small-model work throughout; nothing in the code expressed that intent.\n**Fix**: Always pass an explicit model when spawning an LLM subprocess, chosen for the task on economy AND accuracy - structured extraction and summarization are small-model work. Make it overridable by env var and resolve the override per call, not at module load. Guard blank overrides: `??` only catches null/undefined, so an empty env var passes through and spawns `--model ''`, failing every call in the run.",
+      "message": "## Lesson: Never let code inherit the interactive model when spawning an LLM subprocess\nCode that shells out to an LLM CLI without an explicit model argument inherits whatever the user's interactive default is. A summarize-to-JSON enrichment pass inherited Opus and ran 2,825 times in 43 hours, costing roughly 20x what the task needed and consuming about 69% of a weekly quota. The task was small-model work throughout; nothing in the code expressed that intent.\n**Fix**: Always pass all three isolation flags when spawning a claude -p subprocess — omitting any one of them leaves a vector open:\n\n  claude -p \"<prompt>\" \\\n    --model claude-haiku-4-5-20251001 \\\n    --no-session-persistence \\\n    --setting-sources \"\"\n\n• --model: pins the model so the subprocess cannot inherit whatever the interactive session is using. Choose haiku for extraction/summarization (economy) and sonnet for code tasks (accuracy). Never omit and rely on the caller to have set a default.\n• --no-session-persistence: prevents the subprocess from writing a new session file, so repeated invocations do not accumulate ghost sessions.\n• --setting-sources \"\": disables all hooks and plugin loading in the subprocess. A bare claude -p inherits every hook the parent session has, which can re-trigger the calling hook recursively and emit thousands of ghost sessions (PM-005: 36,468 ghost sessions from one Stop hook).\n\nMake the model overridable by env var and resolve the override per call, not at module load. Guard blank overrides: a null-coalescing ?? catches undefined but passes through an empty string, which fails the --model flag silently.",
       "summary": "Never let code inherit the interactive model when spawning an LLM subprocess",
       "problem": "Code that shells out to an LLM CLI without an explicit model argument inherits whatever the user's interactive default is. A summarize-to-JSON enrichment pass inherited Opus and ran 2,825 times in 43 hours, costing roughly 20x what the task needed and consuming about 69% of a weekly quota. The task was small-model work throughout; nothing in the code expressed that intent.",
-      "solution": "Always pass an explicit model when spawning an LLM subprocess, chosen for the task on economy AND accuracy - structured extraction and summarization are small-model work. Make it overridable by env var and resolve the override per call, not at module load. Guard blank overrides: `??` only catches null/undefined, so an empty env var passes through and spawns `--model ''`, failing every call in the run."
+      "solution": "Always pass all three isolation flags when spawning a claude -p subprocess — omitting any one of them leaves a vector open:\n\n  claude -p \"<prompt>\" \\\n    --model claude-haiku-4-5-20251001 \\\n    --no-session-persistence \\\n    --setting-sources \"\"\n\n• --model: pins the model so the subprocess cannot inherit whatever the interactive session is using. Choose haiku for extraction/summarization (economy) and sonnet for code tasks (accuracy). Never omit and rely on the caller to have set a default.\n• --no-session-persistence: prevents the subprocess from writing a new session file, so repeated invocations do not accumulate ghost sessions.\n• --setting-sources \"\": disables all hooks and plugin loading in the subprocess. A bare claude -p inherits every hook the parent session has, which can re-trigger the calling hook recursively and emit thousands of ghost sessions (PM-005: 36,468 ghost sessions from one Stop hook).\n\nMake the model overridable by env var and resolve the override per call, not at module load. Guard blank overrides: a null-coalescing ?? catches undefined but passes through an empty string, which fails the --model flag silently."
     },
     "01KYTTNRMC5QHV91XMCP8AA6RB": {
       "slug": "never-merge-a-pr-with-unresolved-review-3920",
@@ -351,53 +277,6 @@
       "summary": "Reply on the review thread itself, not in a top-level PR comment",
       "problem": "Answered two rounds of review feedback with top-level PR comments. Threads stayed open and unanswered, nothing was resolved, and no reviewer could see a response where it was looking. AI reviewers converge by re-reading each thread for a concrete reply — a top-level comment is invisible to that loop, so the next pass re-raises the same findings and the PR never converges.",
       "solution": "Reply via `POST /repos/{owner}/{repo}/pulls/{pr}/comments/{root_comment_databaseId}/replies`, one per actionable thread, saying what changed or why it was declined. Then resolve handled threads with the GraphQL `resolveReviewThread` mutation keyed on the thread id — there is no REST equivalent. Rate the feedback too: react on the comment and explain in the reply why a finding was valuable or why it was a false positive, so the reviewer system gets a usable signal."
-    },
-    "01KYV6KJ9AFTMR35WANVDY64FQ": {
-      "slug": "a-paginated-query-returning-exactly-the-25da",
-      "type": "hint",
-      "priority": 9,
-      "toolNames": [
-        "Bash"
-      ],
-      "commandRegexSources": [
-        {
-          "source": "first: *100",
-          "flags": ""
-        },
-        {
-          "source": "first:100",
-          "flags": ""
-        },
-        {
-          "source": "\\bper_page\\b",
-          "flags": ""
-        },
-        {
-          "source": "gh api graphql",
-          "flags": ""
-        },
-        {
-          "source": "\\breviewThreads\\b",
-          "flags": ""
-        },
-        {
-          "source": "\\bfirst: *[0-9]+",
-          "flags": ""
-        }
-      ],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
-      "modelRegexSources": [],
-      "tags": [
-        "category:epistemic",
-        "topic:pagination",
-        "severity:false-green"
-      ],
-      "scope": null,
-      "message": "## Lesson: A paginated query returning exactly the page size is truncated, not counted\nQueried GitHub review threads with `reviewThreads(first: 100)` and never followed `pageInfo.endCursor`, then reported 'zero unresolved threads' from the result. The real totals were 126 threads and 27 unresolved — every one of them unanswered. The tell was in the output the whole time: total read exactly 100, the page size. A round number equal to the limit is a truncation signal, not a measurement. The runbook being followed explicitly said to paginate and follow the cursor; the query was written from memory instead. This produced a confident false 'all clear' on a merge gate, twice.\n**Fix**: Any paginated API read that feeds a decision must follow the cursor to exhaustion, or explicitly report that it is a partial page. Check `pageInfo.hasNextPage` and loop on `endCursor` — never infer completeness from the node count. Treat a result whose length equals the requested `first`/`per_page` as presumptively truncated. For REST, use `--paginate`. The same rule covers `gh api` list endpoints, search results, and any 'first N' query: if the count could gate an action, it must be the whole set.",
-      "summary": "A paginated query returning exactly the page size is truncated, not counted",
-      "problem": "Queried GitHub review threads with `reviewThreads(first: 100)` and never followed `pageInfo.endCursor`, then reported 'zero unresolved threads' from the result. The real totals were 126 threads and 27 unresolved — every one of them unanswered. The tell was in the output the whole time: total read exactly 100, the page size. A round number equal to the limit is a truncation signal, not a measurement. The runbook being followed explicitly said to paginate and follow the cursor; the query was written from memory instead. This produced a confident false 'all clear' on a merge gate, twice.",
-      "solution": "Any paginated API read that feeds a decision must follow the cursor to exhaustion, or explicitly report that it is a partial page. Check `pageInfo.hasNextPage` and loop on `endCursor` — never infer completeness from the node count. Treat a result whose length equals the requested `first`/`per_page` as presumptively truncated. For REST, use `--paginate`. The same rule covers `gh api` list endpoints, search results, and any 'first N' query: if the count could gate an action, it must be the whole set."
     },
     "01KMZ3BJKZHP5D15BD1CYPT54F": {
       "slug": "vitest-hangs-in-non-interactive-terminal-0c00",
@@ -1459,33 +1338,6 @@
       "problem": "Agents charge ahead on ambiguous requests, picking one interpretation without stating assumptions or asking for clarification. Work gets done toward the wrong goal.",
       "solution": "Before writing code: (1) state assumptions explicitly, (2) ask if the request is ambiguous rather than guessing, (3) convert vague goals to verifiable targets (\"add validation\" becomes \"write failing tests for invalid inputs, then make them pass\") before starting."
     },
-    "01KTH79WM038BQMQZYVED6ZR6K": {
-      "slug": "verify-base-branch-is-synced-with-remote-c325",
-      "type": "hint",
-      "priority": 8,
-      "toolNames": [
-        "Bash"
-      ],
-      "commandRegexSources": [
-        {
-          "source": "\\bgh pr create\\b",
-          "flags": ""
-        }
-      ],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
-      "modelRegexSources": [],
-      "tags": [
-        "tool:git",
-        "severity:data-loss",
-        "category:protocol"
-      ],
-      "scope": null,
-      "message": "## Lesson: Verify base branch is synced with remote before creating a PR\nIf the local base branch has commits that were never pushed, GitHub compares the PR branch against the remote state of the base — making all unpushed commits appear as new. This caused a PR to show the entire repo as changed (85 background commits from a local feat/memtree-v1 that was never pushed before branching).\n**Fix**: Before running `gh pr create`, verify the local base is in sync with remote:\ngit fetch origin\ngit log origin/<BASE>..<BASE> --oneline   # must be empty\ngit log <BASE>..origin/<BASE> --oneline   # must be empty\ngit log origin/<BASE>..HEAD --oneline | wc -l  # should equal expected commit count\n\nIf local base is ahead of remote, push it first.",
-      "summary": "Verify base branch is synced with remote before creating a PR",
-      "problem": "If the local base branch has commits that were never pushed, GitHub compares the PR branch against the remote state of the base — making all unpushed commits appear as new. This caused a PR to show the entire repo as changed (85 background commits from a local feat/memtree-v1 that was never pushed before branching).",
-      "solution": "Before running `gh pr create`, verify the local base is in sync with remote:\ngit fetch origin\ngit log origin/<BASE>..<BASE> --oneline   # must be empty\ngit log <BASE>..origin/<BASE> --oneline   # must be empty\ngit log origin/<BASE>..HEAD --oneline | wc -l  # should equal expected commit count\n\nIf local base is ahead of remote, push it first."
-    },
     "01KYTSKJ2PJ50Y0590ZSCK9YEC": {
       "slug": "a-process-that-emits-artifacts-of-the-ki-ac42",
       "type": "hint",
@@ -1564,101 +1416,6 @@
       "summary": "Read at least one backup before bulk-deleting backups from a repair",
       "problem": "About to delete 20 backup files as cleanup after a bulk repair appeared to succeed. Reading one first revealed the repair had been mis-scoped - the backup was a full config carrying the legacy key, not the minimal stub assumed. Those backups were the only evidence of pre-repair state and the only route to verification or rollback.",
       "solution": "Never bulk-delete backups produced by a repair without reading at least one. Backups are the evidence that the repair was correct; deleting them unexamined destroys verification and rollback in a single step. If the sample contradicts the assumption the repair was built on, stop and re-scope before deleting anything."
-    },
-    "01KYTSKJ36H72VPCSB555YFM0S": {
-      "slug": "judge-a-verification-gate-by-its-exit-co-885e",
-      "type": "hint",
-      "priority": 8,
-      "toolNames": [
-        "Bash"
-      ],
-      "commandRegexSources": [
-        {
-          "source": "\\beslint\\b",
-          "flags": ""
-        },
-        {
-          "source": "biome check",
-          "flags": ""
-        },
-        {
-          "source": "tsc --noEmit",
-          "flags": ""
-        },
-        {
-          "source": "ruff check",
-          "flags": ""
-        },
-        {
-          "source": "\\bmypy\\b",
-          "flags": ""
-        },
-        {
-          "source": "vitest run",
-          "flags": ""
-        },
-        {
-          "source": "\\bpytest\\b",
-          "flags": ""
-        }
-      ],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
-      "modelRegexSources": [],
-      "tags": [
-        "category:verification",
-        "topic:ci",
-        "severity:false-green"
-      ],
-      "scope": null,
-      "message": "## Lesson: Judge a verification gate by its exit code, never by grepping its output\nChecked lint status with `eslint ... | grep -E ' error '` and reported the gate clean. The gate runs with --max-warnings=0, so a single warning failed it - invisible to a grep looking for the word 'error'. The pre-commit hook then rejected the commit, after the work had already been declared verified.\n**Fix**: Run the gate and check its exit code. Grepping output for a chosen severity word silently misses every failure mode the tool spells differently: warnings under --max-warnings=0, non-zero exits with no matching text, output written to stderr. `cmd >/dev/null 2>&1; echo $?` is the assertion; the printed output is only for diagnosis.",
-      "summary": "Judge a verification gate by its exit code, never by grepping its output",
-      "problem": "Checked lint status with `eslint ... | grep -E ' error '` and reported the gate clean. The gate runs with --max-warnings=0, so a single warning failed it - invisible to a grep looking for the word 'error'. The pre-commit hook then rejected the commit, after the work had already been declared verified.",
-      "solution": "Run the gate and check its exit code. Grepping output for a chosen severity word silently misses every failure mode the tool spells differently: warnings under --max-warnings=0, non-zero exits with no matching text, output written to stderr. `cmd >/dev/null 2>&1; echo $?` is the assertion; the printed output is only for diagnosis."
-    },
-    "01KYTSKJ3BGNDS6DX56JGYSD4S": {
-      "slug": "prove-a-regression-test-fails-against-th-fc0f",
-      "type": "hint",
-      "priority": 8,
-      "toolNames": [
-        "Write",
-        "Edit"
-      ],
-      "commandRegexSources": [],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [
-        {
-          "source": ".*/[^/]*\\.test\\.ts",
-          "flags": "i"
-        },
-        {
-          "source": ".*/[^/]*\\.test\\.js",
-          "flags": "i"
-        },
-        {
-          "source": ".*/[^/]*\\.test\\.mjs",
-          "flags": "i"
-        },
-        {
-          "source": ".*/test_[^/]*\\.py",
-          "flags": "i"
-        },
-        {
-          "source": ".*/[^/]*_test\\.go",
-          "flags": "i"
-        }
-      ],
-      "modelRegexSources": [],
-      "tags": [
-        "category:testing",
-        "topic:regression",
-        "severity:false-green"
-      ],
-      "scope": null,
-      "message": "## Lesson: Prove a regression test fails against the unfixed code before trusting it\nA test written alongside a fix passes trivially if it does not actually exercise the defect. Passing both before and after the fix proves only that the code compiles, while reading to everyone as proof the bug is pinned.\n**Fix**: After writing a regression test, disable the fix - comment out the guard or stash the change - and confirm the test fails, and that the RIGHT assertions fail. Then restore and confirm it passes. An unmutated regression test is an untested test. This is cheap and it catches tests that assert on the wrong thing.",
-      "summary": "Prove a regression test fails against the unfixed code before trusting it",
-      "problem": "A test written alongside a fix passes trivially if it does not actually exercise the defect. Passing both before and after the fix proves only that the code compiles, while reading to everyone as proof the bug is pinned.",
-      "solution": "After writing a regression test, disable the fix - comment out the guard or stash the change - and confirm the test fails, and that the RIGHT assertions fail. Then restore and confirm it passes. An unmutated regression test is an untested test. This is cheap and it catches tests that assert on the wrong thing."
     },
     "01KYTTNRNAMZ8N9DPZMHC3V89H": {
       "slug": "load-the-pr-runbook-before-driving-a-pr-9771",
@@ -2735,37 +2492,6 @@
       "summary": "Wire pre-commit hooks at project init: formatter, linter, typecheck, fast tests",
       "problem": "Projects initialized without a pre-commit hook accumulate formatting drift, type errors, and broken tests that only surface at PR review or in CI. Fixing many violations at once creates noisy diffs and is expensive to untangle.",
       "solution": "At project init, install a hook runner (Husky, lefthook, or git-native hooks) and wire: (1) auto-formatter in fix mode (prettier/biome/ruff), (2) linter + typechecker as blocking checks, (3) fast unit tests. Exclude e2e and slow integration tests — those belong in CI. Target: hook completes in under 10s."
-    },
-    "01KTDP0NFZRKCEKCV8EDHHXABR": {
-      "slug": "only-change-what-the-task-requires-do-no-ec52",
-      "type": "hint",
-      "priority": 7,
-      "toolNames": [
-        "Edit",
-        "Write",
-        "mcp__plugin_serena_serena__replace_content",
-        "mcp__plugin_serena_serena__replace_symbol_body",
-        "mcp__plugin_serena_serena__insert_after_symbol",
-        "mcp__plugin_serena_serena__insert_before_symbol"
-      ],
-      "commandRegexSources": [
-        {
-          "source": "\\bedit code\\b",
-          "flags": ""
-        }
-      ],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
-      "modelRegexSources": [],
-      "tags": [
-        "category:agent-behavior",
-        "severity:scope-creep"
-      ],
-      "scope": null,
-      "message": "## Lesson: Only change what the task requires — do not improve neighboring code\nAgents routinely touch code adjacent to the requested change: reformatting files, adding type hints elsewhere, refactoring what was not broken. Every changed line should trace back to the task.\n**Fix**: Only change what the task requires. Do not fix, reformat, or refactor code that was not part of the request. If you notice something worth fixing, mention it — do not change it.",
-      "summary": "Only change what the task requires — do not improve neighboring code",
-      "problem": "Agents routinely touch code adjacent to the requested change: reformatting files, adding type hints elsewhere, refactoring what was not broken. Every changed line should trace back to the task.",
-      "solution": "Only change what the task requires. Do not fix, reformat, or refactor code that was not part of the request. If you notice something worth fixing, mention it — do not change it."
     },
     "01KTH7A3F4P6G02DDD63GXP67Y": {
       "slug": "check-git-status-before-staging-to-catch-7b6b",
