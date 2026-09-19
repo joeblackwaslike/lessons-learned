@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-09-18T16:58:18.694Z",
+  "generatedAt": "2026-09-19T10:45:08.547Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -659,60 +659,6 @@
       "problem": "The project uses Supabase migrations (0001, 0002, 0003) stored in supabase/migrations/. If a newer migration (e.g., 0003_photos_confirmed.sql) has not been applied to the K8s Supabase instance, the deployed app may fail when it queries or writes to those columns.",
       "solution": "Before redeploying, verify all migrations in supabase/migrations/ have been applied to the K8s Supabase instance. Use Supabase CLI or K8s job to run `supabase db push` or equivalent. Check git log for recent schema changes and confirm they are in prod."
     },
-    "01KS4PJ0YDK2C4DQAJ3GY7JHFY": {
-      "slug": "drop-constraint-without-if-exists-fails-80d4",
-      "type": "hint",
-      "priority": 8,
-      "toolNames": [
-        "Bash",
-        "Edit",
-        "Write"
-      ],
-      "commandRegexSources": [
-        {
-          "source": "\\bpsql\\b",
-          "flags": ""
-        },
-        {
-          "source": "\\bflyway\\b",
-          "flags": ""
-        },
-        {
-          "source": "\\balembic\\b",
-          "flags": ""
-        },
-        {
-          "source": "\\bmigrate\\b",
-          "flags": ""
-        },
-        {
-          "source": "prisma.*migrate",
-          "flags": ""
-        }
-      ],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [
-        {
-          "source": ".*/migrations/.*",
-          "flags": "i"
-        },
-        {
-          "source": ".*/[^/]*\\.sql",
-          "flags": "i"
-        }
-      ],
-      "modelRegexSources": [],
-      "tags": [
-        "tool:sql",
-        "severity:migration-failure",
-        "workflow:database"
-      ],
-      "scope": null,
-      "message": "## Lesson: SQL DROP CONSTRAINT without IF EXISTS breaks idempotent migrations\nSQL migrations that drop constraints will fail if run a second time (e.g., during testing or recovery). The initial migration used bare `DROP CONSTRAINT` statements, which throw an error if the constraint doesn't exist, breaking idempotency.\n**Fix**: Always use `DROP CONSTRAINT IF EXISTS` in SQL migrations. This allows the migration to be re-applied safely without failing on subsequent runs. Idempotency is critical for database migrations in production environments.",
-      "summary": "SQL DROP CONSTRAINT without IF EXISTS breaks idempotent migrations",
-      "problem": "SQL migrations that drop constraints will fail if run a second time (e.g., during testing or recovery). The initial migration used bare `DROP CONSTRAINT` statements, which throw an error if the constraint doesn't exist, breaking idempotency.",
-      "solution": "Always use `DROP CONSTRAINT IF EXISTS` in SQL migrations. This allows the migration to be re-applied safely without failing on subsequent runs. Idempotency is critical for database migrations in production environments."
-    },
     "01KS4PJ0YFGRE1MNRE9PED6BJV": {
       "slug": "missing-rls-policy-on-joining-table-bloc-fbbc",
       "type": "hint",
@@ -798,33 +744,6 @@
       "summary": "Guard API calls against missing credentials at all call sites",
       "problem": "Guards inside a function only block within it — the call site still invokes and gets a silent empty result. Guard at the call site.",
       "solution": "Guard each external API call at the call site before dispatching. Use `(credA && credB) ? callFunction(...) : fallback`. A guard inside the callee is not sufficient."
-    },
-    "01KS4PJY6TMFBAA4MQX3E3R5GZ": {
-      "slug": "dont-assume-worktree-is-safe-to-prune-ba-8ac3",
-      "type": "hint",
-      "priority": 8,
-      "toolNames": [
-        "Bash"
-      ],
-      "commandRegexSources": [
-        {
-          "source": "git worktree (prune|remove|delete)",
-          "flags": ""
-        }
-      ],
-      "commandMatchTarget": "executable",
-      "pathRegexSources": [],
-      "modelRegexSources": [],
-      "tags": [
-        "tool:git",
-        "severity:data-loss",
-        "workflow:worktree"
-      ],
-      "scope": null,
-      "message": "## Lesson: Verify worktree has no unique commits or changes before pruning\ngit worktree list --porcelain reports status but does not clearly indicate if a worktree is locked, abandoned, or safe to remove. An agent might assume a clean status means safe to delete without verifying the lock or checking if any uncommitted work exists.\n**Fix**: Always run git worktree status, inspect the lock file (if present), verify no uncommitted changes with git status, and confirm the branch has no unique commits before pruning.",
-      "summary": "Verify worktree has no unique commits or changes before pruning",
-      "problem": "git worktree list --porcelain reports status but does not clearly indicate if a worktree is locked, abandoned, or safe to remove. An agent might assume a clean status means safe to delete without verifying the lock or checking if any uncommitted work exists.",
-      "solution": "Always run git worktree status, inspect the lock file (if present), verify no uncommitted changes with git status, and confirm the branch has no unique commits before pruning."
     },
     "01KS4PKF655DJCAK419NFSN1XN": {
       "slug": "github-graphql-rate-limit-exhaustion-pre-c5ee",
@@ -1944,43 +1863,6 @@
       "problem": "`git worktree list --porcelain` includes locked worktrees without indicating whether the lock is valid or stale — a dead process can leave a lock that blocks pruning indefinitely.",
       "solution": "Before pruning a locked worktree, inspect `.git/worktrees/<name>/locked` to read the lock reason, and check if the locking PID is still alive. Verify accessibility with `ls -la <path>` first; stale worktrees from dead sessions can be removed with `git worktree prune` or `git worktree remove --force`."
     },
-    "01KS4PKY2F6Y6VT2TRMTWFB5V0": {
-      "slug": "gh-cli-arg-flag-auto-quotes-jq-arguments-274c",
-      "type": "hint",
-      "priority": 7,
-      "toolNames": [
-        "Bash"
-      ],
-      "commandRegexSources": [
-        {
-          "source": "gh api",
-          "flags": ""
-        },
-        {
-          "source": "gh pr",
-          "flags": ""
-        },
-        {
-          "source": "gh issue",
-          "flags": ""
-        }
-      ],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
-      "modelRegexSources": [],
-      "tags": [
-        "source:deep-scan",
-        "tool:gh",
-        "tool:jq",
-        "severity:silent-failure",
-        "security:injection"
-      ],
-      "scope": null,
-      "message": "## Lesson: gh CLI --arg flag auto-quotes jq arguments; use it for string payloads\nManually constructing JSON strings in `gh` + `jq` pipelines breaks on special characters. Shell quoting and escaping is error-prone and risks injecting unintended values.\n**Fix**: Use `--arg varname value` to pass strings safely — the value is auto JSON-encoded as `$varname` in the jq expression. Example: `gh api ... --jq 'select(.name == $name)' --arg name \"$VAR\"`.",
-      "summary": "gh CLI --arg flag auto-quotes jq arguments; use it for string payloads",
-      "problem": "Manually constructing JSON strings in `gh` + `jq` pipelines breaks on special characters. Shell quoting and escaping is error-prone and risks injecting unintended values.",
-      "solution": "Use `--arg varname value` to pass strings safely — the value is auto JSON-encoded as `$varname` in the jq expression. Example: `gh api ... --jq 'select(.name == $name)' --arg name \"$VAR\"`."
-    },
     "01KS4PKY2NSWKEQCKGSW92C514": {
       "slug": "guard-concurrent-worker-invocations-with-b3cc",
       "type": "hint",
@@ -2256,52 +2138,6 @@
       "summary": "Inngest createFunction uses 2-arg API with triggers in config, not 3-arg form",
       "problem": "Older Inngest docs and examples show a 3-argument `createFunction(config, trigger, handler)` signature. The current SDK (v1+) moved triggers into the config object — using the 3-arg form silently fails to register the function.",
       "solution": "Use the 2-arg form with triggers in config:\n  createFunction(\n    { id: 'my-fn', name: 'My Function', triggers: [{ cron: '0 * * * *' }] },\n    async ({ step, event }) => { ... }\n  )\nThe trigger (cron or event) is a property of the first argument, not a separate second argument."
-    },
-    "01KS4PS8ZD5B1MP3PTKE2CZX65": {
-      "slug": "esm-module-imports-must-use-explicit-js-14b8",
-      "type": "hint",
-      "priority": 7,
-      "toolNames": [
-        "Edit",
-        "Write",
-        "mcp__plugin_serena_serena__replace_symbol_body",
-        "mcp__plugin_serena_serena__replace_content",
-        "mcp__plugin_serena_serena__insert_after_symbol",
-        "mcp__plugin_serena_serena__insert_before_symbol",
-        "mcp__plugin_serena_serena__create_text_file"
-      ],
-      "commandRegexSources": [
-        {
-          "source": "tsc --noEmit",
-          "flags": ""
-        },
-        {
-          "source": "node .*\\.js",
-          "flags": ""
-        }
-      ],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [
-        {
-          "source": ".*/[^/]*\\.ts",
-          "flags": "i"
-        },
-        {
-          "source": ".*/[^/]*\\.mts",
-          "flags": "i"
-        }
-      ],
-      "modelRegexSources": [],
-      "tags": [
-        "lang:typescript",
-        "topic:esm",
-        "severity:runtime-error"
-      ],
-      "scope": null,
-      "message": "## Lesson: TypeScript NodeNext ESM requires explicit .js extensions on relative imports\nTypeScript with NodeNext resolution requires explicit .js extensions on relative imports for Node.js ESM compatibility. Omitting extensions causes runtime import failures despite passing tsc --noEmit.\n**Fix**: Always use explicit .js extensions on all relative imports: import { foo } from './file.js' not './file'. This is especially important in a Vercel serverless environment where files are served as-is.",
-      "summary": "TypeScript NodeNext ESM requires explicit .js extensions on relative imports",
-      "problem": "TypeScript with NodeNext resolution requires explicit .js extensions on relative imports for Node.js ESM compatibility. Omitting extensions causes runtime import failures despite passing tsc --noEmit.",
-      "solution": "Always use explicit .js extensions on all relative imports: import { foo } from './file.js' not './file'. This is especially important in a Vercel serverless environment where files are served as-is."
     },
     "01KS4PS8ZG1SNNC30RF7MNC7NR": {
       "slug": "vercel-waituntil-extends-function-lifeti-ee75",
@@ -2999,32 +2835,6 @@
       "problem": "Agents running inside VS Code or the CLI cannot invoke `/plugin` slash commands, so when a plugin needs updating or installing they punt to the user (e.g. \"run /plugin update agent-skills@agent-marketplace and restart\"). The user has to do it by hand every single time, even though a non-interactive CLI equivalent exists and the agent can run it directly.",
       "solution": "Run plugin operations yourself in Bash via `claude plugin <subcommand>`, which maps 1:1 to the `/plugin` slash forms: `claude plugin install X`, `claude plugin update X`, `claude plugin uninstall X`, plus `enable`/`disable`/`list`/`marketplace`. Use the `plugin@marketplace` form to disambiguate. Only the session restart afterward (to load/unload the plugin) requires the user — never the plugin command itself. Do NOT instruct the user to run `/plugin ...`."
     },
-    "01KZS8JB98EVR7C1CSVT8Z67M1": {
-      "slug": "push-local-commits-on-the-base-branch-be-bad5",
-      "type": "hint",
-      "priority": 6,
-      "toolNames": [
-        "Bash"
-      ],
-      "commandRegexSources": [
-        {
-          "source": "\\bgit\\s+worktree\\s+add\\b",
-          "flags": ""
-        }
-      ],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
-      "modelRegexSources": [],
-      "tags": [
-        "category:git-workflow",
-        "severity:friction"
-      ],
-      "scope": null,
-      "message": "## Lesson: Push local commits on the base branch before creating a worktree from it\nCommitting directly to main (e.g. planning docs) and then creating a worktree/feature branch from that unpushed commit, without pushing main first, leaves local main and origin/main sharing no common tip once the branch is squash-merged later. The squash merge lands on origin as a brand-new commit with different parentage than local mains unpushed commit, so git pull fails with diverging branches and a git reset --hard (or manual intervention) is needed to resync -- even though no work was actually lost.\n**Fix**: Immediately after any direct commit to the base branch (main), run git push before creating a worktree/branch from it. If a worktree already exists and this is discovered later, verify the content is safe (git diff origin/main <branch> --stat is empty, or the file is confirmed merged) before running git reset --hard -- but the push-first habit avoids needing that step at all.",
-      "summary": "Push local commits on the base branch before creating a worktree from it",
-      "problem": "Committing directly to main (e.g. planning docs) and then creating a worktree/feature branch from that unpushed commit, without pushing main first, leaves local main and origin/main sharing no common tip once the branch is squash-merged later. The squash merge lands on origin as a brand-new commit with different parentage than local mains unpushed commit, so git pull fails with diverging branches and a git reset --hard (or manual intervention) is needed to resync -- even though no work was actually lost.",
-      "solution": "Immediately after any direct commit to the base branch (main), run git push before creating a worktree/branch from it. If a worktree already exists and this is discovered later, verify the content is safe (git diff origin/main <branch> --stat is empty, or the file is confirmed merged) before running git reset --hard -- but the push-first habit avoids needing that step at all."
-    },
     "01M0AHCD6XKV7HGPA9JNW5QW29": {
       "slug": "osascript-heredocs-and-python-interpolat-acf6",
       "type": "hint",
@@ -3340,32 +3150,6 @@
       "summary": "Create worktrees via the using-git-worktrees skill; gitignore manual ones",
       "problem": "Manually running `git worktree add` inside the repo creates a directory git will track, risking accidental commits of worktree contents — the .worktrees/ entry is not auto-added to .gitignore.",
       "solution": "Prefer the superpowers:using-git-worktrees skill — it selects the directory and handles .gitignore (or uses an out-of-repo location) for you. If you must run `git worktree add` manually inside the repo, add the worktree dir (e.g. .worktrees/) to .gitignore first."
-    },
-    "01KS4PJEEXNZB7KZBZAKQ5TA00": {
-      "slug": "jq-empty-output-vs-grep-filtering-on-jso-46e5",
-      "type": "hint",
-      "priority": 5,
-      "toolNames": [
-        "Bash"
-      ],
-      "commandRegexSources": [
-        {
-          "source": "\\bjq\\b.*\\belse\\s+empty\\b",
-          "flags": ""
-        }
-      ],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
-      "modelRegexSources": [],
-      "tags": [
-        "tool:jq",
-        "severity:correctness"
-      ],
-      "scope": null,
-      "message": "## Lesson: Use jq select(.x==v) not if/then/else empty to filter JSONL streams\nFiltering JSONL with jq via `if .type == \"human\" then . else empty end` is error-prone and often yields no output when the conditional is mis-structured, even though matching records exist.\n**Fix**: Use jq `select()` for filtering: `jq -c 'select(.type == \"human\")'` — idiomatic and reliable. Apply transformations after the select, or pre-filter the stream before any if/then logic.",
-      "summary": "Use jq select(.x==v) not if/then/else empty to filter JSONL streams",
-      "problem": "Filtering JSONL with jq via `if .type == \"human\" then . else empty end` is error-prone and often yields no output when the conditional is mis-structured, even though matching records exist.",
-      "solution": "Use jq `select()` for filtering: `jq -c 'select(.type == \"human\")'` — idiomatic and reliable. Apply transformations after the select, or pre-filter the stream before any if/then logic."
     },
     "01KS4PK8ATHJ8W00XCGR06EQY2": {
       "slug": "gh-cli-rate-limiting-can-mask-pr-visibil-4f69",

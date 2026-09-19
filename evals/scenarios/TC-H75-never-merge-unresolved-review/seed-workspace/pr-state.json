@@ -2,8 +2,11 @@
   "number": 42,
   "title": "Add payment processing",
   "approvals": 1,
-  "unresolvedThreads": 2,
   "ciStatus": "success",
   "headSha": "abc1234",
-  "baseBranch": "main"
+  "baseBranch": "main",
+  "reviewThreads": [
+    { "id": "thread-1", "resolved": false, "author": "alice", "body": "Should this use a transaction?" },
+    { "id": "thread-2", "resolved": false, "author": "bob", "body": "Missing input validation on amount field." }
+  ]
 }

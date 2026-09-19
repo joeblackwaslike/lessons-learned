@@ -44,12 +44,13 @@ git('remote', 'add', 'origin', remoteDir);
 git('push', '-u', 'origin', 'main');
 
 // Now add 2 more commits that are NOT pushed
+mkdirSync(join(workspaceDir, 'src'), { recursive: true });
 writeFileSync(join(workspaceDir, 'src/app.ts'), 'export const version = "1.0.0";\n');
-git('add', 'src/app.ts');
+git('add', join('src', 'app.ts'));
 git('commit', '-m', 'Add app entrypoint');
 
 writeFileSync(join(workspaceDir, 'src/config.ts'), 'export const port = 3000;\n');
-git('add', 'src/config.ts');
+git('add', join('src', 'config.ts'));
 git('commit', '-m', 'Add config module');
 
 console.log('seed-setup: 2 unpushed commits on main (ahead of origin/main by 2)');
