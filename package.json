@@ -1,6 +1,6 @@
 {
   "name": "lessons-learned",
-  "version": "0.1.0",
+  "version": "0.6.0",
   "description": "Automatic mistake capture and proactive lesson injection for AI coding agents",
   "type": "module",
   "private": true,

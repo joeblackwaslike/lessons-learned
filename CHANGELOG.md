@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.6.0](https://github.com/joeblackwaslike/lessons-learned/compare/v0.5.0...v0.6.0) (2026-09-20)
+
+
+### Features
+
+* **evals:** add TC-D11–D14 scenarios for remaining 4 directive lessons ([75aa9d9](https://github.com/joeblackwaslike/lessons-learned/commit/75aa9d934762fbf20b7be7be51a5238727bd89fc))
+* **evals:** add TC-D2 and TC-P11–P14 scenarios for remaining protocol/directive gaps ([a3b2c40](https://github.com/joeblackwaslike/lessons-learned/commit/a3b2c409fe9d548024f6c588bae72172425d2935))
+* **lessons:** add guard blocking full-file dumps via cat/head/tail ([05be874](https://github.com/joeblackwaslike/lessons-learned/commit/05be874f7fc142c7cb9c913a029aa935a5e3b986))
+* **release:** add release-please automation + full CHANGELOG backfill ([4c6fc33](https://github.com/joeblackwaslike/lessons-learned/commit/4c6fc33c10b7fbbf314d34b88ae0fd548fa2a488))
+* **requires:** add cli type; set no-mistakes requires on PR reminder lesson ([898fd60](https://github.com/joeblackwaslike/lessons-learned/commit/898fd60a8d93b017f3f715230eefabe5b1e8af0e))
+* **types:** add reminder lesson type with PostToolUse hook ([9ad9b12](https://github.com/joeblackwaslike/lessons-learned/commit/9ad9b12689522ad45018c4691b9a79b4f029c166))
+
 ## [Unreleased]
 
 ### Added
