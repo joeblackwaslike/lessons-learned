@@ -1,12 +1,12 @@
 ---
 sidebar_position: 9
 title: Lesson Type Examples
-description: Representative real-world examples for each lesson type — hint, guard, protocol, and directive.
+description: Representative real-world examples for each lesson type — hint, guard, protocol, directive, and reminder.
 ---
 
 # Lesson Type Examples
 
-Reference document showing 3 representative examples per lesson type.
+Reference document showing representative examples per lesson type.
 
 ---
 
@@ -107,3 +107,61 @@ Fires both at startup (as a standing principle) and on matched tool calls (as a 
 **Problem:** Plans built without the user's input are full of unvalidated assumptions. Early wrong assumptions compound — every downstream decision built on them is invalid. Reviewing a solo-authored plan shifts correction work onto the user, who must trace cascading errors root-to-leaf instead of preventing them with upfront dialogue.
 
 **Solution:** Before planning anything, collaborate first. Explore context, ask clarifying questions one at a time, propose 2–3 approaches with trade-offs, and get approval on each design section before moving forward. Never present a completed plan as a fait accompli — the user is a required input to the design, not a reviewer of the output.
+
+---
+
+## `reminder` — PostToolUse injection
+
+Injected as a blockquote after a tool result returns, before the agent decides what to do next. Used for mandatory follow-on actions: "you just did X — now do Y."
+
+### 1. Drive PR to merge after no-mistakes pipeline passes
+
+**Scenario:** `no-mistakes` finishes with `outcome: passed` and creates a PR. Without a reminder, the agent treats PR creation as task-complete and ends its turn.
+
+**Lesson config:**
+
+```json
+{
+  "type": "reminder",
+  "toolNames": ["Bash"],
+  "outputPatterns": ["outcome: passed", "pr_state: open"],
+  "priority": 10,
+  "summary": "Drive PR to merge after no-mistakes pipeline passes",
+  "problem": "After no-mistakes creates a PR (outcome: passed in output), the agent treats PR creation as task-complete and ends its turn instead of immediately driving the review loop to merge.",
+  "solution": "Find the PR: gh pr list --head $(git branch --show-current) --json number,url\nThen: gh pr view <N> --json reviewDecision,reviews,statusCheckRollup\nOwn the whole review loop — triage bot feedback, fix issues, re-poll, merge.\nDo NOT return to the user until merged or blocked by a human decision."
+}
+```
+
+**Injected output:**
+
+```text
+> **[Reminder]** Drive PR to merge after no-mistakes pipeline passes
+>
+> After no-mistakes creates a PR (outcome: passed in output), the agent treats PR creation as
+> task-complete and ends its turn instead of immediately driving the review loop to merge.
+>
+> Find the PR: gh pr list --head $(git branch --show-current) --json number,url
+> Then: gh pr view <N> --json reviewDecision,reviews,statusCheckRollup
+> Own the whole review loop — triage bot feedback, fix issues, re-poll, merge.
+> Do NOT return to the user until merged or blocked by a human decision.
+```
+
+---
+
+### 2. Enter plan mode before writing a plan file
+
+**Scenario:** The agent writes a file under `.claude/plans/` while not in plan mode, then calls `ExitPlanMode` — which fails silently or executes without user sign-off.
+
+**Lesson config:**
+
+```json
+{
+  "type": "reminder",
+  "toolNames": ["Write", "Edit"],
+  "pathPatterns": ["\\.claude/plans/"],
+  "priority": 10,
+  "summary": "Enter plan mode before writing a plan file",
+  "problem": "Writing a file under ~/.claude/plans/ while NOT in plan mode and then calling ExitPlanMode causes it to fail silently or the model executes the plan without user sign-off.",
+  "solution": "Call EnterPlanMode immediately after writing the plan file if not already in plan mode. Never call ExitPlanMode unless EnterPlanMode was called first in the same session."
+}
+```

@@ -61,6 +61,10 @@ sequenceDiagram
     end
     C->>PO: Tool completed
     PO->>C: Re-inject directives if context >30%/52%/70% used
+    alt Reminder lesson
+        PO->>DB: Load manifest, match outputPatterns against tool_response
+        PO->>C: Inject reminder blockquote
+    end
 ```
 
 ---
@@ -154,6 +158,12 @@ Each lesson is injected at most once per session, regardless of how many tool ca
 ---
 
 ## Session start
+
+**PostToolUse — reminder injection:**
+
+`posttooluse-lesson-remind.mjs` fires after every tool call and checks whether any `reminder`-type lessons match the tool response. The `outputPatterns` field (regex array) is tested against `tool_response` stdout — if any pattern matches, the lesson is injected as a markdown blockquote before the agent continues. Dedup is per `(session, lesson, tool invocation)` — the same tool call fires at most once per session.
+
+---
 
 On `startup`, two hooks fire:
 

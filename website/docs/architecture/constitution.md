@@ -46,6 +46,7 @@ A lesson earns a place in the store only if:
 - `pathPatterns` — fires when a file path is read, edited, or written
 - `toolNames` — fires on any use of a specific tool (broad; use sparingly)
 - `type: 'protocol'` — fires once per session startup; reserved for reasoning reminders with no valid trigger
+- `type: 'reminder'` — fires PostToolUse when `outputPatterns` matches the tool response; reserved for mandatory follow-on actions triggered by what a tool produced
 
 **Budget discipline:** At most 3 lessons per tool call, capped at 4KB total injection by default (both configurable). High-priority lessons displace low-priority ones. Each lesson is injected at most once per session (dedup by slug).
 

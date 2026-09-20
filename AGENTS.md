@@ -150,10 +150,11 @@ Key lesson fields:
 | `summary`            | One-line description shown in injection output (≤80 chars)                                                                                                                                                                                                                                                               |
 | `problem`            | What went wrong and why                                                                                                                                                                                                                                                                                                  |
 | `solution`           | The correction                                                                                                                                                                                                                                                                                                           |
-| `type`               | `hint` (inject as context), `guard` (block + warn), `protocol` (session-start), `directive` (always-on protocol)                                                                                                                                                                                                         |
+| `type`               | `hint` (inject as context), `guard` (block + warn), `protocol` (session-start), `directive` (always-on protocol), `reminder` (PostToolUse — injects after tool result returns, before the agent continues or ends)                                                                                                       |
 | `toolNames`          | **Required.** Exact tool name match — lesson never fires without this                                                                                                                                                                                                                                                    |
 | `commandPatterns`    | Regex array matched against Bash commands                                                                                                                                                                                                                                                                                |
 | `pathPatterns`       | Glob array matched against Read/Edit/Write file paths                                                                                                                                                                                                                                                                    |
+| `outputPatterns`     | Regex array matched against `tool_response` (stdout). Used with `reminder` type — fires if any pattern matches the tool output. Compiled to `outputRegexSources` in manifest.                                                                                                                                            |
 | `commandMatchTarget` | `"full"` (default) or `"executable"` — executable strips quoted strings before matching, preventing guards from triggering on `--patch '...'` values                                                                                                                                                                     |
 | `modelPatterns`      | Regex array — AND gate matched against command or file path. If non-empty, lesson only fires when at least one pattern matches. Use alongside `provider:X`, `model:X`, `model-version:X`, `model-variant:X` tags. Example: `["o3", "o4-mini", "reasoning_effort"]` for OpenAI o-series lessons.                          |
 | `scope`              | `null` = global (default), `"<project-id>"` = this project only                                                                                                                                                                                                                                                          |
@@ -164,7 +165,7 @@ Key lesson fields:
 | `duplicatedBy`       | Opposite of `requires` — lesson excluded from manifest **when** the named artifact IS installed (e.g. suppress a workaround once the real fix is installed). Same shapes as `requires` but single object only.                                                                                                           |
 
 **Patchable fields** (usable with `edit --patch`):
-`summary`, `problem`, `solution`, `type`, `scope`, `toolNames`, `commandPatterns`, `commandMatchTarget`, `pathPatterns`, `modelPatterns`, `priority`, `confidence`, `tags`, `requires`, `duplicatedBy`
+`summary`, `problem`, `solution`, `type`, `scope`, `toolNames`, `commandPatterns`, `commandMatchTarget`, `pathPatterns`, `outputPatterns`, `modelPatterns`, `priority`, `confidence`, `tags`, `requires`, `duplicatedBy`
 
 **Valid canonical toolNames** (exact casing required — mismatched casing silently never fires):
 `Bash`, `Read`, `Edit`, `Write`, `Glob`, `Grep`, `Agent`, `TodoWrite`, `WebFetch`, `WebSearch`
@@ -192,12 +193,13 @@ Key lesson fields:
 
 ## Lesson type behavior
 
-| Type        | When injected                 | Effect                                     |
-| ----------- | ----------------------------- | ------------------------------------------ |
-| `hint`      | PreToolUse — on trigger match | Prepends warning to Claude's context       |
-| `guard`     | PreToolUse — on trigger match | Blocks the tool call + injects reason      |
-| `protocol`  | SessionStart                  | Injected once at session start             |
-| `directive` | SessionStart                  | Always-on, higher priority than `protocol` |
+| Type        | When injected                  | Effect                                                                                 |
+| ----------- | ------------------------------ | -------------------------------------------------------------------------------------- |
+| `hint`      | PreToolUse — on trigger match  | Prepends warning to Claude's context                                                   |
+| `guard`     | PreToolUse — on trigger match  | Blocks the tool call + injects reason                                                  |
+| `protocol`  | SessionStart                   | Injected once at session start                                                         |
+| `directive` | SessionStart                   | Always-on, higher priority than `protocol`                                             |
+| `reminder`  | PostToolUse — on trigger match | Injects after tool result; for "you just did X, now do Y" mandatory next-step patterns |
 
 Guards should always set `commandMatchTarget: "executable"` to avoid matching trigger words inside `--patch '...'` JSON arguments or other quoted strings.
 

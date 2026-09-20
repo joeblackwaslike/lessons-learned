@@ -36,7 +36,7 @@ A lesson is a structured record of a mistake and its fix, annotated with trigger
 | `summary`    | yes      | One-line description. Used as fallback injection when full text exceeds budget. Max 120 chars. |
 | `problem`    | yes      | Root cause explanation. Describes _why_ something fails, not just that it does. Min 20 chars.  |
 | `solution`   | yes      | Concrete fix. Actionable commands or code. Copy-pasteable. Min 20 chars.                       |
-| `type`       | yes      | `directive \| guard \| hint \| protocol` — see trigger types below.                            |
+| `type`       | yes      | `directive \| guard \| hint \| protocol \| reminder` — see trigger types below.                |
 | `toolNames`  | yes      | Tools this lesson applies to. See trigger types below.                                         |
 | `priority`   | yes      | 1–10. Higher wins budget conflicts.                                                            |
 | `confidence` | yes      | 0.0–1.0. Below `minConfidence` (default 0.5), excluded from the manifest.                      |
@@ -84,6 +84,18 @@ An array of regexes tested against the command or file path as an AND gate. When
 
 Pair with tags like `model-version:o3` or `provider:openai` to make the intent explicit.
 
+#### `outputPatterns`
+
+An array of regexes tested against `tool_response` (the tool's stdout). Used exclusively with `type: "reminder"` — the hook fires PostToolUse and injects if any pattern matches the tool output. Compiled to `outputRegexSources` in the manifest.
+
+```json
+{
+  "outputPatterns": ["outcome: passed", "pr_state: open"]
+}
+```
+
+Use `outputPatterns` when the injection trigger is something the tool _produced_ rather than something you were about to do — for example, matching on a pipeline result before deciding what to do next.
+
 #### `requires`
 
 Excludes a lesson from the manifest unless a specific artifact (plugin, MCP server, or skill) is installed. Accepts a single object or an array (OR logic — any match satisfies the requirement).
@@ -128,12 +140,13 @@ Use this to suppress a workaround lesson once the real fix (the plugin that make
 
 The `type` field controls how a lesson affects tool calls:
 
-| Type        | Behavior                                                |
-| ----------- | ------------------------------------------------------- |
-| `hint`      | Inject as `additionalContext` on matching tool call     |
-| `guard`     | Deny the tool call entirely; message shown to the agent |
-| `protocol`  | Inject at session start (reasoning reminders)           |
-| `directive` | Inject at session start and on matching tool calls      |
+| Type        | Behavior                                                                                                     |
+| ----------- | ------------------------------------------------------------------------------------------------------------ |
+| `hint`      | Inject as `additionalContext` on matching tool call                                                          |
+| `guard`     | Deny the tool call entirely; message shown to the agent                                                      |
+| `protocol`  | Inject at session start (reasoning reminders)                                                                |
+| `directive` | Inject at session start and on matching tool calls                                                           |
+| `reminder`  | Inject after tool result returns (PostToolUse), before the agent continues — for mandatory follow-on actions |
 
 **Guard lessons** (blocking): set `type: "guard"` to deny a tool call entirely. The `message` field is shown to the agent as the denial reason. Use `{command}` in the message for a substituted snippet of the actual command (truncated to 120 chars):
 

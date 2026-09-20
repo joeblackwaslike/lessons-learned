@@ -20,6 +20,7 @@ Hook configuration lives in `hooks/hooks.json`. For manual installation (without
 | `session-start-reset`            | SessionStart  | startup/resume/clear/compact                          | ◉ silent            |
 | `session-start-scan`             | SessionStart  | startup only, 5s timeout                              | ◉ silent            |
 | `pretooluse-lesson-inject`       | PreToolUse    | Read/Edit/Write/Bash/Glob/Grep/Serena MCP, 5s timeout | ✦ inject or ✕ block |
+| `posttooluse-lesson-remind`      | PostToolUse   | all tools, 5s timeout                                 | ✦ inject            |
 | `posttooluse-directive-reinject` | PostToolUse   | all tools, 5s timeout                                 | ✦ inject            |
 | `subagent-start-lesson-protocol` | SubagentStart | all subagents, 5s timeout                             | ✦ inject            |
 
@@ -260,6 +261,39 @@ For file tools (`Read`, `Edit`, `Write`, `Glob`):
 ---
 
 ## PostToolUse hooks
+
+### `posttooluse-lesson-remind.mjs`
+
+**Event:** PostToolUse  
+**Matcher:** all tools (`.+`)  
+**Timeout:** 5s  
+**Result:** ✦ inject
+
+Fires after every tool call. Tests `reminder`-type lessons' `outputPatterns` against the tool response and injects a markdown blockquote when any pattern matches.
+
+**Purpose:** Enforces mandatory follow-on actions by injecting after a tool _produces_ output that signals "now do Y." Unlike PreToolUse hints (which warn before execution), reminders fire once the agent has seen the result — at the exact moment it decides what to do next.
+
+**What it reads:** `tool_response` (stdout from the completed tool call). Patterns in `outputRegexSources` are tested in order — the lesson fires on the first match.
+
+**Dedup:** Per `(session, lesson, tool invocation)` — the same lesson fires at most once per session.
+
+**Output format:**
+
+```json
+{
+  "hookSpecificOutput": {
+    "additionalContext": "> **[Reminder]** <summary>\n>\n> <solution lines>"
+  }
+}
+```
+
+**Output — no match:**
+
+```json
+{}
+```
+
+---
 
 ### `posttooluse-directive-reinject.mjs`
 

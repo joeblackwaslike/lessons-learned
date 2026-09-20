@@ -10,14 +10,15 @@ This guide covers writing, reviewing, and tuning lessons for maximum effectivene
 
 ## Lesson types
 
-| Type        | When injected                 | Effect                                   |
-| ----------- | ----------------------------- | ---------------------------------------- |
-| `hint`      | PreToolUse — on trigger match | Prepends warning to Claude's context     |
-| `guard`     | PreToolUse — on trigger match | Blocks the tool call + injects reason    |
-| `protocol`  | SessionStart                  | Injected once at session start           |
-| `directive` | SessionStart                  | Always-on; higher priority than protocol |
+| Type        | When injected                  | Effect                                                     |
+| ----------- | ------------------------------ | ---------------------------------------------------------- |
+| `hint`      | PreToolUse — on trigger match  | Prepends warning to Claude's context                       |
+| `guard`     | PreToolUse — on trigger match  | Blocks the tool call + injects reason                      |
+| `protocol`  | SessionStart                   | Injected once at session start                             |
+| `directive` | SessionStart                   | Always-on; higher priority than protocol                   |
+| `reminder`  | PostToolUse — on trigger match | Injects after tool result; for mandatory follow-on actions |
 
-**Rule of thumb:** default to `hint`. Use `guard` only for hard stops (destructive commands, security violations). Use `protocol` for once-per-session reminders. Use `directive` only for absolute always-on rules that need no trigger.
+**Rule of thumb:** default to `hint`. Use `guard` only for hard stops (destructive commands, security violations). Use `protocol` for once-per-session reminders. Use `directive` only for absolute always-on rules that need no trigger. Use `reminder` when the trigger is the tool's _output_ rather than its input — for "you just did X, now do Y" mandatory follow-on patterns.
 
 ### One concrete example per type
 
@@ -80,19 +81,20 @@ This guide covers writing, reviewing, and tuning lessons for maximum effectivene
 
 ## Field reference by type
 
-| Field                | hint                   | guard                  | protocol               | directive              |
-| -------------------- | ---------------------- | ---------------------- | ---------------------- | ---------------------- |
-| `summary`            | required               | required               | required               | required               |
-| `problem`            | required               | required               | required               | required               |
-| `solution`           | required               | required (≥20 chars)   | required               | required               |
-| `tool`               | **required**           | **required**           | must be empty          | must be empty          |
-| `commandPatterns`    | optional               | optional               | ignored                | ignored                |
-| `pathPatterns`       | optional               | optional               | ignored                | ignored                |
-| `commandMatchTarget` | optional               | recommended            | —                      | —                      |
-| `tags`               | optional               | optional               | optional               | optional               |
-| `priority`           | optional (default 5)   | optional (default 5)   | optional (default 5)   | optional (default 5)   |
-| `confidence`         | optional (default 0.8) | optional (default 0.8) | optional (default 0.8) | optional (default 0.8) |
-| `scope`              | optional               | optional               | optional               | optional               |
+| Field                | hint                   | guard                  | protocol               | directive              | reminder               |
+| -------------------- | ---------------------- | ---------------------- | ---------------------- | ---------------------- | ---------------------- |
+| `summary`            | required               | required               | required               | required               | required               |
+| `problem`            | required               | required               | required               | required               | required               |
+| `solution`           | required               | required (≥20 chars)   | required               | required               | required               |
+| `tool`               | **required**           | **required**           | must be empty          | must be empty          | **required**           |
+| `commandPatterns`    | optional               | optional               | ignored                | ignored                | optional               |
+| `pathPatterns`       | optional               | optional               | ignored                | ignored                | optional               |
+| `outputPatterns`     | ignored                | ignored                | ignored                | ignored                | optional               |
+| `commandMatchTarget` | optional               | recommended            | —                      | —                      | optional               |
+| `tags`               | optional               | optional               | optional               | optional               | optional               |
+| `priority`           | optional (default 5)   | optional (default 5)   | optional (default 5)   | optional (default 5)   | optional (default 5)   |
+| `confidence`         | optional (default 0.8) | optional (default 0.8) | optional (default 0.8) | optional (default 0.8) | optional (default 0.8) |
+| `scope`              | optional               | optional               | optional               | optional               | optional               |
 
 ## The directive vs hint distinction
 

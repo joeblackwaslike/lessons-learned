@@ -20,6 +20,7 @@ Ask the user to choose the lesson type. Explain each option clearly so they know
 > - **guard** — Blocks a tool call entirely and tells you what to do instead. Use this when the command is almost always wrong and needs to be stopped before it runs (e.g. a pytest flag that hangs the process).
 > - **protocol** — A reasoning reminder injected once at session start. Use this for procedural checklists, mental models, or workflow reminders (not tied to a specific command).
 > - **directive** — A high-authority coding principle injected at session start. Use this for hard rules about how code should be written (e.g. SOLID, YAGNI). Manually reviewed only.
+> - **reminder** — Injected after a tool result returns (PostToolUse), before the agent decides what to do next. Use this for mandatory follow-on actions triggered by a tool's output — "you just did X, now do Y."
 
 Wait for the answer. Store as `type`. Default to `hint` if unclear.
 
@@ -70,6 +71,16 @@ Wait for the answer. Map Problem → `problem`, Solution → `solution`.
 ## Step 3 — Trigger
 
 Skip this step entirely for `directive` and `protocol` (they fire at session start, no trigger needed).
+
+**For `reminder`:**
+
+Ask:
+
+> What does the tool output look like when this reminder should fire?
+> Provide a distinctive substring or regex that matches the relevant tool response (e.g. `outcome: passed`, `pr_state: open`).
+> Also specify which tool(s) — `Bash`, `Write`, `Edit`, etc.
+
+Map to `outputPatterns` (regex array) and `toolNames`.
 
 For `hint` and `guard`, ask:
 
