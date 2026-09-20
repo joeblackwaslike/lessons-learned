@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-09-19T10:45:08.547Z",
+  "generatedAt": "2026-09-20T07:34:31.533Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -40,6 +40,7 @@
         }
       ],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "language:bash",
         "severity:security"
@@ -59,6 +60,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "topic:research",
         "topic:planning",
@@ -80,6 +82,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "epistemic",
         "calibration",
@@ -91,6 +94,65 @@
       "problem": "Verified facts and unchecked inferences get written in the same confident register, so the reader cannot tell which is which and cannot calibrate. In one session this produced four wrong high-confidence assertions: a token-cost estimate off by two orders of magnitude that was embedded in a decision prompt, a root cause attributed to the wrong config file, a blast radius inflated 17x by an unfiltered find, and a claim that two agent runtimes lacked a feature they demonstrably have. Two came from relaying subagent output as fact. Every one was cheap to check and none was checked.",
       "solution": "Four rules. (1) A quantity that feeds a decision must be computed, or explicitly labelled as not computed - if a number is going into a recommendation or an AskUserQuestion option, it is load-bearing. (2) Mark evidentiary status inline: measured / derived / estimated / unverified. (3) A diagnosis must state what would falsify it and whether that check was run. (4) Counts from find/grep are raw until filtered - report the filter with the number or omit the number. Subagent and tool output is evidence, not fact; relaying it inherits its uncertainty."
     },
+    "01M2YVQ1BKGFJB4SN33SCGWPGN": {
+      "slug": "drive-pr-to-merge-after-no-mistakes-pipe-51b2",
+      "type": "reminder",
+      "priority": 10,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "outputRegexSources": [
+        {
+          "source": "outcome: passed",
+          "flags": "i"
+        },
+        {
+          "source": "pr_state: open",
+          "flags": "i"
+        }
+      ],
+      "tags": [
+        "workflow:pr",
+        "severity:autonomy"
+      ],
+      "scope": null,
+      "message": "## Lesson: Drive PR to merge after no-mistakes pipeline passes\nAfter no-mistakes creates a PR (outcome: passed in output), the agent treats PR creation as task-complete and ends its turn instead of immediately driving the review loop to merge. The rule to own the full review loop exists in AGENTS.md but is overridden by the done-looking CLI output.\n**Fix**: Find the PR: gh pr list --head $(git branch --show-current) --json number,url\nThen: gh pr view <N> --json reviewDecision,reviews,statusCheckRollup\nOwn the whole review loop — triage bot feedback, fix issues, re-poll, merge. Do NOT return to the user until merged or blocked by a human decision.",
+      "summary": "Drive PR to merge after no-mistakes pipeline passes",
+      "problem": "After no-mistakes creates a PR (outcome: passed in output), the agent treats PR creation as task-complete and ends its turn instead of immediately driving the review loop to merge. The rule to own the full review loop exists in AGENTS.md but is overridden by the done-looking CLI output.",
+      "solution": "Find the PR: gh pr list --head $(git branch --show-current) --json number,url\nThen: gh pr view <N> --json reviewDecision,reviews,statusCheckRollup\nOwn the whole review loop — triage bot feedback, fix issues, re-poll, merge. Do NOT return to the user until merged or blocked by a human decision."
+    },
+    "01M2YVQ8PH1Y69AH5HC8YDAZPF": {
+      "slug": "enter-plan-mode-before-writing-a-plan-fi-1771",
+      "type": "reminder",
+      "priority": 10,
+      "toolNames": [
+        "Write",
+        "Edit"
+      ],
+      "commandRegexSources": [],
+      "commandMatchTarget": "full",
+      "pathRegexSources": [
+        {
+          "source": "\\.claude/plans/",
+          "flags": "i"
+        }
+      ],
+      "modelRegexSources": [],
+      "outputRegexSources": [],
+      "tags": [
+        "workflow:planning",
+        "severity:data-loss"
+      ],
+      "scope": null,
+      "message": "## Lesson: Enter plan mode before writing a plan file\nWriting a file under ~/.claude/plans/ while NOT in plan mode and then calling ExitPlanMode causes it to fail silently or — worse — the model interprets it as approval and executes the plan without ever showing it to the user or getting explicit sign-off.\n**Fix**: Call EnterPlanMode immediately after writing the plan file if not already in plan mode. Never call ExitPlanMode unless EnterPlanMode was called first in the same session. The file write itself is fine; the risk is calling ExitPlanMode from outside plan mode context.",
+      "summary": "Enter plan mode before writing a plan file",
+      "problem": "Writing a file under ~/.claude/plans/ while NOT in plan mode and then calling ExitPlanMode causes it to fail silently or — worse — the model interprets it as approval and executes the plan without ever showing it to the user or getting explicit sign-off.",
+      "solution": "Call EnterPlanMode immediately after writing the plan file if not already in plan mode. Never call ExitPlanMode unless EnterPlanMode was called first in the same session. The file write itself is fine; the risk is calling ExitPlanMode from outside plan mode context."
+    },
     "01KP9WGC4PZ2E9S7SAMARR0JDC": {
       "slug": "time-box-debugging-theories-30-minutes-then-search-b1zn",
       "type": "directive",
@@ -100,6 +162,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "topic:debugging",
         "topic:time-management",
@@ -121,6 +184,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "topic:research",
         "topic:planning",
@@ -155,6 +219,7 @@
         }
       ],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "source:deep-scan",
         "security:webhook",
@@ -195,6 +260,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "category:process",
         "topic:code-review",
@@ -230,6 +296,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "category:process",
         "topic:code-review",
@@ -257,6 +324,7 @@
       "commandMatchTarget": "executable",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "lang:javascript",
         "tool:vitest",
@@ -285,6 +353,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "tool:git",
         "severity:hang",
@@ -320,6 +389,7 @@
         }
       ],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "language:bash",
         "severity:blocker",
@@ -351,6 +421,7 @@
       "commandMatchTarget": "executable",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "tool:git",
         "language:bash",
@@ -378,6 +449,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "language:bash",
         "severity:blocker"
@@ -397,6 +469,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "topic:planning",
         "behavior:discipline",
@@ -417,6 +490,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "topic:ux",
         "topic:interaction",
@@ -437,6 +511,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "topic:autonomy",
         "topic:ux",
@@ -478,6 +553,7 @@
         }
       ],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "source:deep-scan",
         "tool:vercel",
@@ -509,6 +585,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "source:deep-scan",
         "tool:openssl",
@@ -537,6 +614,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "source:deep-scan",
         "tool:gh",
@@ -565,6 +643,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "source:deep-scan",
         "tool:git",
@@ -607,6 +686,7 @@
         }
       ],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "source:deep-scan",
         "tool:docker",
@@ -648,6 +728,7 @@
         }
       ],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "tool:supabase",
         "severity:deployment-failure",
@@ -698,6 +779,7 @@
         }
       ],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "tool:supabase",
         "topic:rls",
@@ -734,6 +816,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "source:deep-scan",
         "severity:silent-failure",
@@ -761,6 +844,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "source:deep-scan",
         "tool:gh",
@@ -810,6 +894,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "source:deep-scan",
         "severity:silent-failure",
@@ -851,6 +936,7 @@
         }
       ],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "tool:typescript",
         "workflow:caching",
@@ -891,6 +977,7 @@
         }
       ],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "workflow:database",
         "severity:data-integrity",
@@ -922,6 +1009,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "tool:write",
         "tool:bash",
@@ -954,6 +1042,7 @@
         }
       ],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "source:deep-scan",
         "tool:typescript",
@@ -991,6 +1080,7 @@
         }
       ],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "source:deep-scan",
         "tool:supabase",
@@ -1028,6 +1118,7 @@
         }
       ],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "source:deep-scan",
         "tool:typescript",
@@ -1051,6 +1142,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "source:deep-scan",
         "tool:serena",
@@ -1082,6 +1174,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "source:deep-scan",
         "tool:snoowrap",
@@ -1132,6 +1225,7 @@
         }
       ],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "source:deep-scan",
         "tool:oauth",
@@ -1160,6 +1254,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "tool:imgur",
         "provider:imgur",
@@ -1188,6 +1283,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "tool:reddit",
         "provider:reddit",
@@ -1209,6 +1305,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "category:agent-behavior",
         "category:planning",
@@ -1249,6 +1346,7 @@
         }
       ],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "category:correctness",
         "topic:runaway-loop",
@@ -1288,6 +1386,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "category:verification",
         "severity:data-loss",
@@ -1323,6 +1422,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "category:process",
         "topic:runbook",
@@ -1384,6 +1484,7 @@
         }
       ],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "category:deployment",
         "topic:plugin-distribution",
@@ -1404,6 +1505,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "category:plugin-management",
         "category:reliability",
@@ -1435,6 +1537,7 @@
       "commandMatchTarget": "executable",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "tool:bash",
         "severity:context-waste",
@@ -1462,6 +1565,7 @@
       "commandMatchTarget": "executable",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "lang:python",
         "tool:pytest",
@@ -1490,6 +1594,7 @@
         }
       ],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "lang:python",
         "severity:silent-failure"
@@ -1509,6 +1614,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "workflow:sessions",
         "behavior:discipline"
@@ -1528,6 +1634,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "topic:planning",
         "topic:ux",
@@ -1560,6 +1667,7 @@
         }
       ],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "tool:hooks",
         "category:claude-code",
@@ -1580,6 +1688,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "category:autonomy",
         "category:workflow",
@@ -1600,6 +1709,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "category:architecture",
         "category:code-quality",
@@ -1627,6 +1737,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "tool:vercel",
         "tool:openssl",
@@ -1668,6 +1779,7 @@
         }
       ],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "source:deep-scan",
         "tool:docker",
@@ -1723,6 +1835,7 @@
           "flags": "i"
         }
       ],
+      "outputRegexSources": [],
       "tags": [
         "source:deep-scan",
         "tool:vercel-ai-sdk",
@@ -1751,6 +1864,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "source:deep-scan",
         "tool:npm",
@@ -1791,6 +1905,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "tool:bash",
         "severity:silent-truncation"
@@ -1825,6 +1940,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "tool:npm",
         "library:snoowrap",
@@ -1852,6 +1968,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "source:deep-scan",
         "tool:git",
@@ -1901,6 +2018,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "topic:concurrency",
         "severity:data-loss",
@@ -1968,6 +2086,7 @@
           "flags": "i"
         }
       ],
+      "outputRegexSources": [],
       "tags": [
         "source:deep-scan",
         "provider:openai",
@@ -1998,6 +2117,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "source:deep-scan",
         "tool:obsidian",
@@ -2025,6 +2145,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "tool:bash",
         "tool:curl",
@@ -2057,6 +2178,7 @@
         }
       ],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "source:deep-scan",
         "tool:typescript",
@@ -2095,6 +2217,7 @@
         }
       ],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "tool:typescript",
         "workflow:esm-compat",
@@ -2127,6 +2250,7 @@
         }
       ],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "source:deep-scan",
         "tool:inngest",
@@ -2169,6 +2293,7 @@
         }
       ],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "platform:vercel",
         "severity:silent-failure",
@@ -2206,6 +2331,7 @@
         }
       ],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "source:deep-scan",
         "tool:typescript",
@@ -2237,6 +2363,7 @@
       "commandMatchTarget": "executable",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "source:deep-scan",
         "tool:mcp",
@@ -2280,6 +2407,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "tool:git",
         "tool:husky",
@@ -2308,6 +2436,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "tool:git",
         "severity:data-loss",
@@ -2343,6 +2472,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "category:epistemic",
         "topic:detection",
@@ -2384,6 +2514,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "category:dependency-drift",
         "topic:pinning",
@@ -2412,6 +2543,7 @@
         }
       ],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "category:git-workflow",
         "severity:friction"
@@ -2431,6 +2563,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "workflow:cluster",
         "domain:raspberry-pi",
@@ -2452,6 +2585,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "category:agent-behavior",
         "severity:over-engineering"
@@ -2479,6 +2613,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "tool:chrome",
         "topic:debugging",
@@ -2506,6 +2641,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "tool:curl",
         "topic:web-scraping",
@@ -2533,6 +2669,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "tool:supabase",
         "topic:auth",
@@ -2555,6 +2692,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "env:claude-code",
         "topic:planning",
@@ -2577,6 +2715,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "env:claude-code",
         "topic:context-management",
@@ -2604,6 +2743,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "env:claude-code",
         "topic:planning",
@@ -2626,6 +2766,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "env:claude-code",
         "topic:planning",
@@ -2653,6 +2794,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "tool:vercel",
         "topic:debugging",
@@ -2680,6 +2822,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "source:deep-scan",
         "tool:gh",
@@ -2707,6 +2850,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "source:deep-scan",
         "tool:zsh",
@@ -2739,6 +2883,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "source:deep-scan",
         "severity:tool-error",
@@ -2775,6 +2920,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "source:deep-scan",
         "severity:log-noise",
@@ -2804,6 +2950,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "source:deep-scan",
         "tool:git",
@@ -2824,6 +2971,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "category:agent-behavior",
         "tool:claude-code",
@@ -2863,6 +3011,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "tool:osascript",
         "tool:python",
@@ -2890,6 +3039,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "lang:javascript",
         "tool:node",
@@ -2913,6 +3063,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "env:claude-code",
         "topic:subagents",
@@ -2941,6 +3092,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "lang:javascript",
         "topic:forms",
@@ -2962,6 +3114,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "env:claude-code",
         "topic:planning",
@@ -2982,6 +3135,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "env:claude-code",
         "topic:planning",
@@ -3002,6 +3156,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "env:claude-code",
         "topic:context-management",
@@ -3024,6 +3179,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "env:claude-code",
         "topic:planning",
@@ -3051,6 +3207,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "tool:beads",
         "tool:dolt",
@@ -3087,6 +3244,7 @@
       "commandMatchTarget": "executable",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "category:testing",
         "tool:pytest",
@@ -3114,6 +3272,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "tool:find",
         "severity:correctness"
@@ -3140,6 +3299,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "tool:git",
         "topic:worktrees",
@@ -3167,6 +3327,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "tool:gh",
         "topic:auth",
@@ -3215,6 +3376,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "source:deep-scan",
         "tool:vercel-ai-sdk",
@@ -3242,6 +3404,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "tool:git",
         "workflow:sync",
@@ -3273,6 +3436,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "source:deep-scan",
         "severity:cost-overrun",
@@ -3301,6 +3465,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "tool:curl",
         "tool:github",
@@ -3332,6 +3497,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "tool:webfetch",
         "topic:error-recovery",
@@ -3367,6 +3533,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "tool:typescript",
         "library:snoowrap",
@@ -3402,6 +3569,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "platform:macos",
         "tool:icloud",
@@ -3441,6 +3609,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "tool:biome",
         "tool:vscode",
@@ -3484,6 +3653,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "tool:launchd",
         "platform:macos"
@@ -3503,6 +3673,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "lang:python",
         "tool:pytest",
@@ -3525,6 +3696,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "tool:hooks",
         "severity:silent-failure",
@@ -3546,6 +3718,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "category:scope-creep",
         "severity:silent-failure",
@@ -3573,6 +3746,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "tool:ssh",
         "severity:data-loss",
@@ -3600,6 +3774,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "tool:bash",
         "tool:claude-cli",
@@ -3620,6 +3795,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "category:communication",
         "category:hooks",
@@ -3641,6 +3817,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "category:hooks",
         "category:plan-mode",
@@ -3662,6 +3839,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "tool:hooks",
         "category:misread-output",
@@ -3690,6 +3868,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "tool:Agent",
         "severity:process-violation",
@@ -3717,6 +3896,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "severity:process-violation",
         "topic:plan-mode"
@@ -3743,6 +3923,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "severity:process-violation",
         "topic:plan-mode"
@@ -3769,6 +3950,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "tool:Bash",
         "tool:hooks",
@@ -3797,6 +3979,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "tool:git",
         "tool:hooks",
@@ -3825,6 +4008,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "tool:ssh",
         "category:nfs-boot",
@@ -3852,6 +4036,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "category:k3s",
         "category:pi5",
@@ -3873,6 +4058,7 @@
       "commandMatchTarget": "full",
       "pathRegexSources": [],
       "modelRegexSources": [],
+      "outputRegexSources": [],
       "tags": [
         "category:planning",
         "severity:trust-erosion",

@@ -83,12 +83,15 @@ const matches = matchLessons(
   content
 );
 
-if (matches.length === 0) {
+// Only hint and guard types are handled at PreToolUse; reminder lessons fire PostToolUse.
+const preToolMatches = matches.filter(m => m.type === 'hint' || m.type === 'guard' || !m.type);
+
+if (preToolMatches.length === 0) {
   process.stdout.write(formatEmptyOutput());
   process.exit(0);
 }
 
-const blocker = findBlocker(matches, command);
+const blocker = findBlocker(preToolMatches, command);
 if (blocker) {
   // Block via JSON permissionDecision:"deny" + exit 0 (the PreToolUse contract).
   // NOT exit 2 — that channel reads the reason from stderr, so a stdout reason is
@@ -99,10 +102,10 @@ if (blocker) {
 
 // ─── Stage 4–5: Dedup, rank, budget ─────────────────────────────────
 
-// Fast-path: if every hint in `matches` is already in the env-var seen list,
+// Fast-path: if every hint in `preToolMatches` is already in the env-var seen list,
 // skip the file I/O entirely. Guards were already checked above and are never
 // in the seen set, so this check is safe to apply to hint matches only.
-const hintMatches = matches.filter(m => m.type !== 'guard');
+const hintMatches = preToolMatches.filter(m => m.type !== 'guard');
 if (hintMatches.length > 0) {
   const seenFromEnv = new Set((process.env.LESSONS_SEEN ?? '').split(',').filter(Boolean));
   if (hintMatches.every(m => seenFromEnv.has(m.slug))) {
@@ -112,7 +115,7 @@ if (hintMatches.length > 0) {
 }
 
 const seenSet = loadSeenSet(sessionId);
-const { injected, dropped, seen } = selectCandidates(matches, seenSet, {
+const { injected, dropped, seen } = selectCandidates(preToolMatches, seenSet, {
   maxLessons,
   budgetBytes,
   claimFn: slug => claimLesson(sessionId, slug),

@@ -27,6 +27,7 @@ const JSON_COLUMNS = [
   'commandPatterns',
   'pathPatterns',
   'modelPatterns',
+  'outputPatterns',
   'tags',
   'sourceSessionIds',
 ];
@@ -44,13 +45,14 @@ CREATE TABLE IF NOT EXISTS lessons (
   status           TEXT NOT NULL DEFAULT 'candidate'
                    CHECK(status IN ('candidate','reviewed','active','disabled','archived')),
   type             TEXT NOT NULL DEFAULT 'hint'
-                   CHECK(type IN ('directive','guard','hint','protocol')),
+                   CHECK(type IN ('directive','guard','hint','protocol','reminder')),
   summary          TEXT NOT NULL,
   problem          TEXT NOT NULL,
   solution         TEXT NOT NULL,
   toolNames        TEXT NOT NULL DEFAULT '[]',
   commandPatterns  TEXT NOT NULL DEFAULT '[]',
   pathPatterns     TEXT NOT NULL DEFAULT '[]',
+  outputPatterns   TEXT NOT NULL DEFAULT '[]',
   priority         INTEGER NOT NULL DEFAULT 5,
   confidence       REAL NOT NULL DEFAULT 0.8,
   tags             TEXT NOT NULL DEFAULT '[]',
@@ -285,6 +287,75 @@ function applyMigrations(db) {
     }
   }
 
+  // Migration: add outputPatterns column and extend type CHECK to include 'reminder'.
+  // SQLite cannot ALTER a CHECK constraint in place, so a table rebuild is required.
+  {
+    const cols = db
+      .prepare('PRAGMA table_info(lessons)')
+      .all()
+      .map(r => r.name);
+    if (!cols.includes('outputPatterns')) {
+      db.exec('BEGIN');
+      db.exec(`
+        CREATE TABLE lessons_new (
+          id               TEXT PRIMARY KEY,
+          slug             TEXT NOT NULL UNIQUE,
+          status           TEXT NOT NULL DEFAULT 'candidate'
+                           CHECK(status IN ('candidate','reviewed','active','disabled','archived')),
+          type             TEXT NOT NULL DEFAULT 'hint'
+                           CHECK(type IN ('directive','guard','hint','protocol','reminder')),
+          summary          TEXT NOT NULL,
+          problem          TEXT NOT NULL,
+          solution         TEXT NOT NULL,
+          toolNames        TEXT NOT NULL DEFAULT '[]',
+          commandPatterns  TEXT NOT NULL DEFAULT '[]',
+          pathPatterns     TEXT NOT NULL DEFAULT '[]',
+          outputPatterns   TEXT NOT NULL DEFAULT '[]',
+          priority         INTEGER NOT NULL DEFAULT 5,
+          confidence       REAL NOT NULL DEFAULT 0.8,
+          tags             TEXT NOT NULL DEFAULT '[]',
+          source           TEXT NOT NULL DEFAULT 'heuristic'
+                           CHECK(source IN ('structured','heuristic','manual')),
+          sourceSessionIds TEXT NOT NULL DEFAULT '[]',
+          occurrenceCount  INTEGER NOT NULL DEFAULT 0,
+          sessionCount     INTEGER NOT NULL DEFAULT 0,
+          projectCount     INTEGER NOT NULL DEFAULT 0,
+          contentHash      TEXT NOT NULL,
+          createdAt        TEXT NOT NULL,
+          updatedAt        TEXT NOT NULL,
+          reviewedAt       TEXT,
+          archivedAt       TEXT,
+          archiveReason    TEXT,
+          commandMatchTarget TEXT,
+          scope            TEXT,
+          embedding        BLOB,
+          duplicatedBy     TEXT,
+          requires         TEXT,
+          modelPatterns    TEXT NOT NULL DEFAULT '[]'
+        )
+      `);
+      db.exec(`
+        INSERT INTO lessons_new
+          SELECT id, slug, status, type, summary, problem, solution,
+                 toolNames, commandPatterns, pathPatterns, '[]',
+                 priority, confidence, tags, source, sourceSessionIds,
+                 occurrenceCount, sessionCount, projectCount,
+                 contentHash, createdAt, updatedAt, reviewedAt, archivedAt, archiveReason,
+                 commandMatchTarget, scope, embedding, duplicatedBy, requires, modelPatterns
+          FROM lessons
+      `);
+      db.exec('DROP TABLE lessons');
+      db.exec('ALTER TABLE lessons_new RENAME TO lessons');
+      db.exec('COMMIT');
+      db.exec('CREATE INDEX IF NOT EXISTS idx_lessons_status          ON lessons(status)');
+      db.exec('CREATE INDEX IF NOT EXISTS idx_lessons_priority        ON lessons(priority DESC)');
+      db.exec(
+        'CREATE INDEX IF NOT EXISTS idx_lessons_status_priority ON lessons(status, priority DESC)'
+      );
+      db.exec('CREATE INDEX IF NOT EXISTS idx_lessons_hash            ON lessons(contentHash)');
+    }
+  }
+
   // Migration: drop insight_seed_map table (replaced by structural pattern matching in patternScanFile)
   db.exec('DROP TABLE IF EXISTS insight_seed_map');
 
@@ -469,6 +540,7 @@ export function insertCandidate(db, record) {
     commandPatterns: record.commandPatterns ?? [],
     pathPatterns: record.pathPatterns ?? [],
     modelPatterns: record.modelPatterns ?? [],
+    outputPatterns: record.outputPatterns ?? [],
     priority: record.priority ?? 5,
     confidence: record.confidence ?? 0.8,
     tags: record.tags ?? [],
@@ -491,14 +563,14 @@ export function insertCandidate(db, record) {
     `
     INSERT INTO lessons (
       id, slug, status, type, summary, problem, solution,
-      toolNames, commandPatterns, pathPatterns, modelPatterns,
+      toolNames, commandPatterns, pathPatterns, modelPatterns, outputPatterns,
       priority, confidence, tags, source,
       sourceSessionIds, occurrenceCount, sessionCount, projectCount,
       contentHash, createdAt, updatedAt, reviewedAt, archivedAt, archiveReason,
       duplicatedBy, requires
     ) VALUES (
       :id, :slug, :status, :type, :summary, :problem, :solution,
-      :toolNames, :commandPatterns, :pathPatterns, :modelPatterns,
+      :toolNames, :commandPatterns, :pathPatterns, :modelPatterns, :outputPatterns,
       :priority, :confidence, :tags, :source,
       :sourceSessionIds, :occurrenceCount, :sessionCount, :projectCount,
       :contentHash, :createdAt, :updatedAt, :reviewedAt, :archivedAt, :archiveReason,
@@ -646,6 +718,7 @@ export function updateRecord(db, id, patch) {
     'commandMatchTarget',
     'pathPatterns',
     'modelPatterns',
+    'outputPatterns',
     'priority',
     'confidence',
     'tags',

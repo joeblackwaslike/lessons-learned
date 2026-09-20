@@ -531,6 +531,23 @@ function validateLesson(input) {
       'hint/guard with commandPatterns, pathPatterns, or modelPatterns but no toolNames — lesson can never fire; set "tool" to at least one tool name (e.g. "Bash")'
     );
 
+  // reminder: requires toolNames; warns if no pattern sets (fires on every tool call)
+  if (input.type === 'reminder') {
+    if (!input.tool)
+      errors.push(
+        'reminder type requires toolNames — set "tool" to at least one tool name (e.g. "Bash")'
+      );
+    const hasReminderPatterns =
+      (Array.isArray(input.commandPatterns) && input.commandPatterns.length > 0) ||
+      (Array.isArray(input.pathPatterns) && input.pathPatterns.length > 0) ||
+      (Array.isArray(input.outputPatterns) && input.outputPatterns.length > 0) ||
+      !!input.trigger;
+    if (!hasReminderPatterns)
+      errors.push(
+        'reminder with no pattern sets will fire on every invocation of the named tool — add commandPatterns, pathPatterns, or outputPatterns'
+      );
+  }
+
   // weak pair: solution too short or mostly restates the problem
   if (input.solution && input.solution.length < WEAK_SOLUTION_MIN_LENGTH)
     errors.push(
@@ -575,7 +592,13 @@ function buildInjection(lesson) {
 }
 
 function buildTriggers(input) {
-  const triggers = { toolNames: [], commandPatterns: [], pathPatterns: [], contentPatterns: [] };
+  const triggers = {
+    toolNames: [],
+    commandPatterns: [],
+    pathPatterns: [],
+    outputPatterns: [],
+    contentPatterns: [],
+  };
 
   if (input.tool)
     triggers.toolNames = input.tool
@@ -608,6 +631,12 @@ function buildTriggers(input) {
     triggers.pathPatterns = Array.isArray(input.pathPatterns)
       ? input.pathPatterns
       : [input.pathPatterns];
+  }
+
+  if (input.outputPatterns) {
+    triggers.outputPatterns = Array.isArray(input.outputPatterns)
+      ? input.outputPatterns
+      : [input.outputPatterns];
   }
 
   return triggers;
@@ -810,6 +839,19 @@ function buildManifest() {
       })
       .filter(Boolean);
 
+    // outputPatterns: matched against tool_response (stdout) by the PostToolUse reminder hook
+    const outputRegexSources = (lesson.outputPatterns ?? [])
+      .map(p => {
+        try {
+          new RegExp(p);
+          return { source: p, flags: 'i' };
+        } catch {
+          console.warn(`  Warning: invalid output pattern in ${lesson.slug}: ${p}`);
+          return null;
+        }
+      })
+      .filter(Boolean);
+
     const lessonType = lesson.type ?? 'hint';
     const commandMatchTarget =
       lesson.commandMatchTarget ?? (lessonType === 'guard' ? 'executable' : 'full');
@@ -823,6 +865,7 @@ function buildManifest() {
       commandMatchTarget,
       pathRegexSources,
       modelRegexSources,
+      outputRegexSources,
       tags: lesson.tags ?? [],
       scope: lesson.scope ?? null,
       message: buildInjection(lesson),
@@ -897,6 +940,7 @@ function addLessonInternal(input) {
     commandPatterns,
     pathPatterns: triggers.pathPatterns ?? [],
     modelPatterns: input.modelPatterns ?? [],
+    outputPatterns: triggers.outputPatterns ?? [],
     priority: input.priority ?? 5,
     confidence,
     tags: input.tags ?? [],
@@ -950,7 +994,7 @@ async function cmdAdd(args) {
     const summary = await ask('Summary (one line): ');
     const problem = await ask('Problem: ');
     const solution = await ask('Solution: ');
-    const type = await ask('Type (directive/guard/hint/protocol) [hint]: ');
+    const type = await ask('Type (directive/guard/hint/protocol/reminder) [hint]: ');
     const tool = await ask('Tool(s) comma-separated (e.g. Bash,Edit): ');
     const trigger = await ask('Trigger (command or path): ');
     const tagsStr = await ask('Tags comma-separated (e.g. lang:python,tool:pytest): ');
@@ -1005,7 +1049,7 @@ async function cmdAdd(args) {
     process.exit(1);
   }
 
-  const VALID_TYPES = ['directive', 'guard', 'hint', 'protocol'];
+  const VALID_TYPES = ['directive', 'guard', 'hint', 'protocol', 'reminder'];
   if (input.type && !VALID_TYPES.includes(input.type)) {
     console.error(`Error: type must be one of: ${VALID_TYPES.join(', ')}`);
     process.exit(1);
@@ -1688,7 +1732,7 @@ const TOOL_CONCENTRATION_MIN_LESSONS = 8;
 const BLANKET_BASH_MAX = 3;
 const UNTAGGED_MAJORITY_THRESHOLD = 0.3;
 const CONTEXT_BLEED_RE =
-  /\bthis (repo|project|codebase)\b|\blast (session|week|tuesday|monday|wednesday|thursday|friday)\b|\bthe PR\b|\b I (ran|tried|found|noticed|saw|did|added|removed|wrote|used)\b/i;
+  /\bthis (repo|project|codebase)\b|\blast (session|week|tuesday|monday|wednesday|thursday|friday)\b|\b(this|that) PR\b|\b I (ran|tried|found|noticed|saw|did|added|removed|wrote|used)\b/i;
 const VERSION_REF_RE = /[@v]\d+\.\d+|\bversion\s+\d|\bv\d+\b/i;
 const TEMPORAL_LANGUAGE_RE =
   /\bdeprecat(ed|ion)\b|\bremoved in\b|\bformerly\b|\bwas renamed\b|\bno longer supported\b|\bas of \d{4}\b|\bin \d{4}\b|\bsince v\d/i;
@@ -1750,6 +1794,17 @@ function auditLesson(lesson) {
     (!lesson.pathPatterns || lesson.pathPatterns.length === 0)
   )
     issues.push('no commandPatterns or pathPatterns — fires on every matching tool call');
+
+  // reminder-no-patterns: reminder with no discriminating patterns fires on every tool invocation
+  if (
+    type === 'reminder' &&
+    (!lesson.commandPatterns || lesson.commandPatterns.length === 0) &&
+    (!lesson.pathPatterns || lesson.pathPatterns.length === 0) &&
+    (!lesson.outputPatterns || lesson.outputPatterns.length === 0)
+  )
+    issues.push(
+      'reminder with no pattern sets fires on every invocation of the named tool — add commandPatterns, pathPatterns, or outputPatterns'
+    );
 
   // edit-guard-overblocks: a guard on Edit/Write that gates only by path hard-
   // blocks EVERY edit to a matching file regardless of content (Edit/Write carry
