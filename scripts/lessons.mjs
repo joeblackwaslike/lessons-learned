@@ -714,6 +714,7 @@ function loadInstalledPlugins() {
  *   { type: 'plugin',       name: 'superpowers' }
  *   { type: 'skill',        name: 'superpowers:brainstorming' }
  *   { type: 'mcp-server',   name: 'github' }
+ *   { type: 'cli',          name: 'no-mistakes' }
  *   { type: 'github-issue', url: 'https://...', status: 'open'|'closed'|'fixed' }
  *
  * @param {{ type: string, name?: string, url?: string, status?: string }|null} descriptor
@@ -748,6 +749,15 @@ function detectArtifact(descriptor) {
     try {
       const settings = JSON.parse(readFileSync(CLAUDE_SETTINGS_PATH, 'utf8'));
       return name in (settings.mcpServers ?? {});
+    } catch {
+      return false;
+    }
+  }
+
+  if (type === 'cli') {
+    try {
+      execSync(`which ${name}`, { stdio: 'ignore' });
+      return true;
     } catch {
       return false;
     }
@@ -1919,7 +1929,7 @@ function auditLesson(lesson) {
   // duplicated-by-invalid: malformed descriptor that will silently never suppress
   if (lesson.duplicatedBy !== null && lesson.duplicatedBy !== undefined) {
     const { type, name, url } = lesson.duplicatedBy ?? {};
-    const validTypes = ['plugin', 'skill', 'mcp-server', 'github-issue'];
+    const validTypes = ['plugin', 'skill', 'mcp-server', 'cli', 'github-issue'];
     if (!type || !validTypes.includes(type))
       issues.push(
         `duplicatedBy.type "${type}" is invalid — must be one of: ${validTypes.join(', ')}`
@@ -1933,7 +1943,7 @@ function auditLesson(lesson) {
   // requires-invalid: malformed descriptor that will silently never gate inclusion
   if (lesson.requires !== null && lesson.requires !== undefined) {
     const descriptors = Array.isArray(lesson.requires) ? lesson.requires : [lesson.requires];
-    const validTypes = ['plugin', 'skill', 'mcp-server', 'github-issue'];
+    const validTypes = ['plugin', 'skill', 'mcp-server', 'cli', 'github-issue'];
     for (const { type, name, url } of descriptors) {
       if (!type || !validTypes.includes(type))
         issues.push(
