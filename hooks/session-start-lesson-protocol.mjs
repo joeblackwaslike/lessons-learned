@@ -14,59 +14,11 @@ import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { groupByTag } from './lib/session-start.mjs';
-import { LESSON_INJECTION_ORIENTATION } from './lib/orientation.mjs';
+import { LESSON_INJECTION_ORIENTATION, LESSON_PROTOCOL } from './lib/orientation.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const MANIFEST_PATH =
   process.env.LESSONS_MANIFEST_PATH ?? join(__dirname, '..', 'data', 'lesson-manifest.json');
-
-const LESSON_PROTOCOL = `# [lessons-learned] Lesson Reporting Protocol
-
-When you encounter or recover from a mistake during this session, emit a structured
-lesson tag in your response. This enables automatic capture for future prevention.
-
-Format:
-\`\`\`
-#lesson
-tool: <tool_name>
-trigger: <what_command_or_action_triggered_the_issue>
-problem: <what_went_wrong_and_why>
-solution: <the_correction_that_resolved_it>
-tags: <comma_separated_category:value_tags>
-#/lesson
-\`\`\`
-
-Example:
-\`\`\`
-#lesson
-tool: Bash
-trigger: git stash
-problem: git stash only stashes tracked modified files — untracked files are silently left behind, risking data loss
-solution: Use \`git stash -u\` (or \`--include-untracked\`) to include untracked files
-tags: tool:git, severity:data-loss
-#/lesson
-\`\`\`
-
-Optional: add \`scope: project\` to restrict a lesson to the current project only (omit for global lessons that apply everywhere).
-
-\`\`\`
-#lesson
-tool: Bash
-trigger: just test
-problem: project-specific just recipe leaks env vars
-solution: Use \`just --set KEY val\` instead of export
-tags: tool:just
-scope: project
-#/lesson
-\`\`\`
-
-Emit this tag naturally as part of your response whenever you:
-- Discover why a tool call failed and apply a different approach
-- Catch yourself about to repeat a known problem
-- Receive a user correction ("no", "wrong", "that's not right")
-- Identify a root cause after debugging
-
-Do NOT force lesson tags where none apply. Only tag genuine problem→solution sequences.`;
 
 function main() {
   let sessionType = '';
@@ -82,16 +34,20 @@ function main() {
   }
 
   const isCompact = sessionType === 'compact';
-  const COMPACT_DIRECTIVE_BUDGET_BYTES = 2048;
 
   let output = LESSON_PROTOCOL + '\n\n' + LESSON_INJECTION_ORIENTATION;
   if (isCompact) {
     try {
       const manifest = JSON.parse(readFileSync(MANIFEST_PATH, 'utf8'));
-      const directives = Object.values(manifest.lessons).filter(
-        l => l.type === 'directive' && !l.disabled && (l.scope == null || l.scope === projectId)
+      // Use the same budget as session start — compact loses the prior injection, so we need the full corpus back
+      const compactMaxBytes = manifest.config?.sessionStartBudgetBytes ?? 20000;
+      const allLessons = Object.values(manifest.lessons).filter(
+        l =>
+          (l.type === 'directive' || l.type === 'protocol') &&
+          !l.disabled &&
+          (l.scope == null || l.scope === projectId)
       );
-      const sorted = directives.slice().sort((a, b) => (b.priority ?? 5) - (a.priority ?? 5));
+      const sorted = allLessons.slice().sort((a, b) => (b.priority ?? 5) - (a.priority ?? 5));
       let bytesUsed = 0;
       const selected = [];
       for (const lesson of sorted) {
@@ -99,24 +55,46 @@ function main() {
           (lesson.summary || '').length +
           (lesson.problem || '').length +
           (lesson.solution || '').length;
-        if (bytesUsed + lessonBytes > COMPACT_DIRECTIVE_BUDGET_BYTES) continue;
+        if (bytesUsed + lessonBytes > compactMaxBytes) continue;
         selected.push(lesson);
         bytesUsed += lessonBytes;
       }
-      if (selected.length > 0) {
+      const compactDirectives = selected
+        .filter(l => l.type === 'directive')
+        .sort((a, b) => (b.priority ?? 5) - (a.priority ?? 5));
+      const compactProtocols = selected
+        .filter(l => l.type === 'protocol')
+        .sort((a, b) => (b.priority ?? 5) - (a.priority ?? 5));
+      const skippedCount = sorted.length - selected.length;
+      if (skippedCount > 0)
+        process.stderr.write(
+          `lessons-learned: ${selected.length}/${sorted.length} lessons injected on compact, ${skippedCount} skipped (budget)\n`
+        );
+      if (compactDirectives.length > 0) {
         output += '\n\n## Non-Negotiable Directives\n\n<IMPORTANT>\n';
         output +=
           'These are non-negotiable rules derived from real failures. Applying them is not optional.\n';
         output += '</IMPORTANT>\n';
-        const dGroups = groupByTag(selected);
+        const dGroups = groupByTag(compactDirectives);
         const useHeaders = dGroups.length > 1;
         for (const [tag, group] of dGroups) {
           if (useHeaders) output += `\n### ${tag}\n`;
           for (const l of group) output += `\n${l.message}\n`;
         }
       }
+      if (compactProtocols.length > 0) {
+        output += '\n\n---\n\n## Active Protocols\n\n';
+        output +=
+          'The following protocols capture hard-won coordination patterns. Apply before starting work in the relevant context.\n';
+        const pGroups = groupByTag(compactProtocols);
+        const useHeaders = pGroups.length > 1;
+        for (const [tag, group] of pGroups) {
+          if (useHeaders) output += `\n### ${tag}\n`;
+          for (const l of group) output += `\n${l.message}\n`;
+        }
+      }
     } catch {
-      // Manifest missing or unreadable — skip directives silently
+      // Manifest missing or unreadable — skip lessons silently
     }
     process.stdout.write(output);
     return;
@@ -152,6 +130,11 @@ function main() {
       ssSelected.push(lesson);
       ssBytesUsed += lessonBytes;
     }
+    const ssSkippedCount = allSorted.length - ssSelected.length;
+    if (ssSkippedCount > 0)
+      process.stderr.write(
+        `lessons-learned: ${ssSelected.length}/${allSorted.length} lessons injected, ${ssSkippedCount} skipped (budget)\n`
+      );
 
     const directives = ssSelected
       .filter(l => l.type === 'directive')

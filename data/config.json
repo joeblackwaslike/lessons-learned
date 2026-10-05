@@ -5,11 +5,10 @@
 
   "injectionBudgetBytes": 4096,
   "maxLessonsPerInjection": 3,
-  "sessionStartBudgetBytes": 8192,
+  "sessionStartBudgetBytes": 20000,
   "maxSessionStartLessons": 20,
   "minConfidence": 0.5,
   "minPriority": 1,
-  "compactionReinjectionThreshold": 7,
 
   "scanPaths": ["~/.claude/projects/"],
   "autoScanIntervalHours": 24,

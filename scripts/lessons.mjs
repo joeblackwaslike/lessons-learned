@@ -653,7 +653,6 @@ function buildTriggers(input) {
  *   LESSONS_MAX_LESSONS_PER_INJECTION      — maxLessonsPerInjection (integer)
  *   LESSONS_MIN_CONFIDENCE                 — minConfidence (float)
  *   LESSONS_MIN_PRIORITY                   — minPriority (integer)
- *   LESSONS_COMPACTION_REINJECTION_THRESHOLD — compactionReinjectionThreshold (integer)
  *   LESSONS_SCAN_PATHS                     — scanPaths (colon-separated list)
  *   LESSONS_AUTO_SCAN_INTERVAL_HOURS       — autoScanIntervalHours (integer)
  *   LESSONS_MAX_CANDIDATES_PER_SCAN        — maxCandidatesPerScan (integer)
@@ -679,11 +678,6 @@ function loadConfig() {
     overrides.minConfidence = parseFloat(env.LESSONS_MIN_CONFIDENCE);
   if (env.LESSONS_MIN_PRIORITY !== undefined)
     overrides.minPriority = parseInt(env.LESSONS_MIN_PRIORITY, 10);
-  if (env.LESSONS_COMPACTION_REINJECTION_THRESHOLD !== undefined)
-    overrides.compactionReinjectionThreshold = parseInt(
-      env.LESSONS_COMPACTION_REINJECTION_THRESHOLD,
-      10
-    );
   if (env.LESSONS_SCAN_PATHS !== undefined)
     overrides.scanPaths = env.LESSONS_SCAN_PATHS.split(':').filter(Boolean);
   if (env.LESSONS_AUTO_SCAN_INTERVAL_HOURS !== undefined)
@@ -899,7 +893,6 @@ function buildManifest() {
       maxSessionStartLessons: config.maxSessionStartLessons ?? 20,
       minConfidence,
       minPriority,
-      compactionReinjectionThreshold: config.compactionReinjectionThreshold ?? 7,
     },
     lessons: manifestLessons,
   };

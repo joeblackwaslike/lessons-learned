@@ -23,7 +23,7 @@ import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { groupByTag } from './lib/session-start.mjs';
-import { LESSON_INJECTION_ORIENTATION } from './lib/orientation.mjs';
+import { LESSON_INJECTION_ORIENTATION, LESSON_PROTOCOL } from './lib/orientation.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const MANIFEST_PATH =
@@ -121,6 +121,11 @@ function buildOutput(manifest, projectId = null) {
     ssSelected.push(lesson);
     ssBytesUsed += lessonBytes;
   }
+  const reinjectSkipped = allSorted.length - ssSelected.length;
+  if (reinjectSkipped > 0)
+    process.stderr.write(
+      `lessons-learned: re-inject ${ssSelected.length}/${allSorted.length} lessons, ${reinjectSkipped} skipped (budget)\n`
+    );
 
   const directives = ssSelected
     .filter(l => l.type === 'directive')
@@ -131,7 +136,7 @@ function buildOutput(manifest, projectId = null) {
 
   if (directives.length === 0 && protocols.length === 0) return '';
 
-  let out = LESSON_INJECTION_ORIENTATION + '\n\n';
+  let out = LESSON_PROTOCOL + '\n\n' + LESSON_INJECTION_ORIENTATION + '\n\n';
   out += '## [lessons-learned] Directive & Protocol Refresh\n\n';
   out += '_Context budget approaching — re-injecting active directives and protocols._\n';
 

@@ -2,15 +2,14 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-09-20T08:26:50.914Z",
+  "generatedAt": "2026-10-05T23:37:31.342Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
-    "sessionStartBudgetBytes": 8192,
+    "sessionStartBudgetBytes": 20000,
     "maxSessionStartLessons": 20,
     "minConfidence": 0.5,
-    "minPriority": 1,
-    "compactionReinjectionThreshold": 7
+    "minPriority": 1
   },
   "lessons": {
     "01KNH2FRACBQMQWX29GPYE47D8": {
@@ -3663,6 +3662,42 @@
       "summary": "launchd does not inherit shell env — set HOME in plist",
       "problem": "LaunchAgent scripts fail when HOME is unset because launchd does not inherit the shell environment. No need to wrap in env bash if the script has a shebang.",
       "solution": "Always set HOME in EnvironmentVariables in the plist. Only add env bash wrapper if the script lacks a shebang."
+    },
+    "01M3ZN88H69QG45NH4RHRT5179": {
+      "slug": "never-run-gh-pr-create-directly-use-no-m-ade4",
+      "type": "guard",
+      "priority": 5,
+      "toolNames": [
+        "Bash"
+      ],
+      "commandRegexSources": [
+        {
+          "source": "gh pr create",
+          "flags": ""
+        },
+        {
+          "source": "gh pr new",
+          "flags": ""
+        },
+        {
+          "source": "gh pr open",
+          "flags": ""
+        }
+      ],
+      "commandMatchTarget": "executable",
+      "pathRegexSources": [],
+      "modelRegexSources": [],
+      "outputRegexSources": [],
+      "tags": [
+        "tool:git",
+        "severity:workflow-violation",
+        "category:agent-behavior"
+      ],
+      "scope": null,
+      "message": "## Lesson: Never run gh pr create directly — use no-mistakes axi run instead\nCalling gh pr create directly bypasses the mandatory no-mistakes gate (AI review, lint, doc gap detection). Tests green locally is not sufficient — the gate runs additional checks before push+PR.\n**Fix**: Use `no-mistakes axi run --intent \"...\"` instead of gh pr create. It runs the full gate, pushes, and creates the PR on pass. Never call gh pr create directly.",
+      "summary": "Never run gh pr create directly — use no-mistakes axi run instead",
+      "problem": "Calling gh pr create directly bypasses the mandatory no-mistakes gate (AI review, lint, doc gap detection). Tests green locally is not sufficient — the gate runs additional checks before push+PR.",
+      "solution": "Use `no-mistakes axi run --intent \"...\"` instead of gh pr create. It runs the full gate, pushes, and creates the PR on pass. Never call gh pr create directly."
     },
     "01KR5BQ1RRM862559YJN0YK2EM": {
       "slug": "always-add-timeout-and-p-nocacheprovider-013f",
