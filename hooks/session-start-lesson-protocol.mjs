@@ -14,6 +14,7 @@ import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { groupByTag } from './lib/session-start.mjs';
+import { LESSON_INJECTION_ORIENTATION } from './lib/orientation.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const MANIFEST_PATH =
@@ -80,12 +81,43 @@ function main() {
     // If stdin is empty or malformed, treat as startup
   }
 
-  // On compact: inject only the slim format reminder — full payload would re-trigger another compact.
-  // The compact summary already preserves directive context from prior conversation.
   const isCompact = sessionType === 'compact';
+  const COMPACT_DIRECTIVE_BUDGET_BYTES = 2048;
 
-  let output = LESSON_PROTOCOL;
+  let output = LESSON_PROTOCOL + '\n\n' + LESSON_INJECTION_ORIENTATION;
   if (isCompact) {
+    try {
+      const manifest = JSON.parse(readFileSync(MANIFEST_PATH, 'utf8'));
+      const directives = Object.values(manifest.lessons).filter(
+        l => l.type === 'directive' && !l.disabled && (l.scope == null || l.scope === projectId)
+      );
+      const sorted = directives.slice().sort((a, b) => (b.priority ?? 5) - (a.priority ?? 5));
+      let bytesUsed = 0;
+      const selected = [];
+      for (const lesson of sorted) {
+        const lessonBytes =
+          (lesson.summary || '').length +
+          (lesson.problem || '').length +
+          (lesson.solution || '').length;
+        if (bytesUsed + lessonBytes > COMPACT_DIRECTIVE_BUDGET_BYTES) continue;
+        selected.push(lesson);
+        bytesUsed += lessonBytes;
+      }
+      if (selected.length > 0) {
+        output += '\n\n## Non-Negotiable Directives\n\n<IMPORTANT>\n';
+        output +=
+          'These are non-negotiable rules derived from real failures. Applying them is not optional.\n';
+        output += '</IMPORTANT>\n';
+        const dGroups = groupByTag(selected);
+        const useHeaders = dGroups.length > 1;
+        for (const [tag, group] of dGroups) {
+          if (useHeaders) output += `\n### ${tag}\n`;
+          for (const l of group) output += `\n${l.message}\n`;
+        }
+      }
+    } catch {
+      // Manifest missing or unreadable — skip directives silently
+    }
     process.stdout.write(output);
     return;
   }

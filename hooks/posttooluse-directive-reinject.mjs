@@ -23,6 +23,7 @@ import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { groupByTag } from './lib/session-start.mjs';
+import { LESSON_INJECTION_ORIENTATION } from './lib/orientation.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const MANIFEST_PATH =
@@ -130,7 +131,8 @@ function buildOutput(manifest, projectId = null) {
 
   if (directives.length === 0 && protocols.length === 0) return '';
 
-  let out = '## [lessons-learned] Directive & Protocol Refresh\n\n';
+  let out = LESSON_INJECTION_ORIENTATION + '\n\n';
+  out += '## [lessons-learned] Directive & Protocol Refresh\n\n';
   out += '_Context budget approaching — re-injecting active directives and protocols._\n';
 
   if (directives.length > 0) {
