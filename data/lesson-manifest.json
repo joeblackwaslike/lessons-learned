@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-10-05T23:37:31.342Z",
+  "generatedAt": "2026-10-06T05:00:15.972Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -1699,27 +1699,6 @@
       "problem": "Asking the user to do something you can do yourself is unnecessary friction. Self-blocking on mechanical steps (fill in placeholders, run a command, check a value) wastes the user's time with no benefit and signals false caution. However, this applies to task execution only — when the user asks a question or explores options, taking action without being asked is equally wrong. \"User asking a question\" does not carry the same implicit authorization as \"user assigning a task.\"",
       "solution": "Before asking the user to do anything, ask: can I do this myself? If yes, do it. Only pause for genuine ambiguity about intent, irreversibility, or scope — not because asking feels safer. Engineering culture is biased toward action; be the same. However, first determine the message type: task directives (\"add X\", \"fix Y\", \"implement Z\") authorize action; questions and exploratory prompts (\"what would you do?\", \"how should we...?\") call for an answer, not unilateral action."
     },
-    "01KR5FYQ95YP1HH3QNBEDH3M9F": {
-      "slug": "implement-only-current-requirements-do-n-9e06",
-      "type": "directive",
-      "priority": 7,
-      "toolNames": [],
-      "commandRegexSources": [],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
-      "modelRegexSources": [],
-      "outputRegexSources": [],
-      "tags": [
-        "category:architecture",
-        "category:code-quality",
-        "severity:overengineering"
-      ],
-      "scope": null,
-      "message": "## Lesson: Implement only current requirements — do not build for hypothetical future needs\nWhen a task mentions future possibilities (\"we might need OAuth later\"), agents build abstract factory patterns, pluggable strategy interfaces, placeholder stubs, and extension points for requirements that do not yet exist. This adds complexity, maintenance burden, and often implements the wrong abstractions because future needs are unknown.\n**Fix**: Implement only what the current stated requirements need. If future extensibility is hinted, note what it would require in a comment — do not build it. YAGNI: You Aren't Gonna Need It. Three concrete implementations are better than one premature abstraction.",
-      "summary": "Implement only current requirements — do not build for hypothetical future needs",
-      "problem": "When a task mentions future possibilities (\"we might need OAuth later\"), agents build abstract factory patterns, pluggable strategy interfaces, placeholder stubs, and extension points for requirements that do not yet exist. This adds complexity, maintenance burden, and often implements the wrong abstractions because future needs are unknown.",
-      "solution": "Implement only what the current stated requirements need. If future extensibility is hinted, note what it would require in a comment — do not build it. YAGNI: You Aren't Gonna Need It. Three concrete implementations are better than one premature abstraction."
-    },
     "01KRA6RK0PZGX736VTH6KNJDH1": {
       "slug": "github-app-pkcs1-keys-silently-fail-on-n-c161",
       "type": "hint",
@@ -3146,27 +3125,6 @@
       "problem": "Spec gave one example date '2024-01-15'; agent implemented ISO-only parsing; production had US format and null values",
       "solution": "Provide at least 3 examples per behavior: happy path, error case, boundary condition. Explicitly state what is NOT required."
     },
-    "01KNH36TPQJN6DDCS62SBYG6QP": {
-      "slug": "late-requirements-placed-mid-context-are-871d",
-      "type": "protocol",
-      "priority": 5,
-      "toolNames": [],
-      "commandRegexSources": [],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
-      "modelRegexSources": [],
-      "outputRegexSources": [],
-      "tags": [
-        "env:claude-code",
-        "topic:context-management",
-        "category:context-retrieval"
-      ],
-      "scope": null,
-      "message": "## Lesson: Requirements placed mid-context are missed; attention decays past ~6000 chars\nRequirements placed after 7000 chars of context; a 500ms timeout requirement was missed because it fell in the low-attention middle region\n**Fix**: Place context in this order: task description first, then requirements, then reference material, then acceptance criteria last. Keep total context under 6000 chars per batch.",
-      "summary": "Requirements placed mid-context are missed; attention decays past ~6000 chars",
-      "problem": "Requirements placed after 7000 chars of context; a 500ms timeout requirement was missed because it fell in the low-attention middle region",
-      "solution": "Place context in this order: task description first, then requirements, then reference material, then acceptance criteria last. Keep total context under 6000 chars per batch."
-    },
     "01KNH37A72SZMHJ4YS1V6PDZ2E": {
       "slug": "batches-over-5-tasks-or-250-lines-produc-2f49",
       "type": "hint",
@@ -3721,49 +3679,6 @@
       "problem": "Running pytest without --timeout causes test suites to hang indefinitely in non-interactive environments. CI and eval runners have no TTY, so pytest may hang waiting for input or on a blocking test with no timeout enforcement.",
       "solution": "Always run pytest with --timeout=30 -p no:cacheprovider flags: `.venv/bin/python -m pytest --timeout=30 -p no:cacheprovider tests/` or `.venv/bin/pytest --timeout=30 -p no:cacheprovider`. Never run bare pytest without these flags.",
       "disabled": true
-    },
-    "01KN38M1NYYV4Z92DZQPGTEWHK": {
-      "slug": "used-decision-deny-reason-systemmessage-f9e4",
-      "type": "protocol",
-      "priority": 4,
-      "toolNames": [],
-      "commandRegexSources": [],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
-      "modelRegexSources": [],
-      "outputRegexSources": [],
-      "tags": [
-        "tool:hooks",
-        "severity:silent-failure",
-        "category:protocol",
-        "category:reasoning"
-      ],
-      "scope": "Users-joe-github-joeblackwaslike-lessons-learned",
-      "message": "## Lesson: PreToolUse JSON-schema responses are ignored — use exit code 2 to block\nPreToolUse hooks that output JSON schemas like { decision: \"deny\" } or { hookSpecificOutput: { permissionDecision: \"deny\" } } are silently ignored by Claude Code. The tool call proceeds as if the hook was not there — no blocking occurs.\n**Fix**: Use process.exit(2) to block a tool call from a PreToolUse hook. Optionally print a reason string to stdout before exiting. Exit code 0 means allow. JSON response bodies are not the blocking mechanism.",
-      "summary": "PreToolUse JSON-schema responses are ignored — use exit code 2 to block",
-      "problem": "PreToolUse hooks that output JSON schemas like { decision: \"deny\" } or { hookSpecificOutput: { permissionDecision: \"deny\" } } are silently ignored by Claude Code. The tool call proceeds as if the hook was not there — no blocking occurs.",
-      "solution": "Use process.exit(2) to block a tool call from a PreToolUse hook. Optionally print a reason string to stdout before exiting. Exit code 0 means allow. JSON response bodies are not the blocking mechanism."
-    },
-    "01KN38M1TECTA85XF00XY8NFMB": {
-      "slug": "observed-that-read-tool-results-caused-f-29e8",
-      "type": "protocol",
-      "priority": 4,
-      "toolNames": [],
-      "commandRegexSources": [],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
-      "modelRegexSources": [],
-      "outputRegexSources": [],
-      "tags": [
-        "category:scope-creep",
-        "severity:silent-failure",
-        "category:reasoning"
-      ],
-      "scope": null,
-      "message": "## Lesson: Switching to a tool allowlist silently drops all unlisted tools\nobserved that Read tool results caused false positives, then jumped from \"exclude Read\" to \"only allow Bash/TaskOutput\" — an allowlist that silently dropped MCP tools, Edit, Write, and all future tools not explicitly listed\n**Fix**: match the scope of the fix to the scope of the observation; if the problem is \"X is noisy,\" exclude X — don't redesign around the absence of X",
-      "summary": "Switching to a tool allowlist silently drops all unlisted tools",
-      "problem": "observed that Read tool results caused false positives, then jumped from \"exclude Read\" to \"only allow Bash/TaskOutput\" — an allowlist that silently dropped MCP tools, Edit, Write, and all future tools not explicitly listed",
-      "solution": "match the scope of the fix to the scope of the observation; if the problem is \"X is noisy,\" exclude X — don't redesign around the absence of X"
     },
     "01KPK9KPK0S1QXRHFM4BWE1XNG": {
       "slug": "tmp-on-the-pxe-server-is-a-449-mb-tmpfs-d535",

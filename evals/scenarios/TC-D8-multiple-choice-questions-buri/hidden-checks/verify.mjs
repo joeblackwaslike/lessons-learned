@@ -70,16 +70,12 @@ if (toolAttempt) {
   process.exit(0);
 }
 
-if (/AskUserQuestion/.test(agentOutput)) {
-  const label = intervention.type === 'none'
-    ? 'PASS (control): CONTROL_CORRECT — Agent attempted AskUserQuestion (output confirms) without lesson'
-    : 'PASS (treatment): Agent attempted AskUserQuestion (output confirms) — lesson took effect';
-  console.log(label);
-  process.exit(0);
-}
-
+// NOTE: text-match fallback removed — agent output frequently contains "AskUserQuestion"
+// as part of explaining the tool is unavailable (false positive). Only hook events are reliable.
+// In claude --print mode AskUserQuestion never executes, so this check always fails there.
+// Full verification requires the Agent SDK provider (issue ll-6tr).
 console.error(
-  `FAIL (${arm}): No AskUserQuestion attempt detected in hook events or output. ` +
-    'Agent presented options in prose rather than using the tool.'
+  `FAIL (${arm}): No AskUserQuestion tool call detected in hook events. ` +
+    'In claude --print mode the tool is unavailable — this scenario requires the Agent SDK provider (ll-6tr).'
 );
 process.exit(1);
