@@ -524,11 +524,11 @@ function validateLesson(input) {
   const hasPatterns =
     (Array.isArray(input.commandPatterns) && input.commandPatterns.length > 0) ||
     (Array.isArray(input.pathPatterns) && input.pathPatterns.length > 0) ||
-    (Array.isArray(input.modelPatterns) && input.modelPatterns.length > 0) ||
+    (Array.isArray(input.contentPatterns) && input.contentPatterns.length > 0) ||
     !!input.trigger;
   if (isInjectOnMatch && hasPatterns && !input.tool)
     errors.push(
-      'hint/guard with commandPatterns, pathPatterns, or modelPatterns but no toolNames — lesson can never fire; set "tool" to at least one tool name (e.g. "Bash")'
+      'hint/guard with commandPatterns, pathPatterns, or contentPatterns but no toolNames — lesson can never fire; set "tool" to at least one tool name (e.g. "Bash")'
     );
 
   // reminder: requires toolNames; warns if no pattern sets (fires on every tool call)
@@ -769,6 +769,33 @@ function satisfiesRequires(requires) {
   return detectArtifact(requires);
 }
 
+// ─── Model scope expansion ───────────────────────────────────────────
+
+const MODEL_TIER = { haiku: 0, sonnet: 1, opus: 2, fable: 3 };
+const TIER_PATTERN = /^claude-(haiku|sonnet|opus|fable)-(\d+)/i;
+
+/**
+ * Expand a modelScope pattern list to include implied lower-tier families of the same generation.
+ * e.g. ["claude-opus-5"] → ["claude-opus-5", "claude-sonnet-5", "claude-haiku-5"]
+ * Non-Claude patterns (e.g. "gpt-4o") pass through unchanged.
+ *
+ * @param {string[]} patterns
+ * @returns {string[]}
+ */
+function expandModelScope(patterns) {
+  const expanded = new Set(patterns);
+  for (const p of patterns) {
+    const m = p.match(TIER_PATTERN);
+    if (!m) continue;
+    const family = m[1].toLowerCase();
+    const gen = m[2];
+    for (const [f, t] of Object.entries(MODEL_TIER)) {
+      if (t < MODEL_TIER[family]) expanded.add(`claude-${f}-${gen}`);
+    }
+  }
+  return [...expanded];
+}
+
 // ─── Manifest building ───────────────────────────────────────────────
 
 function buildManifest() {
@@ -831,13 +858,25 @@ function buildManifest() {
       })
       .filter(Boolean);
 
-    const modelRegexSources = (lesson.modelPatterns ?? [])
+    const contentRegexSources = (lesson.contentPatterns ?? [])
       .map(p => {
         try {
           new RegExp(p);
           return { source: p, flags: 'i' };
         } catch {
-          console.warn(`  Warning: invalid model pattern in ${lesson.slug}: ${p}`);
+          console.warn(`  Warning: invalid content pattern in ${lesson.slug}: ${p}`);
+          return null;
+        }
+      })
+      .filter(Boolean);
+
+    const modelScopeRegexSources = expandModelScope(lesson.modelScope ?? [])
+      .map(p => {
+        try {
+          new RegExp(p);
+          return { source: p, flags: 'i' };
+        } catch {
+          console.warn(`  Warning: invalid modelScope pattern in ${lesson.slug}: ${p}`);
           return null;
         }
       })
@@ -868,7 +907,8 @@ function buildManifest() {
       commandRegexSources,
       commandMatchTarget,
       pathRegexSources,
-      modelRegexSources,
+      contentRegexSources,
+      modelScopeRegexSources,
       outputRegexSources,
       tags: lesson.tags ?? [],
       scope: lesson.scope ?? null,
@@ -942,8 +982,9 @@ function addLessonInternal(input) {
     toolNames: triggers.toolNames ?? [],
     commandPatterns,
     pathPatterns: triggers.pathPatterns ?? [],
-    modelPatterns: input.modelPatterns ?? [],
+    contentPatterns: input.contentPatterns ?? [],
     outputPatterns: triggers.outputPatterns ?? [],
+    modelScope: input.modelScope ?? [],
     priority: input.priority ?? 5,
     confidence,
     tags: input.tags ?? [],
