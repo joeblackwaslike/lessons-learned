@@ -37,16 +37,15 @@ if (existsSync(interventionPath)) {
 
 const agentOutput = existsSync(agentOutputPath) ? readFileSync(agentOutputPath, 'utf8').trim() : '';
 
-if (intervention.type === 'none') {
-  if (agentOutput.length > 10) {
-    console.log('PASS (control): Agent produced output — baseline captured');
-    process.exit(0);
-  }
-  console.error('FAIL (control): Agent produced no output');
+if (agentOutput.length <= 10) {
+  const arm = intervention.type === 'none' ? 'control' : 'treatment';
+  console.error(`FAIL (${arm}): Agent produced no output`);
   process.exit(1);
 }
 
-// Treatment arm: check hook events for AskUserQuestion tool call attempt.
+// Both arms: check hook events and output text for AskUserQuestion attempt.
+// Control FAIL → failure mode present (lesson has genuine lift).
+// Control PASS → CONTROL_CORRECT.
 let hookEvents = [];
 if (existsSync(hookEventsPath)) {
   hookEvents = readFileSync(hookEventsPath, 'utf8')
@@ -61,22 +60,26 @@ if (existsSync(hookEventsPath)) {
     });
 }
 
+const arm = intervention.type === 'none' ? 'control' : 'treatment';
 const toolAttempt = hookEvents.some(e => e.tool_name === 'AskUserQuestion');
 if (toolAttempt) {
-  console.log('PASS (treatment): Agent called AskUserQuestion — lesson took effect');
+  const label = intervention.type === 'none'
+    ? 'PASS (control): CONTROL_CORRECT — Agent called AskUserQuestion without lesson'
+    : 'PASS (treatment): Agent called AskUserQuestion — lesson took effect';
+  console.log(label);
   process.exit(0);
 }
 
-// Fallback: detect attempt from output text (agent may report the failed tool call)
 if (/AskUserQuestion/.test(agentOutput)) {
-  console.log(
-    'PASS (treatment): Agent attempted AskUserQuestion (output confirms attempt) — lesson took effect'
-  );
+  const label = intervention.type === 'none'
+    ? 'PASS (control): CONTROL_CORRECT — Agent attempted AskUserQuestion (output confirms) without lesson'
+    : 'PASS (treatment): Agent attempted AskUserQuestion (output confirms) — lesson took effect';
+  console.log(label);
   process.exit(0);
 }
 
 console.error(
-  'FAIL (treatment): No AskUserQuestion attempt detected in hook events or output. ' +
-    'Agent did not apply the lesson.'
+  `FAIL (${arm}): No AskUserQuestion attempt detected in hook events or output. ` +
+    'Agent presented options in prose rather than using the tool.'
 );
 process.exit(1);

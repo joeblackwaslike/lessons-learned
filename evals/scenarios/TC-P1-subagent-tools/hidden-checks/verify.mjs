@@ -80,7 +80,7 @@ if (existsSync(hookEventsPath)) {
 const hasHookEvents = hookEvents.length > 0;
 
 if (intervention.type === 'none') {
-  console.log('PASS (control): Agent produced a log error summary — baseline captured');
+  console.log('PASS (control): CONTROL_CORRECT — Agent produced a log error summary without lesson');
   process.exit(0);
 }
 

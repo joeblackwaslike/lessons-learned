@@ -105,26 +105,19 @@ const safePayload = {
   tool_input: { command: 'ls -la' },
 };
 
-if (intervention.type === 'none') {
-  // Control arm: the hook exists — that's the basic bar.
-  // The control agent may have used the wrong schema (PermissionRequest / decision:deny)
-  // which silently allows the call. We record this as a PASS for the control arm since
-  // the agent completed the task (file exists), even if the blocking mechanism is wrong.
-  console.log('PASS (control): src/rm-blocker.mjs exists — baseline captured');
-  process.exit(0);
-}
+// Both arms: check that the hook correctly blocks rm -rf with exit code 2.
+// Control FAIL (wrong schema) → failure mode present, lesson has genuine lift.
+// Control PASS (exit 2 correctly) → CONTROL_CORRECT.
 
-// Treatment arm: hook must correctly block rm -rf with exit code 2
+const armLabel = intervention.type === 'none' ? 'control' : 'treatment';
 
 // Check 2: dangerous command must be blocked (exit code 2)
 const dangerResult = runHook(dangerousPayload);
 if (dangerResult.status !== 2) {
   console.error(
-    `FAIL (treatment): Hook did not block rm -rf — expected exit code 2, got ${dangerResult.status}`
+    `FAIL (${armLabel}): Hook did not block rm -rf — expected exit code 2, got ${dangerResult.status}`
   );
-  console.error(
-    'This indicates the agent used the wrong blocking mechanism (e.g. PermissionRequest schema).'
-  );
+  console.error('This indicates the agent used the wrong blocking mechanism (e.g. PermissionRequest schema).');
   if (dangerResult.stdout) console.error('stdout:', dangerResult.stdout.slice(0, 500));
   if (dangerResult.stderr) console.error('stderr:', dangerResult.stderr.slice(0, 500));
   process.exit(1);
@@ -133,34 +126,24 @@ if (dangerResult.status !== 2) {
 // Check 3: safe command must NOT be blocked (exit code 0)
 const safeResult = runHook(safePayload);
 if (safeResult.status !== 0) {
-  console.error(
-    `FAIL (treatment): Hook blocked a safe command — expected exit code 0, got ${safeResult.status}`
-  );
+  console.error(`FAIL (${armLabel}): Hook blocked a safe command — expected exit code 0, got ${safeResult.status}`);
   process.exit(1);
 }
 
-// Check 4 (bonus): source should not contain wrong PermissionRequest schema pattern
+// Check 4: source should not use wrong PermissionRequest schema
 const source = readFileSync(hookFile, 'utf8');
 if (/decision.*deny/i.test(source) || /"decision"\s*:\s*"deny"/.test(source)) {
-  console.error(
-    'FAIL (treatment): Hook source contains PermissionRequest schema (decision: deny) — wrong contract'
-  );
-  console.error(
-    'The correct mechanism is exit code 2, not a JSON response body with decision:deny.'
-  );
+  console.error(`FAIL (${armLabel}): Hook source contains PermissionRequest schema (decision: deny) — wrong contract`);
   process.exit(1);
 }
 
-// Verify exit(2) pattern is present in source
 if (!source.includes('exit(2)') && !source.includes('process.exit(2)')) {
-  console.error(
-    'FAIL (treatment): Hook source does not contain process.exit(2) — blocking mechanism unclear'
-  );
+  console.error(`FAIL (${armLabel}): Hook source does not contain process.exit(2) — blocking mechanism unclear`);
   process.exit(1);
 }
 
-console.log(
-  `PASS (treatment): Hook correctly blocks rm -rf (exit 2), allows safe commands (exit 0), ` +
-    `and uses the correct exit-code mechanism rather than the PermissionRequest schema.`
-);
+const label = intervention.type === 'none'
+  ? 'PASS (control): CONTROL_CORRECT — Hook correctly blocks rm -rf (exit 2) without lesson'
+  : 'PASS (treatment): Hook correctly blocks rm -rf (exit 2), allows safe commands, uses exit-code mechanism';
+console.log(label);
 process.exit(0);

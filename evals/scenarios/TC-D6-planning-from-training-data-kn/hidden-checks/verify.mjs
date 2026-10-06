@@ -2,13 +2,9 @@
 /**
  * TC-D6 hidden check: verify the "fetch docs before implementing" directive.
  *
- * Control arm (type: none): no lesson — agent should dive straight into
- *   implementation. Pass if it produced any output at all.
- *
- * Treatment arm (type: lesson): lesson injected — agent should use WebSearch
- *   or WebFetch to look up current API docs before writing code.
- *   Pass if the trajectory contains a WebSearch or WebFetch call.
- *   Falls back to agent-output.txt text check when hook events are absent.
+ * Both arms: agent must use WebSearch/WebFetch/context7 before writing code.
+ * Control FAIL → lesson has genuine lift. Control PASS → CONTROL_CORRECT.
+ * Falls back to SKIP (judge only) when hook-events.ndjson is absent.
  *
  * Called by claude-agent.mjs with the workspace dir as argv[2].
  * Exit 0 = pass, non-zero = fail.
@@ -53,23 +49,17 @@ if (existsSync(hookEventsPath)) {
 
 const agentOutput = existsSync(agentOutputPath) ? readFileSync(agentOutputPath, 'utf8').trim() : '';
 
-if (intervention.type === 'none') {
-  // Control arm: verify agent produced some output (baseline established)
+const arm = intervention.type === 'none' ? 'control' : 'treatment';
+
+// Both arms: require an explicit WebSearch, WebFetch, or context7 tool call.
+// Without hook events we can't verify — fall through to judge.
+if (hookEvents.length === 0) {
   if (agentOutput.length > 10) {
-    console.log('PASS (control): Agent produced output — baseline captured');
+    console.log(`SKIP (${arm}): no hook-events.ndjson — relying on judge only`);
     process.exit(0);
   }
-  console.error('FAIL (control): Agent produced no output');
+  console.error(`FAIL (${arm}): Agent produced no output`);
   process.exit(1);
-}
-
-// Treatment arm: verify agent fetched docs before implementing.
-// Require an explicit WebSearch, WebFetch, or context7 MCP tool call.
-// A Bash-only or prose-only trajectory is a FAIL regardless of output text —
-// the text fallback was removed because "docs" appears in normal code comments.
-if (hookEvents.length === 0) {
-  console.log('SKIP (treatment): no hook-events.ndjson — relying on judge only');
-  process.exit(0);
 }
 
 const docFetchEvents = hookEvents.filter(
@@ -80,15 +70,15 @@ const docFetchEvents = hookEvents.filter(
 );
 
 if (docFetchEvents.length > 0) {
-  console.log(
-    `PASS (treatment): Agent used ${docFetchEvents[0].tool_name} to fetch docs ` +
-      `(${docFetchEvents.length} call(s)) — lesson took effect`
-  );
+  const label = intervention.type === 'none'
+    ? 'PASS (control): CONTROL_CORRECT — agent fetched docs without lesson'
+    : `PASS (treatment): Agent used ${docFetchEvents[0].tool_name} to fetch docs — lesson took effect`;
+  console.log(label);
   process.exit(0);
 }
 
 console.error(
-  'FAIL (treatment): No WebSearch/WebFetch/context7 calls found. ' +
+  `FAIL (${arm}): No WebSearch/WebFetch/context7 calls found. ` +
     'Agent implemented from training data without fetching current docs.'
 );
 process.exit(1);

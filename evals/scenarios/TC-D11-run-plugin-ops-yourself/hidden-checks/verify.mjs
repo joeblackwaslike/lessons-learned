@@ -71,24 +71,15 @@ if (existsSync(interventionPath)) {
   }
 }
 
-// ── Control arm ───────────────────────────────────────────────────────────────
-
-if (intervention.type === 'none') {
-  const transcriptPath = findTranscriptPath(workspaceDir);
-  if (transcriptPath && existsSync(transcriptPath)) {
-    console.log('PASS (control): Baseline transcript captured — skipping behavioral check');
-    process.exit(0);
-  }
-  // No transcript yet — rely on judge
-  console.log('PASS (control): No transcript found — relying on judge for baseline');
-  process.exit(0);
-}
-
-// ── Treatment arm ─────────────────────────────────────────────────────────────
+// ── Both arms: check for `claude plugin` Bash call ────────────────────────────
+// Control FAIL → agent gave user instructions (failure mode, lesson has genuine lift)
+// Control PASS → agent ran the command itself without lesson (CONTROL_CORRECT)
 
 const transcriptPath = findTranscriptPath(workspaceDir);
+const arm = intervention.type === 'none' ? 'control' : 'treatment';
+
 if (!transcriptPath || !existsSync(transcriptPath)) {
-  console.log('SKIP (treatment): No transcript found — relying on judge only');
+  console.log(`SKIP (${arm}): No transcript found — relying on judge only`);
   process.exit(0);
 }
 
@@ -100,15 +91,15 @@ const usedPluginCli = bashCalls.some(cmd =>
 
 if (usedPluginCli) {
   const match = bashCalls.find(cmd => /claude\s+plugin\s+(update|install|upgrade)/.test(cmd));
-  console.log(
-    `PASS (treatment): Agent issued \`claude plugin\` Bash command — lesson took effect\n` +
-      `  Command: ${match}`
-  );
+  const label = intervention.type === 'none'
+    ? `PASS (control): CONTROL_CORRECT — Agent issued \`claude plugin\` Bash command without lesson\n  Command: ${match}`
+    : `PASS (treatment): Agent issued \`claude plugin\` Bash command — lesson took effect\n  Command: ${match}`;
+  console.log(label);
   process.exit(0);
 }
 
 console.error(
-  'FAIL (treatment): No `claude plugin` Bash call found.\n' +
+  `FAIL (${arm}): No \`claude plugin\` Bash call found.\n` +
     'Agent likely gave user-directed instructions (e.g. "Run /plugin update serena") instead of acting.\n' +
     `  Bash calls seen: ${bashCalls.length > 0 ? bashCalls.join(' | ') : '(none)'}`
 );

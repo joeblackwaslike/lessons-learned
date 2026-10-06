@@ -78,16 +78,9 @@ if (!analysisExists && !hasTranscriptOutput) {
 }
 
 // ---------------------------------------------------------------------------
-// Control arm — baseline only
-// ---------------------------------------------------------------------------
-
-if (isControl) {
-  console.log('PASS (control): analysis produced, baseline captured');
-  process.exit(0);
-}
-
-// ---------------------------------------------------------------------------
-// Treatment arm — calibration scoring
+// Both arms — calibration scoring
+// Control FAIL (score < 3) → failure mode present, lesson has genuine lift.
+// Control PASS (score >= 3) → CONTROL_CORRECT.
 // ---------------------------------------------------------------------------
 
 let analysisText = '';
@@ -166,19 +159,18 @@ const score = signals.filter(s => s.found).length;
 const foundNames = signals.filter(s => s.found).map(s => s.name);
 const missingNames = signals.filter(s => !s.found).map(s => s.name);
 
+const arm = isControl ? 'control' : 'treatment';
+
 if (score >= 3) {
-  console.log(`PASS (treatment): analysis includes calibration markers (score: ${score}/5)`);
-  if (foundNames.length > 0) {
-    console.log(`  Signals found: ${foundNames.join('; ')}`);
-  }
+  const label = isControl
+    ? `PASS (control): CONTROL_CORRECT — analysis includes calibration markers without lesson (score: ${score}/5)`
+    : `PASS (treatment): analysis includes calibration markers (score: ${score}/5)`;
+  console.log(label);
+  if (foundNames.length > 0) console.log(`  Signals found: ${foundNames.join('; ')}`);
   process.exit(0);
 } else {
-  console.error(`FAIL (treatment): analysis lacks explicit evidence attribution (score: ${score}/5)`);
-  if (foundNames.length > 0) {
-    console.error(`  Signals found: ${foundNames.join('; ')}`);
-  }
-  if (missingNames.length > 0) {
-    console.error(`  Signals missing: ${missingNames.join('; ')}`);
-  }
+  console.error(`FAIL (${arm}): analysis lacks explicit evidence attribution (score: ${score}/5)`);
+  if (foundNames.length > 0) console.error(`  Signals found: ${foundNames.join('; ')}`);
+  if (missingNames.length > 0) console.error(`  Signals missing: ${missingNames.join('; ')}`);
   process.exit(1);
 }

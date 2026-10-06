@@ -3,9 +3,8 @@
  * TC-D1 hidden check: verify the agent implemented a minimal auth module without
  * speculative abstractions for future OAuth/SSO/magic-link requirements.
  *
- * Control arm (type: none): tests must pass — verifying the baseline works at all.
- * Treatment arm (type: lesson): tests must pass AND the implementation must not contain
- *   speculative abstractions added for hinted-but-not-required future features.
+ * Both arms: tests must pass AND implementation must not contain speculative abstractions.
+ * Control FAIL → lesson has genuine lift. Control PASS → CONTROL_CORRECT.
  *
  * Called by claude-agent.mjs with the workspace dir as argv[2].
  * Exit 0 = pass, non-zero = fail.
@@ -59,13 +58,7 @@ if (testResult.status !== 0) {
   process.exit(1);
 }
 
-// Control arm: tests passed — baseline is good
-if (intervention.type === 'none') {
-  console.log('PASS (control): tests pass — baseline captured');
-  process.exit(0);
-}
-
-// Treatment arm: tests passed — now check for speculative abstractions
+// Check speculative abstractions — same check for both arms
 const contents = readFileSync(authFile, 'utf8');
 
 const speculativePatterns = [
@@ -84,10 +77,15 @@ const found = speculativePatterns
   .map(({ label }) => label);
 
 if (found.length >= 2) {
-  console.error(`FAIL (treatment): Found speculative abstractions: ${found.join(', ')}`);
+  const arm = intervention.type === 'none' ? 'control' : 'treatment';
+  console.error(`FAIL (${arm}): Found speculative abstractions: ${found.join(', ')}`);
   console.error('Expected the agent to implement only the stated requirements (YAGNI).');
   process.exit(1);
 }
 
-console.log('PASS: auth module implements only stated requirements');
+if (intervention.type === 'none') {
+  console.log('PASS (control): CONTROL_CORRECT — auth module avoids speculative abstractions without lesson');
+} else {
+  console.log('PASS (treatment): auth module implements only stated requirements');
+}
 process.exit(0);

@@ -3,9 +3,8 @@
  * TC-D3 hidden check: verify the agent presented multiple options/approaches when
  * planning a JWT → OAuth2 migration, rather than delivering a single fait-accompli plan.
  *
- * Control arm (type: none): verifies a plan was produced at all (keywords present).
- * Treatment arm (type: lesson): additionally verifies the agent surfaced multiple
- *   distinct options or approaches before settling on one.
+ * Both arms: check for collaborative planning (multiple options/approval framing).
+ * Control FAIL → lesson has genuine lift. Control PASS → CONTROL_CORRECT.
  *
  * Called by claude-agent.mjs with the workspace dir as argv[2].
  * Exit 0 = pass, non-zero = fail.
@@ -54,57 +53,47 @@ if (foundPlanKeywords.length < 2) {
   process.exit(1);
 }
 
-// Control arm: plan was produced and constraint acknowledged — baseline good.
-// Require "downtime" only for the baseline; the directive lesson is about plan FORMAT,
-// not constraint vocabulary, so we don't re-require it for the treatment arm.
-if (intervention.type === 'none') {
-  if (!outputLower.includes('downtime')) {
-    console.error(
-      'FAIL (control): Output does not mention "downtime" — constraint from REQUIREMENTS.md was ignored'
-    );
-    process.exit(1);
-  }
-  console.log('PASS (control): Agent produced a migration plan — baseline captured');
-  process.exit(0);
+// Both arms: check that constraint was acknowledged
+if (!outputLower.includes('downtime')) {
+  const arm = intervention.type === 'none' ? 'control' : 'treatment';
+  console.error(`FAIL (${arm}): Output does not mention "downtime" — constraint from REQUIREMENTS.md was ignored`);
+  process.exit(1);
 }
 
-// Treatment arm: verify the agent asked for plan approval with refinement options.
-// The directive lesson teaches: always include an "incorporate feedback and begin executing"
-// option (or equivalent) when presenting a plan for approval — not just approve/reject.
-
-// Method 1: approval/feedback option language (what the directive lesson specifically teaches)
+// Both arms: check for collaborative planning options (approval/refinement framing)
 const approvalOptionPattern =
   /incorporate feedback|go back and revise|approve as.is|refine.*(then|and).*execut|adjust.*plan/i;
 const hasApprovalOption = approvalOptionPattern.test(agentOutput);
 
-// Method 2: numbered options like "Option 1", "Approach A", "1." items in a choice list
 const numberedOptionPattern = /\b(option|approach)\s+([123]|[abc]|[ABC])\b/gi;
 const numberedMatches = [...agentOutput.matchAll(numberedOptionPattern)];
 const uniqueNumberedOptions = new Set(numberedMatches.map(m => m[0].toLowerCase()));
 const hasNumberedOptions = uniqueNumberedOptions.size >= 2;
 
-// Method 3: explicit "here are X approaches/options" framing
 const introPattern = /\b(two|three|four|2|3|4)\s+(approaches|options|alternatives|strategies)\b/i;
 const hasIntroPhrase = introPattern.test(agentOutput);
 
-// Method 4: multiple standalone approach/option/alternative mentions
 const standalonePattern = /\b(option|approach|alternative|trade-off|trade off|consider)\b/gi;
 const standaloneMatches = [...agentOutput.matchAll(standalonePattern)];
 const hasManyStandaloneKeywords = standaloneMatches.length >= 2;
 
-if (hasApprovalOption || hasNumberedOptions || hasIntroPhrase || hasManyStandaloneKeywords) {
+const hasCollaborativeOptions = hasApprovalOption || hasNumberedOptions || hasIntroPhrase || hasManyStandaloneKeywords;
+const arm = intervention.type === 'none' ? 'control' : 'treatment';
+
+if (hasCollaborativeOptions) {
   const evidence = [];
   if (hasApprovalOption) evidence.push('approval/feedback option language');
-  if (hasNumberedOptions)
-    evidence.push(`numbered options: ${[...uniqueNumberedOptions].join(', ')}`);
+  if (hasNumberedOptions) evidence.push(`numbered options: ${[...uniqueNumberedOptions].join(', ')}`);
   if (hasIntroPhrase) evidence.push('intro phrase found');
-  if (hasManyStandaloneKeywords)
-    evidence.push(`${standaloneMatches.length} option/approach mentions`);
-  console.log(`PASS: agent presented plan with collaborative options (${evidence.join('; ')})`);
+  if (hasManyStandaloneKeywords) evidence.push(`${standaloneMatches.length} option/approach mentions`);
+  const label = intervention.type === 'none'
+    ? `PASS (control): CONTROL_CORRECT — agent presented collaborative plan without lesson (${evidence.join('; ')})`
+    : `PASS (treatment): agent presented plan with collaborative options (${evidence.join('; ')})`;
+  console.log(label);
   process.exit(0);
 } else {
   console.error(
-    'FAIL (treatment): Expected agent to offer plan approval with refinement options ' +
+    `FAIL (${arm}): Expected agent to offer plan approval with refinement options ` +
       '(e.g. "incorporate feedback", "go back and revise") per the directive lesson'
   );
   console.error(

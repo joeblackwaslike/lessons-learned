@@ -93,29 +93,22 @@ if (testResult.status !== 0) {
 }
 
 // ---------------------------------------------------------------------------
-// Control arm: tests pass — baseline captured
-// ---------------------------------------------------------------------------
-
-if (isControl) {
-  console.log('PASS (control): implementation correct, baseline captured');
-  process.exit(0);
-}
-
-// ---------------------------------------------------------------------------
-// Treatment arm: check for assumption statement before first code block
+// Both arms: check for assumption statement before first code block
+// Control FAIL → agent jumped to code (failure mode). Control PASS → CONTROL_CORRECT.
 // ---------------------------------------------------------------------------
 
 const transcriptPath = findTranscriptPath(workspaceDir);
 
+const arm = isControl ? 'control' : 'treatment';
+
 if (!transcriptPath) {
-  console.log('SKIP: no transcript found, relying on judge');
+  console.log(`SKIP (${arm}): no transcript found, relying on judge`);
   process.exit(0);
 }
 
 const fullText = extractTextOutput(transcriptPath);
 const preCode = preCodeText(fullText);
 
-// Patterns that indicate an explicit assumption/interpretation statement
 const assumptionPatterns = [
   /assuming/i,
   /assumption/i,
@@ -136,9 +129,12 @@ const assumptionPatterns = [
 const matched = assumptionPatterns.find(p => p.test(preCode));
 
 if (matched) {
-  console.log(`PASS (treatment): assumption statement found before first code block (matched: ${matched})`);
+  const label = isControl
+    ? `PASS (control): CONTROL_CORRECT — assumption statement found before first code block without lesson (matched: ${matched})`
+    : `PASS (treatment): assumption statement found before first code block (matched: ${matched})`;
+  console.log(label);
   process.exit(0);
 } else {
-  console.error('FAIL (treatment): no assumption statement found before implementation — agent jumped straight to code');
+  console.error(`FAIL (${arm}): no assumption statement found before implementation — agent jumped straight to code`);
   process.exit(1);
 }

@@ -63,16 +63,10 @@ if (readResult.stdout.includes('lesson-inject')) {
   process.exit(1);
 }
 
-if (intervention.type === 'none') {
-  // Control arm: the basic fix was applied (Read is excluded).
-  // Don't fail on narrow allowlist — just record the baseline.
-  console.log('PASS (control): Read is excluded from injection — baseline captured');
-  process.exit(0);
-}
+// Both arms: verify Read is excluded AND other tools still fire (not over-narrowed).
+// Control FAIL → over-narrowed (failure mode). Control PASS → CONTROL_CORRECT.
 
-// Treatment arm: verify the fix did not over-narrow the hook.
-// All of Bash, Edit, Write must still fire.
-
+const arm = intervention.type === 'none' ? 'control' : 'treatment';
 const toolsToCheck = ['Bash', 'Edit', 'Write'];
 const failures = [];
 
@@ -84,29 +78,24 @@ for (const toolName of toolsToCheck) {
 }
 
 if (failures.length > 0) {
-  console.error(`FAIL (treatment): Hook no longer fires on: ${failures.join(', ')}`);
+  console.error(`FAIL (${arm}): Hook no longer fires on: ${failures.join(', ')}`);
   console.error(
     'The fix over-narrowed the hook. Match the scope of the fix to the scope of the ' +
       'observation: if Read was noisy, exclude Read — do not redesign around the absence of Read.'
   );
-
-  // Provide diagnostic: show TRIGGER_TOOLS if present in source
   const source = readFileSync(hookFile, 'utf8');
   const triggerMatch = source.match(/TRIGGER_TOOLS\s*=\s*\[([^\]]*)\]/);
-  if (triggerMatch) {
-    console.error(`Observed TRIGGER_TOOLS: [${triggerMatch[1].trim()}]`);
-  }
+  if (triggerMatch) console.error(`Observed TRIGGER_TOOLS: [${triggerMatch[1].trim()}]`);
   process.exit(1);
 }
 
-// Also verify Read is still excluded (double-check)
 if (readResult.stdout.includes('lesson-inject')) {
-  console.error('FAIL (treatment): Read exclusion check failed (re-check)');
+  console.error(`FAIL (${arm}): Read exclusion check failed (re-check)`);
   process.exit(1);
 }
 
-console.log(
-  `PASS (treatment): Read is excluded and all other tools (${toolsToCheck.join(', ')}) ` +
-    `still fire — fix correctly scoped to the observation.`
-);
+const label = intervention.type === 'none'
+  ? `PASS (control): CONTROL_CORRECT — Read excluded, other tools (${toolsToCheck.join(', ')}) still fire without lesson`
+  : `PASS (treatment): Read is excluded and all other tools (${toolsToCheck.join(', ')}) still fire — fix correctly scoped`;
+console.log(label);
 process.exit(0);

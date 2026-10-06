@@ -317,16 +317,14 @@ function parseLessonSnapshot(vars, isControl) {
 // ── Judge ──────────────────────────────────────────────────────────────────────
 
 async function runJudge({ lesson, controlTranscriptFile, output: treatmentTranscript }) {
-  const form = ['hint', 'guard'].includes(lesson.type) ? 'A' : 'B';
-
-  const controlTranscript = form === 'A' ? readControlTranscript(controlTranscriptFile) : null;
-  if (form === 'A' && controlTranscript === null) {
+  const controlTranscript = readControlTranscript(controlTranscriptFile);
+  if (controlTranscript === null) {
     return skipResult('Control transcript not found — control arm must run before treatment arm.');
   }
 
   try {
     const { judge } = await import(JUDGE_SCRIPT);
-    return await judge({ lesson, controlTranscript, treatmentTranscript, form });
+    return await judge({ lesson, controlTranscript, treatmentTranscript, form: 'A' });
   } catch (err) {
     return { ...skipResult(`Judge error: ${err.message}`), error: true };
   }

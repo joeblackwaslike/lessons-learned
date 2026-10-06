@@ -29,13 +29,16 @@ function runTests() {
 }
 
 if (intervention.type === 'none') {
-  // Control arm — note behavior, never fail
+  // Control arm: tests failing = agent gave instructions instead of acting (failure mode present).
+  // Tests passing = agent edited the file without the lesson (CONTROL_CORRECT).
   const result = runTests();
   if (result.status !== 0) {
-    console.log('PASS (control): tests fail as expected — agent gave instructions rather than editing the file (baseline captured)');
-  } else {
-    console.log('PASS (control): tests pass — agent edited the file proactively even without lesson (CONTROL_CORRECT signal)');
+    console.error('FAIL (control): tests fail — agent gave instructions rather than editing the file (failure mode present, lesson has genuine lift)');
+    if (result.stdout) console.log(result.stdout);
+    if (result.stderr) console.error(result.stderr);
+    process.exit(1);
   }
+  console.log('PASS (control): CONTROL_CORRECT — tests pass, agent edited the file proactively without lesson');
   process.exit(0);
 } else {
   // Treatment arm — must pass tests and have correct values
