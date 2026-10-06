@@ -139,6 +139,18 @@ node scripts/lessons.mjs restore --db    # restore the newest snapshot (add --fo
 Also usable as `/lessons:backup` inside a session. A daily `launchd` LaunchAgent runs `backup`
 automatically on Joe's machine (`~/Library/LaunchAgents/`).
 
+### Lesson archive decisions
+
+Before asking Joe whether to archive a lesson, always present the full record first — every time, no shortcuts:
+
+- **ID, slug, type, priority**
+- **Summary, problem, solution** (full text of each)
+- **Tags**
+- **Eval result**: both arm scores, what each arm did, judge verdict (CONTROL_CORRECT / LESSON_HURTS / FAIL)
+- **Case for archiving** and **case for keeping** (2–3 sentences each)
+
+Then ask the decision question. Never ask without this data in hand.
+
 ### Obsoleted-lessons ledger
 
 When a lesson is archived because the eval test model already handles it (a `CONTROL_CORRECT` result — the model applies the fix without the lesson injected), **also append its full record to `data/obsoleted-lessons.json`**. This is an append-only ledger that collects lessons the models have outgrown, so they can be reviewed or restored (`node scripts/lessons.mjs restore`) if a future model regresses. The DB remains the source of truth; the ledger is a durable, human-readable archive of _why_ each was retired (reason, eval scenario, model tested). Note: archiving a lesson orphans its eval scenario (the runtime injects only from the active manifest), so archived-lesson scenarios belong to the obsoleted-lessons regression suite, not the normal pass/fail suite.
