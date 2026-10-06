@@ -2203,13 +2203,54 @@ function cmdPreflight(args) {
     manifestNote = 'could not read manifest or DB file for freshness check';
   }
 
-  const hasIssues = failing.length > 0 || storeWarnings.length > 0 || manifestStale;
+  // orphaned scenarios: scenario.json points to an archived or missing lesson
+  const orphanedScenarios = [];
+  const scenariosDir = join(PLUGIN_ROOT, 'evals', 'scenarios');
+  try {
+    const db2 = openDb();
+    for (const dir of readdirSync(scenariosDir)) {
+      const scenarioPath = join(scenariosDir, dir, 'scenario.json');
+      if (!existsSync(scenarioPath)) continue;
+      let scenario;
+      try {
+        scenario = JSON.parse(readFileSync(scenarioPath, 'utf8'));
+      } catch {
+        continue;
+      }
+      if (scenario.interventionType !== 'lesson' || !scenario.lessonId) continue;
+      const row = db2
+        .prepare('SELECT status, archiveReason FROM lessons WHERE slug = ?')
+        .get(scenario.lessonId);
+      if (!row) {
+        orphanedScenarios.push({
+          dir,
+          lessonId: scenario.lessonId,
+          reason: 'lesson not found in DB',
+        });
+      } else if (row.status === 'archived' && !row.archiveReason) {
+        // Archived WITH a reason = intentional regression canary — skip.
+        // Archived WITHOUT a reason = zombie, nobody documented why it was retired.
+        orphanedScenarios.push({
+          dir,
+          lessonId: scenario.lessonId,
+          reason: 'lesson archived with no archiveReason — zombie scenario',
+        });
+      }
+    }
+    closeDb(db2);
+  } catch {
+    // evals/scenarios may not exist in all environments — non-fatal
+  }
+
+  const hasIssues =
+    failing.length > 0 || storeWarnings.length > 0 || manifestStale || orphanedScenarios.length > 0;
 
   if (args.includes('--json')) {
     const out = {
       lessons: failing.map(r => ({ slug: r.lesson.slug, issues: r.issues })),
       store: storeWarnings,
       manifest: { stale: manifestStale, note: manifestNote },
+      orphanedScenarios,
     };
     console.log(JSON.stringify(out, null, 2));
     if (hasIssues) process.exit(1);
@@ -2226,6 +2267,22 @@ function cmdPreflight(args) {
   if (storeWarnings.length > 0) {
     console.log('Store-level warnings:');
     for (const w of storeWarnings) console.log(`  ⚠ ${w}`);
+    console.log();
+  }
+
+  if (orphanedScenarios.length > 0) {
+    console.log(
+      `${orphanedScenarios.length} orphaned scenario(s) — lesson is archived or missing:\n`
+    );
+    for (const { dir, lessonId, reason } of orphanedScenarios) {
+      console.log(`  ${dir}`);
+      console.log(`    lessonId: ${lessonId}`);
+      console.log(`    ✗ ${reason}`);
+      console.log();
+    }
+    console.log(
+      'Fix: delete the scenario directory or restore the lesson with `node scripts/lessons.mjs restore`.'
+    );
     console.log();
   }
 

@@ -28,7 +28,15 @@ Every scenario that involves code or files must have a seed workspace in `seed-w
    # Must exit non-zero
    ```
 
-4. **PASS = lesson applied AND test passes.** The failing test gives the judge and `verify.mjs` an objective signal beyond transcript scraping.
+4. **Also verify the test passes when the task is done correctly.** Copy in the correct implementation (or manually apply it), run tests again, and confirm they pass. If tests fail even with the right answer, the seed has a pre-existing bug that will cause the hidden check to fail in every eval run regardless of what the agent does.
+
+   ```bash
+   # Apply the correct solution, then:
+   npm test   # Must exit zero
+   # Undo your manual change before committing
+   ```
+
+5. **PASS = lesson applied AND test passes.** The failing test gives the judge and `verify.mjs` an objective signal beyond transcript scraping.
 
 For scenarios that don't involve existing files (e.g., asking the agent to write a new script from scratch), an empty seed workspace with `.gitkeep` is fine — but make sure the prompt creates a situation where the lesson's failure mode would naturally occur.
 
@@ -101,6 +109,20 @@ Both control and treatment arms are required. The judge compares both transcript
 
 In `promptfooconfig.yaml`, every test block must have a corresponding control entry with `intervention: { type: none, ids: [] }`.
 
+### Control arm must FAIL before merging
+
+Run a quick control-only eval before committing a new scenario. If the control arm passes (agent gets it right without the lesson), the scenario is CONTROL_CORRECT before it even ships — either the lesson is already obsolete or the scenario doesn't reproduce the failure mode. Do not merge a scenario whose control arm passes.
+
+```bash
+# Run only the control arm for your new scenario
+cd evals
+npx promptfoo eval --config promptfooconfig.yaml \
+  --filter-pattern "TC-XX-your-scenario" 2>&1 | tail -20
+# The control arm result must be FAIL
+```
+
+If you get CONTROL_CORRECT at this step, redesign the prompt to be more adversarial (see [Prompt Design → The core rule](#the-core-rule)) or accept that the lesson is no longer needed.
+
 ---
 
 ## SKIP Diagnosis
@@ -161,7 +183,12 @@ When a scenario consistently returns `CONTROL_CORRECT` (control arm already avoi
      --id <slug> \
      --patch '{"status": "archived", "archiveReason": "Model no longer makes this mistake as of claude-sonnet-4-6. Confirmed via 5x CONTROL_CORRECT pressure test (scenarios: ...). Keep for regression testing on future models."}'
    ```
-4. Do not inject archived lessons at runtime — they add noise without benefit
+4. Append the lesson to `data/obsoleted-lessons.json` (append-only ledger).
+5. **Delete or keep the scenario in the same commit as the archive.** Do not leave the scenario directory without updating its status. Options:
+   - **Keep as regression canary** (recommended for CONTROL_CORRECT): leave the scenario in `evals/scenarios/` as-is. It will be silently skipped by the runtime (no lesson to inject), but can still be run manually to verify the model hasn't regressed.
+   - **Delete** (for structural/untestable scenarios): `rm -rf evals/scenarios/TC-XX-...` in the same commit. A scenario that can never produce a meaningful signal is noise.
+   - `node scripts/lessons.mjs preflight` will flag any scenario whose lesson was archived with **no archiveReason** — that's the "zombie" state to avoid.
+6. Do not inject archived lessons at runtime — they add noise without benefit.
 
 Keep archived lessons in the database for historical data and regression testing when model versions change.
 
@@ -220,6 +247,17 @@ process.exit(usedEdit ? 0 : 1);
 ## Known Platform Constraints
 
 These are hard limitations of the `claude --print` eval runner that affect scenario design. Document them here before spending time on workarounds.
+
+### Pre-flight: verify tool availability before writing a scenario
+
+Before writing a scenario that tests behavior triggered by a specific tool, confirm that tool is available in the eval environment. The eval runner is `claude --print --dangerously-skip-permissions` — not an interactive Claude Code session.
+
+**Tools that are NOT available in `--print` mode:**
+
+- `AskUserQuestion` — requires active TUI callback (see TC-D8 below)
+- MCP server tools — `mcpServers` in project `settings.json` are not loaded non-interactively (see separate section below)
+
+**How to check**: run the scenario control arm once before committing. If the agent mentions "tool not available" or "tool isn't available in this environment," the scenario cannot test the behavior it claims to.
 
 ### AskUserQuestion cannot execute in `--print` mode (TC-D8)
 
