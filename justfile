@@ -161,6 +161,15 @@ test-hook-codex cmd:
     @printf '%s' '{"tool_name":"shell","tool_input":{"command":"{{cmd}}"},"session_id":"test"}' \
         | LESSONS_AGENT_PLATFORM=codex node hooks/pretooluse-lesson-inject.mjs
 
+# ── Evals ──────────────────────────────────────────────────────────────────────
+
+# Run control-arm-only eval against a specific model to test lesson graduation.
+# Scenarios where control passes indicate the model no longer needs that lesson.
+# Usage: just eval-graduation claude-sonnet-5-5
+eval-graduation model:
+    cd evals && EVAL_AGENT_MODEL={{model}} EVAL_CONTROL_ONLY=1 \
+        npx promptfoo eval --config promptfooconfig.yaml
+
 # ── Maintenance ────────────────────────────────────────────────────────────────
 
 # Rebuild manifest and run all tests (after editing lessons.json)

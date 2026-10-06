@@ -84,11 +84,17 @@
       "enum": ["full", "executable", null],
       "description": "'full' (default) or 'executable' — executable strips quoted strings before matching commandPatterns, preventing guards from triggering on quoted JSON argument values."
     },
-    "modelPatterns": {
+    "contentPatterns": {
       "type": "array",
       "items": { "type": "string" },
       "default": [],
-      "description": "Regex patterns AND-gated against the command or file path. If non-empty, the lesson only fires when at least one pattern also matches."
+      "description": "Regex patterns AND-gated against the command or file content. If non-empty, the lesson only fires when at least one pattern matches the tool invocation's text content."
+    },
+    "modelScope": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": [],
+      "description": "Regex patterns (OR-matched, case-insensitive) against the detected runtime model ID. Empty = fires for all models. Entries for standard Claude tiers (haiku/sonnet/opus/fable) auto-expand to implied lower-tier families at manifest build time. Example: [\"claude-sonnet-4\"] fires for sonnet-4.x and haiku-4.x but not sonnet-5.x."
     },
     "scope": {
       "type": ["string", "null"],

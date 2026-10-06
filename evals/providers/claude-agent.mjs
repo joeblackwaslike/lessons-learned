@@ -68,6 +68,10 @@ export default class ClaudeAgentProvider {
     const timeout = options?.config?.timeout ?? this.timeout;
     const isControl = (intervention.type ?? 'none') === 'none';
 
+    if (!isControl && process.env.EVAL_CONTROL_ONLY === '1') {
+      return { output: '[skipped: EVAL_CONTROL_ONLY=1]', metadata: { skipped: true } };
+    }
+
     const scenarioDir = join(EVALS_ROOT, 'scenarios', scenarioId);
     if (!existsSync(scenarioDir)) {
       throw new Error(`Scenario directory not found: ${scenarioDir}`);

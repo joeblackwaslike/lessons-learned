@@ -18,6 +18,7 @@ import { loadSeenSet, claimLesson, persistSeenState } from './lib/dedup.mjs';
 import { formatHookOutput, formatEmptyOutput, formatBlockerOutput } from './lib/output.mjs';
 import { matchLessons, findBlocker } from '../core/match.mjs';
 import { selectCandidates } from '../core/select.mjs';
+import { detectModel } from './lib/model.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const MANIFEST_PATH =
@@ -74,13 +75,16 @@ const content =
         ? (toolInput.edits ?? []).map(e => e?.new_string ?? '').join('\n')
         : '';
 
+const currentModel = detectModel(sessionId, cwd);
+
 const matches = matchLessons(
   manifest.lessons ?? {},
   toolName,
   command,
   filePath,
   projectId,
-  content
+  content,
+  currentModel
 );
 
 // Only hint and guard types are handled at PreToolUse; reminder lessons fire PostToolUse.

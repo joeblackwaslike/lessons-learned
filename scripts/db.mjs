@@ -26,8 +26,9 @@ const JSON_COLUMNS = [
   'toolNames',
   'commandPatterns',
   'pathPatterns',
-  'modelPatterns',
+  'contentPatterns',
   'outputPatterns',
+  'modelScope',
   'tags',
   'sourceSessionIds',
 ];
@@ -287,6 +288,28 @@ function applyMigrations(db) {
     }
   }
 
+  // Migration: rename modelPatterns → contentPatterns (content AND-gate, not runtime model identity)
+  {
+    const cols = db
+      .prepare('PRAGMA table_info(lessons)')
+      .all()
+      .map(r => r.name);
+    if (cols.includes('modelPatterns') && !cols.includes('contentPatterns')) {
+      db.exec(`ALTER TABLE lessons RENAME COLUMN modelPatterns TO contentPatterns`);
+    }
+  }
+
+  // Migration: add modelScope column (JSON array of regex patterns matched against runtime model ID)
+  {
+    const cols = db
+      .prepare('PRAGMA table_info(lessons)')
+      .all()
+      .map(r => r.name);
+    if (!cols.includes('modelScope')) {
+      db.exec(`ALTER TABLE lessons ADD COLUMN modelScope TEXT NOT NULL DEFAULT '[]'`);
+    }
+  }
+
   // Migration: add outputPatterns column and extend type CHECK to include 'reminder'.
   // SQLite cannot ALTER a CHECK constraint in place, so a table rebuild is required.
   {
@@ -539,8 +562,9 @@ export function insertCandidate(db, record) {
     toolNames: record.toolNames ?? [],
     commandPatterns: record.commandPatterns ?? [],
     pathPatterns: record.pathPatterns ?? [],
-    modelPatterns: record.modelPatterns ?? [],
+    contentPatterns: record.contentPatterns ?? [],
     outputPatterns: record.outputPatterns ?? [],
+    modelScope: record.modelScope ?? [],
     priority: record.priority ?? 5,
     confidence: record.confidence ?? 0.8,
     tags: record.tags ?? [],
@@ -563,14 +587,16 @@ export function insertCandidate(db, record) {
     `
     INSERT INTO lessons (
       id, slug, status, type, summary, problem, solution,
-      toolNames, commandPatterns, pathPatterns, modelPatterns, outputPatterns,
+      toolNames, commandPatterns, pathPatterns, contentPatterns, outputPatterns,
+      modelScope,
       priority, confidence, tags, source,
       sourceSessionIds, occurrenceCount, sessionCount, projectCount,
       contentHash, createdAt, updatedAt, reviewedAt, archivedAt, archiveReason,
       duplicatedBy, requires
     ) VALUES (
       :id, :slug, :status, :type, :summary, :problem, :solution,
-      :toolNames, :commandPatterns, :pathPatterns, :modelPatterns, :outputPatterns,
+      :toolNames, :commandPatterns, :pathPatterns, :contentPatterns, :outputPatterns,
+      :modelScope,
       :priority, :confidence, :tags, :source,
       :sourceSessionIds, :occurrenceCount, :sessionCount, :projectCount,
       :contentHash, :createdAt, :updatedAt, :reviewedAt, :archivedAt, :archiveReason,
@@ -642,7 +668,8 @@ export function promoteToActive(db, ids, patches = {}) {
           'type',
           'commandPatterns',
           'pathPatterns',
-          'modelPatterns',
+          'contentPatterns',
+          'modelScope',
           'priority',
           'confidence',
           'tags',
@@ -718,8 +745,9 @@ export function updateRecord(db, id, patch) {
     'commandPatterns',
     'commandMatchTarget',
     'pathPatterns',
-    'modelPatterns',
+    'contentPatterns',
     'outputPatterns',
+    'modelScope',
     'priority',
     'confidence',
     'tags',
