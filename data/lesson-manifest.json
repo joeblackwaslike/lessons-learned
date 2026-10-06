@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-10-06T05:00:15.972Z",
+  "generatedAt": "2026-10-06T05:28:36.383Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -3029,30 +3029,6 @@
       "summary": "Node.js DeprecationWarnings pollute CLI output in non-interactive terminals",
       "problem": "Node.js emits `DeprecationWarning` messages to stderr (e.g., `--locale` flag, `punycode` module, `fs.Stats` constructor) that clutter tool output in Claude Code. These warnings are harmless but can be mistaken for errors and obscure actual error messages.",
       "solution": "Suppress with `NODE_NO_WARNINGS=1` or `--no-deprecation` flag. For specific warnings, use `--disable-warning=DEP0XXX`. Do not suppress all warnings in production — only in non-interactive agent contexts."
-    },
-    "01KMZ3ERT3Q1Q1CKMDSMZTY9DP": {
-      "slug": "subagents-may-not-have-access-to-bash-to-6a73",
-      "type": "hint",
-      "priority": 5,
-      "toolNames": [
-        "Agent"
-      ],
-      "commandRegexSources": [],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
-      "modelRegexSources": [],
-      "outputRegexSources": [],
-      "tags": [
-        "env:claude-code",
-        "topic:subagents",
-        "severity:error",
-        "category:reasoning"
-      ],
-      "scope": null,
-      "message": "## Lesson: Subagents may not have access to Bash tool — check available tools first\nSubagents spawned via the Agent tool may have a restricted tool set. Attempting to use `Bash` when it is not available produces `Error: No such tool available: Bash`. This wastes a turn and breaks the agent workflow.\n**Fix**: Before assuming Bash is available, check the agent context. Use Read/Grep/Glob for file operations, and only fall back to Bash for commands that truly require shell execution. In restricted contexts, use available MCP tools or ask the parent agent to execute shell commands.",
-      "summary": "Subagents may not have access to Bash tool — check available tools first",
-      "problem": "Subagents spawned via the Agent tool may have a restricted tool set. Attempting to use `Bash` when it is not available produces `Error: No such tool available: Bash`. This wastes a turn and breaks the agent workflow.",
-      "solution": "Before assuming Bash is available, check the agent context. Use Read/Grep/Glob for file operations, and only fall back to Bash for commands that truly require shell execution. In restricted contexts, use available MCP tools or ask the parent agent to execute shell commands."
     },
     "01KN3KZC98WFJYYJ3HCQBDRX3K": {
       "slug": "zod-v4-zodresolver-requires-zodv4core-to-ac16",

@@ -1450,6 +1450,16 @@
       "obsoletedReason": "CONTROL_CORRECT on Sonnet 4.6 — eval TC-P2 confirmed model uses process.exit(2) without lesson; both arms independently blocked rm -rf via exit(2), ignoring JSON schema approach",
       "evalScenario": "TC-P2-hook-schema",
       "sonnetRevalidated": "2026-10-06 CONTROL_CORRECT (bilateral verify)"
+    },
+    {
+      "slug": "subagents-may-not-have-access-to-bash-to-6a73",
+      "id": "01KMZ3ERT3Q1Q1CKMDSMZTY9DP",
+      "type": "hint",
+      "summary": "Subagents may not have access to Bash tool — check available tools first",
+      "obsoletedAt": "2026-10-06T05:28:36.221Z",
+      "obsoletedReason": "Too niche — lesson fires on outer-agent Bash calls but guidance only applies inside subagents with a restricted tool set. Eval structural limitation: both arms have Bash available, failure mode never manifests. Archived as untestable/too narrow.",
+      "evalScenario": "TC-P1-subagent-tools",
+      "sonnetRevalidated": "2026-10-06 archived (structural limitation, not CONTROL_CORRECT)"
     }
   ],
   "revalidation": {
