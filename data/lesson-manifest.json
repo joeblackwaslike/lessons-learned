@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-10-06T05:28:36.383Z",
+  "generatedAt": "2026-10-06T05:44:22.368Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,

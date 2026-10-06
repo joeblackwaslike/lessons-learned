@@ -123,6 +123,23 @@ npx promptfoo eval --config promptfooconfig.yaml \
 
 If you get CONTROL_CORRECT at this step, redesign the prompt to be more adversarial (see [Prompt Design → The core rule](#the-core-rule)) or accept that the lesson is no longer needed.
 
+#### Lessons with `evalSkipReason` set — do not write scenarios
+
+Some lessons have an `evalSkipReason` field set in the DB. This means someone already tried and documented why an eval cannot reliably test this lesson. Do not write a new scenario for such a lesson without first reading the reason and addressing the underlying blocker.
+
+```bash
+# Check whether a lesson has evalSkipReason before starting scenario work
+node scripts/lessons.mjs list | grep -A1 <slug>
+# Or query directly:
+node -e "const {DatabaseSync}=require('node:sqlite');const db=new DatabaseSync('data/lessons.db');const r=db.prepare('SELECT slug,evalSkipReason FROM lessons WHERE evalSkipReason IS NOT NULL').all();console.log(r)"
+```
+
+To set this field after exhausting eval options:
+
+```bash
+node scripts/lessons.mjs edit --id <slug> --patch '{"evalSkipReason": "reason + receipts"}'
+```
+
 ---
 
 ## SKIP Diagnosis

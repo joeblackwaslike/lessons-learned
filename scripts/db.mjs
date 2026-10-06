@@ -646,6 +646,7 @@ export function promoteToActive(db, ids, patches = {}) {
           'priority',
           'confidence',
           'tags',
+          'evalSkipReason',
         ];
         const fields = Object.keys(patch).filter(k => PATCHABLE.includes(k));
         if (fields.length > 0) {
@@ -724,6 +725,7 @@ export function updateRecord(db, id, patch) {
     'tags',
     'duplicatedBy',
     'requires',
+    'evalSkipReason',
   ];
   const fields = Object.keys(patch).filter(k => PATCHABLE.includes(k));
   if (fields.length === 0) return null;
