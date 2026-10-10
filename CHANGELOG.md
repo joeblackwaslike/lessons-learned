@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.6.0](https://github.com/joeblackwaslike/lessons-learned/compare/v0.5.0...v0.6.0) (2026-10-10)
+
+
+### Features
+
+* **evals:** add 18 Tier 1 eval scenarios (TC-P17–P22, TC-H82–H93) ([e5d5215](https://github.com/joeblackwaslike/lessons-learned/commit/e5d521512f80c7c30c7c604a91e7c3a611b162d4))
+* **evals:** add eval:fast two-phase script for parallel eval runs ([cb5003c](https://github.com/joeblackwaslike/lessons-learned/commit/cb5003c35c2a76f7d0d698b7c5c98b22f92e504e))
+* **evals:** add TC-D11–D14 scenarios for remaining 4 directive lessons ([75aa9d9](https://github.com/joeblackwaslike/lessons-learned/commit/75aa9d934762fbf20b7be7be51a5238727bd89fc))
+* **evals:** add TC-D2 and TC-P11–P14 scenarios for remaining protocol/directive gaps ([a3b2c40](https://github.com/joeblackwaslike/lessons-learned/commit/a3b2c409fe9d548024f6c588bae72172425d2935))
+* **gates:** add eval gate — scenarios must be run before pushing ([4879f4d](https://github.com/joeblackwaslike/lessons-learned/commit/4879f4dffac4297eceaca21ff68781e7ce0091cc))
+* **hooks:** add lesson injection system orientation primer ([fd64905](https://github.com/joeblackwaslike/lessons-learned/commit/fd64905beb733813d7380a3de53e3923d2dcc88f))
+* **lessons:** add guard blocking full-file dumps via cat/head/tail ([05be874](https://github.com/joeblackwaslike/lessons-learned/commit/05be874f7fc142c7cb9c913a029aa935a5e3b986))
+* **release:** add release-please automation + full CHANGELOG backfill ([4c6fc33](https://github.com/joeblackwaslike/lessons-learned/commit/4c6fc33c10b7fbbf314d34b88ae0fd548fa2a488))
+* **requires:** add cli type; set no-mistakes requires on PR reminder lesson ([898fd60](https://github.com/joeblackwaslike/lessons-learned/commit/898fd60a8d93b017f3f715230eefabe5b1e8af0e))
+* **schema:** add evalSkipReason field to lesson schema ([d4d1479](https://github.com/joeblackwaslike/lessons-learned/commit/d4d147978abcf01b122160dbfb568554513fbd08))
+* **types:** add reminder lesson type with PostToolUse hook ([9ad9b12](https://github.com/joeblackwaslike/lessons-learned/commit/9ad9b12689522ad45018c4691b9a79b4f029c166))
+
+
+### Bug Fixes
+
+* **evals:** archive TC-P1, delete TC-D12 scenario ([486e5ae](https://github.com/joeblackwaslike/lessons-learned/commit/486e5ae635403cb20d4e8ede6613e80205717b09))
+* **evals:** bilateral verify checks + always Form A judge ([6642354](https://github.com/joeblackwaslike/lessons-learned/commit/6642354de59292f167724cbd6fe21d1f8c245d6b))
+* **evals:** resolve all 5 treatment failures from bilateral run ([f35ec5b](https://github.com/joeblackwaslike/lessons-learned/commit/f35ec5b659e675df57f584a628579701c805b4f5))
+* **evals:** TC-P20 seed-workspace + TC-H87 archive ([e97d004](https://github.com/joeblackwaslike/lessons-learned/commit/e97d004143a54ac75e3c785b89a85aa04a6ef96f))
+* **injection:** cover full directive+protocol corpus on every session ([468d378](https://github.com/joeblackwaslike/lessons-learned/commit/468d378e6257959311035a05d276ed8e95987bcf))
+* **process:** close 4 scenario-authoring gaps that produced untestable evals ([10f4ecd](https://github.com/joeblackwaslike/lessons-learned/commit/10f4ecd0e017f9f5004c60e43f967df1794b763a))
+
 ## [Unreleased]
 
 ### Added
