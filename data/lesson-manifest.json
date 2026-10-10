@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-10-10T01:34:11.051Z",
+  "generatedAt": "2026-10-10T19:44:47.029Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -855,56 +855,6 @@
       "summary": "GitHub GraphQL rate limit exhaustion prevents subsequent queries",
       "problem": "When the GitHub GraphQL rate limit is exhausted (remaining: 0), all subsequent queries fail with RATE_LIMIT errors. The check query itself consumes quota — running `gh api rate-limit` then immediately firing a complex query can still fail if the check left remaining at 0.",
       "solution": "Run `gh api rate-limit` before expensive GraphQL operations and inspect the `remaining` field in the response. Only proceed if remaining > 0. If remaining is 0, report the reset timestamp and halt — do not attempt the query."
-    },
-    "01KS4PKY2B857KK018WP54FAXT": {
-      "slug": "character-length-and-byte-length-are-dif-5415",
-      "type": "hint",
-      "priority": 8,
-      "toolNames": [
-        "Edit",
-        "Write",
-        "mcp__plugin_serena_serena__replace_content",
-        "mcp__plugin_serena_serena__replace_symbol_body",
-        "mcp__plugin_serena_serena__insert_after_symbol",
-        "mcp__plugin_serena_serena__insert_before_symbol"
-      ],
-      "commandRegexSources": [
-        {
-          "source": "\\bbyteLength\\b",
-          "flags": ""
-        },
-        {
-          "source": "\\btruncat\\b",
-          "flags": ""
-        },
-        {
-          "source": "\\.slice\\(0\\s*,",
-          "flags": ""
-        },
-        {
-          "source": "\\.substring\\(0\\s*,",
-          "flags": ""
-        },
-        {
-          "source": "\\bmaxBytes\\b",
-          "flags": ""
-        }
-      ],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
-      "modelRegexSources": [],
-      "outputRegexSources": [],
-      "tags": [
-        "source:deep-scan",
-        "severity:silent-failure",
-        "tool:typescript",
-        "tool:nodejs"
-      ],
-      "scope": null,
-      "message": "## Lesson: Character length and byte length are different; cap bytes, not characters\nTruncating by character count (`string.length`) does not enforce byte budgets — multi-byte UTF-8 characters can silently overflow the limit.\n**Fix**: Measure with `Buffer.byteLength(str, 'utf8')`, not `str.length`. For truncation, binary-search or enumerate bytes until you are under the limit.",
-      "summary": "Character length and byte length are different; cap bytes, not characters",
-      "problem": "Truncating by character count (`string.length`) does not enforce byte budgets — multi-byte UTF-8 characters can silently overflow the limit.",
-      "solution": "Measure with `Buffer.byteLength(str, 'utf8')`, not `str.length`. For truncation, binary-search or enumerate bytes until you are under the limit."
     },
     "01KS4PKY2GSRDEXWQQSZA4TJCD": {
       "slug": "cache-keys-must-include-enough-context-t-8430",

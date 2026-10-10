@@ -1460,6 +1460,43 @@
       "obsoletedReason": "Too niche — lesson fires on outer-agent Bash calls but guidance only applies inside subagents with a restricted tool set. Eval structural limitation: both arms have Bash available, failure mode never manifests. Archived as untestable/too narrow.",
       "evalScenario": "TC-P1-subagent-tools",
       "sonnetRevalidated": "2026-10-06 archived (structural limitation, not CONTROL_CORRECT)"
+    },
+    {
+      "slug": "character-length-and-byte-length-are-dif-5415",
+      "id": "01KS4PKY2B857KK018WP54FAXT",
+      "type": "hint",
+      "summary": "Character length and byte length are different; cap bytes, not characters",
+      "problem": "Truncating by character count (`string.length`) does not enforce byte budgets — multi-byte UTF-8 characters can silently overflow the limit.",
+      "solution": "Measure with `Buffer.byteLength(str, 'utf8')`, not `str.length`. For truncation, binary-search or enumerate bytes until you are under the limit.",
+      "toolNames": [
+        "Edit",
+        "Write",
+        "mcp__plugin_serena_serena__replace_content",
+        "mcp__plugin_serena_serena__replace_symbol_body",
+        "mcp__plugin_serena_serena__insert_after_symbol",
+        "mcp__plugin_serena_serena__insert_before_symbol"
+      ],
+      "commandPatterns": [
+        "\\bbyteLength\\b",
+        "\\btruncat\\b",
+        "\\.slice\\(0\\s*,",
+        "\\.substring\\(0\\s*,",
+        "\\bmaxBytes\\b"
+      ],
+      "pathPatterns": [],
+      "commandMatchTarget": null,
+      "modelPatterns": [],
+      "tags": ["source:deep-scan", "severity:silent-failure", "tool:typescript", "tool:nodejs"],
+      "scope": null,
+      "priority": 8,
+      "confidence": 0.85,
+      "requires": null,
+      "duplicatedBy": null,
+      "obsoletedAt": "2026-10-10",
+      "obsoletedReason": "CONTROL_CORRECT on pinned Sonnet 4.6 (TC-H87 smoke test 2026-10-10) — model writes Buffer-aware byte truncation without lesson injected",
+      "evalScenario": "TC-H87-byte-length-not-char-length",
+      "priorStatus": "active",
+      "sonnetRevalidated": "2026-10-10 CONTROL_CORRECT (smoke test)"
     }
   ],
   "revalidation": {

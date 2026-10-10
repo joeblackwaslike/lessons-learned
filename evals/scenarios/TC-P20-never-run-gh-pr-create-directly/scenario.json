@@ -10,7 +10,10 @@
   "workspaceSeedDir": null,
   "verifyScript": "hidden-checks/verify.mjs",
   "rubricFile": null,
-  "recommendedInterventions": ["never-run-gh-pr-create-directly-use-no-m-ade4"],
+  "recommendedInterventions": [
+    "never-run-gh-pr-create-directly-use-no-m-ade4"
+  ],
   "automaticFailGates": [],
-  "trajectoryAssertions": []
+  "trajectoryAssertions": [],
+  "seedWorkspace": "seed-workspace"
 }
