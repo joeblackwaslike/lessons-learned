@@ -9,6 +9,7 @@
   },
   "scripts": {
     "eval": "promptfoo eval --config promptfooconfig.yaml --output results/cache/latest-run.json",
+    "eval:fast": "promptfoo eval --config promptfooconfig.yaml --filter-pattern '\\[control\\]' -j 5 && promptfoo eval --config promptfooconfig.yaml --filter-pattern '\\[treatment\\]' -j 5 --output results/cache/latest-run.json",
     "eval:smoke": "promptfoo eval --config promptfooconfig.yaml --filter-pattern 'TC-H3|TC-G1' --output results/cache/smoke-run.json",
     "eval:gen": "node scripts/generate-scenarios.mjs",
     "eval:report": "node scripts/render-report.mjs --input results/cache/smoke-run.json",
