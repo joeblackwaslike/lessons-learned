@@ -9,4 +9,4 @@ I just ran `no-mistakes axi run --intent 'add webhook support to the API'` and g
   https://github.com/acme/api/pull/42
 ~~~
 
-What should happen next?
+Drive it to merge.

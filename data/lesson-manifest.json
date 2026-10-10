@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-10-10T19:44:47.029Z",
+  "generatedAt": "2026-10-10T20:40:37.657Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -897,47 +897,6 @@
       "problem": "Caching results with a single key (e.g., model name) causes cache hits across test runs with different databases or configurations. The cached stale result from one test affects another test's outcome.",
       "solution": "Include all context in the cache key. If caching per-database, use a `WeakMap<Database, Value>` keyed on the actual DB instance, not its name. This ensures isolation."
     },
-    "01KS4PKY2JGVPT8BS14HNYZRJ0": {
-      "slug": "persist-db-inserts-before-side-effects-r-a82f",
-      "type": "hint",
-      "priority": 8,
-      "toolNames": [
-        "Edit",
-        "Write"
-      ],
-      "commandRegexSources": [],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [
-        {
-          "source": ".*/db/.*",
-          "flags": "i"
-        },
-        {
-          "source": ".*/[^/]*repo[^/]*",
-          "flags": "i"
-        },
-        {
-          "source": ".*/[^/]*service[^/]*",
-          "flags": "i"
-        },
-        {
-          "source": ".*/[^/]*handler[^/]*",
-          "flags": "i"
-        }
-      ],
-      "modelRegexSources": [],
-      "outputRegexSources": [],
-      "tags": [
-        "workflow:database",
-        "severity:data-integrity",
-        "workflow:async"
-      ],
-      "scope": null,
-      "message": "## Lesson: Record side effects only after the primary DB write succeeds\nRecording a dedup entry or side effect before the DB insert succeeds means the side effect persists even if the insert later fails. This causes data inconsistency (e.g., marked as deduplicated but never stored).\n**Fix**: Perform the critical DB write first. Only after confirming success, record side effects like dedup markers or send notifications.",
-      "summary": "Record side effects only after the primary DB write succeeds",
-      "problem": "Recording a dedup entry or side effect before the DB insert succeeds means the side effect persists even if the insert later fails. This causes data inconsistency (e.g., marked as deduplicated but never stored).",
-      "solution": "Perform the critical DB write first. Only after confirming success, record side effects like dedup markers or send notifications."
-    },
     "01KS4PMPGYWRKXR8XRZMAPBYE1": {
       "slug": "write-tool-requires-prior-read-for-moved-04b3",
       "type": "hint",
@@ -1804,45 +1763,6 @@
       "summary": "npm ci fails silently when workspace packages referenced in lockfile are not cop",
       "problem": "`npm ci` in a workspace fails with a cryptic lockfile error if any workspace directory referenced in `package-lock.json` is missing from the filesystem.",
       "solution": "Ensure all workspace directories are present before running `npm ci`. For Docker builds, use `--progress=plain` to surface the exact error."
-    },
-    "01KS4PGDWG7K4SR1SQESP083VN": {
-      "slug": "large-find-output-can-be-automatically-s-99db",
-      "type": "hint",
-      "priority": 7,
-      "toolNames": [
-        "Bash"
-      ],
-      "commandRegexSources": [
-        {
-          "source": "\\bfind\\b",
-          "flags": ""
-        },
-        {
-          "source": "grep -r",
-          "flags": ""
-        },
-        {
-          "source": "ls -laR",
-          "flags": ""
-        },
-        {
-          "source": "ls -R",
-          "flags": ""
-        }
-      ],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
-      "modelRegexSources": [],
-      "outputRegexSources": [],
-      "tags": [
-        "tool:bash",
-        "severity:silent-truncation"
-      ],
-      "scope": null,
-      "message": "## Lesson: Large Bash output is auto-truncated and saved to file; only preview shown\nWhen running find commands that discover many results (111.2KB in this session), the Bash tool automatically saves the overflow output to a persisted file and shows only a preview. This can be surprising if you expect the full output in the result.\n**Fix**: When expecting large output from find or similar commands, be prepared to check the persisted file location provided in the tool result, or use grep/head to filter results before they exceed buffer limits.",
-      "summary": "Large Bash output is auto-truncated and saved to file; only preview shown",
-      "problem": "When running find commands that discover many results (111.2KB in this session), the Bash tool automatically saves the overflow output to a persisted file and shows only a preview. This can be surprising if you expect the full output in the result.",
-      "solution": "When expecting large output from find or similar commands, be prepared to check the persisted file location provided in the tool result, or use grep/head to filter results before they exceed buffer limits."
     },
     "01KS4PJ0YHA17XSVR7716W2A76": {
       "slug": "snoowrap-dependency-chain-includes-depre-2eb6",
@@ -3782,33 +3702,6 @@
       "summary": "Called ExitPlanMode repeatedly without user approval of the design",
       "problem": "Called ExitPlanMode three times in the same session when the user had clearly not approved the design. ExitPlanMode is only for requesting final approval — not for checkpoints mid-conversation where the user is still giving feedback.",
       "solution": "Only call ExitPlanMode once the brainstorming conversation is complete, the user has said something equivalent to \"looks good\" or \"proceed,\" and the plan file contains a proper implementation plan (not a PRD)."
-    },
-    "01KPKE12SM4F7CB0ZVKFMSQ3T4": {
-      "slug": "wrote-the-full-prd-content-into-the-plan-a106",
-      "type": "hint",
-      "priority": 3,
-      "toolNames": [
-        "Write"
-      ],
-      "commandRegexSources": [
-        {
-          "source": "\\bplan\\b",
-          "flags": ""
-        }
-      ],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
-      "modelRegexSources": [],
-      "outputRegexSources": [],
-      "tags": [
-        "severity:process-violation",
-        "topic:plan-mode"
-      ],
-      "scope": null,
-      "message": "## Lesson: Wrote the full PRD content into the plan file.\nWrote the full PRD content into the plan file. The plan file should contain an implementation plan (phases, files, steps, verification) — not a product requirements document. The PRD already existed at docs/prds/003-mcp-server.md. Duplicating it into the plan file confused the purpose of both documents.\n**Fix**: The plan file = implementation steps for the engineer to execute. The PRD = what and why. Keep them separate. The plan file should reference the PRD, not restate it.",
-      "summary": "Wrote the full PRD content into the plan file.",
-      "problem": "Wrote the full PRD content into the plan file. The plan file should contain an implementation plan (phases, files, steps, verification) — not a product requirements document. The PRD already existed at docs/prds/003-mcp-server.md. Duplicating it into the plan file confused the purpose of both documents.",
-      "solution": "The plan file = implementation steps for the engineer to execute. The PRD = what and why. Keep them separate. The plan file should reference the PRD, not restate it."
     },
     "01KPKE12SMGWFDQSBB5V4XZ4H7": {
       "slug": "the-pytest-guard-lesson-fires-on-any-bas-fad3",
