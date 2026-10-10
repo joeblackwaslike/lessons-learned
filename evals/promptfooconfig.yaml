@@ -2465,5 +2465,381 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
+  - description: TC-P17-plan-file-contains-prd-content [control]
+    vars:
+      scenarioId: TC-P17-plan-file-contains-prd-content
+      prompt: '{{file://scenarios/TC-P17-plan-file-contains-prd-content/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-P17-plan-file-contains-prd-content [treatment]
+    vars:
+      scenarioId: TC-P17-plan-file-contains-prd-content
+      prompt: '{{file://scenarios/TC-P17-plan-file-contains-prd-content/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - wrote-the-full-prd-content-into-the-plan-a106
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+
+  - description: TC-P18-write-plan-doc-outside-worktree [control]
+    vars:
+      scenarioId: TC-P18-write-plan-doc-outside-worktree
+      prompt: '{{file://scenarios/TC-P18-write-plan-doc-outside-worktree/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-P18-write-plan-doc-outside-worktree [treatment]
+    vars:
+      scenarioId: TC-P18-write-plan-doc-outside-worktree
+      prompt: '{{file://scenarios/TC-P18-write-plan-doc-outside-worktree/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - writeedit-plan-or-spec-docs-inside-a-wor-efb4
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+
+  - description: TC-P19-drive-pr-to-merge [control]
+    vars:
+      scenarioId: TC-P19-drive-pr-to-merge
+      prompt: '{{file://scenarios/TC-P19-drive-pr-to-merge/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-P19-drive-pr-to-merge [treatment]
+    vars:
+      scenarioId: TC-P19-drive-pr-to-merge
+      prompt: '{{file://scenarios/TC-P19-drive-pr-to-merge/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - drive-pr-to-merge-after-no-mistakes-pipe-51b2
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+
+  - description: TC-P20-never-run-gh-pr-create-directly [control]
+    vars:
+      scenarioId: TC-P20-never-run-gh-pr-create-directly
+      prompt: '{{file://scenarios/TC-P20-never-run-gh-pr-create-directly/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-P20-never-run-gh-pr-create-directly [treatment]
+    vars:
+      scenarioId: TC-P20-never-run-gh-pr-create-directly
+      prompt: '{{file://scenarios/TC-P20-never-run-gh-pr-create-directly/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - never-run-gh-pr-create-directly-use-no-m-ade4
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+
+  - description: TC-P21-reply-on-review-thread [control]
+    vars:
+      scenarioId: TC-P21-reply-on-review-thread
+      prompt: '{{file://scenarios/TC-P21-reply-on-review-thread/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-P21-reply-on-review-thread [treatment]
+    vars:
+      scenarioId: TC-P21-reply-on-review-thread
+      prompt: '{{file://scenarios/TC-P21-reply-on-review-thread/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - reply-on-the-review-thread-itself-not-in-2071
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+
+  - description: TC-P22-brainstorming-skill-gate-bypass [control]
+    vars:
+      scenarioId: TC-P22-brainstorming-skill-gate-bypass
+      prompt: '{{file://scenarios/TC-P22-brainstorming-skill-gate-bypass/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-P22-brainstorming-skill-gate-bypass [treatment]
+    vars:
+      scenarioId: TC-P22-brainstorming-skill-gate-bypass
+      prompt: '{{file://scenarios/TC-P22-brainstorming-skill-gate-bypass/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - invoked-brainstorming-skill-acknowledged-1976
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+
+  - description: TC-H82-guard-api-calls-at-call-site [control]
+    vars:
+      scenarioId: TC-H82-guard-api-calls-at-call-site
+      prompt: '{{file://scenarios/TC-H82-guard-api-calls-at-call-site/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H82-guard-api-calls-at-call-site [treatment]
+    vars:
+      scenarioId: TC-H82-guard-api-calls-at-call-site
+      prompt: '{{file://scenarios/TC-H82-guard-api-calls-at-call-site/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - guard-api-calls-against-missing-credenti-ab4a
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+
+  - description: TC-H83-db-insert-before-side-effects [control]
+    vars:
+      scenarioId: TC-H83-db-insert-before-side-effects
+      prompt: '{{file://scenarios/TC-H83-db-insert-before-side-effects/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H83-db-insert-before-side-effects [treatment]
+    vars:
+      scenarioId: TC-H83-db-insert-before-side-effects
+      prompt: '{{file://scenarios/TC-H83-db-insert-before-side-effects/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - persist-db-inserts-before-side-effects-r-a82f
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+
+  - description: TC-H84-read-backup-before-bulk-delete [control]
+    vars:
+      scenarioId: TC-H84-read-backup-before-bulk-delete
+      prompt: '{{file://scenarios/TC-H84-read-backup-before-bulk-delete/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H84-read-backup-before-bulk-delete [treatment]
+    vars:
+      scenarioId: TC-H84-read-backup-before-bulk-delete
+      prompt: '{{file://scenarios/TC-H84-read-backup-before-bulk-delete/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - read-at-least-one-backup-before-bulk-del-8464
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+
+  - description: TC-H85-detection-predicate-matches-real-condition [control]
+    vars:
+      scenarioId: TC-H85-detection-predicate-matches-real-condition
+      prompt: '{{file://scenarios/TC-H85-detection-predicate-matches-real-condition/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H85-detection-predicate-matches-real-condition [treatment]
+    vars:
+      scenarioId: TC-H85-detection-predicate-matches-real-condition
+      prompt: '{{file://scenarios/TC-H85-detection-predicate-matches-real-condition/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - make-the-detection-predicate-match-the-r-b8ff
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+
+  - description: TC-H86-read-before-write [control]
+    vars:
+      scenarioId: TC-H86-read-before-write
+      prompt: '{{file://scenarios/TC-H86-read-before-write/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H86-read-before-write [treatment]
+    vars:
+      scenarioId: TC-H86-read-before-write
+      prompt: '{{file://scenarios/TC-H86-read-before-write/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - validate-file-encoding-structure-before-b005
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+
+  - description: TC-H87-byte-length-not-char-length [control]
+    vars:
+      scenarioId: TC-H87-byte-length-not-char-length
+      prompt: '{{file://scenarios/TC-H87-byte-length-not-char-length/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H87-byte-length-not-char-length [treatment]
+    vars:
+      scenarioId: TC-H87-byte-length-not-char-length
+      prompt: '{{file://scenarios/TC-H87-byte-length-not-char-length/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - character-length-and-byte-length-are-dif-5415
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+
+  - description: TC-H88-verify-file-sync-before-commit [control]
+    vars:
+      scenarioId: TC-H88-verify-file-sync-before-commit
+      prompt: '{{file://scenarios/TC-H88-verify-file-sync-before-commit/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H88-verify-file-sync-before-commit [treatment]
+    vars:
+      scenarioId: TC-H88-verify-file-sync-before-commit
+      prompt: '{{file://scenarios/TC-H88-verify-file-sync-before-commit/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - verify-file-sync-before-committing-multi-8fb4
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+
+  - description: TC-H89-curl-pipe-head-before-grep [control]
+    vars:
+      scenarioId: TC-H89-curl-pipe-head-before-grep
+      prompt: '{{file://scenarios/TC-H89-curl-pipe-head-before-grep/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H89-curl-pipe-head-before-grep [treatment]
+    vars:
+      scenarioId: TC-H89-curl-pipe-head-before-grep
+      prompt: '{{file://scenarios/TC-H89-curl-pipe-head-before-grep/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - grep-on-empty-output-returns-no-lines-us-f593
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+
+  - description: TC-H90-filter-large-find-output [control]
+    vars:
+      scenarioId: TC-H90-filter-large-find-output
+      prompt: '{{file://scenarios/TC-H90-filter-large-find-output/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H90-filter-large-find-output [treatment]
+    vars:
+      scenarioId: TC-H90-filter-large-find-output
+      prompt: '{{file://scenarios/TC-H90-filter-large-find-output/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - large-find-output-can-be-automatically-s-99db
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+
+  - description: TC-H91-fix-merged-not-deployed [control]
+    vars:
+      scenarioId: TC-H91-fix-merged-not-deployed
+      prompt: '{{file://scenarios/TC-H91-fix-merged-not-deployed/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H91-fix-merged-not-deployed [treatment]
+    vars:
+      scenarioId: TC-H91-fix-merged-not-deployed
+      prompt: '{{file://scenarios/TC-H91-fix-merged-not-deployed/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - a-fix-merged-to-main-is-not-deployed-unt-eb0b
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+
+  - description: TC-H92-webfetch-fallback-filtered-curl [control]
+    vars:
+      scenarioId: TC-H92-webfetch-fallback-filtered-curl
+      prompt: '{{file://scenarios/TC-H92-webfetch-fallback-filtered-curl/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H92-webfetch-fallback-filtered-curl [treatment]
+    vars:
+      scenarioId: TC-H92-webfetch-fallback-filtered-curl
+      prompt: '{{file://scenarios/TC-H92-webfetch-fallback-filtered-curl/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - webfetch-tool-errors-should-trigger-fall-be54
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+
+  - description: TC-H93-inFlight-guard-concurrent-worker [control]
+    vars:
+      scenarioId: TC-H93-inFlight-guard-concurrent-worker
+      prompt: '{{file://scenarios/TC-H93-inFlight-guard-concurrent-worker/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H93-inFlight-guard-concurrent-worker [treatment]
+    vars:
+      scenarioId: TC-H93-inFlight-guard-concurrent-worker
+      prompt: '{{file://scenarios/TC-H93-inFlight-guard-concurrent-worker/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - guard-concurrent-worker-invocations-with-b3cc
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+
 outputPath: results/cache/latest-run.json
 sharing: false

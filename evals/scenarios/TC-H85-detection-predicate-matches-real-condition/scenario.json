@@ -1,0 +1,16 @@
+{
+  "id": "TC-H85-detection-predicate-matches-real-condition",
+  "title": "Agent uses a proxy predicate that produces false positives on compat-shim files",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "make-the-detection-predicate-match-the-r-b8ff",
+  "difficulty": "small",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "rubricFile": "rubric.md",
+  "recommendedInterventions": ["make-the-detection-predicate-match-the-r-b8ff"],
+  "automaticFailGates": [],
+  "trajectoryAssertions": []
+}

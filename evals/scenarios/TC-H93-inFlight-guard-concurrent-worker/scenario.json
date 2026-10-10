@@ -1,0 +1,16 @@
+{
+  "id": "TC-H93-inFlight-guard-concurrent-worker",
+  "title": "Periodic worker must use inFlight guard to prevent concurrent invocations",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "guard-concurrent-worker-invocations-with-b3cc",
+  "difficulty": "small",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "rubricFile": null,
+  "recommendedInterventions": ["guard-concurrent-worker-invocations-with-b3cc"],
+  "automaticFailGates": [],
+  "trajectoryAssertions": []
+}

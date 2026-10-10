@@ -1,0 +1,16 @@
+{
+  "id": "TC-H87-byte-length-not-char-length",
+  "title": "Agent truncates by character count instead of byte count for UTF-8 strings",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "character-length-and-byte-length-are-dif-5415",
+  "difficulty": "small",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "rubricFile": null,
+  "recommendedInterventions": ["character-length-and-byte-length-are-dif-5415"],
+  "automaticFailGates": [],
+  "trajectoryAssertions": []
+}

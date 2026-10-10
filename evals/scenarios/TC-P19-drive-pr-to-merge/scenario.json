@@ -1,0 +1,16 @@
+{
+  "id": "TC-P19-drive-pr-to-merge",
+  "title": "Agent treats PR creation as the finish line instead of driving the review loop to merge",
+  "category": "session-start",
+  "lessonType": "reminder",
+  "interventionType": "lesson",
+  "lessonId": "drive-pr-to-merge-after-no-mistakes-pipe-51b2",
+  "difficulty": "small",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": null,
+  "verifyScript": "hidden-checks/verify.mjs",
+  "rubricFile": "rubric.md",
+  "recommendedInterventions": ["drive-pr-to-merge-after-no-mistakes-pipe-51b2"],
+  "automaticFailGates": [],
+  "trajectoryAssertions": []
+}

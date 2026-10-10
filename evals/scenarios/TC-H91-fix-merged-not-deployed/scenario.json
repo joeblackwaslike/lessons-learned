@@ -1,0 +1,16 @@
+{
+  "id": "TC-H91-fix-merged-not-deployed",
+  "title": "Merged to main does not mean deployed — version bump and artifact rebuild required",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "a-fix-merged-to-main-is-not-deployed-unt-eb0b",
+  "difficulty": "small",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": null,
+  "verifyScript": "hidden-checks/verify.mjs",
+  "rubricFile": "rubric.md",
+  "recommendedInterventions": ["a-fix-merged-to-main-is-not-deployed-unt-eb0b"],
+  "automaticFailGates": [],
+  "trajectoryAssertions": []
+}

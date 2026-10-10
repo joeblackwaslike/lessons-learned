@@ -1,0 +1,16 @@
+{
+  "id": "TC-H89-curl-pipe-head-before-grep",
+  "title": "Inspect raw curl output before applying grep filters",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "grep-on-empty-output-returns-no-lines-us-f593",
+  "difficulty": "small",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": null,
+  "verifyScript": "hidden-checks/verify.mjs",
+  "rubricFile": "rubric.md",
+  "recommendedInterventions": ["grep-on-empty-output-returns-no-lines-us-f593"],
+  "automaticFailGates": [],
+  "trajectoryAssertions": []
+}

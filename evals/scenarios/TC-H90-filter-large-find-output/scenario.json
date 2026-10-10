@@ -1,0 +1,16 @@
+{
+  "id": "TC-H90-filter-large-find-output",
+  "title": "Bound find/grep-r output to avoid silent auto-truncation",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "large-find-output-can-be-automatically-s-99db",
+  "difficulty": "small",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": null,
+  "verifyScript": "hidden-checks/verify.mjs",
+  "rubricFile": "rubric.md",
+  "recommendedInterventions": ["large-find-output-can-be-automatically-s-99db"],
+  "automaticFailGates": [],
+  "trajectoryAssertions": []
+}

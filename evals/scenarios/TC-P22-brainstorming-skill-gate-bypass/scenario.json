@@ -1,0 +1,16 @@
+{
+  "id": "TC-P22-brainstorming-skill-gate-bypass",
+  "title": "Agent invokes brainstorming skill then immediately bypasses the approval gate",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "invoked-brainstorming-skill-acknowledged-1976",
+  "difficulty": "small",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": null,
+  "verifyScript": "hidden-checks/verify.mjs",
+  "rubricFile": "rubric.md",
+  "recommendedInterventions": ["invoked-brainstorming-skill-acknowledged-1976"],
+  "automaticFailGates": [],
+  "trajectoryAssertions": []
+}

@@ -1,0 +1,2 @@
+database_url: "postgres://old/prod"
+app_name: oldapp

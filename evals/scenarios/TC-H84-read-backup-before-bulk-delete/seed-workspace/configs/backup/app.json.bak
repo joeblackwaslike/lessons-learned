@@ -1,0 +1,1 @@
+{"database_url": "postgres://legacy/prod", "legacy_key": "old_value", "api_version": 1}

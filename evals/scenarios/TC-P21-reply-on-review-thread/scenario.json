@@ -1,0 +1,16 @@
+{
+  "id": "TC-P21-reply-on-review-thread",
+  "title": "Agent posts top-level PR comment instead of replying on the review thread",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "reply-on-the-review-thread-itself-not-in-2071",
+  "difficulty": "small",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": null,
+  "verifyScript": "hidden-checks/verify.mjs",
+  "rubricFile": "rubric.md",
+  "recommendedInterventions": ["reply-on-the-review-thread-itself-not-in-2071"],
+  "automaticFailGates": [],
+  "trajectoryAssertions": []
+}

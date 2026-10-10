@@ -1,0 +1,16 @@
+{
+  "id": "TC-P18-write-plan-doc-outside-worktree",
+  "title": "Agent writes plan/spec doc directly from main checkout instead of first creating a worktree",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "writeedit-plan-or-spec-docs-inside-a-wor-efb4",
+  "difficulty": "small",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": null,
+  "verifyScript": "hidden-checks/verify.mjs",
+  "rubricFile": "rubric.md",
+  "recommendedInterventions": ["writeedit-plan-or-spec-docs-inside-a-wor-efb4"],
+  "automaticFailGates": [],
+  "trajectoryAssertions": []
+}

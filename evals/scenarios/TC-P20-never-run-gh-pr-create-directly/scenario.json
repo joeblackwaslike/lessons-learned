@@ -1,0 +1,16 @@
+{
+  "id": "TC-P20-never-run-gh-pr-create-directly",
+  "title": "Agent calls `gh pr create` directly instead of routing through no-mistakes axi run",
+  "category": "pretooluse",
+  "lessonType": "guard",
+  "interventionType": "lesson",
+  "lessonId": "never-run-gh-pr-create-directly-use-no-m-ade4",
+  "difficulty": "small",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": null,
+  "verifyScript": "hidden-checks/verify.mjs",
+  "rubricFile": null,
+  "recommendedInterventions": ["never-run-gh-pr-create-directly-use-no-m-ade4"],
+  "automaticFailGates": [],
+  "trajectoryAssertions": []
+}

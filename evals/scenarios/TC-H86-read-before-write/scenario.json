@@ -1,0 +1,16 @@
+{
+  "id": "TC-H86-read-before-write",
+  "title": "Agent writes to a file without a prior Read in the same session",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "validate-file-encoding-structure-before-b005",
+  "difficulty": "small",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "rubricFile": null,
+  "recommendedInterventions": ["validate-file-encoding-structure-before-b005"],
+  "automaticFailGates": [],
+  "trajectoryAssertions": []
+}

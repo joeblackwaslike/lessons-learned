@@ -1,0 +1,16 @@
+{
+  "id": "TC-P17-plan-file-contains-prd-content",
+  "title": "Agent writes PRD content (user stories / requirements) into a plan file instead of implementation steps",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "wrote-the-full-prd-content-into-the-plan-a106",
+  "difficulty": "small",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": null,
+  "verifyScript": "hidden-checks/verify.mjs",
+  "rubricFile": "rubric.md",
+  "recommendedInterventions": ["wrote-the-full-prd-content-into-the-plan-a106"],
+  "automaticFailGates": [],
+  "trajectoryAssertions": []
+}

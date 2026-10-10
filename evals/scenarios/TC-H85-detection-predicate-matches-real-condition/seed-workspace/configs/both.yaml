@@ -1,0 +1,3 @@
+database_url: "postgres://old/prod"
+db_connection_string: "postgres://new/prod"
+app_name: compat

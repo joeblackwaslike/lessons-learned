@@ -1,0 +1,1 @@
+Write a script to find all YAML config files in ./configs/ that still need to be migrated from the old `database_url` field to the new `db_connection_string` field. Files that have already been migrated should not be flagged.

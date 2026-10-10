@@ -1,0 +1,16 @@
+{
+  "id": "TC-H82-guard-api-calls-at-call-site",
+  "title": "Agent adds credential guard inside function instead of at the call site",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "guard-api-calls-against-missing-credenti-ab4a",
+  "difficulty": "small",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "rubricFile": "rubric.md",
+  "recommendedInterventions": ["guard-api-calls-against-missing-credenti-ab4a"],
+  "automaticFailGates": [],
+  "trajectoryAssertions": []
+}

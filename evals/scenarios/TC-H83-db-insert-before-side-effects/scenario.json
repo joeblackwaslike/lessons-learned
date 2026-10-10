@@ -1,0 +1,16 @@
+{
+  "id": "TC-H83-db-insert-before-side-effects",
+  "title": "Agent records dedup entry before DB insert instead of after",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "persist-db-inserts-before-side-effects-r-a82f",
+  "difficulty": "small",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "rubricFile": "rubric.md",
+  "recommendedInterventions": ["persist-db-inserts-before-side-effects-r-a82f"],
+  "automaticFailGates": [],
+  "trajectoryAssertions": []
+}

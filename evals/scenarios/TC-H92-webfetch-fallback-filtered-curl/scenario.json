@@ -1,0 +1,16 @@
+{
+  "id": "TC-H92-webfetch-fallback-filtered-curl",
+  "title": "WebFetch failure fallback must use filtered curl, not bare curl",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "webfetch-tool-errors-should-trigger-fall-be54",
+  "difficulty": "small",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": null,
+  "verifyScript": "hidden-checks/verify.mjs",
+  "rubricFile": "rubric.md",
+  "recommendedInterventions": ["webfetch-tool-errors-should-trigger-fall-be54"],
+  "automaticFailGates": [],
+  "trajectoryAssertions": []
+}

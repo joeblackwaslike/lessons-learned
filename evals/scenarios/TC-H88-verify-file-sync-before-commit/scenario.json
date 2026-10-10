@@ -1,0 +1,16 @@
+{
+  "id": "TC-H88-verify-file-sync-before-commit",
+  "title": "Verify mirrored file sync with diff before committing",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "verify-file-sync-before-committing-multi-8fb4",
+  "difficulty": "small",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": null,
+  "verifyScript": "hidden-checks/verify.mjs",
+  "rubricFile": null,
+  "recommendedInterventions": ["verify-file-sync-before-committing-multi-8fb4"],
+  "automaticFailGates": [],
+  "trajectoryAssertions": []
+}
