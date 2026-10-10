@@ -2242,8 +2242,32 @@ function cmdPreflight(args) {
     // evals/scenarios may not exist in all environments — non-fatal
   }
 
+  // Unrun scenarios: every scenario dir must appear in the latest eval results
+  let unrunScenarios = [];
+  const resultsFile = join(PLUGIN_ROOT, 'evals', 'results', 'cache', 'latest-run.json');
+  if (existsSync(scenariosDir)) {
+    const ranScenarioIds = new Set();
+    if (existsSync(resultsFile)) {
+      try {
+        const res = JSON.parse(readFileSync(resultsFile, 'utf8'));
+        for (const r of res?.results?.results ?? []) {
+          if (r?.vars?.scenarioId) ranScenarioIds.add(r.vars.scenarioId);
+        }
+      } catch {
+        /* ignore parse errors */
+      }
+    }
+    unrunScenarios = readdirSync(scenariosDir).filter(
+      d => /^TC-/.test(d) && !ranScenarioIds.has(d)
+    );
+  }
+
   const hasIssues =
-    failing.length > 0 || storeWarnings.length > 0 || manifestStale || orphanedScenarios.length > 0;
+    failing.length > 0 ||
+    storeWarnings.length > 0 ||
+    manifestStale ||
+    orphanedScenarios.length > 0 ||
+    unrunScenarios.length > 0;
 
   if (args.includes('--json')) {
     const out = {
@@ -2251,6 +2275,7 @@ function cmdPreflight(args) {
       store: storeWarnings,
       manifest: { stale: manifestStale, note: manifestNote },
       orphanedScenarios,
+      unrunScenarios,
     };
     console.log(JSON.stringify(out, null, 2));
     if (hasIssues) process.exit(1);
@@ -2295,6 +2320,15 @@ function cmdPreflight(args) {
       console.log();
     }
     console.log(`To fix: node scripts/lessons.mjs edit --id <slug> --patch '{"field":"value"}'`);
+  }
+
+  if (unrunScenarios.length > 0) {
+    console.log(`${unrunScenarios.length} scenario(s) not yet run — run before pushing:\n`);
+    for (const id of unrunScenarios) console.log(`  ${id}`);
+    console.log(
+      `\n  Run: cd evals && npx promptfoo eval --config promptfooconfig.yaml \\\n` +
+        `         --filter-pattern "${unrunScenarios.slice(0, 3).join('|')}${unrunScenarios.length > 3 ? '|...' : ''}"\n`
+    );
   }
 
   if (!hasIssues) {
