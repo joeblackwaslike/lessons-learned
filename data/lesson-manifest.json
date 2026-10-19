@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-10-10T20:40:37.657Z",
+  "generatedAt": "2026-10-19T14:44:48.285Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -2000,10 +2000,10 @@
         "severity:silent-failure"
       ],
       "scope": null,
-      "message": "## Lesson: curl | grep silent on no-match — use head first to verify raw output format\nWhen piping curl output to grep with filters (e.g., grep -A 20 -i 'install'), if the pattern doesn't match or the response is empty, no output is produced, making it unclear if the fetch succeeded or failed.\n**Fix**: Always use a preliminary head -N fetch to inspect raw output format and verify content before applying grep filters. This reveals whether the source has the expected structure.",
-      "summary": "curl | grep silent on no-match — use head first to verify raw output format",
+      "message": "## Lesson: Never pipe curl directly to grep — capture first, then inspect and filter separately\nWhen piping curl output to grep with filters (e.g., grep -A 20 -i 'install'), if the pattern doesn't match or the response is empty, no output is produced, making it unclear if the fetch succeeded or failed.\n**Fix**: Capture the response to a variable first: `raw=$(curl -sL URL)`. Then inspect with `echo \"$raw\" | head -20` and filter separately with `echo \"$raw\" | grep PATTERN`. Never pipe curl directly to grep — you cannot distinguish a failed fetch from a no-match.",
+      "summary": "Never pipe curl directly to grep — capture first, then inspect and filter separately",
       "problem": "When piping curl output to grep with filters (e.g., grep -A 20 -i 'install'), if the pattern doesn't match or the response is empty, no output is produced, making it unclear if the fetch succeeded or failed.",
-      "solution": "Always use a preliminary head -N fetch to inspect raw output format and verify content before applying grep filters. This reveals whether the source has the expected structure."
+      "solution": "Capture the response to a variable first: `raw=$(curl -sL URL)`. Then inspect with `echo \"$raw\" | head -20` and filter separately with `echo \"$raw\" | grep PATTERN`. Never pipe curl directly to grep — you cannot distinguish a failed fetch from a no-match."
     },
     "01KS4PQN845J3WNVJV73HJ0ZB6": {
       "slug": "unsupportedoperationerror-should-be-caug-8bba",

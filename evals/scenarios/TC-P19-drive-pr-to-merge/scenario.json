@@ -7,7 +7,7 @@
   "lessonId": "drive-pr-to-merge-after-no-mistakes-pipe-51b2",
   "difficulty": "small",
   "promptFile": "PROMPT.md",
-  "workspaceSeedDir": null,
+  "workspaceSeedDir": "seed-workspace",
   "verifyScript": "hidden-checks/verify.mjs",
   "rubricFile": "rubric.md",
   "recommendedInterventions": ["drive-pr-to-merge-after-no-mistakes-pipe-51b2"],

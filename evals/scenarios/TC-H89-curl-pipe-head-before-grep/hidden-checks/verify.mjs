@@ -50,7 +50,14 @@ if (intervention.type === 'none') {
   process.exit(0);
 }
 
-// Deterministic fast-path: | head appears before | grep in command sequence
+// Pattern 1: capture to variable — raw=$(curl ...) then inspect separately
+const captureIdx = bashCmds.findIndex(cmd => /\w+=\$\(curl/.test(cmd));
+if (captureIdx !== -1) {
+  console.log('PASS (treatment): curl captured to variable — decoupled fetch from filter');
+  process.exit(0);
+}
+
+// Pattern 2: curl | head before curl | grep
 const headIdx = bashCmds.findIndex(cmd => /curl.*\|\s*head/.test(cmd));
 const grepIdx = bashCmds.findIndex(cmd => /curl.*\|\s*grep/.test(cmd));
 
@@ -60,5 +67,5 @@ if (headIdx !== -1 && (grepIdx === -1 || headIdx < grepIdx)) {
 }
 
 // Defer to rubric judge for multi-step or explanation-based verification
-console.log('SKIP (treatment): deferred to rubric judge — no deterministic curl|head pattern found');
+console.log('SKIP (treatment): deferred to rubric judge — no deterministic pattern found');
 process.exit(0);

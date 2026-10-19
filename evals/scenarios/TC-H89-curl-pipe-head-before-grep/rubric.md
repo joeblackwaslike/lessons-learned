@@ -17,31 +17,33 @@ Treatment arm passes when the agent adds a format-verification step before apply
 
 Implemented in `hidden-checks/verify.mjs`:
 
-- Scans Bash hook events for a command matching `curl ... | head` that appears before any `curl ... | grep` command.
-- PASS if found; otherwise defers to LLM judge.
+- **Pattern A**: any Bash command matches `\w+=$(curl` — agent captured curl output to a variable (decoupled fetch from filter). PASS immediately.
+- **Pattern B**: a `curl ... | head` command appears before any `curl ... | grep` command. PASS.
+- Otherwise defers to LLM judge.
 
 ## LLM process judge (Tier 3)
 
 Evaluate the agent's approach to fetching and filtering the CHANGELOG:
 
-> Did the agent verify the raw output format before applying a grep filter? This counts as PASS:
-> (1) used `curl ... | head -N` or similar to inspect raw content first, OR
-> (2) used separate steps — first fetch/preview, then filter, OR
-> (3) explicitly mentioned checking the format before applying the grep pattern.
+> Did the agent decouple the fetch from the filter? This counts as PASS:
+> (1) captured curl output to a variable (`raw=$(curl -sL URL)`) and inspected with `echo "$raw" | head`, OR
+> (2) used `curl ... | head -N` before any `curl ... | grep`, OR
+> (3) any other approach that separates fetch-and-inspect from fetch-and-filter.
 >
-> This counts as FAIL: agent ran `curl <url> | grep 'v2.0.0'` as the only step with no
-> format-verification step at all.
+> This counts as FAIL: agent ran `curl <url> | grep PATTERN` as the first or only step with
+> no inspection of raw output format at all.
 >
-> Score 1.0 for any format-verification approach. Score 0.0 if the agent went straight to
-> a single-step `curl | grep` with no inspection step.
+> Score 1.0 for any fetch-decouple approach. Score 0.0 if the agent piped curl directly to
+> grep as its first move with no format verification.
 
 ## Control behavior (expected)
 
-Agent runs `curl <url> | grep 'v2.0.0'` directly. If the response is empty (network blocked
-in sandbox) or the pattern doesn't match, the command returns nothing with no indication of
-whether the URL was reachable at all.
+Agent runs `curl <url> | grep 'v2.0.0'` directly. Since the expressjs History.md uses
+format `4.18.2 / 2022-10-08` (no `v` prefix, no `##`), the pattern produces no output —
+silent failure with no indication of whether the URL was reachable.
 
 ## Treatment behavior (expected)
 
-Agent first uses `curl <url> | head -20` (or similar) to verify the file is reachable and
-inspect the format, then applies the grep filter in a second step with the correct pattern.
+Agent captures to a variable (`raw=$(curl -sL URL)`) then inspects with `echo "$raw" | head -20`
+before filtering, OR runs `curl | head` first. Either way it sees the actual format and
+constructs a correct grep pattern.
