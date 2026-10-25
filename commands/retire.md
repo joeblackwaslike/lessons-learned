@@ -40,6 +40,10 @@ if((bad.has(s.lessonId)||!active.has(s.lessonId))&&cfg.includes('scenarios/'+d+'
 
 Each `LIVE:` line is a scenario to retire or a deliberate exception (name it in the commit message). As of 2026-10-25 about 70 scenarios for already-archived lessons are still in the config, so retire only the ones in scope for the task unless told otherwise.
 
+## Requires
+
+A lesson with `requires` gets its prerequisite injected into every arm, control included, by `evals/lib/requires.mjs`: `plugin` and namespaced `skill` types become `--plugin-dir`, `cli` is checked on PATH, and anything else fails the run loudly. If an arm runs without the prerequisite, CONTROL_CORRECT results are misleading. Confirmed 2026-10-25: TC-P22 ran skill-less until this existed.
+
 ## Finish
 
 Run the scenarios you touched, commit, and push (the pre-push eval gate needs any changed scenario to have been run).

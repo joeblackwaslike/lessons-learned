@@ -32,6 +32,7 @@ import { createHash } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { resolveLessonRequires } from '../lib/requires.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const EVALS_ROOT = resolve(__dirname, '..');
@@ -74,10 +75,18 @@ export default class ClaudeAgentProvider {
     }
 
     const lesson = parseLessonSnapshot(vars, isControl);
-    const controlHash = computeControlHash(scenarioId, model);
+    const { lessonId } = JSON.parse(readFileSync(join(scenarioDir, 'scenario.json'), 'utf8'));
+    const { pluginDirs, signature: requiresSignature } = resolveLessonRequires(lessonId);
+    const controlHash = computeControlHash(scenarioId, model, requiresSignature);
     const controlTranscriptFile = join(CACHE_DIR, `control-${controlHash}.json`);
     const lessonContentHash = lesson ? computeLessonContentHash(lesson) : null;
-    const cacheKey = computeCacheKey(scenarioDir, intervention, model, lessonContentHash);
+    const cacheKey = computeCacheKey(
+      scenarioDir,
+      intervention,
+      model,
+      lessonContentHash,
+      requiresSignature
+    );
     const cacheFile = join(CACHE_DIR, `${cacheKey}.json`);
 
     const cached = tryArmCache(cacheFile, isControl, controlTranscriptFile);
@@ -95,6 +104,7 @@ export default class ClaudeAgentProvider {
       scenarioId,
       cacheKey,
       controlHash,
+      pluginDirs,
       startMs: Date.now(),
     });
 
@@ -123,6 +133,7 @@ async function runArm({
   scenarioId,
   cacheKey,
   controlHash,
+  pluginDirs,
   startMs,
 }) {
   const workspaceDir = mkdtempSync(join(tmpdir(), `eval-${scenarioId}-`));
@@ -150,6 +161,7 @@ async function runArm({
     if (!isControl && existsSync(mcpConfigPath)) {
       claudeArgs.push('--mcp-config', mcpConfigPath, '--strict-mcp-config');
     }
+    for (const dir of pluginDirs) claudeArgs.push('--plugin-dir', dir);
     claudeArgs.push('-p', prompt);
     const claudeResult = spawnSync(findClaudeBin(), claudeArgs, {
       cwd: workspaceDir,
@@ -426,8 +438,14 @@ function buildEnv(workspaceDir, _intervention, scenarioEnv = {}) {
 // ── Cache key computation ──────────────────────────────────────────────────────
 
 /** sha256(prompt + ':' + model) — stable key for control transcript reuse across lessons */
-function computeControlHash(scenarioId, model) {
-  return createHash('sha256').update(scenarioId).update(':').update(model).digest('hex');
+function computeControlHash(scenarioId, model, requiresSignature = '') {
+  return createHash('sha256')
+    .update(scenarioId)
+    .update(':')
+    .update(model)
+    .update(':')
+    .update(requiresSignature)
+    .digest('hex');
 }
 
 /** sha256(problem + ':' + solution) — changes when lesson content is edited */
@@ -444,7 +462,13 @@ function computeLessonContentHash(lesson) {
  * Intervention ids are sorted so order doesn't affect the key.
  * lessonContentHash is included for treatment arms so edits invalidate the cache.
  */
-function computeCacheKey(scenarioDir, intervention, model, lessonContentHash = null) {
+function computeCacheKey(
+  scenarioDir,
+  intervention,
+  model,
+  lessonContentHash = null,
+  requiresSignature = ''
+) {
   const sortedIntervention = {
     type: intervention.type ?? 'none',
     ids: [...(intervention.ids ?? [])].sort((a, b) => a.localeCompare(b)),
@@ -456,6 +480,7 @@ function computeCacheKey(scenarioDir, intervention, model, lessonContentHash = n
     .update(':')
     .update(JSON.stringify(sortedIntervention));
   if (lessonContentHash) hash.update(':').update(lessonContentHash);
+  if (requiresSignature) hash.update(':').update(requiresSignature);
   return hash.digest('hex');
 }
 
