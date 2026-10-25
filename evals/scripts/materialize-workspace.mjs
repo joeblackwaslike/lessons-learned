@@ -94,6 +94,7 @@ writeFileSync(
 const shimPath = resolve(__dirname, 'eval-hook-shim.mjs');
 const postShimPath = resolve(__dirname, 'eval-post-hook-shim.mjs');
 const lessonInjectPath = resolve(EVALS_ROOT, '..', 'hooks', 'pretooluse-lesson-inject.mjs');
+const sessionStartPath = resolve(EVALS_ROOT, '..', 'hooks', 'session-start-lesson-protocol.mjs');
 const claudeDir = join(workspaceDir, '.claude');
 const settingsPath = join(claudeDir, 'settings.json');
 mkdirSync(claudeDir, { recursive: true });
@@ -150,22 +151,22 @@ if (existsSync(lessonInjectPath)) {
     hooks: [{ type: 'command', command: `node "${lessonInjectPath}"`, timeout: 10 }],
   });
 }
+if (existsSync(sessionStartPath)) {
+  workspaceSettings.hooks.SessionStart ??= [];
+  workspaceSettings.hooks.SessionStart.push({
+    hooks: [{ type: 'command', command: `node "${sessionStartPath}"`, timeout: 10 }],
+  });
+}
 workspaceSettings.hooks.PostToolUse ??= [];
 workspaceSettings.hooks.PostToolUse.push({
   matcher: 'Bash',
   hooks: [{ type: 'command', command: `node "${postShimPath}"`, timeout: 5 }],
 });
-if (intervention.type === 'claudemd') {
-  // claudemd intervention: Serena directive is injected into CLAUDE.md below.
-  // serena-hooks SessionStart/SessionEnd are intentionally omitted — they don't fire in --print mode.
-}
 
 writeFileSync(settingsPath, JSON.stringify(workspaceSettings, null, 2));
 
 // --- Workspace scope directive --------------------------------------------------
 // Inject a CLAUDE.md that constrains the agent to the workspace directory.
-// Also injects protocol/directive lessons directly — more reliable than SessionStart hooks
-// in --print mode, since CLAUDE.md is always loaded by Claude Code.
 const claudeMdSections = [
   '# Workspace',
   '',
@@ -173,22 +174,7 @@ const claudeMdSections = [
   'Do not explore paths outside this workspace or read system configuration files.',
 ];
 
-const protocolLessons = Object.values(manifest.lessons ?? {}).filter(
-  l => (l.type === 'protocol' || l.type === 'directive') && !l.disabled
-);
-
-if (protocolLessons.length > 0) {
-  claudeMdSections.push(
-    '',
-    '# Active Protocols',
-    '',
-    'The following protocols apply to this session. Follow them strictly before taking any actions.',
-    ...protocolLessons.flatMap(l => ['', l.message ?? `## ${l.summary}`])
-  );
-}
-
 // For claudemd intervention: inject Serena usage directive directly into CLAUDE.md.
-// SessionStart hooks do not fire in --print mode, so this is the only reliable injection point.
 if (intervention.type === 'claudemd') {
   claudeMdSections.push(
     '',
