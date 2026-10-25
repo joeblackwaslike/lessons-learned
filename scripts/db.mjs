@@ -276,6 +276,17 @@ function applyMigrations(db) {
     }
   }
 
+  // Migration: add evalSkipReason column (why an eval cannot reliably test this lesson)
+  {
+    const cols = db
+      .prepare('PRAGMA table_info(lessons)')
+      .all()
+      .map(r => r.name);
+    if (!cols.includes('evalSkipReason')) {
+      db.exec(`ALTER TABLE lessons ADD COLUMN evalSkipReason TEXT`);
+    }
+  }
+
   // Migration: add modelPatterns column (JSON array of regex strings matched against command + file path)
   {
     const cols = db
@@ -614,6 +625,18 @@ export function insertCandidateBatch(db, records) {
   return { inserted, skipped, skippedReasons };
 }
 
+const SKIP_REASON_RECEIPT =
+  /\bTC-[A-Z]*\d+|\bresults\/|\beval-\w+-\d{4}-\d{2}-\d{2}|\b\d{4}-\d{2}-\d{2}\b/;
+
+function assertSkipReasonHasReceipt(patch) {
+  const reason = patch.evalSkipReason;
+  if (reason && !SKIP_REASON_RECEIPT.test(reason)) {
+    throw new Error(
+      'evalSkipReason needs a receipt: cite the scenario id (TC-...), a results/ path, or the date you verified it. An explanation without evidence is a hypothesis, not a reason.'
+    );
+  }
+}
+
 /**
  * Promote records to status='active'. Applies optional per-id field patches first.
  *
@@ -627,6 +650,7 @@ export function insertCandidateBatch(db, records) {
  */
 export function promoteToActive(db, ids, patches = {}) {
   if (ids.length === 0) return [];
+  for (const patch of Object.values(patches)) assertSkipReasonHasReceipt(patch);
 
   const now = new Date().toISOString();
 
@@ -708,6 +732,7 @@ export function promoteToActive(db, ids, patches = {}) {
  * @returns {{ id: string, slug: string } | null}  null if ID not found
  */
 export function updateRecord(db, id, patch) {
+  assertSkipReasonHasReceipt(patch);
   const PATCHABLE = [
     'summary',
     'problem',

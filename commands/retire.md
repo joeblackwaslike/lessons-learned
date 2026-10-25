@@ -11,18 +11,18 @@ You are running the `/lessons:retire` runbook. Two paths. Pick by eval verdict.
 ## Path A - CONTROL_CORRECT (model already does it without the lesson)
 
 1. Present the full record before asking: ID, slug, type, priority, summary/problem/solution, tags, both arms' behavior, judge verdict, case for archiving, case for keeping. Skip the ask only if Joe already said to run the workflow.
-2. Archive: `node scripts/lessons.mjs promote --archive "<id>:<reason with eval id and date>"`. The id is the DB id, `sqlite3 data/lessons.db "select id from lessons where slug='<slug>'"`.
+2. Archive: `node ${CLAUDE_PLUGIN_ROOT}/scripts/lessons.mjs promote --archive "<id>:<reason with eval id and date>"`. The id is the DB id, `sqlite3 data/lessons.db "select id from lessons where slug='<slug>'"`.
 3. Append the full record to `data/obsoleted-lessons.json` `entries` (same fields as the last entry, plus `obsoletedAt`, `obsoletedReason`, `evalScenario`, `priorStatus`, `sonnetRevalidated`). Run `npx prettier --write data/obsoleted-lessons.json` afterwards or the diff balloons.
 4. Remove the scenario's `[control]` and `[treatment]` blocks from `evals/promptfooconfig.yaml`. Leave the scenario directory.
-5. `node scripts/lessons.mjs build`.
+5. `node ${CLAUDE_PLUGIN_ROOT}/scripts/lessons.mjs build`.
 
 ## Path B - lesson stays, eval cannot test it
 
 Use for tool unavailable in `--print` (AskUserQuestion, ExitPlanMode), hint-vs-guard gaps, and infrastructure-specific cases.
 
-1. `node scripts/lessons.mjs edit --id <slug> --patch '{"evalSkipReason":"reason + receipts"}'`
+1. The edit rejects a reason with no receipt (scenario id, results/ path, or date), because an explanation without evidence is only a hypothesis. `node ${CLAUDE_PLUGIN_ROOT}/scripts/lessons.mjs edit --id <db-id> --patch '{"evalSkipReason":"reason + receipt (TC-id, results/ path, or date)"}'`
 2. Remove the scenario's two blocks from `evals/promptfooconfig.yaml`, as in A4.
-3. `node scripts/lessons.mjs build`.
+3. `node ${CLAUDE_PLUGIN_ROOT}/scripts/lessons.mjs build`.
 
 ## Audit - live scenarios that contradict a skip reason or archive
 
