@@ -18,24 +18,10 @@ extensions:
 evaluateOptions:
   maxConcurrency: 1
 tests:
-  - description: TC-H3 hardcoded-secrets [control]
-    vars:
-      scenarioId: TC-H3-hardcoded-secrets
-      prompt: '{{file://scenarios/TC-H3-hardcoded-secrets/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
   - description: TC-G1 pytest-hang [control]
     vars:
       scenarioId: TC-G1-pytest-hang
       prompt: '{{file://scenarios/TC-G1-pytest-hang/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H1 git-worktree [control]
-    vars:
-      scenarioId: TC-H1-git-worktree
-      prompt: '{{file://scenarios/TC-H1-git-worktree/PROMPT.md}}'
       intervention:
         type: none
         ids: []
@@ -46,34 +32,6 @@ tests:
       intervention:
         type: none
         ids: []
-  - description: TC-P1 subagent-tools [control]
-    vars:
-      scenarioId: TC-P1-subagent-tools
-      prompt: '{{file://scenarios/TC-P1-subagent-tools/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-P2 hook-schema [control]
-    vars:
-      scenarioId: TC-P2-hook-schema
-      prompt: '{{file://scenarios/TC-P2-hook-schema/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-P3 overfitted-fix [control]
-    vars:
-      scenarioId: TC-P3-overfitted-fix
-      prompt: '{{file://scenarios/TC-P3-overfitted-fix/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-D1 speculative-abstractions [control]
-    vars:
-      scenarioId: TC-D1-speculative-abstractions
-      prompt: '{{file://scenarios/TC-D1-speculative-abstractions/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
   - description: TC-D3 collaborative-planning [control]
     vars:
       scenarioId: TC-D3-collaborative-planning
@@ -81,21 +39,6 @@ tests:
       intervention:
         type: none
         ids: []
-  - description: TC-H3 hardcoded-secrets [treatment]
-    vars:
-      scenarioId: TC-H3-hardcoded-secrets
-      prompt: '{{file://scenarios/TC-H3-hardcoded-secrets/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - never-write-literal-secret-values-into-s-b226
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-      - type: javascript
-        value: file://scripts/assert-trajectory.mjs
   - description: TC-G1 pytest-hang [treatment]
     vars:
       scenarioId: TC-G1-pytest-hang
@@ -111,21 +54,6 @@ tests:
         value: file://scripts/assert-judge.mjs
       - type: javascript
         value: file://scripts/assert-trajectory.mjs
-  - description: TC-H1 git-worktree [treatment]
-    vars:
-      scenarioId: TC-H1-git-worktree
-      prompt: '{{file://scenarios/TC-H1-git-worktree/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - parallel-agents-sharing-a-git-worktree-c-cad6
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-      - type: javascript
-        value: file://scripts/assert-trajectory.mjs
   - description: TC-H2 eval-injection [treatment]
     vars:
       scenarioId: TC-H2-eval-injection
@@ -134,66 +62,6 @@ tests:
         type: lesson
         ids:
           - eval-on-user-supplied-command-strings-en-702a
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-      - type: javascript
-        value: file://scripts/assert-trajectory.mjs
-  - description: TC-P1 subagent-tools [treatment]
-    vars:
-      scenarioId: TC-P1-subagent-tools
-      prompt: '{{file://scenarios/TC-P1-subagent-tools/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - subagents-may-not-have-access-to-bash-to-6a73
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-      - type: javascript
-        value: file://scripts/assert-trajectory.mjs
-  - description: TC-P2 hook-schema [treatment]
-    vars:
-      scenarioId: TC-P2-hook-schema
-      prompt: '{{file://scenarios/TC-P2-hook-schema/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - used-decision-deny-reason-systemmessage-f9e4
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-      - type: javascript
-        value: file://scripts/assert-trajectory.mjs
-  - description: TC-P3 overfitted-fix [treatment]
-    vars:
-      scenarioId: TC-P3-overfitted-fix
-      prompt: '{{file://scenarios/TC-P3-overfitted-fix/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - observed-that-read-tool-results-caused-f-29e8
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-      - type: javascript
-        value: file://scripts/assert-trajectory.mjs
-  - description: TC-D1 speculative-abstractions [treatment]
-    vars:
-      scenarioId: TC-D1-speculative-abstractions
-      prompt: '{{file://scenarios/TC-D1-speculative-abstractions/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - implement-only-current-requirements-do-n-9e06
     assert:
       - type: javascript
         value: file://scripts/assert-hidden-check.mjs
@@ -231,26 +99,6 @@ tests:
         type: lesson
         ids:
           - search-for-community-solutions-before-debugging-fr-p3sy
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H4-async-function-called-without [control]
-    vars:
-      scenarioId: TC-H4-async-function-called-without
-      prompt: '{{file://scenarios/TC-H4-async-function-called-without/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H4-async-function-called-without [treatment]
-    vars:
-      scenarioId: TC-H4-async-function-called-without
-      prompt: '{{file://scenarios/TC-H4-async-function-called-without/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - async-function-called-without-await-sile-3a80
     assert:
       - type: javascript
         value: file://scripts/assert-hidden-check.mjs
@@ -336,46 +184,6 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
-  - description: TC-H7-scripts-hang-waiting-on-stdin [control]
-    vars:
-      scenarioId: TC-H7-scripts-hang-waiting-on-stdin
-      prompt: '{{file://scenarios/TC-H7-scripts-hang-waiting-on-stdin/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H7-scripts-hang-waiting-on-stdin [treatment]
-    vars:
-      scenarioId: TC-H7-scripts-hang-waiting-on-stdin
-      prompt: '{{file://scenarios/TC-H7-scripts-hang-waiting-on-stdin/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - scripts-hang-waiting-on-stdin-when-run-i-7195
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H8-grep-exits-1-on-no-match-silen [control]
-    vars:
-      scenarioId: TC-H8-grep-exits-1-on-no-match-silen
-      prompt: '{{file://scenarios/TC-H8-grep-exits-1-on-no-match-silen/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H8-grep-exits-1-on-no-match-silen [treatment]
-    vars:
-      scenarioId: TC-H8-grep-exits-1-on-no-match-silen
-      prompt: '{{file://scenarios/TC-H8-grep-exits-1-on-no-match-silen/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - grep-exits-1-on-no-match-silently-aborti-d9ff
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
   - description: TC-H9-missing-tool-dependency-check [control]
     vars:
       scenarioId: TC-H9-missing-tool-dependency-check
@@ -391,46 +199,6 @@ tests:
         type: lesson
         ids:
           - missing-tool-dependency-check-silently-d-4a39
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H10-asynciocreatetask-without-done [control]
-    vars:
-      scenarioId: TC-H10-asynciocreatetask-without-done
-      prompt: '{{file://scenarios/TC-H10-asynciocreatetask-without-done/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H10-asynciocreatetask-without-done [treatment]
-    vars:
-      scenarioId: TC-H10-asynciocreatetask-without-done
-      prompt: '{{file://scenarios/TC-H10-asynciocreatetask-without-done/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - asynciocreatetask-without-donecallback-s-97d8
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H11-iterating-over-mutable-async-c [control]
-    vars:
-      scenarioId: TC-H11-iterating-over-mutable-async-c
-      prompt: '{{file://scenarios/TC-H11-iterating-over-mutable-async-c/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H11-iterating-over-mutable-async-c [treatment]
-    vars:
-      scenarioId: TC-H11-iterating-over-mutable-async-c
-      prompt: '{{file://scenarios/TC-H11-iterating-over-mutable-async-c/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - iterating-over-mutable-async-collection-85a9
     assert:
       - type: javascript
         value: file://scripts/assert-hidden-check.mjs
@@ -496,66 +264,6 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
-  - description: TC-P4-bias-toward-action-do-it-yours [control]
-    vars:
-      scenarioId: TC-P4-bias-toward-action-do-it-yours
-      prompt: '{{file://scenarios/TC-P4-bias-toward-action-do-it-yours/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-P4-bias-toward-action-do-it-yours [treatment]
-    vars:
-      scenarioId: TC-P4-bias-toward-action-do-it-yours
-      prompt: '{{file://scenarios/TC-P4-bias-toward-action-do-it-yours/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - bias-toward-action-do-it-yourself-before-8eec
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H13-browser-eval-returns-undefined [control]
-    vars:
-      scenarioId: TC-H13-browser-eval-returns-undefined
-      prompt: '{{file://scenarios/TC-H13-browser-eval-returns-undefined/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H13-browser-eval-returns-undefined [treatment]
-    vars:
-      scenarioId: TC-H13-browser-eval-returns-undefined
-      prompt: '{{file://scenarios/TC-H13-browser-eval-returns-undefined/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - browser-eval-returns-undefined-for-async-9cf3
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H14-biome-2x-config-schema-is-inco [control]
-    vars:
-      scenarioId: TC-H14-biome-2x-config-schema-is-inco
-      prompt: '{{file://scenarios/TC-H14-biome-2x-config-schema-is-inco/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H14-biome-2x-config-schema-is-inco [treatment]
-    vars:
-      scenarioId: TC-H14-biome-2x-config-schema-is-inco
-      prompt: '{{file://scenarios/TC-H14-biome-2x-config-schema-is-inco/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - biome-2x-config-schema-is-incompatible-w-3369
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
   - description: TC-H15-agents-expand-scope-during-exe [control]
     vars:
       scenarioId: TC-H15-agents-expand-scope-during-exe
@@ -571,46 +279,6 @@ tests:
         type: lesson
         ids:
           - agents-expand-scope-during-execution-int-1274
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H16-agent-written-tests-validate-t [control]
-    vars:
-      scenarioId: TC-H16-agent-written-tests-validate-t
-      prompt: '{{file://scenarios/TC-H16-agent-written-tests-validate-t/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H16-agent-written-tests-validate-t [treatment]
-    vars:
-      scenarioId: TC-H16-agent-written-tests-validate-t
-      prompt: '{{file://scenarios/TC-H16-agent-written-tests-validate-t/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - agent-written-tests-validate-the-agents-2fdf
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H17-batches-ordered-top-down-fail [control]
-    vars:
-      scenarioId: TC-H17-batches-ordered-top-down-fail
-      prompt: '{{file://scenarios/TC-H17-batches-ordered-top-down-fail/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H17-batches-ordered-top-down-fail [treatment]
-    vars:
-      scenarioId: TC-H17-batches-ordered-top-down-fail
-      prompt: '{{file://scenarios/TC-H17-batches-ordered-top-down-fail/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - batches-ordered-top-down-fail-when-a-tas-6001
     assert:
       - type: javascript
         value: file://scripts/assert-hidden-check.mjs
@@ -676,106 +344,6 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
-  - description: TC-H20-always-quote-file-paths-with-s [control]
-    vars:
-      scenarioId: TC-H20-always-quote-file-paths-with-s
-      prompt: '{{file://scenarios/TC-H20-always-quote-file-paths-with-s/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H20-always-quote-file-paths-with-s [treatment]
-    vars:
-      scenarioId: TC-H20-always-quote-file-paths-with-s
-      prompt: '{{file://scenarios/TC-H20-always-quote-file-paths-with-s/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - always-quote-file-paths-with-spaces-in-s-ba0a
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-P6-always-add-timeout-and-p-nocac [control]
-    vars:
-      scenarioId: TC-P6-always-add-timeout-and-p-nocac
-      prompt: '{{file://scenarios/TC-P6-always-add-timeout-and-p-nocac/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-P6-always-add-timeout-and-p-nocac [treatment]
-    vars:
-      scenarioId: TC-P6-always-add-timeout-and-p-nocac
-      prompt: '{{file://scenarios/TC-P6-always-add-timeout-and-p-nocac/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - always-add-timeout-and-p-nocacheprovider-013f
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H21-git-stash-pop-fails-with-alrea [control]
-    vars:
-      scenarioId: TC-H21-git-stash-pop-fails-with-alrea
-      prompt: '{{file://scenarios/TC-H21-git-stash-pop-fails-with-alrea/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H21-git-stash-pop-fails-with-alrea [treatment]
-    vars:
-      scenarioId: TC-H21-git-stash-pop-fails-with-alrea
-      prompt: '{{file://scenarios/TC-H21-git-stash-pop-fails-with-alrea/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - git-stash-pop-fails-with-already-exists-808b
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H22-cd-inside-a-bash-function-leak [control]
-    vars:
-      scenarioId: TC-H22-cd-inside-a-bash-function-leak
-      prompt: '{{file://scenarios/TC-H22-cd-inside-a-bash-function-leak/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H22-cd-inside-a-bash-function-leak [treatment]
-    vars:
-      scenarioId: TC-H22-cd-inside-a-bash-function-leak
-      prompt: '{{file://scenarios/TC-H22-cd-inside-a-bash-function-leak/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - cd-inside-a-bash-function-leaks-the-dire-9b4c
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H23-decorator-registry-stays-empty [control]
-    vars:
-      scenarioId: TC-H23-decorator-registry-stays-empty
-      prompt: '{{file://scenarios/TC-H23-decorator-registry-stays-empty/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H23-decorator-registry-stays-empty [treatment]
-    vars:
-      scenarioId: TC-H23-decorator-registry-stays-empty
-      prompt: '{{file://scenarios/TC-H23-decorator-registry-stays-empty/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - decorator-registry-stays-empty-because-t-bb41
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
   - description: TC-H24-hooks-without-timeout-field-cr [control]
     vars:
       scenarioId: TC-H24-hooks-without-timeout-field-cr
@@ -836,66 +404,6 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
-  - description: TC-H27-jq-tonumber-crashes-on-non-num [control]
-    vars:
-      scenarioId: TC-H27-jq-tonumber-crashes-on-non-num
-      prompt: '{{file://scenarios/TC-H27-jq-tonumber-crashes-on-non-num/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H27-jq-tonumber-crashes-on-non-num [treatment]
-    vars:
-      scenarioId: TC-H27-jq-tonumber-crashes-on-non-num
-      prompt: '{{file://scenarios/TC-H27-jq-tonumber-crashes-on-non-num/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - jq-tonumber-crashes-on-non-numeric-input-0536
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H28-grep-c-with-echo-0-fallback-do [control]
-    vars:
-      scenarioId: TC-H28-grep-c-with-echo-0-fallback-do
-      prompt: '{{file://scenarios/TC-H28-grep-c-with-echo-0-fallback-do/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H28-grep-c-with-echo-0-fallback-do [treatment]
-    vars:
-      scenarioId: TC-H28-grep-c-with-echo-0-fallback-do
-      prompt: '{{file://scenarios/TC-H28-grep-c-with-echo-0-fallback-do/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - grep-c-with-echo-0-fallback-double-outpu-1aa4
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H29-env-file-parser-using-cut-d-fa [control]
-    vars:
-      scenarioId: TC-H29-env-file-parser-using-cut-d-fa
-      prompt: '{{file://scenarios/TC-H29-env-file-parser-using-cut-d-fa/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H29-env-file-parser-using-cut-d-fa [treatment]
-    vars:
-      scenarioId: TC-H29-env-file-parser-using-cut-d-fa
-      prompt: '{{file://scenarios/TC-H29-env-file-parser-using-cut-d-fa/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - env-file-parser-using-cut-d-fails-to-str-2d06
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
   - description: TC-H30-file-reads-at-batch-start-beco [control]
     vars:
       scenarioId: TC-H30-file-reads-at-batch-start-beco
@@ -911,26 +419,6 @@ tests:
         type: lesson
         ids:
           - file-reads-at-batch-start-become-stale-a-d847
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-P7-late-requirements-placed-mid-c [control]
-    vars:
-      scenarioId: TC-P7-late-requirements-placed-mid-c
-      prompt: '{{file://scenarios/TC-P7-late-requirements-placed-mid-c/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-P7-late-requirements-placed-mid-c [treatment]
-    vars:
-      scenarioId: TC-P7-late-requirements-placed-mid-c
-      prompt: '{{file://scenarios/TC-P7-late-requirements-placed-mid-c/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - late-requirements-placed-mid-context-are-871d
     assert:
       - type: javascript
         value: file://scripts/assert-hidden-check.mjs
@@ -956,46 +444,6 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
-  - description: TC-H32-pip-install-wrong-venv-j6n3 [control]
-    vars:
-      scenarioId: TC-H32-pip-install-wrong-venv-j6n3
-      prompt: '{{file://scenarios/TC-H32-pip-install-wrong-venv-j6n3/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H32-pip-install-wrong-venv-j6n3 [treatment]
-    vars:
-      scenarioId: TC-H32-pip-install-wrong-venv-j6n3
-      prompt: '{{file://scenarios/TC-H32-pip-install-wrong-venv-j6n3/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - pip-install-wrong-venv-j6n3
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H33-mktemp-without-a-trap-leaks-te [control]
-    vars:
-      scenarioId: TC-H33-mktemp-without-a-trap-leaks-te
-      prompt: '{{file://scenarios/TC-H33-mktemp-without-a-trap-leaks-te/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H33-mktemp-without-a-trap-leaks-te [treatment]
-    vars:
-      scenarioId: TC-H33-mktemp-without-a-trap-leaks-te
-      prompt: '{{file://scenarios/TC-H33-mktemp-without-a-trap-leaks-te/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - mktemp-without-a-trap-leaks-temp-files-o-b7f2
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
   - description: TC-P8-start-a-new-conversation-per-m [control]
     vars:
       scenarioId: TC-P8-start-a-new-conversation-per-m
@@ -1011,86 +459,6 @@ tests:
         type: lesson
         ids:
           - start-a-new-conversation-per-major-task-7b67
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H34-osascript-heredoc-dollar-signs [control]
-    vars:
-      scenarioId: TC-H34-osascript-heredoc-dollar-signs
-      prompt: '{{file://scenarios/TC-H34-osascript-heredoc-dollar-signs/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H34-osascript-heredoc-dollar-signs [treatment]
-    vars:
-      scenarioId: TC-H34-osascript-heredoc-dollar-signs
-      prompt: '{{file://scenarios/TC-H34-osascript-heredoc-dollar-signs/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - osascript-heredoc-dollar-signs-are-expan-5765
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H35-npm-link-peer-deps-r2f7 [control]
-    vars:
-      scenarioId: TC-H35-npm-link-peer-deps-r2f7
-      prompt: '{{file://scenarios/TC-H35-npm-link-peer-deps-r2f7/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H35-npm-link-peer-deps-r2f7 [treatment]
-    vars:
-      scenarioId: TC-H35-npm-link-peer-deps-r2f7
-      prompt: '{{file://scenarios/TC-H35-npm-link-peer-deps-r2f7/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - npm-link-peer-deps-r2f7
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H36-launchd-agents-do-not-inherit [control]
-    vars:
-      scenarioId: TC-H36-launchd-agents-do-not-inherit
-      prompt: '{{file://scenarios/TC-H36-launchd-agents-do-not-inherit/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H36-launchd-agents-do-not-inherit [treatment]
-    vars:
-      scenarioId: TC-H36-launchd-agents-do-not-inherit
-      prompt: '{{file://scenarios/TC-H36-launchd-agents-do-not-inherit/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - launchd-agents-do-not-inherit-shell-env-3142
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H37-oh-my-zsh-nvm-plugin-outputs-w [control]
-    vars:
-      scenarioId: TC-H37-oh-my-zsh-nvm-plugin-outputs-w
-      prompt: '{{file://scenarios/TC-H37-oh-my-zsh-nvm-plugin-outputs-w/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H37-oh-my-zsh-nvm-plugin-outputs-w [treatment]
-    vars:
-      scenarioId: TC-H37-oh-my-zsh-nvm-plugin-outputs-w
-      prompt: '{{file://scenarios/TC-H37-oh-my-zsh-nvm-plugin-outputs-w/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - oh-my-zsh-nvm-plugin-outputs-warnings-in-df6f
     assert:
       - type: javascript
         value: file://scripts/assert-hidden-check.mjs
@@ -1116,26 +484,6 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
-  - description: TC-H39-local-keyword-used-outside-a-b [control]
-    vars:
-      scenarioId: TC-H39-local-keyword-used-outside-a-b
-      prompt: '{{file://scenarios/TC-H39-local-keyword-used-outside-a-b/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H39-local-keyword-used-outside-a-b [treatment]
-    vars:
-      scenarioId: TC-H39-local-keyword-used-outside-a-b
-      prompt: '{{file://scenarios/TC-H39-local-keyword-used-outside-a-b/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - local-keyword-used-outside-a-bash-functi-2b18
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
   - description: TC-P9-single-example-in-a-spec-is-tr [control]
     vars:
       scenarioId: TC-P9-single-example-in-a-spec-is-tr
@@ -1151,26 +499,6 @@ tests:
         type: lesson
         ids:
           - single-example-in-a-spec-is-treated-as-t-0f87
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H40-lesson-reminders-placed-at-bat [control]
-    vars:
-      scenarioId: TC-H40-lesson-reminders-placed-at-bat
-      prompt: '{{file://scenarios/TC-H40-lesson-reminders-placed-at-bat/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H40-lesson-reminders-placed-at-bat [treatment]
-    vars:
-      scenarioId: TC-H40-lesson-reminders-placed-at-bat
-      prompt: '{{file://scenarios/TC-H40-lesson-reminders-placed-at-bat/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - lesson-reminders-placed-at-batch-start-a-c7e1
     assert:
       - type: javascript
         value: file://scripts/assert-hidden-check.mjs
@@ -1196,66 +524,6 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
-  - description: TC-H41-serenas-replacesymbolbody-on-a [control]
-    vars:
-      scenarioId: TC-H41-serenas-replacesymbolbody-on-a
-      prompt: '{{file://scenarios/TC-H41-serenas-replacesymbolbody-on-a/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H41-serenas-replacesymbolbody-on-a [treatment]
-    vars:
-      scenarioId: TC-H41-serenas-replacesymbolbody-on-a
-      prompt: '{{file://scenarios/TC-H41-serenas-replacesymbolbody-on-a/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - serenas-replacesymbolbody-on-a-js-consta-9fb4
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H42-xargs-word-splits-filenames-wi [control]
-    vars:
-      scenarioId: TC-H42-xargs-word-splits-filenames-wi
-      prompt: '{{file://scenarios/TC-H42-xargs-word-splits-filenames-wi/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H42-xargs-word-splits-filenames-wi [treatment]
-    vars:
-      scenarioId: TC-H42-xargs-word-splits-filenames-wi
-      prompt: '{{file://scenarios/TC-H42-xargs-word-splits-filenames-wi/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - xargs-word-splits-filenames-with-spaces-c0bd
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H43-systemd-environmentfile-silent [control]
-    vars:
-      scenarioId: TC-H43-systemd-environmentfile-silent
-      prompt: '{{file://scenarios/TC-H43-systemd-environmentfile-silent/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H43-systemd-environmentfile-silent [treatment]
-    vars:
-      scenarioId: TC-H43-systemd-environmentfile-silent
-      prompt: '{{file://scenarios/TC-H43-systemd-environmentfile-silent/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - systemd-environmentfile-silently-ignores-7408
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
   - description: TC-H44-webfetch-and-curl-fail-on-urls [control]
     vars:
       scenarioId: TC-H44-webfetch-and-curl-fail-on-urls
@@ -1271,26 +539,6 @@ tests:
         type: lesson
         ids:
           - webfetch-and-curl-fail-on-urls-that-requ-e368
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H45-virtualenv-env-var-points-to-w [control]
-    vars:
-      scenarioId: TC-H45-virtualenv-env-var-points-to-w
-      prompt: '{{file://scenarios/TC-H45-virtualenv-env-var-points-to-w/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H45-virtualenv-env-var-points-to-w [treatment]
-    vars:
-      scenarioId: TC-H45-virtualenv-env-var-points-to-w
-      prompt: '{{file://scenarios/TC-H45-virtualenv-env-var-points-to-w/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - virtualenv-env-var-points-to-wrong-venv-8def
     assert:
       - type: javascript
         value: file://scripts/assert-hidden-check.mjs
@@ -1316,66 +564,6 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
-  - description: TC-H47-typescript-file-using-jsx-must [control]
-    vars:
-      scenarioId: TC-H47-typescript-file-using-jsx-must
-      prompt: '{{file://scenarios/TC-H47-typescript-file-using-jsx-must/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H47-typescript-file-using-jsx-must [treatment]
-    vars:
-      scenarioId: TC-H47-typescript-file-using-jsx-must
-      prompt: '{{file://scenarios/TC-H47-typescript-file-using-jsx-must/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - typescript-file-using-jsx-must-have-tsx-ce55
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H48-vitest-run-run-double-argument [control]
-    vars:
-      scenarioId: TC-H48-vitest-run-run-double-argument
-      prompt: '{{file://scenarios/TC-H48-vitest-run-run-double-argument/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H48-vitest-run-run-double-argument [treatment]
-    vars:
-      scenarioId: TC-H48-vitest-run-run-double-argument
-      prompt: '{{file://scenarios/TC-H48-vitest-run-run-double-argument/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - vitest-run-run-double-argument-treats-se-983e
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H49-unquoted-bash-variable-in-comp [control]
-    vars:
-      scenarioId: TC-H49-unquoted-bash-variable-in-comp
-      prompt: '{{file://scenarios/TC-H49-unquoted-bash-variable-in-comp/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H49-unquoted-bash-variable-in-comp [treatment]
-    vars:
-      scenarioId: TC-H49-unquoted-bash-variable-in-comp
-      prompt: '{{file://scenarios/TC-H49-unquoted-bash-variable-in-comp/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - unquoted-bash-variable-in-comparison-fai-05b4
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
   - description: TC-H50-tasks-without-a-verification-c [control]
     vars:
       scenarioId: TC-H50-tasks-without-a-verification-c
@@ -1391,26 +579,6 @@ tests:
         type: lesson
         ids:
           - tasks-without-a-verification-command-pas-fc8f
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H51-suppressoutput-true-in-hook-js [control]
-    vars:
-      scenarioId: TC-H51-suppressoutput-true-in-hook-js
-      prompt: '{{file://scenarios/TC-H51-suppressoutput-true-in-hook-js/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H51-suppressoutput-true-in-hook-js [treatment]
-    vars:
-      scenarioId: TC-H51-suppressoutput-true-in-hook-js
-      prompt: '{{file://scenarios/TC-H51-suppressoutput-true-in-hook-js/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - suppressoutput-true-in-hook-json-hides-t-c48e
     assert:
       - type: javascript
         value: file://scripts/assert-hidden-check.mjs
@@ -1451,126 +619,6 @@ tests:
         type: lesson
         ids:
           - zod-v4-zodresolver-requires-zodv4core-to-ac16
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H54-vite-generates-absolute-asset [control]
-    vars:
-      scenarioId: TC-H54-vite-generates-absolute-asset
-      prompt: '{{file://scenarios/TC-H54-vite-generates-absolute-asset/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H54-vite-generates-absolute-asset [treatment]
-    vars:
-      scenarioId: TC-H54-vite-generates-absolute-asset
-      prompt: '{{file://scenarios/TC-H54-vite-generates-absolute-asset/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - vite-generates-absolute-asset-paths-e-f2a5
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H55-secrets-hardcoded-in-source-fi [control]
-    vars:
-      scenarioId: TC-H55-secrets-hardcoded-in-source-fi
-      prompt: '{{file://scenarios/TC-H55-secrets-hardcoded-in-source-fi/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H55-secrets-hardcoded-in-source-fi [treatment]
-    vars:
-      scenarioId: TC-H55-secrets-hardcoded-in-source-fi
-      prompt: '{{file://scenarios/TC-H55-secrets-hardcoded-in-source-fi/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - secrets-hardcoded-in-source-files-are-pe-00f3
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-G2-awk-code-injection-via-unvalid [control]
-    vars:
-      scenarioId: TC-G2-awk-code-injection-via-unvalid
-      prompt: '{{file://scenarios/TC-G2-awk-code-injection-via-unvalid/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-G2-awk-code-injection-via-unvalid [treatment]
-    vars:
-      scenarioId: TC-G2-awk-code-injection-via-unvalid
-      prompt: '{{file://scenarios/TC-G2-awk-code-injection-via-unvalid/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - awk-code-injection-via-unvalidated-shell-cf5a
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-G3-jq-string-interpolation-of-she [control]
-    vars:
-      scenarioId: TC-G3-jq-string-interpolation-of-she
-      prompt: '{{file://scenarios/TC-G3-jq-string-interpolation-of-she/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-G3-jq-string-interpolation-of-she [treatment]
-    vars:
-      scenarioId: TC-G3-jq-string-interpolation-of-she
-      prompt: '{{file://scenarios/TC-G3-jq-string-interpolation-of-she/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - jq-string-interpolation-of-shell-variabl-8803
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H56-sed-range-deletion-is-unbounde [control]
-    vars:
-      scenarioId: TC-H56-sed-range-deletion-is-unbounde
-      prompt: '{{file://scenarios/TC-H56-sed-range-deletion-is-unbounde/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H56-sed-range-deletion-is-unbounde [treatment]
-    vars:
-      scenarioId: TC-H56-sed-range-deletion-is-unbounde
-      prompt: '{{file://scenarios/TC-H56-sed-range-deletion-is-unbounde/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - sed-range-deletion-is-unbounded-when-the-64ac
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H57-mock-patch-namespace-v3x8 [control]
-    vars:
-      scenarioId: TC-H57-mock-patch-namespace-v3x8
-      prompt: '{{file://scenarios/TC-H57-mock-patch-namespace-v3x8/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H57-mock-patch-namespace-v3x8 [treatment]
-    vars:
-      scenarioId: TC-H57-mock-patch-namespace-v3x8
-      prompt: '{{file://scenarios/TC-H57-mock-patch-namespace-v3x8/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - mock-patch-namespace-v3x8
     assert:
       - type: javascript
         value: file://scripts/assert-hidden-check.mjs
@@ -1636,108 +684,6 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
-  - description: TC-G7-git-stash-untracked-p4w1 [control]
-    vars:
-      scenarioId: TC-G7-git-stash-untracked-p4w1
-      prompt: '{{file://scenarios/TC-G7-git-stash-untracked-p4w1/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-G7-git-stash-untracked-p4w1 [treatment]
-    vars:
-      scenarioId: TC-G7-git-stash-untracked-p4w1
-      prompt: '{{file://scenarios/TC-G7-git-stash-untracked-p4w1/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - git-stash-untracked-p4w1
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H58-git-commit-with-heredoc-fails [control]
-    vars:
-      scenarioId: TC-H58-git-commit-with-heredoc-fails
-      prompt: '{{file://scenarios/TC-H58-git-commit-with-heredoc-fails/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H58-git-commit-with-heredoc-fails [treatment]
-    vars:
-      scenarioId: TC-H58-git-commit-with-heredoc-fails
-      prompt: '{{file://scenarios/TC-H58-git-commit-with-heredoc-fails/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - git-commit-with-heredoc-fails-due-to-she-599e
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H59-pre-commit-hooks-lefthookhusky [control]
-    vars:
-      scenarioId: TC-H59-pre-commit-hooks-lefthookhusky
-      prompt: '{{file://scenarios/TC-H59-pre-commit-hooks-lefthookhusky/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H59-pre-commit-hooks-lefthookhusky [treatment]
-    vars:
-      scenarioId: TC-H59-pre-commit-hooks-lefthookhusky
-      prompt: '{{file://scenarios/TC-H59-pre-commit-hooks-lefthookhusky/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - pre-commit-hooks-lefthookhusky-fail-on-l-adf8
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H60-vitest-parallel-tests-fail-due [control]
-    vars:
-      scenarioId: TC-H60-vitest-parallel-tests-fail-due
-      prompt: '{{file://scenarios/TC-H60-vitest-parallel-tests-fail-due/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H60-vitest-parallel-tests-fail-due [treatment]
-    vars:
-      scenarioId: TC-H60-vitest-parallel-tests-fail-due
-      prompt: '{{file://scenarios/TC-H60-vitest-parallel-tests-fail-due/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - vitest-parallel-tests-fail-due-to-shared-a9cc
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H61 serena-over-read [control]
-    vars:
-      scenarioId: TC-H61-serena-over-read
-      prompt: '{{file://scenarios/TC-H61-serena-over-read/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H61 serena-over-read [treatment]
-    vars:
-      scenarioId: TC-H61-serena-over-read
-      prompt: '{{file://scenarios/TC-H61-serena-over-read/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - use-serena-getsymbolsoverview-or-findsym-2255
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-      - type: javascript
-        value: file://scripts/assert-trajectory.mjs
   - description: TC-D10 serena-activate [control]
     vars:
       scenarioId: TC-D10-serena-activate
@@ -1810,26 +756,6 @@ tests:
         type: lesson
         ids:
           - attach-evidence-to-every-load-bearing-cl-bff9
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-D2-write-minimum-code [control]
-    vars:
-      scenarioId: TC-D2-write-minimum-code
-      prompt: '{{file://scenarios/TC-D2-write-minimum-code/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-D2-write-minimum-code [treatment]
-    vars:
-      scenarioId: TC-D2-write-minimum-code
-      prompt: '{{file://scenarios/TC-D2-write-minimum-code/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - write-minimum-code-that-solves-the-probl-c264
     assert:
       - type: javascript
         value: file://scripts/assert-hidden-check.mjs
@@ -1915,72 +841,6 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
-  - description: TC-G8-never-use-rm-rf-outside-project [control]
-    vars:
-      scenarioId: TC-G8-never-use-rm-rf-outside-project
-      prompt: '{{file://scenarios/TC-G8-never-use-rm-rf-outside-project/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-G8-never-use-rm-rf-outside-project [treatment]
-    vars:
-      scenarioId: TC-G8-never-use-rm-rf-outside-project
-      prompt: '{{file://scenarios/TC-G8-never-use-rm-rf-outside-project/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - never-use-rm-rf-outside-project-cwd-clau-1683
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-      - type: javascript
-        value: file://scripts/assert-trajectory.mjs
-  - description: TC-G9-git-worktree-unlock-before-rem [control]
-    vars:
-      scenarioId: TC-G9-git-worktree-unlock-before-rem
-      prompt: '{{file://scenarios/TC-G9-git-worktree-unlock-before-rem/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-G9-git-worktree-unlock-before-rem [treatment]
-    vars:
-      scenarioId: TC-G9-git-worktree-unlock-before-rem
-      prompt: '{{file://scenarios/TC-G9-git-worktree-unlock-before-rem/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - git-worktree-unlock-before-remove-force-4048
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-      - type: javascript
-        value: file://scripts/assert-trajectory.mjs
-  - description: TC-G10-xargs-with-shell-c-blocked-by [control]
-    vars:
-      scenarioId: TC-G10-xargs-with-shell-c-blocked-by
-      prompt: '{{file://scenarios/TC-G10-xargs-with-shell-c-blocked-by/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-G10-xargs-with-shell-c-blocked-by [treatment]
-    vars:
-      scenarioId: TC-G10-xargs-with-shell-c-blocked-by
-      prompt: '{{file://scenarios/TC-G10-xargs-with-shell-c-blocked-by/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - xargs-with-shell-c-blocked-by-safety-net-bf72
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-      - type: javascript
-        value: file://scripts/assert-trajectory.mjs
   - description: TC-G11-block-full-file-dumps-via-cat [control]
     vars:
       scenarioId: TC-G11-block-full-file-dumps-via-cat
@@ -2025,106 +885,6 @@ tests:
         value: file://scripts/assert-judge.mjs
       - type: javascript
         value: file://scripts/assert-trajectory.mjs
-  - description: TC-H62-never-narrate-action-without-tool-call [control]
-    vars:
-      scenarioId: TC-H62-never-narrate-action-without-tool-call
-      prompt: '{{file://scenarios/TC-H62-never-narrate-action-without-tool-call/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H62-never-narrate-action-without-tool-call [treatment]
-    vars:
-      scenarioId: TC-H62-never-narrate-action-without-tool-call
-      prompt: '{{file://scenarios/TC-H62-never-narrate-action-without-tool-call/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - never-narrate-an-action-as-underway-with-2afa
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H63-only-change-what-task-requires [control]
-    vars:
-      scenarioId: TC-H63-only-change-what-task-requires
-      prompt: '{{file://scenarios/TC-H63-only-change-what-task-requires/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H63-only-change-what-task-requires [treatment]
-    vars:
-      scenarioId: TC-H63-only-change-what-task-requires
-      prompt: '{{file://scenarios/TC-H63-only-change-what-task-requires/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - only-change-what-the-task-requires-do-no-ec52
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H64-judge-gate-by-exit-code-not-grep [control]
-    vars:
-      scenarioId: TC-H64-judge-gate-by-exit-code-not-grep
-      prompt: '{{file://scenarios/TC-H64-judge-gate-by-exit-code-not-grep/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H64-judge-gate-by-exit-code-not-grep [treatment]
-    vars:
-      scenarioId: TC-H64-judge-gate-by-exit-code-not-grep
-      prompt: '{{file://scenarios/TC-H64-judge-gate-by-exit-code-not-grep/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - judge-a-verification-gate-by-its-exit-co-885e
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H65-prove-regression-test-fails-first [control]
-    vars:
-      scenarioId: TC-H65-prove-regression-test-fails-first
-      prompt: '{{file://scenarios/TC-H65-prove-regression-test-fails-first/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H65-prove-regression-test-fails-first [treatment]
-    vars:
-      scenarioId: TC-H65-prove-regression-test-fails-first
-      prompt: '{{file://scenarios/TC-H65-prove-regression-test-fails-first/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - prove-a-regression-test-fails-against-th-fc0f
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H66-never-inherit-interactive-model-in-subprocess [control]
-    vars:
-      scenarioId: TC-H66-never-inherit-interactive-model-in-subprocess
-      prompt: '{{file://scenarios/TC-H66-never-inherit-interactive-model-in-subprocess/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H66-never-inherit-interactive-model-in-subprocess [treatment]
-    vars:
-      scenarioId: TC-H66-never-inherit-interactive-model-in-subprocess
-      prompt: '{{file://scenarios/TC-H66-never-inherit-interactive-model-in-subprocess/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - never-let-code-inherit-the-interactive-m-5630
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
   - description: TC-H67-check-git-status-before-staging [control]
     vars:
       scenarioId: TC-H67-check-git-status-before-staging
@@ -2145,46 +905,6 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
-  - description: TC-H68-sync-base-branch-before-pr [control]
-    vars:
-      scenarioId: TC-H68-sync-base-branch-before-pr
-      prompt: '{{file://scenarios/TC-H68-sync-base-branch-before-pr/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H68-sync-base-branch-before-pr [treatment]
-    vars:
-      scenarioId: TC-H68-sync-base-branch-before-pr
-      prompt: '{{file://scenarios/TC-H68-sync-base-branch-before-pr/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - verify-base-branch-is-synced-with-remote-c325
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H69-paginated-query-page-size-truncated [control]
-    vars:
-      scenarioId: TC-H69-paginated-query-page-size-truncated
-      prompt: '{{file://scenarios/TC-H69-paginated-query-page-size-truncated/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H69-paginated-query-page-size-truncated [treatment]
-    vars:
-      scenarioId: TC-H69-paginated-query-page-size-truncated
-      prompt: '{{file://scenarios/TC-H69-paginated-query-page-size-truncated/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - a-paginated-query-returning-exactly-the-25da
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
   - description: TC-H70-webhook-sig-skipped-when-secret-unset [control]
     vars:
       scenarioId: TC-H70-webhook-sig-skipped-when-secret-unset
@@ -2200,26 +920,6 @@ tests:
         type: lesson
         ids:
           - webhook-signature-verification-skipped-w-c1a8
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H71-never-use-clientid-as-clientsecret [control]
-    vars:
-      scenarioId: TC-H71-never-use-clientid-as-clientsecret
-      prompt: '{{file://scenarios/TC-H71-never-use-clientid-as-clientsecret/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H71-never-use-clientid-as-clientsecret [treatment]
-    vars:
-      scenarioId: TC-H71-never-use-clientid-as-clientsecret
-      prompt: '{{file://scenarios/TC-H71-never-use-clientid-as-clientsecret/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - never-use-clientid-as-clientsecret-in-oa-feff
     assert:
       - type: javascript
         value: file://scripts/assert-hidden-check.mjs
@@ -2265,26 +965,6 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
-  - description: TC-H74-esm-explicit-js-extensions [control]
-    vars:
-      scenarioId: TC-H74-esm-explicit-js-extensions
-      prompt: '{{file://scenarios/TC-H74-esm-explicit-js-extensions/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H74-esm-explicit-js-extensions [treatment]
-    vars:
-      scenarioId: TC-H74-esm-explicit-js-extensions
-      prompt: '{{file://scenarios/TC-H74-esm-explicit-js-extensions/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - esm-module-imports-must-use-explicit-js-14b8
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
   - description: TC-H75-never-merge-unresolved-review [control]
     vars:
       scenarioId: TC-H75-never-merge-unresolved-review
@@ -2300,86 +980,6 @@ tests:
         type: lesson
         ids:
           - never-merge-a-pr-with-unresolved-review-3920
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H76-drop-constraint-if-exists [control]
-    vars:
-      scenarioId: TC-H76-drop-constraint-if-exists
-      prompt: '{{file://scenarios/TC-H76-drop-constraint-if-exists/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H76-drop-constraint-if-exists [treatment]
-    vars:
-      scenarioId: TC-H76-drop-constraint-if-exists
-      prompt: '{{file://scenarios/TC-H76-drop-constraint-if-exists/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - drop-constraint-without-if-exists-fails-80d4
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H77-push-base-before-worktree [control]
-    vars:
-      scenarioId: TC-H77-push-base-before-worktree
-      prompt: '{{file://scenarios/TC-H77-push-base-before-worktree/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H77-push-base-before-worktree [treatment]
-    vars:
-      scenarioId: TC-H77-push-base-before-worktree
-      prompt: '{{file://scenarios/TC-H77-push-base-before-worktree/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - push-local-commits-on-the-base-branch-be-bad5
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H78-worktree-prune-safety [control]
-    vars:
-      scenarioId: TC-H78-worktree-prune-safety
-      prompt: '{{file://scenarios/TC-H78-worktree-prune-safety/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H78-worktree-prune-safety [treatment]
-    vars:
-      scenarioId: TC-H78-worktree-prune-safety
-      prompt: '{{file://scenarios/TC-H78-worktree-prune-safety/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - dont-assume-worktree-is-safe-to-prune-ba-8ac3
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H79-gh-arg-jq-strings [control]
-    vars:
-      scenarioId: TC-H79-gh-arg-jq-strings
-      prompt: '{{file://scenarios/TC-H79-gh-arg-jq-strings/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H79-gh-arg-jq-strings [treatment]
-    vars:
-      scenarioId: TC-H79-gh-arg-jq-strings
-      prompt: '{{file://scenarios/TC-H79-gh-arg-jq-strings/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - gh-cli-arg-flag-auto-quotes-jq-arguments-274c
     assert:
       - type: javascript
         value: file://scripts/assert-hidden-check.mjs
@@ -2405,47 +1005,6 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
-  - description: TC-H81-jq-select-not-empty [control]
-    vars:
-      scenarioId: TC-H81-jq-select-not-empty
-      prompt: '{{file://scenarios/TC-H81-jq-select-not-empty/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H81-jq-select-not-empty [treatment]
-    vars:
-      scenarioId: TC-H81-jq-select-not-empty
-      prompt: '{{file://scenarios/TC-H81-jq-select-not-empty/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - jq-empty-output-vs-grep-filtering-on-jso-46e5
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-P17-plan-file-contains-prd-content [control]
-    vars:
-      scenarioId: TC-P17-plan-file-contains-prd-content
-      prompt: '{{file://scenarios/TC-P17-plan-file-contains-prd-content/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-P17-plan-file-contains-prd-content [treatment]
-    vars:
-      scenarioId: TC-P17-plan-file-contains-prd-content
-      prompt: '{{file://scenarios/TC-P17-plan-file-contains-prd-content/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - wrote-the-full-prd-content-into-the-plan-a106
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-
   - description: TC-P18-write-plan-doc-outside-worktree [control]
     vars:
       scenarioId: TC-P18-write-plan-doc-outside-worktree
@@ -2570,27 +1129,6 @@ tests:
       - type: javascript
         value: file://scripts/assert-judge.mjs
 
-  - description: TC-H83-db-insert-before-side-effects [control]
-    vars:
-      scenarioId: TC-H83-db-insert-before-side-effects
-      prompt: '{{file://scenarios/TC-H83-db-insert-before-side-effects/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H83-db-insert-before-side-effects [treatment]
-    vars:
-      scenarioId: TC-H83-db-insert-before-side-effects
-      prompt: '{{file://scenarios/TC-H83-db-insert-before-side-effects/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - persist-db-inserts-before-side-effects-r-a82f
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-
   - description: TC-H84-read-backup-before-bulk-delete [control]
     vars:
       scenarioId: TC-H84-read-backup-before-bulk-delete
@@ -2654,27 +1192,6 @@ tests:
       - type: javascript
         value: file://scripts/assert-judge.mjs
 
-  - description: TC-H87-byte-length-not-char-length [control]
-    vars:
-      scenarioId: TC-H87-byte-length-not-char-length
-      prompt: '{{file://scenarios/TC-H87-byte-length-not-char-length/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H87-byte-length-not-char-length [treatment]
-    vars:
-      scenarioId: TC-H87-byte-length-not-char-length
-      prompt: '{{file://scenarios/TC-H87-byte-length-not-char-length/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - character-length-and-byte-length-are-dif-5415
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-
   - description: TC-H88-verify-file-sync-before-commit [control]
     vars:
       scenarioId: TC-H88-verify-file-sync-before-commit
@@ -2690,48 +1207,6 @@ tests:
         type: lesson
         ids:
           - verify-file-sync-before-committing-multi-8fb4
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-
-  - description: TC-H89-curl-pipe-head-before-grep [control]
-    vars:
-      scenarioId: TC-H89-curl-pipe-head-before-grep
-      prompt: '{{file://scenarios/TC-H89-curl-pipe-head-before-grep/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H89-curl-pipe-head-before-grep [treatment]
-    vars:
-      scenarioId: TC-H89-curl-pipe-head-before-grep
-      prompt: '{{file://scenarios/TC-H89-curl-pipe-head-before-grep/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - grep-on-empty-output-returns-no-lines-us-f593
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-
-  - description: TC-H90-filter-large-find-output [control]
-    vars:
-      scenarioId: TC-H90-filter-large-find-output
-      prompt: '{{file://scenarios/TC-H90-filter-large-find-output/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H90-filter-large-find-output [treatment]
-    vars:
-      scenarioId: TC-H90-filter-large-find-output
-      prompt: '{{file://scenarios/TC-H90-filter-large-find-output/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - large-find-output-can-be-automatically-s-99db
     assert:
       - type: javascript
         value: file://scripts/assert-hidden-check.mjs
