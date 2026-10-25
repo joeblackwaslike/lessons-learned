@@ -76,3 +76,4 @@ website/.docusaurus/
 .demo-data*
 .demo-live-workspace/
 .demo-session-id
+.beads.gate.lock
