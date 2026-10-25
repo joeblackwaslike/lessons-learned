@@ -22,3 +22,51 @@ describe('rejectApiErrorOutput', () => {
     assert.equal(rejectApiErrorOutput(text), text);
   });
 });
+
+import { withApiErrorRetry } from '../../../evals/lib/claude-spawn.mjs';
+
+describe('withApiErrorRetry', () => {
+  it('retries API errors and returns the first success', async () => {
+    let calls = 0;
+    const result = await withApiErrorRetry(
+      async () => {
+        calls += 1;
+        if (calls < 3) throw new Error('claude -p returned an API error: API Error: x');
+        return 'ok';
+      },
+      { attempts: 5, delayMs: 1 }
+    );
+    assert.equal(result, 'ok');
+    assert.equal(calls, 3);
+  });
+
+  it('gives up after the attempt limit and rethrows', async () => {
+    let calls = 0;
+    await assert.rejects(
+      withApiErrorRetry(
+        async () => {
+          calls += 1;
+          throw new Error('claude -p returned an API error: API Error: x');
+        },
+        { attempts: 3, delayMs: 1 }
+      ),
+      /API error/
+    );
+    assert.equal(calls, 3);
+  });
+
+  it('does not retry other failures', async () => {
+    let calls = 0;
+    await assert.rejects(
+      withApiErrorRetry(
+        async () => {
+          calls += 1;
+          throw new Error('claude -p produced no output');
+        },
+        { attempts: 3, delayMs: 1 }
+      ),
+      /no output/
+    );
+    assert.equal(calls, 1);
+  });
+});

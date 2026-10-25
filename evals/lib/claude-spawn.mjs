@@ -75,7 +75,7 @@ function buildIsolatedEnv() {
  * @param {{ systemPrompt?: string, userContent: string, model: string, timeoutMs?: number }} params
  * @returns {Promise<string>}
  */
-export async function callClaude({
+async function callClaudeOnce({
   systemPrompt,
   userContent,
   model,
@@ -152,4 +152,24 @@ export function rejectApiErrorOutput(text) {
   if (/^API Error:/.test(text))
     throw new Error(`claude -p returned an API error: ${text.slice(0, 200)}`);
   return text;
+}
+
+/**
+ * The API error is intermittent (the identical call often succeeds on retry), so retry
+ * only that failure mode; any other error surfaces immediately.
+ */
+export async function withApiErrorRetry(fn, { attempts = 5, delayMs = 15000 } = {}) {
+  for (let attempt = 1; ; attempt += 1) {
+    try {
+      return await fn();
+    } catch (err) {
+      const isApiError = String(err.message).includes('returned an API error');
+      if (!isApiError || attempt >= attempts) throw err;
+      await new Promise(resolve => setTimeout(resolve, delayMs));
+    }
+  }
+}
+
+export function callClaude(params) {
+  return withApiErrorRetry(() => callClaudeOnce(params));
 }
