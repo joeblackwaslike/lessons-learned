@@ -160,6 +160,10 @@ async function runArm({
     const mcpConfigPath = join(workspaceDir, '.eval', 'mcp-config.json');
     if (!isControl && existsSync(mcpConfigPath)) {
       claudeArgs.push('--mcp-config', mcpConfigPath, '--strict-mcp-config');
+    } else {
+      // Control arm: an empty strict config keeps account-level connectors (Supabase,
+      // GitHub, ...) out of the sandbox. Without it they load despite --setting-sources=project.
+      claudeArgs.push('--mcp-config', '{"mcpServers":{}}', '--strict-mcp-config');
     }
     for (const dir of pluginDirs) claudeArgs.push('--plugin-dir', dir);
     claudeArgs.push('-p', prompt);

@@ -226,8 +226,12 @@ function buildInterventionManifest(intervention) {
   }
 
   // Filter to only the lessons specified in the intervention (match by slug or id)
+  // scope is a production injection filter keyed to the real project directory; the eval
+  // workspace lives in a temp dir, so a scoped lesson would never fire. Drop it.
   const filteredRecord = Object.fromEntries(
-    Object.entries(lessonsRecord).filter(([id, lesson]) => ids.has(id) || ids.has(lesson.slug))
+    Object.entries(lessonsRecord)
+      .filter(([id, lesson]) => ids.has(id) || ids.has(lesson.slug))
+      .map(([id, lesson]) => [id, { ...lesson, scope: null }])
   );
 
   if (Object.keys(filteredRecord).length === 0) {
