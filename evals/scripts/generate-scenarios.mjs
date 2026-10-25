@@ -98,7 +98,13 @@ for (const lesson of lessonsToGenerate) {
     continue;
   }
 
-  const triggerPrompt = await generateTriggerPrompt(lesson, hint);
+  let triggerPrompt;
+  try {
+    triggerPrompt = await generateTriggerPrompt(lesson, hint);
+  } catch (err) {
+    console.log(`  ✗ generation failed, nothing written: ${err.message}\n`);
+    continue;
+  }
   scaffoldScenario(scenarioDir, scenarioId, lesson, triggerPrompt);
   generatedScenarios.push({ scenarioId, lesson });
   console.log('  ✓ scaffolded\n');

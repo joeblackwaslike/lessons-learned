@@ -129,7 +129,11 @@ export async function callClaude({
         reject(new Error(`claude -p produced no output. stderr: ${err.slice(0, 500)}`));
         return;
       }
-      resolve(trimmed);
+      try {
+        resolve(rejectApiErrorOutput(trimmed));
+      } catch (e) {
+        reject(e);
+      }
     }
 
     child.on('close', finish);
@@ -138,4 +142,14 @@ export async function callClaude({
       reject(e);
     });
   });
+}
+
+/**
+ * `claude -p` prints API failures (quota, 1M-context credits, overload) to stdout.
+ * Without this check callers treat the error string as model output.
+ */
+export function rejectApiErrorOutput(text) {
+  if (/^API Error:/.test(text))
+    throw new Error(`claude -p returned an API error: ${text.slice(0, 200)}`);
+  return text;
 }
