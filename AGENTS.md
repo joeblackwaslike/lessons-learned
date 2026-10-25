@@ -151,6 +151,10 @@ Before asking Joe whether to archive a lesson, always present the full record fi
 
 Then ask the decision question. Never ask without this data in hand.
 
+### Retiring lessons and scenarios
+
+Run `/lessons:retire` (`commands/retire.md`) to archive a CONTROL_CORRECT lesson or take an untestable scenario out of the suite. `evalSkipReason` alone does not stop a scenario from running; removing its blocks from `evals/promptfooconfig.yaml` does.
+
 ### Obsoleted-lessons ledger
 
 When a lesson is archived because the eval test model already handles it (a `CONTROL_CORRECT` result — the model applies the fix without the lesson injected), **also append its full record to `data/obsoleted-lessons.json`**. This is an append-only ledger that collects lessons the models have outgrown, so they can be reviewed or restored (`node scripts/lessons.mjs restore`) if a future model regresses. The DB remains the source of truth; the ledger is a durable, human-readable archive of _why_ each was retired (reason, eval scenario, model tested). Note: archiving a lesson orphans its eval scenario (the runtime injects only from the active manifest), so archived-lesson scenarios belong to the obsoleted-lessons regression suite, not the normal pass/fail suite.

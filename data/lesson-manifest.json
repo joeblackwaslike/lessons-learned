@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-10-19T14:44:48.285Z",
+  "generatedAt": "2026-10-25T10:21:08.420Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -2809,27 +2809,6 @@
       "summary": "Attempted to review Etsy adapter against a spec that doesn't exist locally",
       "problem": "Files listed as untracked in `git status` may not exist on disk — they could be staged deletions or git state artifacts. Attempting to read them causes failed reads and wasted tool calls.",
       "solution": "Before referencing files from `git status` output, confirm they exist on disk. Do not assume `git status` untracked = present."
-    },
-    "01KV67NA6802WW5MP63Y8THFKR": {
-      "slug": "run-plugin-ops-yourself-via-claude-plugi-0a4b",
-      "type": "directive",
-      "priority": 6,
-      "toolNames": [],
-      "commandRegexSources": [],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
-      "modelRegexSources": [],
-      "outputRegexSources": [],
-      "tags": [
-        "category:agent-behavior",
-        "tool:claude-code",
-        "severity:friction"
-      ],
-      "scope": null,
-      "message": "## Lesson: Run plugin ops yourself via `claude plugin`; never tell the user to run /plugin\nAgents running inside VS Code or the CLI cannot invoke `/plugin` slash commands, so when a plugin needs updating or installing they punt to the user (e.g. \"run /plugin update agent-skills@agent-marketplace and restart\"). The user has to do it by hand every single time, even though a non-interactive CLI equivalent exists and the agent can run it directly.\n**Fix**: Run plugin operations yourself in Bash via `claude plugin <subcommand>`, which maps 1:1 to the `/plugin` slash forms: `claude plugin install X`, `claude plugin update X`, `claude plugin uninstall X`, plus `enable`/`disable`/`list`/`marketplace`. Use the `plugin@marketplace` form to disambiguate. Only the session restart afterward (to load/unload the plugin) requires the user — never the plugin command itself. Do NOT instruct the user to run `/plugin ...`.",
-      "summary": "Run plugin ops yourself via `claude plugin`; never tell the user to run /plugin",
-      "problem": "Agents running inside VS Code or the CLI cannot invoke `/plugin` slash commands, so when a plugin needs updating or installing they punt to the user (e.g. \"run /plugin update agent-skills@agent-marketplace and restart\"). The user has to do it by hand every single time, even though a non-interactive CLI equivalent exists and the agent can run it directly.",
-      "solution": "Run plugin operations yourself in Bash via `claude plugin <subcommand>`, which maps 1:1 to the `/plugin` slash forms: `claude plugin install X`, `claude plugin update X`, `claude plugin uninstall X`, plus `enable`/`disable`/`list`/`marketplace`. Use the `plugin@marketplace` form to disambiguate. Only the session restart afterward (to load/unload the plugin) requires the user — never the plugin command itself. Do NOT instruct the user to run `/plugin ...`."
     },
     "01M0AHCD6XKV7HGPA9JNW5QW29": {
       "slug": "osascript-heredocs-and-python-interpolat-acf6",

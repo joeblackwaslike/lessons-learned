@@ -1569,6 +1569,30 @@
       "evalScenario": "TC-H90-filter-large-find-output",
       "priorStatus": "active",
       "sonnetRevalidated": "2026-10-10 CONTROL_CORRECT (Tier 1 batch 2, lesson hurt: treatment missed double-quote grep variant)"
+    },
+    {
+      "slug": "run-plugin-ops-yourself-via-claude-plugi-0a4b",
+      "id": "01KV67NA6802WW5MP63Y8THFKR",
+      "type": "directive",
+      "summary": "Run plugin ops yourself via `claude plugin`; never tell the user to run /plugin",
+      "problem": "Agents running inside VS Code or the CLI cannot invoke `/plugin` slash commands, so when a plugin needs updating or installing they punt to the user (e.g. \"run /plugin update agent-skills@agent-marketplace and restart\"). The user has to do it by hand every single time, even though a non-interactive CLI equivalent exists and the agent can run it directly.",
+      "solution": "Run plugin operations yourself in Bash via `claude plugin <subcommand>`, which maps 1:1 to the `/plugin` slash forms: `claude plugin install X`, `claude plugin update X`, `claude plugin uninstall X`, plus `enable`/`disable`/`list`/`marketplace`. Use the `plugin@marketplace` form to disambiguate. Only the session restart afterward (to load/unload the plugin) requires the user — never the plugin command itself. Do NOT instruct the user to run `/plugin ...`.",
+      "toolNames": [],
+      "commandPatterns": [],
+      "pathPatterns": [],
+      "commandMatchTarget": null,
+      "modelPatterns": [],
+      "tags": ["category:agent-behavior", "tool:claude-code", "severity:friction"],
+      "scope": null,
+      "priority": 6,
+      "confidence": 0.9,
+      "requires": null,
+      "duplicatedBy": null,
+      "obsoletedAt": "2026-10-25T10:21:04.464Z",
+      "obsoletedReason": "CONTROL_CORRECT — control arm ran `claude plugin`/`uv tool upgrade` itself without the lesson; treatment identical",
+      "evalScenario": "TC-D11-run-plugin-ops-yourself",
+      "priorStatus": "active",
+      "sonnetRevalidated": true
     }
   ],
   "revalidation": {

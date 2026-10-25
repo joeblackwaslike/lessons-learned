@@ -456,26 +456,6 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
-  - description: TC-D8-multiple-choice-questions-buri [control]
-    vars:
-      scenarioId: TC-D8-multiple-choice-questions-buri
-      prompt: '{{file://scenarios/TC-D8-multiple-choice-questions-buri/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-D8-multiple-choice-questions-buri [treatment]
-    vars:
-      scenarioId: TC-D8-multiple-choice-questions-buri
-      prompt: '{{file://scenarios/TC-D8-multiple-choice-questions-buri/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - multiple-choice-questions-buried-in-pros-9d59
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
   - description: TC-D9-asking-should-i-proceed-on-rou [control]
     vars:
       scenarioId: TC-D9-asking-should-i-proceed-on-rou
@@ -1775,26 +1755,6 @@ tests:
     assert:
       - type: javascript
         value: file://scripts/assert-hidden-check.mjs
-  - description: TC-D11-run-plugin-ops-yourself [control]
-    vars:
-      scenarioId: TC-D11-run-plugin-ops-yourself
-      prompt: '{{file://scenarios/TC-D11-run-plugin-ops-yourself/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-D11-run-plugin-ops-yourself [treatment]
-    vars:
-      scenarioId: TC-D11-run-plugin-ops-yourself
-      prompt: '{{file://scenarios/TC-D11-run-plugin-ops-yourself/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - run-plugin-ops-yourself-via-claude-plugi-0a4b
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
   - description: TC-D12-bias-toward-action [control]
     vars:
       scenarioId: TC-D12-bias-toward-action
