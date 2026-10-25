@@ -1087,27 +1087,6 @@ tests:
       - type: javascript
         value: file://scripts/assert-judge.mjs
 
-  - description: TC-P22-brainstorming-skill-gate-bypass [control]
-    vars:
-      scenarioId: TC-P22-brainstorming-skill-gate-bypass
-      prompt: '{{file://scenarios/TC-P22-brainstorming-skill-gate-bypass/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-P22-brainstorming-skill-gate-bypass [treatment]
-    vars:
-      scenarioId: TC-P22-brainstorming-skill-gate-bypass
-      prompt: '{{file://scenarios/TC-P22-brainstorming-skill-gate-bypass/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - invoked-brainstorming-skill-acknowledged-1976
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-
   - description: TC-H82-guard-api-calls-at-call-site [control]
     vars:
       scenarioId: TC-H82-guard-api-calls-at-call-site

@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-10-25T10:30:07.556Z",
+  "generatedAt": "2026-10-25T10:36:41.111Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -3626,34 +3626,6 @@
       "summary": "Misread corrected retry output as a failure; diagnosed a non-problem",
       "problem": "When a guard lesson blocks a Bash command and Claude self-corrects by retrying without the flagged argument, the output log shows both the blocked attempt and the successful retry. Misreading the retry as a new failure causes false diagnosis — the system actually worked correctly through its full block → self-correct → retry cycle.",
       "solution": "Before diagnosing unexpected output as a guard failure, trace the expected flow: guard fires → Claude sees the block reason → Claude retries with corrected command → retry succeeds. Verify whether the observed output matches that flow before concluding anything is broken."
-    },
-    "01KPK9KPJZGEMJ4E98JHT7RKAC": {
-      "slug": "invoked-brainstorming-skill-acknowledged-1976",
-      "type": "hint",
-      "priority": 3,
-      "toolNames": [
-        "Agent"
-      ],
-      "commandRegexSources": [
-        {
-          "source": "\\buser\\b",
-          "flags": ""
-        }
-      ],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
-      "modelRegexSources": [],
-      "outputRegexSources": [],
-      "tags": [
-        "tool:Agent",
-        "severity:process-violation",
-        "topic:brainstorming"
-      ],
-      "scope": null,
-      "message": "## Lesson: Acknowledging the brainstorm gate then launching agents violates it\nInvoked brainstorming skill, acknowledged the hard gate (\"don't proceed without approval\"), then immediately launched Explore agents and started writing a PRD — skipping the entire brainstorming conversation. The skill's HARD-GATE says no implementation until user approves the design. Exploring the codebase and writing a PRD is implementation-adjacent action, not brainstorming.\n**Fix**: When the brainstorming skill fires, stop and ask clarifying questions one at a time. Do not spawn Explore agents or write any document until the brainstorming conversation is complete and the user has approved the design.",
-      "summary": "Acknowledging the brainstorm gate then launching agents violates it",
-      "problem": "Invoked brainstorming skill, acknowledged the hard gate (\"don't proceed without approval\"), then immediately launched Explore agents and started writing a PRD — skipping the entire brainstorming conversation. The skill's HARD-GATE says no implementation until user approves the design. Exploring the codebase and writing a PRD is implementation-adjacent action, not brainstorming.",
-      "solution": "When the brainstorming skill fires, stop and ask clarifying questions one at a time. Do not spawn Explore agents or write any document until the brainstorming conversation is complete and the user has approved the design."
     },
     "01KPKE12SMPWWJ5910HH9AKXXK": {
       "slug": "called-exitplanmode-three-times-in-the-s-b915",

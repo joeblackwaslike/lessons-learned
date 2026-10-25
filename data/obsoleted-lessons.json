@@ -1593,6 +1593,33 @@
       "evalScenario": "TC-D11-run-plugin-ops-yourself",
       "priorStatus": "active",
       "sonnetRevalidated": true
+    },
+    {
+      "slug": "invoked-brainstorming-skill-acknowledged-1976",
+      "id": "01KPK9KPJZGEMJ4E98JHT7RKAC",
+      "type": "hint",
+      "summary": "Acknowledging the brainstorm gate then launching agents violates it",
+      "problem": "Invoked brainstorming skill, acknowledged the hard gate (\"don't proceed without approval\"), then immediately launched Explore agents and started writing a PRD — skipping the entire brainstorming conversation. The skill's HARD-GATE says no implementation until user approves the design. Exploring the codebase and writing a PRD is implementation-adjacent action, not brainstorming.",
+      "solution": "When the brainstorming skill fires, stop and ask clarifying questions one at a time. Do not spawn Explore agents or write any document until the brainstorming conversation is complete and the user has approved the design.",
+      "toolNames": ["Agent"],
+      "commandPatterns": ["\\buser\\b"],
+      "pathPatterns": [],
+      "commandMatchTarget": null,
+      "modelPatterns": [],
+      "tags": ["tool:Agent", "severity:process-violation", "topic:brainstorming"],
+      "scope": null,
+      "priority": 3,
+      "confidence": 0.8,
+      "requires": {
+        "type": "skill",
+        "name": "superpowers:brainstorming"
+      },
+      "duplicatedBy": null,
+      "obsoletedAt": "2026-10-25T10:36:40.927Z",
+      "obsoletedReason": "CONTROL_CORRECT - with superpowers:brainstorming injected into both arms, the control also offers an opt-out and asks one question without launching agents or writing a PRD",
+      "evalScenario": "TC-P22-brainstorming-skill-gate-bypass",
+      "priorStatus": "active",
+      "sonnetRevalidated": true
     }
   ],
   "revalidation": {
