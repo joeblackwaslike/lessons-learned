@@ -21,8 +21,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit -p jsconfig.json",
-    "docs": "npm --prefix website run start",
-    "docs:build": "npm --prefix website run build",
+    "docs": "pnpm --filter lessons-learned-docs start",
+    "docs:build": "pnpm --filter lessons-learned-docs build",
     "prepare": "husky",
     "jessify:audit": "node --no-warnings scripts/jessify/audit-lessons.mjs",
     "eval": "pnpm --filter @lessons-learned/evals eval",
@@ -52,5 +52,6 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.92.0",
     "sqlite-vec": "^0.1.9"
-  }
+  },
+  "packageManager": "pnpm@11.0.8"
 }

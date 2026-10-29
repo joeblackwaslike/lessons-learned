@@ -1,5 +1,6 @@
 packages:
   - evals
+  - website
 
 allowBuilds:
   # Native SQLite addon — required for lessons-learned db
@@ -16,3 +17,5 @@ allowBuilds:
   sharp: true
   # Playwright browser — not needed (using Markdown reports, not HTML)
   '@playwright/browser-chromium': false
+  # Docusaurus (website/) dependency postinstall
+  core-js: true

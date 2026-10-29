@@ -18,19 +18,22 @@ jobs:
         with:
           fetch-depth: 0
 
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: .bun-version
+
+      - uses: pnpm/action-setup@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'npm'
-          cache-dependency-path: website/package-lock.json
+          cache: pnpm
 
-      - name: Install docs dependencies
-        run: npm ci
-        working-directory: website
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Build docs
-        run: npm run build
-        working-directory: website
+        run: pnpm docs:build
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
