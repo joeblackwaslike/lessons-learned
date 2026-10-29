@@ -14,7 +14,7 @@ default:
 
 # Install all dependencies
 install:
-    npm ci
+    pnpm install --frozen-lockfile
 
 # Install docs dependencies
 install-docs:
@@ -61,23 +61,23 @@ config:
 
 # Run ESLint
 lint:
-    npm run lint
+    pnpm lint
 
 # Run ESLint with auto-fix
 lint-fix:
-    npm run lint:fix
+    pnpm lint:fix
 
 # Run Prettier check
 fmt-check:
-    npm run format:check
+    pnpm format:check
 
 # Run Prettier write
 fmt:
-    npm run format
+    pnpm format
 
 # Run TypeScript check
 typecheck:
-    npm run typecheck
+    pnpm typecheck
 
 # Run all quality gates (lint + typecheck + format check)
 check: lint typecheck fmt-check

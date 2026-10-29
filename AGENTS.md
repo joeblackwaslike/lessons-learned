@@ -312,14 +312,14 @@ cd evals
 ps aux | grep promptfoo | grep -v grep
 
 # Run scenarios
-npx promptfoo eval --config promptfooconfig.yaml \
+bunx promptfoo eval --config promptfooconfig.yaml \
   --filter-pattern "TC-..." 2>&1 | tee results/<run-name>.log
 
 # Repair judge errors after a run with auth failures
 node scripts/repair-judge-errors.mjs
 ```
 
-**Pin the agent model.** The agent arm is pinned to `claude-sonnet-4-6` (provider passes `--model`; override with `EVAL_AGENT_MODEL`). This is deliberate: without it, `claude --print` uses the OAuth session default, which silently became Opus and confounded earlier results (see `evals/FINDINGS.md`). Keep eval/regression runs on **Sonnet** for now so results are comparable and target the model many sessions actually run. After changing the pinned model, clear the cache (`npm run eval:clean`) so cached Opus-era arms are not reused.
+**Pin the agent model.** The agent arm is pinned to `claude-sonnet-4-6` (provider passes `--model`; override with `EVAL_AGENT_MODEL`). This is deliberate: without it, `claude --print` uses the OAuth session default, which silently became Opus and confounded earlier results (see `evals/FINDINGS.md`). Keep eval/regression runs on **Sonnet** for now so results are comparable and target the model many sessions actually run. After changing the pinned model, clear the cache (`pnpm eval:clean`) so cached Opus-era arms are not reused.
 
 See `evals/README.md`, `evals/FINDINGS.md`, and `website/docs/developer-guide/eval-usage.md` for full reference. For authoring new scenarios, see `website/docs/developer-guide/eval-scenario-writing.md`.
 
@@ -333,7 +333,7 @@ node --test 'tests/e2e/**/*.test.mjs'           # E2E cross-agent only
 node --test --experimental-test-coverage 'tests/**/*.test.mjs'  # with coverage
 ```
 
-Or via npm scripts: `npm test`, `npm run test:unit`, `npm run test:integration`, `npm run test:e2e`.
+Or via npm scripts: `pnpm test`, `pnpm test:unit`, `pnpm test:integration`, `pnpm test:e2e`.
 
 Test isolation uses env vars — tests never touch `data/`:
 
@@ -343,12 +343,12 @@ Test isolation uses env vars — tests never touch `data/`:
 
 ## package.json scripts
 
-| Script            | Command                          |
-| ----------------- | -------------------------------- |
-| `npm run lessons` | `node scripts/lessons.mjs`       |
-| `npm run build`   | `node scripts/lessons.mjs build` |
-| `npm run scan`    | `node scripts/lessons.mjs scan`  |
-| `npm test`        | Run all tests                    |
+| Script         | Command                          |
+| -------------- | -------------------------------- |
+| `pnpm lessons` | `node scripts/lessons.mjs`       |
+| `pnpm build`   | `node scripts/lessons.mjs build` |
+| `pnpm scan`    | `node scripts/lessons.mjs scan`  |
+| `pnpm test`    | Run all tests                    |
 
 <!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:ca08a54f -->
 

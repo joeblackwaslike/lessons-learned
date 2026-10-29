@@ -5,19 +5,19 @@
 ```bash
 git clone https://github.com/joeblackwaslike/lessons-learned.git
 cd lessons-learned
-npm ci
+pnpm install --frozen-lockfile
 ```
 
-Pre-commit hooks are installed automatically via `npm ci` (Husky runs `prepare`). They enforce lint + typecheck on every commit.
+Pre-commit hooks are installed automatically via `pnpm install --frozen-lockfile` (Husky runs `prepare`). They enforce lint + typecheck on every commit.
 
 ## Running tests
 
 ```bash
-npm test                  # 297 tests at time of writing
-npm run test:unit         # pure function tests — fast, no I/O
-npm run test:integration  # subprocess + real temp files
-npm run test:e2e          # cross-agent protocol tests
-npm run test:coverage     # with experimental coverage report
+pnpm test                  # 297 tests at time of writing
+pnpm test:unit         # pure function tests — fast, no I/O
+pnpm test:integration  # subprocess + real temp files
+pnpm test:e2e          # cross-agent protocol tests
+pnpm test:coverage     # with experimental coverage report
 ```
 
 Tests never touch `data/`. Isolation is achieved via environment variables:
@@ -31,11 +31,11 @@ Tests never touch `data/`. Isolation is achieved via environment variables:
 ## Code quality
 
 ```bash
-npm run lint          # ESLint (report only)
-npm run lint:fix      # ESLint with auto-fix
-npm run format        # Prettier (write)
-npm run format:check  # Prettier (check only)
-npm run typecheck     # tsc --checkJs --noEmit
+pnpm lint          # ESLint (report only)
+pnpm lint:fix      # ESLint with auto-fix
+pnpm format        # Prettier (write)
+pnpm format:check  # Prettier (check only)
+pnpm typecheck     # tsc --checkJs --noEmit
 ```
 
 All three gates run in CI on every push and PR.
@@ -215,5 +215,5 @@ data/
 
 - Keep PRs focused — one concern per PR
 - New lessons should include a test case in the appropriate unit/integration test file
-- Run `npm test` and `npm run lint` before opening a PR; CI will enforce both
+- Run `pnpm test` and `pnpm lint` before opening a PR; CI will enforce both
 - Follow the existing commit style (imperative mood, present tense)
