@@ -1,4 +1,0 @@
-const MAX_RETRY_COUNT = 3;
-const DEFAULT_TIMEOUT_MS = 5000;
-
-module.exports = { MAX_RETRY_COUNT, DEFAULT_TIMEOUT_MS };
