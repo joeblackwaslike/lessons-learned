@@ -1025,7 +1025,6 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
-
   - description: TC-P19-drive-pr-to-merge [control]
     vars:
       scenarioId: TC-P19-drive-pr-to-merge
@@ -1046,7 +1045,6 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
-
   - description: TC-P20-never-run-gh-pr-create-directly [control]
     vars:
       scenarioId: TC-P20-never-run-gh-pr-create-directly
@@ -1065,7 +1063,6 @@ tests:
     assert:
       - type: javascript
         value: file://scripts/assert-hidden-check.mjs
-
   - description: TC-P21-reply-on-review-thread [control]
     vars:
       scenarioId: TC-P21-reply-on-review-thread
@@ -1086,7 +1083,6 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
-
   - description: TC-H82-guard-api-calls-at-call-site [control]
     vars:
       scenarioId: TC-H82-guard-api-calls-at-call-site
@@ -1107,7 +1103,6 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
-
   - description: TC-H84-read-backup-before-bulk-delete [control]
     vars:
       scenarioId: TC-H84-read-backup-before-bulk-delete
@@ -1128,7 +1123,6 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
-
   - description: TC-H85-detection-predicate-matches-real-condition [control]
     vars:
       scenarioId: TC-H85-detection-predicate-matches-real-condition
@@ -1149,7 +1143,6 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
-
   - description: TC-H86-read-before-write [control]
     vars:
       scenarioId: TC-H86-read-before-write
@@ -1170,7 +1163,6 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
-
   - description: TC-H88-verify-file-sync-before-commit [control]
     vars:
       scenarioId: TC-H88-verify-file-sync-before-commit
@@ -1191,7 +1183,6 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
-
   - description: TC-H91-fix-merged-not-deployed [control]
     vars:
       scenarioId: TC-H91-fix-merged-not-deployed
@@ -1212,7 +1203,6 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
-
   - description: TC-H92-webfetch-fallback-filtered-curl [control]
     vars:
       scenarioId: TC-H92-webfetch-fallback-filtered-curl
@@ -1233,7 +1223,6 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
-
   - description: TC-H93-inFlight-guard-concurrent-worker [control]
     vars:
       scenarioId: TC-H93-inFlight-guard-concurrent-worker
@@ -1249,6 +1238,126 @@ tests:
         type: lesson
         ids:
           - guard-concurrent-worker-invocations-with-b3cc
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H96-verify-supabase-migrations-app [control]
+    vars:
+      scenarioId: TC-H96-verify-supabase-migrations-app
+      prompt: '{{file://scenarios/TC-H96-verify-supabase-migrations-app/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H96-verify-supabase-migrations-app [treatment]
+    vars:
+      scenarioId: TC-H96-verify-supabase-migrations-app
+      prompt: '{{file://scenarios/TC-H96-verify-supabase-migrations-app/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - verify-supabase-migrations-applied-befor-a940
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H98-github-graphql-rate-limit-exha [control]
+    vars:
+      scenarioId: TC-H98-github-graphql-rate-limit-exha
+      prompt: '{{file://scenarios/TC-H98-github-graphql-rate-limit-exha/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H98-github-graphql-rate-limit-exha [treatment]
+    vars:
+      scenarioId: TC-H98-github-graphql-rate-limit-exha
+      prompt: '{{file://scenarios/TC-H98-github-graphql-rate-limit-exha/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - github-graphql-rate-limit-exhaustion-pre-c5ee
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H99-cache-keys-must-include-enough [control]
+    vars:
+      scenarioId: TC-H99-cache-keys-must-include-enough
+      prompt: '{{file://scenarios/TC-H99-cache-keys-must-include-enough/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H99-cache-keys-must-include-enough [treatment]
+    vars:
+      scenarioId: TC-H99-cache-keys-must-include-enough
+      prompt: '{{file://scenarios/TC-H99-cache-keys-must-include-enough/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - cache-keys-must-include-enough-context-t-8430
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H100-openssl-key-conversion-pkcs1-r [control]
+    vars:
+      scenarioId: TC-H100-openssl-key-conversion-pkcs1-r
+      prompt: '{{file://scenarios/TC-H100-openssl-key-conversion-pkcs1-r/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H100-openssl-key-conversion-pkcs1-r [treatment]
+    vars:
+      scenarioId: TC-H100-openssl-key-conversion-pkcs1-r
+      prompt: '{{file://scenarios/TC-H100-openssl-key-conversion-pkcs1-r/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - openssl-key-conversion-pkcs1-rsa-keys-ne-599d
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H101-a-process-that-emits-artifacts [control]
+    vars:
+      scenarioId: TC-H101-a-process-that-emits-artifacts
+      prompt: '{{file://scenarios/TC-H101-a-process-that-emits-artifacts/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H101-a-process-that-emits-artifacts [treatment]
+    vars:
+      scenarioId: TC-H101-a-process-that-emits-artifacts
+      prompt: '{{file://scenarios/TC-H101-a-process-that-emits-artifacts/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - a-process-that-emits-artifacts-of-the-ki-ac42
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H102-git-worktree-list-porcelain-sh [control]
+    vars:
+      scenarioId: TC-H102-git-worktree-list-porcelain-sh
+      prompt: '{{file://scenarios/TC-H102-git-worktree-list-porcelain-sh/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H102-git-worktree-list-porcelain-sh [treatment]
+    vars:
+      scenarioId: TC-H102-git-worktree-list-porcelain-sh
+      prompt: '{{file://scenarios/TC-H102-git-worktree-list-porcelain-sh/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - git-worktree-list-porcelain-shows-locked-e50a
     assert:
       - type: javascript
         value: file://scripts/assert-hidden-check.mjs

@@ -1,0 +1,17 @@
+{
+  "id": "TC-H99-cache-keys-must-include-enough",
+  "title": "Cache keys without full context cause cross-run cache pollution",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "cache-keys-must-include-enough-context-t-8430",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": [
+    "cache-keys-must-include-enough-context-t-8430"
+  ],
+  "automaticFailGates": [],
+  "generated": true
+}

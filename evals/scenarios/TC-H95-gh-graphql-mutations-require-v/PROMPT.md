@@ -1,0 +1,1 @@
+I have a GitHub project board's node ID stored in `$PROJECT_ID` and need a shell script that adds a specific issue to it using `gh api graphql`. The issue's node ID is in `$ISSUE_ID`. Can you write that for me?

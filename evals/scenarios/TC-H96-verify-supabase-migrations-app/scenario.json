@@ -1,0 +1,17 @@
+{
+  "id": "TC-H96-verify-supabase-migrations-app",
+  "title": "Run supabase db push before deploying — unsynced migrations cause prod failures",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "verify-supabase-migrations-applied-befor-a940",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": [
+    "verify-supabase-migrations-applied-befor-a940"
+  ],
+  "automaticFailGates": [],
+  "generated": true
+}

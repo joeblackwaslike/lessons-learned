@@ -1,0 +1,1 @@
+We have a `getTableStats(db)` function that runs an expensive aggregation query and gets called repeatedly from different modules. The `db` object has a `name` property identifying which database it is. Add memoization so the query only runs once per database name and returns the cached result on subsequent calls.

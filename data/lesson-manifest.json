@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-10-25T12:10:59.869Z",
+  "generatedAt": "2026-10-31T07:38:50.438Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -597,35 +597,6 @@
       "problem": "GitHub App private keys download as PKCS#1 (`-----BEGIN RSA PRIVATE KEY-----`), but Node.js JWT/crypto libraries require PKCS#8 (`-----BEGIN PRIVATE KEY-----`). Using the wrong format silently breaks JWT signing.",
       "solution": "Check the header: `BEGIN RSA PRIVATE KEY` = PKCS#1, needs conversion; `BEGIN PRIVATE KEY` = PKCS#8, ready to use.\nConvert with: `openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt < key.pem > key-pkcs8.pem`"
     },
-    "01KS4PF1BEWPVQKHS79QGVSJ9Y": {
-      "slug": "gh-graphql-mutations-require-variables-d-d03e",
-      "type": "hint",
-      "priority": 8,
-      "toolNames": [
-        "Bash"
-      ],
-      "commandRegexSources": [
-        {
-          "source": "gh api graphql",
-          "flags": ""
-        }
-      ],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
-      "modelRegexSources": [],
-      "outputRegexSources": [],
-      "tags": [
-        "source:deep-scan",
-        "tool:gh",
-        "tool:graphql",
-        "severity:silent-failure"
-      ],
-      "scope": null,
-      "message": "## Lesson: gh GraphQL mutations require variables; direct string interpolation fails silent\nWhen using `gh api graphql` with mutations containing string variables, directly interpolating shell variables into the query string causes the mutation to fail without clear error output. The GraphQL parser doesn't interpret the interpolated values.\n**Fix**: Pass query and variables separately using `-f query='...'` with a parameterized mutation (`$var`), then use `-f varname='value'` flags. This ensures proper GraphQL variable substitution.",
-      "summary": "gh GraphQL mutations require variables; direct string interpolation fails silent",
-      "problem": "When using `gh api graphql` with mutations containing string variables, directly interpolating shell variables into the query string causes the mutation to fail without clear error output. The GraphQL parser doesn't interpret the interpolated values.",
-      "solution": "Pass query and variables separately using `-f query='...'` with a parameterized mutation (`$var`), then use `-f varname='value'` flags. This ensures proper GraphQL variable substitution."
-    },
     "01KS4PF1BHXSB5R6062HP3CFDZ": {
       "slug": "clean-serena-dirs-from-worktrees-before-f65b",
       "type": "hint",
@@ -738,57 +709,6 @@
       "summary": "Run supabase db push before deploying — unsynced migrations cause prod failures",
       "problem": "The project uses Supabase migrations (0001, 0002, 0003) stored in supabase/migrations/. If a newer migration (e.g., 0003_photos_confirmed.sql) has not been applied to the K8s Supabase instance, the deployed app may fail when it queries or writes to those columns.",
       "solution": "Before redeploying, verify all migrations in supabase/migrations/ have been applied to the K8s Supabase instance. Use Supabase CLI or K8s job to run `supabase db push` or equivalent. Check git log for recent schema changes and confirm they are in prod."
-    },
-    "01KS4PJ0YFGRE1MNRE9PED6BJV": {
-      "slug": "missing-rls-policy-on-joining-table-bloc-fbbc",
-      "type": "hint",
-      "priority": 8,
-      "toolNames": [
-        "Edit",
-        "Write",
-        "mcp__plugin_serena_serena__replace_symbol_body",
-        "mcp__plugin_serena_serena__replace_content",
-        "mcp__plugin_serena_serena__insert_after_symbol",
-        "mcp__plugin_serena_serena__insert_before_symbol",
-        "mcp__plugin_serena_serena__create_text_file"
-      ],
-      "commandRegexSources": [
-        {
-          "source": "CREATE TABLE.*REFERENCES listings",
-          "flags": ""
-        },
-        {
-          "source": "ALTER TABLE .* ENABLE ROW LEVEL SECURITY",
-          "flags": ""
-        }
-      ],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [
-        {
-          "source": ".*/[^/]*\\.sql",
-          "flags": "i"
-        },
-        {
-          "source": ".*/migrations/.*",
-          "flags": "i"
-        },
-        {
-          "source": ".*/supabase/.*",
-          "flags": "i"
-        }
-      ],
-      "modelRegexSources": [],
-      "outputRegexSources": [],
-      "tags": [
-        "tool:supabase",
-        "topic:rls",
-        "severity:security"
-      ],
-      "scope": "Users-joe-github-joeblackwaslike-ai-listings",
-      "message": "## Lesson: Enable RLS + ownership policy on child tables that reference listings\nA child table (e.g. listing_platforms) that references listings without RLS + a policy returns no rows for users — they can only see their own listings, so child rows must verify ownership through the parent. Missing RLS silently breaks the access model.\n**Fix**: For every table referencing listings, enable RLS and add a policy joining to the parent: USING (EXISTS (SELECT 1 FROM listings l WHERE l.id = listing_id AND l.user_id = auth.uid())). Test in dev before deploying.",
-      "summary": "Enable RLS + ownership policy on child tables that reference listings",
-      "problem": "A child table (e.g. listing_platforms) that references listings without RLS + a policy returns no rows for users — they can only see their own listings, so child rows must verify ownership through the parent. Missing RLS silently breaks the access model.",
-      "solution": "For every table referencing listings, enable RLS and add a policy joining to the parent: USING (EXISTS (SELECT 1 FROM listings l WHERE l.id = listing_id AND l.user_id = auth.uid())). Test in dev before deploying."
     },
     "01KS4PJ0YKJ8665MYXK32BN1X3": {
       "slug": "guard-api-calls-against-missing-credenti-ab4a",
@@ -2004,40 +1924,6 @@
       "summary": "Never pipe curl directly to grep — capture first, then inspect and filter separately",
       "problem": "When piping curl output to grep with filters (e.g., grep -A 20 -i 'install'), if the pattern doesn't match or the response is empty, no output is produced, making it unclear if the fetch succeeded or failed.",
       "solution": "Capture the response to a variable first: `raw=$(curl -sL URL)`. Then inspect with `echo \"$raw\" | head -20` and filter separately with `echo \"$raw\" | grep PATTERN`. Never pipe curl directly to grep — you cannot distinguish a failed fetch from a no-match."
-    },
-    "01KS4PQN845J3WNVJV73HJ0ZB6": {
-      "slug": "unsupportedoperationerror-should-be-caug-8bba",
-      "type": "hint",
-      "priority": 7,
-      "toolNames": [
-        "Edit",
-        "Write",
-        "mcp__plugin_serena_serena__replace_content",
-        "mcp__plugin_serena_serena__replace_symbol_body",
-        "mcp__plugin_serena_serena__insert_after_symbol",
-        "mcp__plugin_serena_serena__insert_before_symbol"
-      ],
-      "commandRegexSources": [],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [
-        {
-          "source": ".*/[^/]*\\.ts",
-          "flags": "i"
-        }
-      ],
-      "modelRegexSources": [],
-      "outputRegexSources": [],
-      "tags": [
-        "source:deep-scan",
-        "tool:typescript",
-        "severity:silent-failure",
-        "severity:log-noise"
-      ],
-      "scope": "Users-joe-github-joeblackwaslike-ai-listings",
-      "message": "## Lesson: UnsupportedOperationError should be caught silently, not logged repeatedly\nGeneric catch-all error handlers cause two distinct failure modes: bare `catch {}` silently swallows real bugs (missing files, API errors, permission issues), while `catch (err) { log(err) }` produces noise when expected/sentinel errors fire on every poll cycle — both bury real failures.\n**Fix**: Always catch specific, expected errors first and suppress or downgrade them; let everything else propagate or log at error level:\n  try { ... }\n  catch (err) {\n    if (err instanceof UnsupportedOperationError) return  // expected no-op\n    if (err instanceof ENOENT) return                     // handled elsewhere\n    logger.error('unexpected error', err)                 // real failures only\n  }",
-      "summary": "UnsupportedOperationError should be caught silently, not logged repeatedly",
-      "problem": "Generic catch-all error handlers cause two distinct failure modes: bare `catch {}` silently swallows real bugs (missing files, API errors, permission issues), while `catch (err) { log(err) }` produces noise when expected/sentinel errors fire on every poll cycle — both bury real failures.",
-      "solution": "Always catch specific, expected errors first and suppress or downgrade them; let everything else propagate or log at error level:\n  try { ... }\n  catch (err) {\n    if (err instanceof UnsupportedOperationError) return  // expected no-op\n    if (err instanceof ENOENT) return                     // handled elsewhere\n    logger.error('unexpected error', err)                 // real failures only\n  }"
     },
     "01KS4PQN86V6M1CRCMNFDE4WG4": {
       "slug": "typescript-require-import-requires-eslin-46bb",

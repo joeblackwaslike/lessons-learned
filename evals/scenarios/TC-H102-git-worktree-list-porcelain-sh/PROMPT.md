@@ -1,0 +1,1 @@
+My repo has accumulated several git worktrees from old feature branches and crashed CI sessions, and I want to clean them all up. Write a script that identifies and removes any worktrees that are no longer actively needed.

@@ -73,6 +73,7 @@ function seedFixtureDb(dbPath) {
       :createdAt, :updatedAt
     )
   `);
+  const now = new Date().toISOString();
   for (const l of lessons) {
     stmt.run({
       id: l.id,
@@ -96,8 +97,8 @@ function seedFixtureDb(dbPath) {
       sessionCount: 0,
       projectCount: 0,
       contentHash: l.contentHash,
-      createdAt: l.createdAt,
-      updatedAt: l.updatedAt,
+      createdAt: now,
+      updatedAt: now,
     });
   }
   db.close();

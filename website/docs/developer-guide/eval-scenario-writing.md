@@ -64,8 +64,8 @@ gitInit(ws, {
 
 `gitInit` also accepts `dirty` (uncommitted modified files) and a `user` override; a plain
 `writeFiles(workspaceDir, { 'path': 'content' })` helper is available for filesystem-only setup
-that doesn't need git. See `evals/scenarios/TC-D9-*/seed-setup.mjs`, `TC-G7-*/seed-setup.mjs`,
-and `TC-H21-*/seed-setup.mjs` for real examples.
+that doesn't need git. See `evals/scenarios/TC-D9-*/seed-setup.mjs` and
+`TC-H21-*/seed-setup.mjs` for real examples.
 
 ---
 

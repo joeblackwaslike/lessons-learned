@@ -1,0 +1,17 @@
+{
+  "id": "TC-H103-unsupportedoperationerror-shou",
+  "title": "UnsupportedOperationError should be caught silently, not logged repeatedly",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "unsupportedoperationerror-should-be-caug-8bba",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": [
+    "unsupportedoperationerror-should-be-caug-8bba"
+  ],
+  "automaticFailGates": [],
+  "generated": true
+}

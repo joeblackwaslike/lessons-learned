@@ -1,0 +1,1 @@
+Write a script that processes all JSON files in `data/records/`, applies data normalization (standardize field names, parse ISO dates, remove null values), and writes each normalized file back into `data/records/` with `-normalized` appended before the extension. Then run it on the existing records and report how many were processed.
