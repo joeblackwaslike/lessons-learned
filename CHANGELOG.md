@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.6.0](https://github.com/joeblackwaslike/lessons-learned/compare/v0.5.0...v0.6.0) (2026-10-31)
+
+
+### Features
+
+* **db:** require a receipt on evalSkipReason, add missing column migration ([9c76e71](https://github.com/joeblackwaslike/lessons-learned/commit/9c76e7166fe9250479fc82a4e2384385491b01fd))
+* **evals:** add 18 Tier 1 eval scenarios (TC-P17–P22, TC-H82–H93) ([e5d5215](https://github.com/joeblackwaslike/lessons-learned/commit/e5d521512f80c7c30c7c604a91e7c3a611b162d4))
+* **evals:** add eval:fast two-phase script for parallel eval runs ([cb5003c](https://github.com/joeblackwaslike/lessons-learned/commit/cb5003c35c2a76f7d0d698b7c5c98b22f92e504e))
+* **evals:** add TC-D11–D14 scenarios for remaining 4 directive lessons ([75aa9d9](https://github.com/joeblackwaslike/lessons-learned/commit/75aa9d934762fbf20b7be7be51a5238727bd89fc))
+* **evals:** add TC-D2 and TC-P11–P14 scenarios for remaining protocol/directive gaps ([a3b2c40](https://github.com/joeblackwaslike/lessons-learned/commit/a3b2c409fe9d548024f6c588bae72172425d2935))
+* **evals:** add TC-H95–H103, retire 3 CONTROL_CORRECT lessons, fix push gate ([#5](https://github.com/joeblackwaslike/lessons-learned/issues/5)) ([a5d516d](https://github.com/joeblackwaslike/lessons-learned/commit/a5d516d49ee6cf4f34b3ffa9b065cf885ddb86a2))
+* **evals:** archive TC-D11, retire TC-D8 from suite, add /lessons:retire runbook ([fd62aac](https://github.com/joeblackwaslike/lessons-learned/commit/fd62aac6d762a72e1b30b4f8cbbe453df8f92aef))
+* **evals:** inject lesson requires into every eval arm ([9cb079a](https://github.com/joeblackwaslike/lessons-learned/commit/9cb079a1b1d7f59f56371c097e0c0c551e054f72))
+* **gates:** add eval gate — scenarios must be run before pushing ([4879f4d](https://github.com/joeblackwaslike/lessons-learned/commit/4879f4dffac4297eceaca21ff68781e7ce0091cc))
+* **hooks:** add lesson injection system orientation primer ([fd64905](https://github.com/joeblackwaslike/lessons-learned/commit/fd64905beb733813d7380a3de53e3923d2dcc88f))
+* **lessons:** add guard blocking full-file dumps via cat/head/tail ([05be874](https://github.com/joeblackwaslike/lessons-learned/commit/05be874f7fc142c7cb9c913a029aa935a5e3b986))
+* **release:** add release-please automation + full CHANGELOG backfill ([4c6fc33](https://github.com/joeblackwaslike/lessons-learned/commit/4c6fc33c10b7fbbf314d34b88ae0fd548fa2a488))
+* **requires:** add cli type; set no-mistakes requires on PR reminder lesson ([898fd60](https://github.com/joeblackwaslike/lessons-learned/commit/898fd60a8d93b017f3f715230eefabe5b1e8af0e))
+* **schema:** add evalSkipReason field to lesson schema ([d4d1479](https://github.com/joeblackwaslike/lessons-learned/commit/d4d147978abcf01b122160dbfb568554513fbd08))
+* **types:** add reminder lesson type with PostToolUse hook ([9ad9b12](https://github.com/joeblackwaslike/lessons-learned/commit/9ad9b12689522ad45018c4691b9a79b4f029c166))
+
+
+### Bug Fixes
+
+* **evals:** archive TC-P1, delete TC-D12 scenario ([486e5ae](https://github.com/joeblackwaslike/lessons-learned/commit/486e5ae635403cb20d4e8ede6613e80205717b09))
+* **evals:** archive TC-P17/H83/H90, fix TC-P22 requires, fix TC-P19/H89 FAILs ([4a22e03](https://github.com/joeblackwaslike/lessons-learned/commit/4a22e0320334899f661c83d10bcd58e07e9eb829))
+* **evals:** bilateral verify checks + always Form A judge ([6642354](https://github.com/joeblackwaslike/lessons-learned/commit/6642354de59292f167724cbd6fe21d1f8c245d6b))
+* **evals:** reject API-error stdout from claude -p; generator skips failed lessons ([3cb0311](https://github.com/joeblackwaslike/lessons-learned/commit/3cb03118ff154ebd1dd5b4982e0f1e8510e057c7))
+* **evals:** resolve all 5 treatment failures from bilateral run ([f35ec5b](https://github.com/joeblackwaslike/lessons-learned/commit/f35ec5b659e675df57f584a628579701c805b4f5))
+* **evals:** resolve TC-P19 and TC-H89; set evalSkipReason on TC-H89 ([478d0b5](https://github.com/joeblackwaslike/lessons-learned/commit/478d0b59814eb5a836ab7149857491a3fff1c474))
+* **evals:** retry claude -p calls that fail with the intermittent API error ([c40800c](https://github.com/joeblackwaslike/lessons-learned/commit/c40800c22ea1292ef4bd63cb7a86e6a2f7759186))
+* **evals:** run the real SessionStart hook instead of injecting protocols via CLAUDE.md ([03d5b35](https://github.com/joeblackwaslike/lessons-learned/commit/03d5b355efaffffa7a8306220bb51915efbd9e7c))
+* **evals:** scoped lessons never fired in evals; control arm leaked account MCP connectors ([e144466](https://github.com/joeblackwaslike/lessons-learned/commit/e14446656fb5de10d683935b529f311d7dd3d1fb))
+* **evals:** TC-P20 seed-workspace + TC-H87 archive ([e97d004](https://github.com/joeblackwaslike/lessons-learned/commit/e97d004143a54ac75e3c785b89a85aa04a6ef96f))
+* **injection:** cover full directive+protocol corpus on every session ([468d378](https://github.com/joeblackwaslike/lessons-learned/commit/468d378e6257959311035a05d276ed8e95987bcf))
+* **process:** close 4 scenario-authoring gaps that produced untestable evals ([10f4ecd](https://github.com/joeblackwaslike/lessons-learned/commit/10f4ecd0e017f9f5004c60e43f967df1794b763a))
+
 ## [Unreleased]
 
 ### Added
