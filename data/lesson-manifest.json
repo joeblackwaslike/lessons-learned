@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-10-31T07:04:24.604Z",
+  "generatedAt": "2026-10-31T07:38:50.438Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -1924,40 +1924,6 @@
       "summary": "Never pipe curl directly to grep — capture first, then inspect and filter separately",
       "problem": "When piping curl output to grep with filters (e.g., grep -A 20 -i 'install'), if the pattern doesn't match or the response is empty, no output is produced, making it unclear if the fetch succeeded or failed.",
       "solution": "Capture the response to a variable first: `raw=$(curl -sL URL)`. Then inspect with `echo \"$raw\" | head -20` and filter separately with `echo \"$raw\" | grep PATTERN`. Never pipe curl directly to grep — you cannot distinguish a failed fetch from a no-match."
-    },
-    "01KS4PQN845J3WNVJV73HJ0ZB6": {
-      "slug": "unsupportedoperationerror-should-be-caug-8bba",
-      "type": "hint",
-      "priority": 7,
-      "toolNames": [
-        "Edit",
-        "Write",
-        "mcp__plugin_serena_serena__replace_content",
-        "mcp__plugin_serena_serena__replace_symbol_body",
-        "mcp__plugin_serena_serena__insert_after_symbol",
-        "mcp__plugin_serena_serena__insert_before_symbol"
-      ],
-      "commandRegexSources": [],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [
-        {
-          "source": ".*/[^/]*\\.ts",
-          "flags": "i"
-        }
-      ],
-      "modelRegexSources": [],
-      "outputRegexSources": [],
-      "tags": [
-        "source:deep-scan",
-        "tool:typescript",
-        "severity:silent-failure",
-        "severity:log-noise"
-      ],
-      "scope": "Users-joe-github-joeblackwaslike-ai-listings",
-      "message": "## Lesson: UnsupportedOperationError should be caught silently, not logged repeatedly\nGeneric catch-all error handlers cause two distinct failure modes: bare `catch {}` silently swallows real bugs (missing files, API errors, permission issues), while `catch (err) { log(err) }` produces noise when expected/sentinel errors fire on every poll cycle — both bury real failures.\n**Fix**: Always catch specific, expected errors first and suppress or downgrade them; let everything else propagate or log at error level:\n  try { ... }\n  catch (err) {\n    if (err instanceof UnsupportedOperationError) return  // expected no-op\n    if (err instanceof ENOENT) return                     // handled elsewhere\n    logger.error('unexpected error', err)                 // real failures only\n  }",
-      "summary": "UnsupportedOperationError should be caught silently, not logged repeatedly",
-      "problem": "Generic catch-all error handlers cause two distinct failure modes: bare `catch {}` silently swallows real bugs (missing files, API errors, permission issues), while `catch (err) { log(err) }` produces noise when expected/sentinel errors fire on every poll cycle — both bury real failures.",
-      "solution": "Always catch specific, expected errors first and suppress or downgrade them; let everything else propagate or log at error level:\n  try { ... }\n  catch (err) {\n    if (err instanceof UnsupportedOperationError) return  // expected no-op\n    if (err instanceof ENOENT) return                     // handled elsewhere\n    logger.error('unexpected error', err)                 // real failures only\n  }"
     },
     "01KS4PQN86V6M1CRCMNFDE4WG4": {
       "slug": "typescript-require-import-requires-eslin-46bb",

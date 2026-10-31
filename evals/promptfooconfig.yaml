@@ -1363,25 +1363,3 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
-  - description: TC-H103-unsupportedoperationerror-shou [control]
-    vars:
-      scenarioId: TC-H103-unsupportedoperationerror-shou
-      prompt: '{{file://scenarios/TC-H103-unsupportedoperationerror-shou/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H103-unsupportedoperationerror-shou [treatment]
-    vars:
-      scenarioId: TC-H103-unsupportedoperationerror-shou
-      prompt: '{{file://scenarios/TC-H103-unsupportedoperationerror-shou/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - unsupportedoperationerror-should-be-caug-8bba
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-outputPath: results/cache/latest-run.json
-sharing: false

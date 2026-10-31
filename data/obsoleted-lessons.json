@@ -1679,6 +1679,42 @@
       "evalScenario": "TC-H97-missing-rls-policy-on-joining",
       "priorStatus": "active",
       "sonnetRevalidated": true
+    },
+    {
+      "slug": "unsupportedoperationerror-should-be-caug-8bba",
+      "id": "01KS4PQN845J3WNVJV73HJ0ZB6",
+      "type": "hint",
+      "summary": "UnsupportedOperationError should be caught silently, not logged repeatedly",
+      "problem": "Generic catch-all error handlers cause two distinct failure modes: bare `catch {}` silently swallows real bugs (missing files, API errors, permission issues), while `catch (err) { log(err) }` produces noise when expected/sentinel errors fire on every poll cycle — both bury real failures.",
+      "solution": "Always catch specific, expected errors first and suppress or downgrade them; let everything else propagate or log at error level:\n  try { ... }\n  catch (err) {\n    if (err instanceof UnsupportedOperationError) return  // expected no-op\n    if (err instanceof ENOENT) return                     // handled elsewhere\n    logger.error('unexpected error', err)                 // real failures only\n  }",
+      "toolNames": [
+        "Edit",
+        "Write",
+        "mcp__plugin_serena_serena__replace_content",
+        "mcp__plugin_serena_serena__replace_symbol_body",
+        "mcp__plugin_serena_serena__insert_after_symbol",
+        "mcp__plugin_serena_serena__insert_before_symbol"
+      ],
+      "commandPatterns": [],
+      "pathPatterns": ["**/*.ts"],
+      "commandMatchTarget": null,
+      "modelPatterns": [],
+      "tags": [
+        "source:deep-scan",
+        "tool:typescript",
+        "severity:silent-failure",
+        "severity:log-noise"
+      ],
+      "scope": "Users-joe-github-joeblackwaslike-ai-listings",
+      "priority": 7,
+      "confidence": 0.92,
+      "requires": null,
+      "duplicatedBy": null,
+      "obsoletedAt": "2026-10-31T07:38:49.755Z",
+      "obsoletedReason": "CONTROL_CORRECT - control arm already does what the lesson prescribes",
+      "evalScenario": "TC-H103-unsupportedoperationerror-shou",
+      "priorStatus": "active",
+      "sonnetRevalidated": true
     }
   ],
   "revalidation": {
