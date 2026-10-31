@@ -1363,3 +1363,6 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
+
+outputPath: results/cache/latest-run.json
+sharing: false
