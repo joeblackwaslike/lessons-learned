@@ -71,6 +71,7 @@ if (newOnly) {
           .split('\n')
           .filter(l => l.includes('/scenario.json'))
           .map(l => l.replace(/^evals\/scenarios\//, '').replace(/\/scenario\.json$/, ''))
+          .filter(id => existsSync(join(SCENARIOS_DIR, id, 'scenario.json')))
       ),
     ];
   } catch {
