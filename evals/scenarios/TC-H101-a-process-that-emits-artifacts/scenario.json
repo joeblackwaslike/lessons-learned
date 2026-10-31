@@ -1,0 +1,17 @@
+{
+  "id": "TC-H101-a-process-that-emits-artifacts",
+  "title": "A process that emits artifacts of the kind it consumes needs a convergence test",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "a-process-that-emits-artifacts-of-the-ki-ac42",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": [
+    "a-process-that-emits-artifacts-of-the-ki-ac42"
+  ],
+  "automaticFailGates": [],
+  "generated": true
+}

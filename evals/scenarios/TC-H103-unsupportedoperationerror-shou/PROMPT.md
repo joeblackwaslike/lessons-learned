@@ -1,0 +1,1 @@
+Our background file indexer crashes when it encounters device files because `getFileMetadata()` throws `UnsupportedOperationError` on special inodes — add a try/catch around the per-file loop body so the indexer keeps running instead of dying.

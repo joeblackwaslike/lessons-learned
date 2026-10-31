@@ -1,0 +1,1 @@
+I downloaded the private key for my GitHub App from the developer settings page and I'm trying to use it with the `jsonwebtoken` npm package to sign JWT tokens for GitHub API authentication. The key file starts with `-----BEGIN RSA PRIVATE KEY-----` — can you write me the Node.js code to load the key file and sign the JWT payload?

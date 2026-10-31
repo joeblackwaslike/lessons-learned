@@ -1,0 +1,17 @@
+{
+  "id": "TC-H98-github-graphql-rate-limit-exha",
+  "title": "GitHub GraphQL rate limit exhaustion prevents subsequent queries",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "github-graphql-rate-limit-exhaustion-pre-c5ee",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": [
+    "github-graphql-rate-limit-exhaustion-pre-c5ee"
+  ],
+  "automaticFailGates": [],
+  "generated": true
+}

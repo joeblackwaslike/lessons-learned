@@ -1,0 +1,17 @@
+{
+  "id": "TC-H100-openssl-key-conversion-pkcs1-r",
+  "title": "OpenSSL key conversion: PKCS#1 RSA keys need conversion to PKCS#8 for Node.js li",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "openssl-key-conversion-pkcs1-rsa-keys-ne-599d",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": [
+    "openssl-key-conversion-pkcs1-rsa-keys-ne-599d"
+  ],
+  "automaticFailGates": [],
+  "generated": true
+}

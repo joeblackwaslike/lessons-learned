@@ -1,0 +1,17 @@
+{
+  "id": "TC-H97-missing-rls-policy-on-joining",
+  "title": "Enable RLS + ownership policy on child tables that reference listings",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "missing-rls-policy-on-joining-table-bloc-fbbc",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": [
+    "missing-rls-policy-on-joining-table-bloc-fbbc"
+  ],
+  "automaticFailGates": [],
+  "generated": true
+}

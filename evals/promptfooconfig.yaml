@@ -6,7 +6,7 @@ providers:
       model: claude-sonnet-4-6
       timeout: 1200000
 prompts:
-  - '{{prompt}}'
+  - "{{prompt}}"
 defaultTest:
   options:
     provider: file://providers/claude-agent.mjs
@@ -21,28 +21,28 @@ tests:
   - description: TC-G1 pytest-hang [control]
     vars:
       scenarioId: TC-G1-pytest-hang
-      prompt: '{{file://scenarios/TC-G1-pytest-hang/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-G1-pytest-hang/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-H2 eval-injection [control]
     vars:
       scenarioId: TC-H2-eval-injection
-      prompt: '{{file://scenarios/TC-H2-eval-injection/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H2-eval-injection/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-D3 collaborative-planning [control]
     vars:
       scenarioId: TC-D3-collaborative-planning
-      prompt: '{{file://scenarios/TC-D3-collaborative-planning/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-D3-collaborative-planning/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-G1 pytest-hang [treatment]
     vars:
       scenarioId: TC-G1-pytest-hang
-      prompt: '{{file://scenarios/TC-G1-pytest-hang/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-G1-pytest-hang/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -57,7 +57,7 @@ tests:
   - description: TC-H2 eval-injection [treatment]
     vars:
       scenarioId: TC-H2-eval-injection
-      prompt: '{{file://scenarios/TC-H2-eval-injection/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H2-eval-injection/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -72,7 +72,7 @@ tests:
   - description: TC-D3 collaborative-planning [treatment]
     vars:
       scenarioId: TC-D3-collaborative-planning
-      prompt: '{{file://scenarios/TC-D3-collaborative-planning/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-D3-collaborative-planning/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -87,14 +87,14 @@ tests:
   - description: TC-D4-search-for-community-solutions [control]
     vars:
       scenarioId: TC-D4-search-for-community-solutions
-      prompt: '{{file://scenarios/TC-D4-search-for-community-solutions/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-D4-search-for-community-solutions/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-D4-search-for-community-solutions [treatment]
     vars:
       scenarioId: TC-D4-search-for-community-solutions
-      prompt: '{{file://scenarios/TC-D4-search-for-community-solutions/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-D4-search-for-community-solutions/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -107,14 +107,14 @@ tests:
   - description: TC-D5-time-box-debugging-theories-30 [control]
     vars:
       scenarioId: TC-D5-time-box-debugging-theories-30
-      prompt: '{{file://scenarios/TC-D5-time-box-debugging-theories-30/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-D5-time-box-debugging-theories-30/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-D5-time-box-debugging-theories-30 [treatment]
     vars:
       scenarioId: TC-D5-time-box-debugging-theories-30
-      prompt: '{{file://scenarios/TC-D5-time-box-debugging-theories-30/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-D5-time-box-debugging-theories-30/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -127,14 +127,14 @@ tests:
   - description: TC-D6-planning-from-training-data-kn [control]
     vars:
       scenarioId: TC-D6-planning-from-training-data-kn
-      prompt: '{{file://scenarios/TC-D6-planning-from-training-data-kn/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-D6-planning-from-training-data-kn/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-D6-planning-from-training-data-kn [treatment]
     vars:
       scenarioId: TC-D6-planning-from-training-data-kn
-      prompt: '{{file://scenarios/TC-D6-planning-from-training-data-kn/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-D6-planning-from-training-data-kn/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -147,14 +147,14 @@ tests:
   - description: TC-H5-vscode-gitenablecommitsigning [control]
     vars:
       scenarioId: TC-H5-vscode-gitenablecommitsigning
-      prompt: '{{file://scenarios/TC-H5-vscode-gitenablecommitsigning/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H5-vscode-gitenablecommitsigning/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-H5-vscode-gitenablecommitsigning [treatment]
     vars:
       scenarioId: TC-H5-vscode-gitenablecommitsigning
-      prompt: '{{file://scenarios/TC-H5-vscode-gitenablecommitsigning/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H5-vscode-gitenablecommitsigning/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -167,14 +167,14 @@ tests:
   - description: TC-H6-set-e-kills-bash-scripts-silen [control]
     vars:
       scenarioId: TC-H6-set-e-kills-bash-scripts-silen
-      prompt: '{{file://scenarios/TC-H6-set-e-kills-bash-scripts-silen/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H6-set-e-kills-bash-scripts-silen/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-H6-set-e-kills-bash-scripts-silen [treatment]
     vars:
       scenarioId: TC-H6-set-e-kills-bash-scripts-silen
-      prompt: '{{file://scenarios/TC-H6-set-e-kills-bash-scripts-silen/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H6-set-e-kills-bash-scripts-silen/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -187,14 +187,14 @@ tests:
   - description: TC-H9-missing-tool-dependency-check [control]
     vars:
       scenarioId: TC-H9-missing-tool-dependency-check
-      prompt: '{{file://scenarios/TC-H9-missing-tool-dependency-check/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H9-missing-tool-dependency-check/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-H9-missing-tool-dependency-check [treatment]
     vars:
       scenarioId: TC-H9-missing-tool-dependency-check
-      prompt: '{{file://scenarios/TC-H9-missing-tool-dependency-check/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H9-missing-tool-dependency-check/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -207,14 +207,14 @@ tests:
   - description: TC-D7-verify-all-steps-before-presen [control]
     vars:
       scenarioId: TC-D7-verify-all-steps-before-presen
-      prompt: '{{file://scenarios/TC-D7-verify-all-steps-before-presen/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-D7-verify-all-steps-before-presen/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-D7-verify-all-steps-before-presen [treatment]
     vars:
       scenarioId: TC-D7-verify-all-steps-before-presen
-      prompt: '{{file://scenarios/TC-D7-verify-all-steps-before-presen/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-D7-verify-all-steps-before-presen/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -227,14 +227,14 @@ tests:
   - description: TC-D9-asking-should-i-proceed-on-rou [control]
     vars:
       scenarioId: TC-D9-asking-should-i-proceed-on-rou
-      prompt: '{{file://scenarios/TC-D9-asking-should-i-proceed-on-rou/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-D9-asking-should-i-proceed-on-rou/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-D9-asking-should-i-proceed-on-rou [treatment]
     vars:
       scenarioId: TC-D9-asking-should-i-proceed-on-rou
-      prompt: '{{file://scenarios/TC-D9-asking-should-i-proceed-on-rou/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-D9-asking-should-i-proceed-on-rou/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -247,14 +247,14 @@ tests:
   - description: TC-H12-bare-except-catches-everything [control]
     vars:
       scenarioId: TC-H12-bare-except-catches-everything
-      prompt: '{{file://scenarios/TC-H12-bare-except-catches-everything/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H12-bare-except-catches-everything/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-H12-bare-except-catches-everything [treatment]
     vars:
       scenarioId: TC-H12-bare-except-catches-everything
-      prompt: '{{file://scenarios/TC-H12-bare-except-catches-everything/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H12-bare-except-catches-everything/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -267,14 +267,14 @@ tests:
   - description: TC-H15-agents-expand-scope-during-exe [control]
     vars:
       scenarioId: TC-H15-agents-expand-scope-during-exe
-      prompt: '{{file://scenarios/TC-H15-agents-expand-scope-during-exe/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H15-agents-expand-scope-during-exe/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-H15-agents-expand-scope-during-exe [treatment]
     vars:
       scenarioId: TC-H15-agents-expand-scope-during-exe
-      prompt: '{{file://scenarios/TC-H15-agents-expand-scope-during-exe/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H15-agents-expand-scope-during-exe/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -287,14 +287,14 @@ tests:
   - description: TC-H18-batch-executed-without-a-rollb [control]
     vars:
       scenarioId: TC-H18-batch-executed-without-a-rollb
-      prompt: '{{file://scenarios/TC-H18-batch-executed-without-a-rollb/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H18-batch-executed-without-a-rollb/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-H18-batch-executed-without-a-rollb [treatment]
     vars:
       scenarioId: TC-H18-batch-executed-without-a-rollb
-      prompt: '{{file://scenarios/TC-H18-batch-executed-without-a-rollb/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H18-batch-executed-without-a-rollb/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -307,14 +307,14 @@ tests:
   - description: TC-P5-acceptance-criteria-written-as [control]
     vars:
       scenarioId: TC-P5-acceptance-criteria-written-as
-      prompt: '{{file://scenarios/TC-P5-acceptance-criteria-written-as/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-P5-acceptance-criteria-written-as/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-P5-acceptance-criteria-written-as [treatment]
     vars:
       scenarioId: TC-P5-acceptance-criteria-written-as
-      prompt: '{{file://scenarios/TC-P5-acceptance-criteria-written-as/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-P5-acceptance-criteria-written-as/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -327,14 +327,14 @@ tests:
   - description: TC-H19-batches-over-5-tasks-or-250-li [control]
     vars:
       scenarioId: TC-H19-batches-over-5-tasks-or-250-li
-      prompt: '{{file://scenarios/TC-H19-batches-over-5-tasks-or-250-li/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H19-batches-over-5-tasks-or-250-li/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-H19-batches-over-5-tasks-or-250-li [treatment]
     vars:
       scenarioId: TC-H19-batches-over-5-tasks-or-250-li
-      prompt: '{{file://scenarios/TC-H19-batches-over-5-tasks-or-250-li/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H19-batches-over-5-tasks-or-250-li/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -347,14 +347,14 @@ tests:
   - description: TC-H24-hooks-without-timeout-field-cr [control]
     vars:
       scenarioId: TC-H24-hooks-without-timeout-field-cr
-      prompt: '{{file://scenarios/TC-H24-hooks-without-timeout-field-cr/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H24-hooks-without-timeout-field-cr/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-H24-hooks-without-timeout-field-cr [treatment]
     vars:
       scenarioId: TC-H24-hooks-without-timeout-field-cr
-      prompt: '{{file://scenarios/TC-H24-hooks-without-timeout-field-cr/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H24-hooks-without-timeout-field-cr/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -367,14 +367,14 @@ tests:
   - description: TC-H25-github-app-pkcs1-keys-silently [control]
     vars:
       scenarioId: TC-H25-github-app-pkcs1-keys-silently
-      prompt: '{{file://scenarios/TC-H25-github-app-pkcs1-keys-silently/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H25-github-app-pkcs1-keys-silently/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-H25-github-app-pkcs1-keys-silently [treatment]
     vars:
       scenarioId: TC-H25-github-app-pkcs1-keys-silently
-      prompt: '{{file://scenarios/TC-H25-github-app-pkcs1-keys-silently/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H25-github-app-pkcs1-keys-silently/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -387,14 +387,14 @@ tests:
   - description: TC-H26-chrome-devtools-econnrefused-w [control]
     vars:
       scenarioId: TC-H26-chrome-devtools-econnrefused-w
-      prompt: '{{file://scenarios/TC-H26-chrome-devtools-econnrefused-w/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H26-chrome-devtools-econnrefused-w/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-H26-chrome-devtools-econnrefused-w [treatment]
     vars:
       scenarioId: TC-H26-chrome-devtools-econnrefused-w
-      prompt: '{{file://scenarios/TC-H26-chrome-devtools-econnrefused-w/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H26-chrome-devtools-econnrefused-w/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -407,14 +407,14 @@ tests:
   - description: TC-H30-file-reads-at-batch-start-beco [control]
     vars:
       scenarioId: TC-H30-file-reads-at-batch-start-beco
-      prompt: '{{file://scenarios/TC-H30-file-reads-at-batch-start-beco/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H30-file-reads-at-batch-start-beco/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-H30-file-reads-at-batch-start-beco [treatment]
     vars:
       scenarioId: TC-H30-file-reads-at-batch-start-beco
-      prompt: '{{file://scenarios/TC-H30-file-reads-at-batch-start-beco/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H30-file-reads-at-batch-start-beco/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -427,14 +427,14 @@ tests:
   - description: TC-H31-claude-p-produces-output-quick [control]
     vars:
       scenarioId: TC-H31-claude-p-produces-output-quick
-      prompt: '{{file://scenarios/TC-H31-claude-p-produces-output-quick/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H31-claude-p-produces-output-quick/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-H31-claude-p-produces-output-quick [treatment]
     vars:
       scenarioId: TC-H31-claude-p-produces-output-quick
-      prompt: '{{file://scenarios/TC-H31-claude-p-produces-output-quick/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H31-claude-p-produces-output-quick/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -447,14 +447,14 @@ tests:
   - description: TC-P8-start-a-new-conversation-per-m [control]
     vars:
       scenarioId: TC-P8-start-a-new-conversation-per-m
-      prompt: '{{file://scenarios/TC-P8-start-a-new-conversation-per-m/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-P8-start-a-new-conversation-per-m/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-P8-start-a-new-conversation-per-m [treatment]
     vars:
       scenarioId: TC-P8-start-a-new-conversation-per-m
-      prompt: '{{file://scenarios/TC-P8-start-a-new-conversation-per-m/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-P8-start-a-new-conversation-per-m/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -467,14 +467,14 @@ tests:
   - description: TC-H38-nodejs-deprecationwarnings-pol [control]
     vars:
       scenarioId: TC-H38-nodejs-deprecationwarnings-pol
-      prompt: '{{file://scenarios/TC-H38-nodejs-deprecationwarnings-pol/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H38-nodejs-deprecationwarnings-pol/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-H38-nodejs-deprecationwarnings-pol [treatment]
     vars:
       scenarioId: TC-H38-nodejs-deprecationwarnings-pol
-      prompt: '{{file://scenarios/TC-H38-nodejs-deprecationwarnings-pol/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H38-nodejs-deprecationwarnings-pol/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -487,14 +487,14 @@ tests:
   - description: TC-P9-single-example-in-a-spec-is-tr [control]
     vars:
       scenarioId: TC-P9-single-example-in-a-spec-is-tr
-      prompt: '{{file://scenarios/TC-P9-single-example-in-a-spec-is-tr/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-P9-single-example-in-a-spec-is-tr/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-P9-single-example-in-a-spec-is-tr [treatment]
     vars:
       scenarioId: TC-P9-single-example-in-a-spec-is-tr
-      prompt: '{{file://scenarios/TC-P9-single-example-in-a-spec-is-tr/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-P9-single-example-in-a-spec-is-tr/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -507,14 +507,14 @@ tests:
   - description: TC-P10-made-a-confident-architectural [control]
     vars:
       scenarioId: TC-P10-made-a-confident-architectural
-      prompt: '{{file://scenarios/TC-P10-made-a-confident-architectural/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-P10-made-a-confident-architectural/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-P10-made-a-confident-architectural [treatment]
     vars:
       scenarioId: TC-P10-made-a-confident-architectural
-      prompt: '{{file://scenarios/TC-P10-made-a-confident-architectural/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-P10-made-a-confident-architectural/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -527,14 +527,14 @@ tests:
   - description: TC-H44-webfetch-and-curl-fail-on-urls [control]
     vars:
       scenarioId: TC-H44-webfetch-and-curl-fail-on-urls
-      prompt: '{{file://scenarios/TC-H44-webfetch-and-curl-fail-on-urls/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H44-webfetch-and-curl-fail-on-urls/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-H44-webfetch-and-curl-fail-on-urls [treatment]
     vars:
       scenarioId: TC-H44-webfetch-and-curl-fail-on-urls
-      prompt: '{{file://scenarios/TC-H44-webfetch-and-curl-fail-on-urls/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H44-webfetch-and-curl-fail-on-urls/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -547,14 +547,14 @@ tests:
   - description: TC-H46-supabase-auth-returns-500-data [control]
     vars:
       scenarioId: TC-H46-supabase-auth-returns-500-data
-      prompt: '{{file://scenarios/TC-H46-supabase-auth-returns-500-data/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H46-supabase-auth-returns-500-data/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-H46-supabase-auth-returns-500-data [treatment]
     vars:
       scenarioId: TC-H46-supabase-auth-returns-500-data
-      prompt: '{{file://scenarios/TC-H46-supabase-auth-returns-500-data/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H46-supabase-auth-returns-500-data/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -567,14 +567,14 @@ tests:
   - description: TC-H50-tasks-without-a-verification-c [control]
     vars:
       scenarioId: TC-H50-tasks-without-a-verification-c
-      prompt: '{{file://scenarios/TC-H50-tasks-without-a-verification-c/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H50-tasks-without-a-verification-c/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-H50-tasks-without-a-verification-c [treatment]
     vars:
       scenarioId: TC-H50-tasks-without-a-verification-c
-      prompt: '{{file://scenarios/TC-H50-tasks-without-a-verification-c/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H50-tasks-without-a-verification-c/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -587,14 +587,14 @@ tests:
   - description: TC-H52-vercel-logs-silently-filters-b [control]
     vars:
       scenarioId: TC-H52-vercel-logs-silently-filters-b
-      prompt: '{{file://scenarios/TC-H52-vercel-logs-silently-filters-b/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H52-vercel-logs-silently-filters-b/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-H52-vercel-logs-silently-filters-b [treatment]
     vars:
       scenarioId: TC-H52-vercel-logs-silently-filters-b
-      prompt: '{{file://scenarios/TC-H52-vercel-logs-silently-filters-b/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H52-vercel-logs-silently-filters-b/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -607,14 +607,14 @@ tests:
   - description: TC-H53-zod-v4-zodresolver-requires-zo [control]
     vars:
       scenarioId: TC-H53-zod-v4-zodresolver-requires-zo
-      prompt: '{{file://scenarios/TC-H53-zod-v4-zodresolver-requires-zo/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H53-zod-v4-zodresolver-requires-zo/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-H53-zod-v4-zodresolver-requires-zo [treatment]
     vars:
       scenarioId: TC-H53-zod-v4-zodresolver-requires-zo
-      prompt: '{{file://scenarios/TC-H53-zod-v4-zodresolver-requires-zo/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H53-zod-v4-zodresolver-requires-zo/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -627,14 +627,14 @@ tests:
   - description: TC-G4-vitest-hangs-in-non-interactiv [control]
     vars:
       scenarioId: TC-G4-vitest-hangs-in-non-interactiv
-      prompt: '{{file://scenarios/TC-G4-vitest-hangs-in-non-interactiv/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-G4-vitest-hangs-in-non-interactiv/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-G4-vitest-hangs-in-non-interactiv [treatment]
     vars:
       scenarioId: TC-G4-vitest-hangs-in-non-interactiv
-      prompt: '{{file://scenarios/TC-G4-vitest-hangs-in-non-interactiv/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-G4-vitest-hangs-in-non-interactiv/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -647,14 +647,14 @@ tests:
   - description: TC-G5-git-stderr-redirected-to-devnu [control]
     vars:
       scenarioId: TC-G5-git-stderr-redirected-to-devnu
-      prompt: '{{file://scenarios/TC-G5-git-stderr-redirected-to-devnu/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-G5-git-stderr-redirected-to-devnu/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-G5-git-stderr-redirected-to-devnu [treatment]
     vars:
       scenarioId: TC-G5-git-stderr-redirected-to-devnu
-      prompt: '{{file://scenarios/TC-G5-git-stderr-redirected-to-devnu/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-G5-git-stderr-redirected-to-devnu/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -667,14 +667,14 @@ tests:
   - description: TC-G6-pytest-tty-hanging-k9m2 [control]
     vars:
       scenarioId: TC-G6-pytest-tty-hanging-k9m2
-      prompt: '{{file://scenarios/TC-G6-pytest-tty-hanging-k9m2/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-G6-pytest-tty-hanging-k9m2/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-G6-pytest-tty-hanging-k9m2 [treatment]
     vars:
       scenarioId: TC-G6-pytest-tty-hanging-k9m2
-      prompt: '{{file://scenarios/TC-G6-pytest-tty-hanging-k9m2/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-G6-pytest-tty-hanging-k9m2/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -687,14 +687,14 @@ tests:
   - description: TC-D10 serena-activate [control]
     vars:
       scenarioId: TC-D10-serena-activate
-      prompt: '{{file://scenarios/TC-D10-serena-activate/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-D10-serena-activate/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-D10 serena-activate [treatment]
     vars:
       scenarioId: TC-D10-serena-activate
-      prompt: '{{file://scenarios/TC-D10-serena-activate/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-D10-serena-activate/PROMPT.md}}"
       intervention:
         type: claudemd
         ids: []
@@ -704,14 +704,14 @@ tests:
   - description: TC-D12-bias-toward-action [control]
     vars:
       scenarioId: TC-D12-bias-toward-action
-      prompt: '{{file://scenarios/TC-D12-bias-toward-action/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-D12-bias-toward-action/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-D12-bias-toward-action [treatment]
     vars:
       scenarioId: TC-D12-bias-toward-action
-      prompt: '{{file://scenarios/TC-D12-bias-toward-action/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-D12-bias-toward-action/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -724,14 +724,14 @@ tests:
   - description: TC-D13-state-assumptions [control]
     vars:
       scenarioId: TC-D13-state-assumptions
-      prompt: '{{file://scenarios/TC-D13-state-assumptions/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-D13-state-assumptions/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-D13-state-assumptions [treatment]
     vars:
       scenarioId: TC-D13-state-assumptions
-      prompt: '{{file://scenarios/TC-D13-state-assumptions/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-D13-state-assumptions/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -744,14 +744,14 @@ tests:
   - description: TC-D14-attach-evidence [control]
     vars:
       scenarioId: TC-D14-attach-evidence
-      prompt: '{{file://scenarios/TC-D14-attach-evidence/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-D14-attach-evidence/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-D14-attach-evidence [treatment]
     vars:
       scenarioId: TC-D14-attach-evidence
-      prompt: '{{file://scenarios/TC-D14-attach-evidence/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-D14-attach-evidence/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -764,14 +764,14 @@ tests:
   - description: TC-P11-plugin-registry-disable [control]
     vars:
       scenarioId: TC-P11-plugin-registry-disable
-      prompt: '{{file://scenarios/TC-P11-plugin-registry-disable/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-P11-plugin-registry-disable/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-P11-plugin-registry-disable [treatment]
     vars:
       scenarioId: TC-P11-plugin-registry-disable
-      prompt: '{{file://scenarios/TC-P11-plugin-registry-disable/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-P11-plugin-registry-disable/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -784,14 +784,14 @@ tests:
   - description: TC-P12-plan-mode-suppresses [control]
     vars:
       scenarioId: TC-P12-plan-mode-suppresses
-      prompt: '{{file://scenarios/TC-P12-plan-mode-suppresses/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-P12-plan-mode-suppresses/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-P12-plan-mode-suppresses [treatment]
     vars:
       scenarioId: TC-P12-plan-mode-suppresses
-      prompt: '{{file://scenarios/TC-P12-plan-mode-suppresses/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-P12-plan-mode-suppresses/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -804,14 +804,14 @@ tests:
   - description: TC-P13-misread-retry-output [control]
     vars:
       scenarioId: TC-P13-misread-retry-output
-      prompt: '{{file://scenarios/TC-P13-misread-retry-output/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-P13-misread-retry-output/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-P13-misread-retry-output [treatment]
     vars:
       scenarioId: TC-P13-misread-retry-output
-      prompt: '{{file://scenarios/TC-P13-misread-retry-output/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-P13-misread-retry-output/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -824,14 +824,14 @@ tests:
   - description: TC-P14-said-run-pytest [control]
     vars:
       scenarioId: TC-P14-said-run-pytest
-      prompt: '{{file://scenarios/TC-P14-said-run-pytest/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-P14-said-run-pytest/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-P14-said-run-pytest [treatment]
     vars:
       scenarioId: TC-P14-said-run-pytest
-      prompt: '{{file://scenarios/TC-P14-said-run-pytest/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-P14-said-run-pytest/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -844,14 +844,14 @@ tests:
   - description: TC-G11-block-full-file-dumps-via-cat [control]
     vars:
       scenarioId: TC-G11-block-full-file-dumps-via-cat
-      prompt: '{{file://scenarios/TC-G11-block-full-file-dumps-via-cat/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-G11-block-full-file-dumps-via-cat/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-G11-block-full-file-dumps-via-cat [treatment]
     vars:
       scenarioId: TC-G11-block-full-file-dumps-via-cat
-      prompt: '{{file://scenarios/TC-G11-block-full-file-dumps-via-cat/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-G11-block-full-file-dumps-via-cat/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -866,14 +866,14 @@ tests:
   - description: TC-G12-always-verify-mcp-server-path [control]
     vars:
       scenarioId: TC-G12-always-verify-mcp-server-path
-      prompt: '{{file://scenarios/TC-G12-always-verify-mcp-server-path/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-G12-always-verify-mcp-server-path/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-G12-always-verify-mcp-server-path [treatment]
     vars:
       scenarioId: TC-G12-always-verify-mcp-server-path
-      prompt: '{{file://scenarios/TC-G12-always-verify-mcp-server-path/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-G12-always-verify-mcp-server-path/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -888,14 +888,14 @@ tests:
   - description: TC-H67-check-git-status-before-staging [control]
     vars:
       scenarioId: TC-H67-check-git-status-before-staging
-      prompt: '{{file://scenarios/TC-H67-check-git-status-before-staging/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H67-check-git-status-before-staging/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-H67-check-git-status-before-staging [treatment]
     vars:
       scenarioId: TC-H67-check-git-status-before-staging
-      prompt: '{{file://scenarios/TC-H67-check-git-status-before-staging/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H67-check-git-status-before-staging/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -908,14 +908,14 @@ tests:
   - description: TC-H70-webhook-sig-skipped-when-secret-unset [control]
     vars:
       scenarioId: TC-H70-webhook-sig-skipped-when-secret-unset
-      prompt: '{{file://scenarios/TC-H70-webhook-sig-skipped-when-secret-unset/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H70-webhook-sig-skipped-when-secret-unset/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-H70-webhook-sig-skipped-when-secret-unset [treatment]
     vars:
       scenarioId: TC-H70-webhook-sig-skipped-when-secret-unset
-      prompt: '{{file://scenarios/TC-H70-webhook-sig-skipped-when-secret-unset/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H70-webhook-sig-skipped-when-secret-unset/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -928,14 +928,14 @@ tests:
   - description: TC-H72-write-tool-requires-prior-read [control]
     vars:
       scenarioId: TC-H72-write-tool-requires-prior-read
-      prompt: '{{file://scenarios/TC-H72-write-tool-requires-prior-read/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H72-write-tool-requires-prior-read/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-H72-write-tool-requires-prior-read [treatment]
     vars:
       scenarioId: TC-H72-write-tool-requires-prior-read
-      prompt: '{{file://scenarios/TC-H72-write-tool-requires-prior-read/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H72-write-tool-requires-prior-read/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -948,14 +948,14 @@ tests:
   - description: TC-H73-zsh-for-loop-multiline-split [control]
     vars:
       scenarioId: TC-H73-zsh-for-loop-multiline-split
-      prompt: '{{file://scenarios/TC-H73-zsh-for-loop-multiline-split/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H73-zsh-for-loop-multiline-split/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-H73-zsh-for-loop-multiline-split [treatment]
     vars:
       scenarioId: TC-H73-zsh-for-loop-multiline-split
-      prompt: '{{file://scenarios/TC-H73-zsh-for-loop-multiline-split/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H73-zsh-for-loop-multiline-split/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -968,14 +968,14 @@ tests:
   - description: TC-H75-never-merge-unresolved-review [control]
     vars:
       scenarioId: TC-H75-never-merge-unresolved-review
-      prompt: '{{file://scenarios/TC-H75-never-merge-unresolved-review/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H75-never-merge-unresolved-review/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-H75-never-merge-unresolved-review [treatment]
     vars:
       scenarioId: TC-H75-never-merge-unresolved-review
-      prompt: '{{file://scenarios/TC-H75-never-merge-unresolved-review/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H75-never-merge-unresolved-review/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -988,14 +988,14 @@ tests:
   - description: TC-H80-load-pr-runbook-before-driving [control]
     vars:
       scenarioId: TC-H80-load-pr-runbook-before-driving
-      prompt: '{{file://scenarios/TC-H80-load-pr-runbook-before-driving/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H80-load-pr-runbook-before-driving/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-H80-load-pr-runbook-before-driving [treatment]
     vars:
       scenarioId: TC-H80-load-pr-runbook-before-driving
-      prompt: '{{file://scenarios/TC-H80-load-pr-runbook-before-driving/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H80-load-pr-runbook-before-driving/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -1008,14 +1008,14 @@ tests:
   - description: TC-P18-write-plan-doc-outside-worktree [control]
     vars:
       scenarioId: TC-P18-write-plan-doc-outside-worktree
-      prompt: '{{file://scenarios/TC-P18-write-plan-doc-outside-worktree/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-P18-write-plan-doc-outside-worktree/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-P18-write-plan-doc-outside-worktree [treatment]
     vars:
       scenarioId: TC-P18-write-plan-doc-outside-worktree
-      prompt: '{{file://scenarios/TC-P18-write-plan-doc-outside-worktree/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-P18-write-plan-doc-outside-worktree/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -1025,18 +1025,17 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
-
   - description: TC-P19-drive-pr-to-merge [control]
     vars:
       scenarioId: TC-P19-drive-pr-to-merge
-      prompt: '{{file://scenarios/TC-P19-drive-pr-to-merge/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-P19-drive-pr-to-merge/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-P19-drive-pr-to-merge [treatment]
     vars:
       scenarioId: TC-P19-drive-pr-to-merge
-      prompt: '{{file://scenarios/TC-P19-drive-pr-to-merge/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-P19-drive-pr-to-merge/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -1046,18 +1045,17 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
-
   - description: TC-P20-never-run-gh-pr-create-directly [control]
     vars:
       scenarioId: TC-P20-never-run-gh-pr-create-directly
-      prompt: '{{file://scenarios/TC-P20-never-run-gh-pr-create-directly/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-P20-never-run-gh-pr-create-directly/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-P20-never-run-gh-pr-create-directly [treatment]
     vars:
       scenarioId: TC-P20-never-run-gh-pr-create-directly
-      prompt: '{{file://scenarios/TC-P20-never-run-gh-pr-create-directly/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-P20-never-run-gh-pr-create-directly/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -1065,18 +1063,17 @@ tests:
     assert:
       - type: javascript
         value: file://scripts/assert-hidden-check.mjs
-
   - description: TC-P21-reply-on-review-thread [control]
     vars:
       scenarioId: TC-P21-reply-on-review-thread
-      prompt: '{{file://scenarios/TC-P21-reply-on-review-thread/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-P21-reply-on-review-thread/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-P21-reply-on-review-thread [treatment]
     vars:
       scenarioId: TC-P21-reply-on-review-thread
-      prompt: '{{file://scenarios/TC-P21-reply-on-review-thread/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-P21-reply-on-review-thread/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -1086,18 +1083,17 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
-
   - description: TC-H82-guard-api-calls-at-call-site [control]
     vars:
       scenarioId: TC-H82-guard-api-calls-at-call-site
-      prompt: '{{file://scenarios/TC-H82-guard-api-calls-at-call-site/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H82-guard-api-calls-at-call-site/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-H82-guard-api-calls-at-call-site [treatment]
     vars:
       scenarioId: TC-H82-guard-api-calls-at-call-site
-      prompt: '{{file://scenarios/TC-H82-guard-api-calls-at-call-site/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H82-guard-api-calls-at-call-site/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -1107,18 +1103,17 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
-
   - description: TC-H84-read-backup-before-bulk-delete [control]
     vars:
       scenarioId: TC-H84-read-backup-before-bulk-delete
-      prompt: '{{file://scenarios/TC-H84-read-backup-before-bulk-delete/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H84-read-backup-before-bulk-delete/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-H84-read-backup-before-bulk-delete [treatment]
     vars:
       scenarioId: TC-H84-read-backup-before-bulk-delete
-      prompt: '{{file://scenarios/TC-H84-read-backup-before-bulk-delete/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H84-read-backup-before-bulk-delete/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -1128,18 +1123,17 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
-
   - description: TC-H85-detection-predicate-matches-real-condition [control]
     vars:
       scenarioId: TC-H85-detection-predicate-matches-real-condition
-      prompt: '{{file://scenarios/TC-H85-detection-predicate-matches-real-condition/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H85-detection-predicate-matches-real-condition/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-H85-detection-predicate-matches-real-condition [treatment]
     vars:
       scenarioId: TC-H85-detection-predicate-matches-real-condition
-      prompt: '{{file://scenarios/TC-H85-detection-predicate-matches-real-condition/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H85-detection-predicate-matches-real-condition/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -1149,18 +1143,17 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
-
   - description: TC-H86-read-before-write [control]
     vars:
       scenarioId: TC-H86-read-before-write
-      prompt: '{{file://scenarios/TC-H86-read-before-write/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H86-read-before-write/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-H86-read-before-write [treatment]
     vars:
       scenarioId: TC-H86-read-before-write
-      prompt: '{{file://scenarios/TC-H86-read-before-write/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H86-read-before-write/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -1170,18 +1163,17 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
-
   - description: TC-H88-verify-file-sync-before-commit [control]
     vars:
       scenarioId: TC-H88-verify-file-sync-before-commit
-      prompt: '{{file://scenarios/TC-H88-verify-file-sync-before-commit/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H88-verify-file-sync-before-commit/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-H88-verify-file-sync-before-commit [treatment]
     vars:
       scenarioId: TC-H88-verify-file-sync-before-commit
-      prompt: '{{file://scenarios/TC-H88-verify-file-sync-before-commit/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H88-verify-file-sync-before-commit/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -1191,18 +1183,17 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
-
   - description: TC-H91-fix-merged-not-deployed [control]
     vars:
       scenarioId: TC-H91-fix-merged-not-deployed
-      prompt: '{{file://scenarios/TC-H91-fix-merged-not-deployed/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H91-fix-merged-not-deployed/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-H91-fix-merged-not-deployed [treatment]
     vars:
       scenarioId: TC-H91-fix-merged-not-deployed
-      prompt: '{{file://scenarios/TC-H91-fix-merged-not-deployed/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H91-fix-merged-not-deployed/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -1212,18 +1203,17 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
-
   - description: TC-H92-webfetch-fallback-filtered-curl [control]
     vars:
       scenarioId: TC-H92-webfetch-fallback-filtered-curl
-      prompt: '{{file://scenarios/TC-H92-webfetch-fallback-filtered-curl/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H92-webfetch-fallback-filtered-curl/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-H92-webfetch-fallback-filtered-curl [treatment]
     vars:
       scenarioId: TC-H92-webfetch-fallback-filtered-curl
-      prompt: '{{file://scenarios/TC-H92-webfetch-fallback-filtered-curl/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H92-webfetch-fallback-filtered-curl/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -1233,18 +1223,17 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
-
   - description: TC-H93-inFlight-guard-concurrent-worker [control]
     vars:
       scenarioId: TC-H93-inFlight-guard-concurrent-worker
-      prompt: '{{file://scenarios/TC-H93-inFlight-guard-concurrent-worker/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H93-inFlight-guard-concurrent-worker/PROMPT.md}}"
       intervention:
         type: none
         ids: []
   - description: TC-H93-inFlight-guard-concurrent-worker [treatment]
     vars:
       scenarioId: TC-H93-inFlight-guard-concurrent-worker
-      prompt: '{{file://scenarios/TC-H93-inFlight-guard-concurrent-worker/PROMPT.md}}'
+      prompt: "{{file://scenarios/TC-H93-inFlight-guard-concurrent-worker/PROMPT.md}}"
       intervention:
         type: lesson
         ids:
@@ -1254,6 +1243,145 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
-
+  - description: TC-H96-verify-supabase-migrations-app [control]
+    vars:
+      scenarioId: TC-H96-verify-supabase-migrations-app
+      prompt: "{{file://scenarios/TC-H96-verify-supabase-migrations-app/PROMPT.md}}"
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H96-verify-supabase-migrations-app [treatment]
+    vars:
+      scenarioId: TC-H96-verify-supabase-migrations-app
+      prompt: "{{file://scenarios/TC-H96-verify-supabase-migrations-app/PROMPT.md}}"
+      intervention:
+        type: lesson
+        ids:
+          - verify-supabase-migrations-applied-befor-a940
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H98-github-graphql-rate-limit-exha [control]
+    vars:
+      scenarioId: TC-H98-github-graphql-rate-limit-exha
+      prompt: "{{file://scenarios/TC-H98-github-graphql-rate-limit-exha/PROMPT.md}}"
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H98-github-graphql-rate-limit-exha [treatment]
+    vars:
+      scenarioId: TC-H98-github-graphql-rate-limit-exha
+      prompt: "{{file://scenarios/TC-H98-github-graphql-rate-limit-exha/PROMPT.md}}"
+      intervention:
+        type: lesson
+        ids:
+          - github-graphql-rate-limit-exhaustion-pre-c5ee
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H99-cache-keys-must-include-enough [control]
+    vars:
+      scenarioId: TC-H99-cache-keys-must-include-enough
+      prompt: "{{file://scenarios/TC-H99-cache-keys-must-include-enough/PROMPT.md}}"
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H99-cache-keys-must-include-enough [treatment]
+    vars:
+      scenarioId: TC-H99-cache-keys-must-include-enough
+      prompt: "{{file://scenarios/TC-H99-cache-keys-must-include-enough/PROMPT.md}}"
+      intervention:
+        type: lesson
+        ids:
+          - cache-keys-must-include-enough-context-t-8430
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H100-openssl-key-conversion-pkcs1-r [control]
+    vars:
+      scenarioId: TC-H100-openssl-key-conversion-pkcs1-r
+      prompt: "{{file://scenarios/TC-H100-openssl-key-conversion-pkcs1-r/PROMPT.md}}"
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H100-openssl-key-conversion-pkcs1-r [treatment]
+    vars:
+      scenarioId: TC-H100-openssl-key-conversion-pkcs1-r
+      prompt: "{{file://scenarios/TC-H100-openssl-key-conversion-pkcs1-r/PROMPT.md}}"
+      intervention:
+        type: lesson
+        ids:
+          - openssl-key-conversion-pkcs1-rsa-keys-ne-599d
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H101-a-process-that-emits-artifacts [control]
+    vars:
+      scenarioId: TC-H101-a-process-that-emits-artifacts
+      prompt: "{{file://scenarios/TC-H101-a-process-that-emits-artifacts/PROMPT.md}}"
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H101-a-process-that-emits-artifacts [treatment]
+    vars:
+      scenarioId: TC-H101-a-process-that-emits-artifacts
+      prompt: "{{file://scenarios/TC-H101-a-process-that-emits-artifacts/PROMPT.md}}"
+      intervention:
+        type: lesson
+        ids:
+          - a-process-that-emits-artifacts-of-the-ki-ac42
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H102-git-worktree-list-porcelain-sh [control]
+    vars:
+      scenarioId: TC-H102-git-worktree-list-porcelain-sh
+      prompt: "{{file://scenarios/TC-H102-git-worktree-list-porcelain-sh/PROMPT.md}}"
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H102-git-worktree-list-porcelain-sh [treatment]
+    vars:
+      scenarioId: TC-H102-git-worktree-list-porcelain-sh
+      prompt: "{{file://scenarios/TC-H102-git-worktree-list-porcelain-sh/PROMPT.md}}"
+      intervention:
+        type: lesson
+        ids:
+          - git-worktree-list-porcelain-shows-locked-e50a
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H103-unsupportedoperationerror-shou [control]
+    vars:
+      scenarioId: TC-H103-unsupportedoperationerror-shou
+      prompt: "{{file://scenarios/TC-H103-unsupportedoperationerror-shou/PROMPT.md}}"
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H103-unsupportedoperationerror-shou [treatment]
+    vars:
+      scenarioId: TC-H103-unsupportedoperationerror-shou
+      prompt: "{{file://scenarios/TC-H103-unsupportedoperationerror-shou/PROMPT.md}}"
+      intervention:
+        type: lesson
+        ids:
+          - unsupportedoperationerror-should-be-caug-8bba
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
 outputPath: results/cache/latest-run.json
 sharing: false

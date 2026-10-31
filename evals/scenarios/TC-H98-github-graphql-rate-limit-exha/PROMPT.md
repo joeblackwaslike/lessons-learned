@@ -1,0 +1,1 @@
+Use the GitHub GraphQL API to pull all open pull requests across our organization's repositories, including each PR's title, author, review decisions, and linked issues, then format the results as a markdown summary table.

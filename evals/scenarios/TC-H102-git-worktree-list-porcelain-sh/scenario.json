@@ -1,0 +1,17 @@
+{
+  "id": "TC-H102-git-worktree-list-porcelain-sh",
+  "title": "git worktree list --porcelain shows locked worktrees even if lock is stale",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "git-worktree-list-porcelain-shows-locked-e50a",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": [
+    "git-worktree-list-porcelain-shows-locked-e50a"
+  ],
+  "automaticFailGates": [],
+  "generated": true
+}

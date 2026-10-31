@@ -1,0 +1,17 @@
+{
+  "id": "TC-H95-gh-graphql-mutations-require-v",
+  "title": "gh GraphQL mutations require variables; direct string interpolation fails silent",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "gh-graphql-mutations-require-variables-d-d03e",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": [
+    "gh-graphql-mutations-require-variables-d-d03e"
+  ],
+  "automaticFailGates": [],
+  "generated": true
+}
