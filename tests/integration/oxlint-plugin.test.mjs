@@ -21,8 +21,16 @@ function lint(name, source) {
   const file = join(dir, name);
   writeFileSync(file, source);
   const result = spawnSync(OXLINT, ['-c', CONFIG, '-f', 'json', file], { encoding: 'utf8' });
-  const codes = JSON.parse(result.stdout).diagnostics.map(d => d.code);
-  return { status: result.status, codes };
+  if (result.error) throw result.error;
+  let report;
+  try {
+    report = JSON.parse(result.stdout);
+  } catch {
+    throw new Error(
+      `oxlint did not print a JSON report (exit ${result.status}):\n${result.stdout}${result.stderr}`
+    );
+  }
+  return { status: result.status, codes: report.diagnostics.map(d => d.code) };
 }
 
 const VIOLATION_CASES = [
