@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
   ci:
     name: Format, lint, typecheck, test
@@ -14,30 +18,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
+          cache: pnpm
+          cache-dependency-path: |
+            pnpm-lock.yaml
+            package.json
 
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version-file: .bun-version
-
-      - uses: pnpm/action-setup@v4
-        with:
-          run_install: false
-
-      - name: Get pnpm store directory
-        shell: bash
-        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-      - uses: actions/cache@v4
-        with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - run: pnpm install --frozen-lockfile
+      # Root package only: evals/ and website/ deps are ~1800 packages these checks never load.
+      - run: pnpm install --frozen-lockfile --filter lessons-learned
 
       - run: pnpm run format:check
 
@@ -52,21 +44,37 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: oven-sh/setup-bun@v2
+      # Gate steps rather than the job so the check reports success when skipped.
+      - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        id: filter
+        if: github.event_name == 'pull_request'
         with:
-          bun-version-file: .bun-version
+          filters: |
+            docs:
+              - 'website/**'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+
+      - uses: actions/checkout@v4
+        if: steps.filter.outputs.docs != 'false'
 
       - uses: pnpm/action-setup@v4
+        if: steps.filter.outputs.docs != 'false'
 
       - uses: actions/setup-node@v4
+        if: steps.filter.outputs.docs != 'false'
         with:
           node-version: '22'
           cache: pnpm
+          cache-dependency-path: |
+            pnpm-lock.yaml
+            website/package.json
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        if: steps.filter.outputs.docs != 'false'
+        run: pnpm install --frozen-lockfile --filter lessons-learned-docs
 
       - name: Build docs
+        if: steps.filter.outputs.docs != 'false'
         run: pnpm docs:build
