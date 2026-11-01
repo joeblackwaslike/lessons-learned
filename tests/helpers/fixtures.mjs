@@ -20,7 +20,7 @@ export function loadFixtureText(name) {
 /**
  * Load a JSON fixture file as a parsed object.
  * @param {string} name
- * @returns {object}
+ * @returns {Object}
  */
 export function loadFixture(name) {
   return JSON.parse(loadFixtureText(name));

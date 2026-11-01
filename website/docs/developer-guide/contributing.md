@@ -21,8 +21,8 @@ npm ci
 ## Code quality gates
 
 ```bash
-npm run lint          # ESLint (report only)
-npm run lint:fix      # ESLint with auto-fix
+npm run lint          # Oxlint (report only)
+npm run lint:fix      # Oxlint with auto-fix
 npm run format        # Prettier (write)
 npm run format:check  # Prettier (check only)
 npm run typecheck     # tsc --checkJs --noEmit

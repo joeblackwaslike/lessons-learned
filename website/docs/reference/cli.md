@@ -379,8 +379,8 @@ conversational `/lessons:config` slash command, which reads and writes the same 
 | `npm run test:integration` | Integration tests only           |
 | `npm run test:e2e`         | E2E tests only                   |
 | `npm run test:coverage`    | Tests with coverage              |
-| `npm run lint`             | ESLint (report)                  |
-| `npm run lint:fix`         | ESLint (auto-fix)                |
+| `npm run lint`             | Oxlint (report)                  |
+| `npm run lint:fix`         | Oxlint (auto-fix)                |
 | `npm run format`           | Prettier (write)                 |
 | `npm run format:check`     | Prettier (check)                 |
 | `npm run typecheck`        | TypeScript check                 |

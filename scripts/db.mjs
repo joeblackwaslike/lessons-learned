@@ -401,8 +401,8 @@ function applyMigrations(db) {
 
 /**
  * Deserialize a raw DB row (null-prototype object, JSON text columns) to a plain object.
- * @param {object} row
- * @returns {object}
+ * @param {Object} row
+ * @returns {Object}
  */
 export function deserializeRow(row) {
   const plain = Object.assign({}, row);
@@ -472,7 +472,7 @@ function serializeRecord(record) {
  * Look up a record by exact contentHash. Returns the raw row or null.
  * @param {DatabaseSync} db
  * @param {string} hash
- * @returns {object|null}
+ * @returns {Object|null}
  */
 export function findByContentHash(db, hash) {
   const row = db.prepare('SELECT id, slug, status FROM lessons WHERE contentHash = ?').get(hash);
@@ -521,8 +521,8 @@ function jaccardSimilarity(a, b) {
  *   2. Jaccard >= 0.5 vs any active/reviewed lesson → { ok: false, reason: 'fuzzy_duplicate', existing }
  *
  * @param {DatabaseSync} db
- * @param {object} record - All fields except id/createdAt/updatedAt (auto-set if absent)
- * @returns {{ ok: boolean, id?: string, reason?: string, existing?: object }}
+ * @param {Object} record - All fields except id/createdAt/updatedAt (auto-set if absent)
+ * @returns {{ ok: boolean, id?: string, reason?: string, existing?: Object }}
  */
 export function insertCandidate(db, record) {
   const existing = findByContentHash(db, record.contentHash);
@@ -597,7 +597,7 @@ export function insertCandidate(db, record) {
  * Batch-insert candidates. Runs inside a transaction; skips individual duplicates.
  *
  * @param {DatabaseSync} db
- * @param {object[]} records
+ * @param {Object[]} records
  * @returns {{ inserted: number, skipped: number, skippedReasons: string[] }}
  */
 export function insertCandidateBatch(db, records) {
@@ -645,7 +645,7 @@ function assertSkipReasonHasReceipt(patch) {
  *
  * @param {DatabaseSync} db
  * @param {string[]} ids
- * @param {Record<string, object>} [patches]
+ * @param {Record<string, Object>} [patches]
  * @returns {{ id: string, slug: string }[]}
  */
 export function promoteToActive(db, ids, patches = {}) {
@@ -728,7 +728,7 @@ export function promoteToActive(db, ids, patches = {}) {
  *
  * @param {DatabaseSync} db
  * @param {string} id
- * @param {object} patch
+ * @param {Object} patch
  * @returns {{ id: string, slug: string } | null}  null if ID not found
  */
 export function updateRecord(db, id, patch) {
@@ -842,7 +842,7 @@ export function archiveRecords(db, items) {
 /**
  * Fetch all active records ordered by priority DESC. Used by buildManifest().
  * @param {DatabaseSync} db
- * @returns {object[]}
+ * @returns {Object[]}
  */
 export function getActiveRecords(db) {
   return db
@@ -862,7 +862,7 @@ export function getManifestRecords(db) {
  * Fetch all candidate records ranked by (sessionCount * projectCount * confidence) DESC.
  * Used by scan aggregate.
  * @param {DatabaseSync} db
- * @returns {object[]}
+ * @returns {Object[]}
  */
 export function getCandidateRecords(db) {
   return db
@@ -881,7 +881,7 @@ export function getCandidateRecords(db) {
  * Fetch candidate records with confidence below threshold.
  * @param {DatabaseSync} db
  * @param {number} maxConfidence
- * @returns {object[]}
+ * @returns {Object[]}
  */
 export function getCandidatesBelowConfidence(db, maxConfidence) {
   return db
@@ -898,7 +898,7 @@ export function getCandidatesBelowConfidence(db, maxConfidence) {
  * Fetch records by IDs. Used by promote to validate inputs.
  * @param {DatabaseSync} db
  * @param {string[]} ids
- * @returns {object[]}
+ * @returns {Object[]}
  */
 export function getRecordsByIds(db, ids) {
   if (ids.length === 0) return [];
@@ -944,7 +944,7 @@ export function computeContentHash(record) {
 /**
  * Persist a review session record to the DB.
  * @param {DatabaseSync} db
- * @param {{ id: string, createdAt: string, promoted: string[], archived: {id: string, reason: string}[], patches?: object }} session
+ * @param {{ id: string, createdAt: string, promoted: string[], archived: {id: string, reason: string}[], patches?: Object }} session
  */
 export function insertReviewSession(db, session) {
   db.prepare(
@@ -962,7 +962,7 @@ export function insertReviewSession(db, session) {
 /**
  * Fetch all review sessions, newest first.
  * @param {DatabaseSync} db
- * @returns {object[]}
+ * @returns {Object[]}
  */
 export function getReviewSessions(db) {
   return db
@@ -980,7 +980,7 @@ export function getReviewSessions(db) {
  * Fetch a single review session by ID.
  * @param {DatabaseSync} db
  * @param {string} id
- * @returns {object | null}
+ * @returns {Object | null}
  */
 export function getReviewSession(db, id) {
   const r = db.prepare('SELECT * FROM review_sessions WHERE id = ?').get(id);
@@ -1028,7 +1028,7 @@ export function insertPendingWindow(db, record) {
  * Return all unprocessed pending windows, oldest first.
  *
  * @param {DatabaseSync} db
- * @returns {object[]}
+ * @returns {Object[]}
  */
 export function getPendingWindows(db) {
   return db

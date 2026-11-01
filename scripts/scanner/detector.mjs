@@ -58,7 +58,7 @@ const USER_CORRECTION_SIGNALS = [
 
 /**
  * A turn in the conversation window.
- * @typedef {{ type: string, text: string, toolName?: string, toolInput?: object, timestamp?: string, sessionId?: string, messageId?: string }} Turn
+ * @typedef {{ type: string, text: string, toolName?: string, toolInput?: Object, timestamp?: string, sessionId?: string, messageId?: string }} Turn
  */
 
 /**
@@ -112,7 +112,7 @@ export class HeuristicDetector {
   /**
    * Extract conversation turns from a JSONL object.
    *
-   * @param {object} obj — parsed JSONL object
+   * @param {Object} obj — parsed JSONL object
    * @returns {Turn[]}
    */
   _extractTurns(obj) {
