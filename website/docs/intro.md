@@ -144,3 +144,5 @@ The manifest is what the injection hook reads at runtime, so if you ever bypass 
 - [Slash commands](./user-guide/slash-commands.md) — conversational interface to manage lessons
 - [Configuration](./user-guide/configuration.md) — tune injection budget and thresholds
 - [Interactive visualization](pathname:///how-it-works.html) — explore the system architecture
+
+<!-- ci docs-filter probe; reverted in the next commit -->
