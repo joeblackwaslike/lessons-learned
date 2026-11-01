@@ -25,36 +25,56 @@ function lint(name, source) {
   return { status: result.status, codes };
 }
 
+const VIOLATION_CASES = [
+  {
+    description: 'reports a legacy octal literal in a .js file Oxlint parses as a script',
+    file: 'octal.js',
+    source: 'const n = 071;\nconsole.log(n);\n',
+    code: 'eslint-js(no-octal)',
+  },
+  {
+    description: 'reports duplicate parameters in a .js file Oxlint parses as a script',
+    file: 'dupe.js',
+    source: 'function f(a, a) { return a; }\nf(1, 2);\n',
+    code: 'eslint-js(no-dupe-args)',
+  },
+  {
+    description: 'reports a control character written as a string escape in new RegExp()',
+    file: 'regex.mjs',
+    source: "export const r = new RegExp('a\\tb');\n",
+    code: 'eslint-js(no-control-regex)',
+  },
+  {
+    description: 'reports an escaped slash that follows an escaped backslash',
+    file: 'escape.mjs',
+    source: "export const s = '\\\\\\/';\n",
+    code: 'eslint-js(no-useless-escape)',
+  },
+  {
+    description: 'reports a redeclared var',
+    file: 'redeclare.mjs',
+    source: 'var a = 1;\nvar a = 2;\nexport { a };\n',
+    code: 'eslint-js(no-redeclare)',
+  },
+  {
+    description: 'reports a /* global */ comment',
+    file: 'global.mjs',
+    source: '/* global setTimeout */\nexport const t = setTimeout;\n',
+    code: 'eslint-js(no-global-comment)',
+  },
+];
+
 describe('oxlint-plugin.mjs rules', () => {
-  it('reports a legacy octal literal in a .js file Oxlint parses as a script', () => {
-    const { status, codes } = lint('octal.js', 'const n = 071;\nconsole.log(n);\n');
+  for (const { description, file, source, code } of VIOLATION_CASES) {
+    it(description, () => {
+      const { codes } = lint(file, source);
+      assert.ok(codes.includes(code), codes.join(', '));
+    });
+  }
+
+  it('reports the octal literal as a lint failure', () => {
+    const { status } = lint('octal-status.js', 'const n = 071;\nconsole.log(n);\n');
     assert.equal(status, 1);
-    assert.ok(codes.includes('eslint-js(no-octal)'), codes.join(', '));
-  });
-
-  it('reports duplicate parameters in a .js file Oxlint parses as a script', () => {
-    const { codes } = lint('dupe.js', 'function f(a, a) { return a; }\nf(1, 2);\n');
-    assert.ok(codes.includes('eslint-js(no-dupe-args)'), codes.join(', '));
-  });
-
-  it('reports a control character written as a string escape in new RegExp()', () => {
-    const { codes } = lint('regex.mjs', "export const r = new RegExp('a\\tb');\n");
-    assert.ok(codes.includes('eslint-js(no-control-regex)'), codes.join(', '));
-  });
-
-  it('reports an escaped slash that follows an escaped backslash', () => {
-    const { codes } = lint('escape.mjs', "export const s = '\\\\\\/';\n");
-    assert.ok(codes.includes('eslint-js(no-useless-escape)'), codes.join(', '));
-  });
-
-  it('reports a redeclared var', () => {
-    const { codes } = lint('redeclare.mjs', 'var a = 1;\nvar a = 2;\nexport { a };\n');
-    assert.ok(codes.includes('eslint-js(no-redeclare)'), codes.join(', '));
-  });
-
-  it('reports a /* global */ comment', () => {
-    const { codes } = lint('global.mjs', '/* global setTimeout */\nexport const t = setTimeout;\n');
-    assert.ok(codes.includes('eslint-js(no-global-comment)'), codes.join(', '));
   });
 
   it('passes clean code', () => {
