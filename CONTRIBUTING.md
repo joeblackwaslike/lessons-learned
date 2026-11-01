@@ -31,8 +31,8 @@ Tests never touch `data/`. Isolation is achieved via environment variables:
 ## Code quality
 
 ```bash
-pnpm lint          # ESLint (report only)
-pnpm lint:fix      # ESLint with auto-fix
+pnpm lint          # Oxlint (report only)
+pnpm lint:fix      # Oxlint with auto-fix
 pnpm format        # Prettier (write)
 pnpm format:check  # Prettier (check only)
 pnpm typecheck     # tsc --checkJs --noEmit

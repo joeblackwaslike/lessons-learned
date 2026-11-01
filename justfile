@@ -59,11 +59,11 @@ config:
 
 # ── Quality Gates ──────────────────────────────────────────────────────────────
 
-# Run ESLint
+# Run Oxlint
 lint:
     pnpm lint
 
-# Run ESLint with auto-fix
+# Run Oxlint with auto-fix
 lint-fix:
     pnpm lint:fix
 

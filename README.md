@@ -293,7 +293,7 @@ Cost: ~$0.10–0.25/day at Haiku rates. Throttled to once per 24 hours.
 npm test                  # 297 tests at time of writing
 npm run test:unit         # unit tests only (fast)
 npm run test:integration  # integration tests
-npm run lint              # eslint
+npm run lint              # oxlint
 npm run typecheck         # tsc --noEmit
 ```
 

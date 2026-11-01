@@ -19,7 +19,7 @@
  *
  * @param {import('./match.mjs').Match[]} matches - Ranked matches (priority desc)
  * @param {Set<string>} seenSet - Slugs already seen this session
- * @param {object} opts
+ * @param {Object} opts
  * @param {number} [opts.maxLessons] - Max lessons per injection (default 3)
  * @param {number} [opts.budgetBytes] - Max total bytes to inject (default 4096)
  * @param {(slug: string) => boolean} opts.claimFn - Returns true if this invocation wins the claim

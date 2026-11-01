@@ -16,6 +16,7 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
+    "maxNodeModuleJsDepth": 0,
     "paths": {
       "punycode": ["./types.d.ts"]
     }

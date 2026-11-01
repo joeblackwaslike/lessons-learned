@@ -41,7 +41,7 @@ export function loadScanState() {
 /**
  * Persist scan state to disk.
  *
- * @param {object} state
+ * @param {Object} state
  */
 export function saveScanState(state) {
   writeFileSync(STATE_PATH, JSON.stringify(state, null, 2) + '\n', 'utf8');
@@ -52,7 +52,7 @@ export function saveScanState(state) {
  *
  * If the file has shrunk (e.g., rotated or replaced), resets to 0.
  *
- * @param {object} state
+ * @param {Object} state
  * @param {string} filePath — absolute path to JSONL file
  * @returns {number} — byte offset to start reading from
  */
@@ -79,7 +79,7 @@ export function getResumeOffset(state, filePath) {
  * Reads both `structuralOffset` (new) and `semanticOffset` (legacy key) for
  * backwards compatibility with existing scan-state.json files.
  *
- * @param {object} state
+ * @param {Object} state
  * @param {string} filePath — absolute path to JSONL file
  * @returns {number}
  */
@@ -100,7 +100,7 @@ export function getStructuralOffset(state, filePath) {
 /**
  * Update the scan offset for a file after processing (Tier 1/2).
  *
- * @param {object} state — mutable state object
+ * @param {Object} state — mutable state object
  * @param {string} filePath — absolute path
  * @param {number} newOffset — byte position after last processed line
  */
@@ -123,7 +123,7 @@ export function updateOffset(state, filePath, newOffset) {
 /**
  * Update the structural scan offset independently from the regular offset.
  *
- * @param {object} state — mutable state object
+ * @param {Object} state — mutable state object
  * @param {string} filePath — absolute path
  * @param {number} newOffset — byte position after last structurally-processed line
  */
@@ -138,7 +138,7 @@ export function updateStructuralOffset(state, filePath, newOffset) {
  * Reset structural offsets for all tracked files to 0, enabling a full structural
  * rescan without disturbing the regular (Tier 1/2) offsets.
  *
- * @param {object} state — mutable state object
+ * @param {Object} state — mutable state object
  */
 export function resetStructuralOffsets(state) {
   for (const filePath of Object.keys(state.files ?? {})) {
@@ -153,7 +153,7 @@ export function resetStructuralOffsets(state) {
  * The deep scanner reads whole files, so we track by file size (not byte offset).
  * If the current size differs from deepScanSize, the session has grown and needs re-scan.
  *
- * @param {object} state
+ * @param {Object} state
  * @param {string} filePath
  * @returns {number}
  */
@@ -164,7 +164,7 @@ export function getDeepScanSize(state, filePath) {
 /**
  * Record the file size after a successful deep scan.
  *
- * @param {object} state — mutable state object
+ * @param {Object} state — mutable state object
  * @param {string} filePath — absolute path
  * @param {number} fileSize — current size in bytes
  */

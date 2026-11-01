@@ -5,3 +5,8 @@ command -v bd >/dev/null 2>&1 && bd hooks run pre-push "$@" || true
 
 # Eval gate: every scenario must appear in the latest results before pushing
 node scripts/check-scenarios-run.mjs --new-only || exit 1
+
+# Same static checks as CI's first three steps, so a push doesn't wait on CI to fail them
+./node_modules/.bin/prettier --check . --log-level warn || exit 1
+./node_modules/.bin/oxlint || exit 1
+./node_modules/.bin/tsc --noEmit -p jsconfig.json || exit 1

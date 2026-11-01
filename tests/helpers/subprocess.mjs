@@ -2,9 +2,9 @@
  * Spawn a Node.js script as a subprocess, pipe stdin, collect stdout/stderr.
  *
  * @param {string} scriptPath - Absolute path to the .mjs script
- * @param {object} opts
+ * @param {Object} opts
  * @param {string}  [opts.stdin]  - Text to pipe to stdin
- * @param {object}  [opts.env]    - Extra env vars (merged with process.env)
+ * @param {Object}  [opts.env]    - Extra env vars (merged with process.env)
  * @param {string[]} [opts.args]  - Additional CLI args
  * @returns {Promise<{ stdout: string, stderr: string, exitCode: number }>}
  */

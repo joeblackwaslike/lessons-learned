@@ -14,7 +14,7 @@
 /**
  * Match lessons against a tool invocation.
  *
- * @param {object} lessons - The `manifest.lessons` object (keyed by lesson ID)
+ * @param {Object} lessons - The `manifest.lessons` object (keyed by lesson ID)
  * @param {string} toolName - Platform tool name (e.g. "Bash", "Read")
  * @param {string} command  - Shell command string (for Bash-type tools)
  * @param {string} filePath - File path (for Read/Edit/Write-type tools)
@@ -46,7 +46,7 @@ function anyRegexMatches(regexSources, target) {
 }
 
 /**
- * @param {object} lessons
+ * @param {Object} lessons
  * @param {string} toolName
  * @param {string} command  - Bash command (command invocations)
  * @param {string} filePath - File path (Edit/Write/Read invocations)

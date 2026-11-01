@@ -41,7 +41,7 @@ import { createHash } from 'node:crypto';
 /**
  * Normalize a Tier 1 structured tag result into a LessonCandidate.
  *
- * @param {object} tag — output from parseLessonTags / scanLineForLessons
+ * @param {Object} tag — output from parseLessonTags / scanLineForLessons
  * @returns {LessonCandidate}
  */
 export function extractFromStructured(tag) {
@@ -78,7 +78,7 @@ export function extractFromStructured(tag) {
  * Heuristic candidates have less structure — we extract what we can from
  * the turns and signal patterns.
  *
- * @param {object} window — output from HeuristicDetector.flush()
+ * @param {Object} window — output from HeuristicDetector.flush()
  * @returns {LessonCandidate}
  */
 export function extractFromHeuristic(window) {
@@ -158,7 +158,7 @@ export function extractFromHeuristic(window) {
  * Structured tags get higher base confidence because they were explicitly
  * emitted by the assistant.
  *
- * @param {object} candidate
+ * @param {Object} candidate
  * @returns {number} — 0.0 to 1.0
  */
 export function scoreCandidateConfidence(candidate) {
@@ -202,7 +202,7 @@ export function scoreCandidateConfidence(candidate) {
  * Single-session candidates start low. Priority increases when patterns
  * are seen across sessions/projects (handled at aggregation time, not here).
  *
- * @param {object} candidate
+ * @param {Object} candidate
  * @returns {number} — 1 to 10
  */
 export function scoreCandidatePriority(candidate) {

@@ -35,7 +35,7 @@ jobs:
 
       - run: pnpm run format:check
 
-      - run: pnpm run lint
+      - run: pnpm run lint --format=github
 
       - run: pnpm run typecheck
 
