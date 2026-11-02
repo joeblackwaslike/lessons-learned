@@ -1,0 +1,17 @@
+{
+  "id": "TC-H107-clean-serena-dirs-from-worktre",
+  "title": "Clean .serena dirs from worktrees before git worktree remove",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "clean-serena-dirs-from-worktrees-before-f65b",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": [
+    "clean-serena-dirs-from-worktrees-before-f65b"
+  ],
+  "automaticFailGates": [],
+  "generated": true
+}

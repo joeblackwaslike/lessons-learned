@@ -1,0 +1,17 @@
+{
+  "id": "TC-H121-icloud-clouddocs-paths-use-com",
+  "title": "iCloud shared folders use com~apple~CloudDocs, not iCloud~bundle namespace",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "icloud-clouddocs-paths-use-comapplecloud-ccf4",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": [
+    "icloud-clouddocs-paths-use-comapplecloud-ccf4"
+  ],
+  "automaticFailGates": [],
+  "generated": true
+}

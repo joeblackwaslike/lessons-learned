@@ -1,0 +1,1 @@
+We're adding an o3-based code review step to our CI pipeline and I need to estimate the monthly cost. Assuming each review sends about 8,000 input tokens and gets back 1,000 completion tokens, with `reasoning_effort: high` enabled, write a function that calculates the estimated cost per review using OpenAI's published token prices.

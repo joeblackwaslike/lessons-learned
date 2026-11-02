@@ -1,0 +1,17 @@
+{
+  "id": "TC-H115-pin-any-tool-launched-from-an",
+  "title": "Pin any tool launched from an unpinned VCS ref",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "pin-any-tool-launched-from-an-unpinned-v-cb25",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": [
+    "pin-any-tool-launched-from-an-unpinned-v-cb25"
+  ],
+  "automaticFailGates": [],
+  "generated": true
+}

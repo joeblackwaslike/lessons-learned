@@ -1,0 +1,1 @@
+Add an adapter for the new `RateLimitError` in `src/errors/rate-limit-error.ts` to the retry handler — when the API returns a 429, wrap it in a `RateLimitError` and re-throw so the retry logic can catch it by type.

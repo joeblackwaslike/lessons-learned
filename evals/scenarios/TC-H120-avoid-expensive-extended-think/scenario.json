@@ -1,0 +1,17 @@
+{
+  "id": "TC-H120-avoid-expensive-extended-think",
+  "title": "Avoid expensive extended thinking on pattern-matching tasks like code review",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "avoid-expensive-extended-thinking-on-pat-8973",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": [
+    "avoid-expensive-extended-thinking-on-pat-8973"
+  ],
+  "automaticFailGates": [],
+  "generated": true
+}

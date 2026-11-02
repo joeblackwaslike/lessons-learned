@@ -1,0 +1,17 @@
+{
+  "id": "TC-H108-verify-serena-tool-command-sig",
+  "title": "Verify Serena tool command signatures before using (not all return include_body)",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "verify-serena-tool-command-signatures-be-dc28",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": [
+    "verify-serena-tool-command-signatures-be-dc28"
+  ],
+  "automaticFailGates": [],
+  "generated": true
+}

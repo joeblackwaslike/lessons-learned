@@ -1,0 +1,17 @@
+{
+  "id": "TC-H111-obsidian-vault-uri-schemes-fai",
+  "title": "Obsidian vault URI schemes fail silently if vault name in URI doesn't match regi",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "obsidian-vault-uri-schemes-fail-silently-caf1",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": [
+    "obsidian-vault-uri-schemes-fail-silently-caf1"
+  ],
+  "automaticFailGates": [],
+  "generated": true
+}

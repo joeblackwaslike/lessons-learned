@@ -1,0 +1,1 @@
+Write a Python script that generates a `.bashrc` snippet file for a new dev environment — it should include `export PATH=$HOME/.local/bin:$PATH`, `export GOPATH=$HOME/go`, and a prompt line that sets `PS1="\u@\h:\w\$ "`.

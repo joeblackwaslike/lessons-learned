@@ -1,0 +1,17 @@
+{
+  "id": "TC-H110-reasoning-tokens-in-o-series-m",
+  "title": "o-series reasoning tokens bill at output rate — 3-10x cost vs base estimate",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "reasoning-tokens-in-o-series-models-bill-5357",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": [
+    "reasoning-tokens-in-o-series-models-bill-5357"
+  ],
+  "automaticFailGates": [],
+  "generated": true
+}

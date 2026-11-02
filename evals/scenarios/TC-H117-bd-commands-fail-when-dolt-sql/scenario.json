@@ -1,0 +1,17 @@
+{
+  "id": "TC-H117-bd-commands-fail-when-dolt-sql",
+  "title": "bd commands fail when dolt sql-server holds exclusive lock on embeddeddolt",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "bd-commands-fail-when-dolt-sql-server-ho-198e",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": [
+    "bd-commands-fail-when-dolt-sql-server-ho-198e"
+  ],
+  "automaticFailGates": [],
+  "generated": true
+}

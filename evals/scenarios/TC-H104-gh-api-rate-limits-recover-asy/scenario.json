@@ -1,0 +1,17 @@
+{
+  "id": "TC-H104-gh-api-rate-limits-recover-asy",
+  "title": "gh API rate limits recover asynchronously; retry after ~60 seconds",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "gh-api-rate-limits-recover-asynchronousl-d3d9",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": [
+    "gh-api-rate-limits-recover-asynchronousl-d3d9"
+  ],
+  "automaticFailGates": [],
+  "generated": true
+}

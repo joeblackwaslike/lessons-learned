@@ -1,0 +1,17 @@
+{
+  "id": "TC-H105-gh-cli-rate-limiting-can-mask",
+  "title": "On gh rate-limited errors, check gh auth status — its often auth, not limits",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "gh-cli-rate-limiting-can-mask-pr-visibil-4f69",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": [
+    "gh-cli-rate-limiting-can-mask-pr-visibil-4f69"
+  ],
+  "automaticFailGates": [],
+  "generated": true
+}

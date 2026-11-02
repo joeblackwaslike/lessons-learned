@@ -1,0 +1,17 @@
+{
+  "id": "TC-H112-typescript-require-import-requ",
+  "title": "CommonJS require() in TS: add eslint-disable and as typeof import() cast",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "typescript-require-import-requires-eslin-46bb",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": [
+    "typescript-require-import-requires-eslin-46bb"
+  ],
+  "automaticFailGates": [],
+  "generated": true
+}

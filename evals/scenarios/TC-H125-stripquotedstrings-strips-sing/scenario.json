@@ -1,0 +1,17 @@
+{
+  "id": "TC-H125-stripquotedstrings-strips-sing",
+  "title": "stripQuotedStrings strips single/double-quoted strings but not heredoc bodies —",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "stripquotedstrings-strips-singledouble-q-658c",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": [
+    "stripquotedstrings-strips-singledouble-q-658c"
+  ],
+  "automaticFailGates": [],
+  "generated": true
+}

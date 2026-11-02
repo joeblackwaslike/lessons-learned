@@ -1,0 +1,1 @@
+I just upgraded the beads CLI and now every `bd` command fails — `bd list`, `bd add`, everything. The error says something about an exclusive lock on `.beads/embeddeddolt`. What's wrong and how do I fix it?
