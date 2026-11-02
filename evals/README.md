@@ -111,17 +111,43 @@ The judge (`scripts/judge.mjs`) runs inside `claude-agent.mjs` for treatment arm
 **Prerequisites:** `judge.mjs`, `probe-scenario.mjs`, `gen-regression-traps.mjs`,
 `generate-scenarios.mjs`, and `repair-judge-errors.mjs` all call an isolated `claude -p`
 subprocess (see `lib/claude-spawn.mjs`) — OAuth via your `claude login` session (the default
-`~/.claude/` config dir), no env vars required, no meridian proxy needed. This matches the
-agent arm's auth path — see `providers/claude-agent.mjs`'s `buildEnv()`. Control arms must run
+`~/.claude/` config dir), no env vars required, no meridian proxy needed. Control arms must run
 before treatment arms — guaranteed by `maxConcurrency: 1` in the config, with all controls
 listed before treatments.
 
+## Agent Arm Sandbox
+
+Agent arms run with permissions skipped, so each one runs in a per-trial sandbox
+(`lib/trial-sandbox.mjs`). The trial gets a temp root with its own workspace, `HOME`, `TMPDIR`,
+and XDG dirs, so the agent never sees the real `~/.claude`, `~/.codex`, or `~/github`. A stub
+`bin/` comes first on `PATH`: `gh` and the `git` network commands (`push`, `pull`, `fetch`,
+`clone`, `ls-remote`, `remote add|set-url`) exit 97 and are logged. On macOS the agent also
+runs under `sandbox-exec`, which denies writes anywhere under the real home except the trial
+root (set `EVAL_SANDBOX_EXEC=0` to turn this off). After the run, the provider compares a
+snapshot of `~/github` (top-level names), `~/.claude/settings.json`, `~/.claude/CLAUDE.md`,
+`~/Library/Application Support/Claude/claude_desktop_config.json`, and `~/.codex/config.toml`
+with the one taken before it.
+
+The agent authenticates with `CLAUDE_CODE_OAUTH_TOKEN`. When that variable is unset, the
+provider reads the access token of your `claude login` from the macOS Keychain (or
+`~/.claude/.credentials.json`) and passes only that token, never the refresh token. A token
+that expires within five minutes stops the run; start any `claude` session to refresh it, or
+export a long-lived token from `claude setup-token`.
+
+The provider returns `error` (an ERROR row in promptfoo, never cached) when `claude` exits
+non-zero or times out, prints a usage-limit or API error, changes a watched path, or makes a
+stubbed network call. For statistical trials (`vars.trialId` set), a run with zero tool calls
+is an error too.
+
 ## Cache Behavior
 
-| Cache file                                 | Key                                                                   | Purpose                                                                     |
-| ------------------------------------------ | --------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| `results/cache/{cacheKey}.json`            | `sha256(scenarioHash + model + interventionJson + lessonContentHash)` | Full arm result; treatment arms re-run when lesson problem/solution changes |
-| `results/cache/control-{controlHash}.json` | `sha256(prompt + model)`                                              | Control transcript; reused by all lessons sharing the same trigger prompt   |
+| Cache file                                 | Key                                                                                            | Purpose                                                                     |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| `results/cache/{cacheKey}.json`            | `sha256(scenarioHash + model + interventionJson + lessonContentHash + cliVersion [+ trialId])` | Full arm result; treatment arms re-run when lesson problem/solution changes |
+| `results/cache/control-{controlHash}.json` | `sha256(prompt + model)`                                                                       | Control transcript; reused by all lessons sharing the same trigger prompt   |
+
+Overlay interventions also hash the overlay dir's files. `vars.noCache: true` (or
+`EVAL_NO_CACHE=1`) skips the cache for statistical trials; `EVAL_CACHE_DIR` moves it.
 
 Clear all caches: `npm run eval:clean`
 

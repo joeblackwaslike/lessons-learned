@@ -6,10 +6,21 @@
  *
  * callApi contract:
  *   prompt  — task text (contents of scenario PROMPT.md)
- *   context — { vars: { scenarioId, intervention, lessonSnapshot?, dialogFile? } }
+ *   context — { vars: { scenarioId, intervention, lessonSnapshot?, dialogFile?,
+ *                       trialId?, noCache?, scenarioDir?, mcp? } }
  *   options — { config: { model, timeout } }
  *
- * Returns: { output: string, metadata: EvalArmMetadata }
+ *   trialId     — statistical trial id; part of the cache key, and a trial with zero
+ *                 tool calls becomes an error
+ *   noCache     — skip the arm cache read and write (also EVAL_NO_CACHE=1)
+ *   scenarioDir — absolute scenario dir, overriding evals/scenarios/<scenarioId>
+ *   mcp         — "none" forces the empty strict MCP config on every arm
+ *   intervention may be { type: "overlay", dir } (files copied into the workspace)
+ *
+ * Returns: { output: string, error?: string, metadata: EvalArmMetadata }. `error` is set
+ * when the run failed, timed out, hit a usage limit, touched files outside its sandbox,
+ * or made a forbidden network call (see evals/lib/trial-sandbox.mjs); such results are
+ * never cached.
  *
  * Tier 3 judge integration:
  *   - Control arms write transcript to results/cache/control-{controlHash}.json
@@ -19,24 +30,31 @@
  */
 
 import { spawnSync } from 'node:child_process';
-import {
-  mkdtempSync,
-  rmSync,
-  existsSync,
-  mkdirSync,
-  writeFileSync,
-  readFileSync,
-  readdirSync,
-} from 'node:fs';
+import { rmSync, existsSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
-import { tmpdir } from 'node:os';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { resolveLessonRequires } from '../lib/requires.mjs';
+import {
+  cacheDir,
+  cliVersion,
+  computeCacheKey,
+  tryArmCache,
+  writeControlTranscript,
+} from '../lib/arm-cache.mjs';
+import {
+  createTrialSandbox,
+  diffSnapshots,
+  readForbiddenCalls,
+  readOAuthToken,
+  sandboxCommand,
+  sandboxEnv,
+  snapshotWatchPaths,
+  trialErrorReason,
+} from '../lib/trial-sandbox.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const EVALS_ROOT = resolve(__dirname, '..');
-const CACHE_DIR = join(EVALS_ROOT, 'results', 'cache');
 
 const MATERIALIZE_SCRIPT = join(EVALS_ROOT, 'scripts', 'materialize-workspace.mjs');
 const COLLECT_SCRIPT = join(EVALS_ROOT, 'scripts', 'collect-artifacts.mjs');
@@ -56,7 +74,7 @@ export default class ClaudeAgentProvider {
    * @param {string} prompt
    * @param {{ vars: Record<string, unknown> }} context
    * @param {{ config?: { model?: string; timeout?: number } }} options
-   * @returns {Promise<{ output: string; metadata?: Record<string, unknown> }>}
+   * @returns {Promise<{ output: string; error?: string; metadata?: Record<string, any> }>}
    */
   async callApi(prompt, context, options) {
     const { vars = {} } = context;
@@ -64,37 +82,56 @@ export default class ClaudeAgentProvider {
       throw new Error('Provider requires vars.scenarioId (non-empty string)');
     }
     const scenarioId = vars.scenarioId;
-    const intervention = vars.intervention ?? { type: 'none', ids: [] };
+    const intervention = /** @type {{ type?: string; ids?: string[]; dir?: string }} */ (
+      vars.intervention ?? { type: 'none', ids: [] }
+    );
     const model = process.env.EVAL_AGENT_MODEL ?? options?.config?.model ?? this.model;
     const timeout = options?.config?.timeout ?? this.timeout;
     const isControl = (intervention.type ?? 'none') === 'none';
+    const trialId = typeof vars.trialId === 'string' && vars.trialId ? vars.trialId : null;
+    const noCache = vars.noCache === true || process.env.EVAL_NO_CACHE === '1';
 
-    const scenarioDir = join(EVALS_ROOT, 'scenarios', scenarioId);
+    const scenarioDir =
+      typeof vars.scenarioDir === 'string' && vars.scenarioDir
+        ? vars.scenarioDir
+        : join(EVALS_ROOT, 'scenarios', scenarioId);
     if (!existsSync(scenarioDir)) {
       throw new Error(`Scenario directory not found: ${scenarioDir}`);
     }
 
     const lesson = parseLessonSnapshot(vars, isControl);
-    const { lessonId } = JSON.parse(readFileSync(join(scenarioDir, 'scenario.json'), 'utf8'));
-    const { pluginDirs, signature: requiresSignature } = resolveLessonRequires(lessonId);
+    const scenario = JSON.parse(readFileSync(join(scenarioDir, 'scenario.json'), 'utf8'));
+    const { pluginDirs, signature: requiresSignature } = scenario.lessonId
+      ? resolveLessonRequires(scenario.lessonId)
+      : { pluginDirs: [], signature: '' };
+    const claudeBin = findClaudeBin();
+    const trial = { trialId, cliVersion: cliVersion(claudeBin) };
     const controlHash = computeControlHash(scenarioId, model, requiresSignature);
-    const controlTranscriptFile = join(CACHE_DIR, `control-${controlHash}.json`);
+    const controlTranscriptFile = join(cacheDir(), `control-${controlHash}.json`);
     const lessonContentHash = lesson ? computeLessonContentHash(lesson) : null;
+    const useSerena = !isControl && vars.mcp !== 'none';
+    // A treatment arm without Serena is a different arm, so it must not share a cache entry.
+    const keySignature =
+      !isControl && !useSerena ? `${requiresSignature}:mcp=none` : requiresSignature;
     const cacheKey = computeCacheKey(
       scenarioDir,
       intervention,
       model,
       lessonContentHash,
-      requiresSignature
+      keySignature,
+      trial
     );
-    const cacheFile = join(CACHE_DIR, `${cacheKey}.json`);
+    const cacheFile = join(cacheDir(), `${cacheKey}.json`);
 
-    const cached = tryArmCache(cacheFile, isControl, controlTranscriptFile);
-    if (cached) return cached;
+    if (!noCache) {
+      const cached = tryArmCache(cacheFile, isControl, controlTranscriptFile);
+      if (cached) return cached;
+    }
 
     const armResult = await runArm({
       prompt,
       scenarioDir,
+      scenarioEnv: scenario.env ?? {},
       intervention,
       model,
       timeout,
@@ -105,13 +142,14 @@ export default class ClaudeAgentProvider {
       cacheKey,
       controlHash,
       pluginDirs,
+      claudeBin,
+      trial,
+      useSerena,
       startMs: Date.now(),
     });
 
-    const isSuccessfulRun =
-      armResult.metadata.exitCode === 0 && armResult.output !== 'Execution error';
-    if (isSuccessfulRun) {
-      mkdirSync(CACHE_DIR, { recursive: true });
+    if (!noCache && !armResult.error) {
+      mkdirSync(cacheDir(), { recursive: true });
       writeFileSync(cacheFile, JSON.stringify(armResult, null, 2));
     }
 
@@ -124,6 +162,7 @@ export default class ClaudeAgentProvider {
 async function runArm({
   prompt,
   scenarioDir,
+  scenarioEnv,
   intervention,
   model,
   timeout,
@@ -134,13 +173,18 @@ async function runArm({
   cacheKey,
   controlHash,
   pluginDirs,
+  claudeBin,
+  trial,
+  useSerena,
   startMs,
 }) {
-  const workspaceDir = mkdtempSync(join(tmpdir(), `eval-${scenarioId}-`));
+  const token = readOAuthToken();
+  const sandbox = createTrialSandbox(scenarioId);
+  const workspaceDir = sandbox.workspace;
   try {
     materializeWorkspace(scenarioDir, workspaceDir, intervention);
 
-    const env = buildEnv(workspaceDir, intervention, readScenarioEnv(scenarioDir));
+    const env = buildEnv(workspaceDir, scenarioEnv, sandboxEnv(sandbox, token));
     // Pin the agent model explicitly. Without --model, `claude --print` uses the
     // OAuth session's default model (which silently changed to Opus over this
     // project's life and confounded earlier CONTROL_CORRECT results), while the
@@ -150,15 +194,18 @@ async function runArm({
       '--print',
       '--dangerously-skip-permissions',
       '--setting-sources=project',
+      '--no-session-persistence',
       '--model',
       model,
     ];
     // Pass explicit MCP config for treatment arms so Serena loads in --print mode.
     // Project-level mcpServers in settings.json are not loaded by CC in --print mode.
     // --strict-mcp-config ensures only this explicit config is used, in case the
-    // workspace's own settings.json also defines mcpServers.
+    // workspace's own settings.json also defines mcpServers. vars.mcp "none" turns
+    // Serena off so a treatment arm differs from its control only in the intervention.
     const mcpConfigPath = join(workspaceDir, '.eval', 'mcp-config.json');
-    if (!isControl && existsSync(mcpConfigPath)) {
+    const loadSerena = useSerena && existsSync(mcpConfigPath);
+    if (loadSerena) {
       claudeArgs.push('--mcp-config', mcpConfigPath, '--strict-mcp-config');
     } else {
       // Control arm: an empty strict config keeps account-level connectors (Supabase,
@@ -167,13 +214,22 @@ async function runArm({
     }
     for (const dir of pluginDirs) claudeArgs.push('--plugin-dir', dir);
     claudeArgs.push('-p', prompt);
-    const claudeResult = spawnSync(findClaudeBin(), claudeArgs, {
+    const spawn = sandboxCommand(
+      sandbox,
+      claudeBin,
+      claudeArgs,
+      loadSerena ? [join(EVALS_ROOT, '.uv-cache')] : []
+    );
+    const before = snapshotWatchPaths();
+    const claudeResult = spawnSync(spawn.command, spawn.args, {
       cwd: workspaceDir,
       env,
       encoding: 'utf8',
       timeout,
       maxBuffer: 10 * 1024 * 1024,
     });
+    const outsideChanges = diffSnapshots(before, snapshotWatchPaths());
+    const forbiddenCalls = readForbiddenCalls(sandbox);
 
     const output = claudeResult.stdout ?? '';
     const evalMetaDir = join(workspaceDir, '.eval');
@@ -182,29 +238,43 @@ async function runArm({
 
     const hiddenCheck = runVerify(scenarioDir, workspaceDir);
     const artifacts = collectArtifacts(workspaceDir, scenarioDir);
+    const toolCalls = (artifacts.trajectory ?? []).filter(e => e.type === 'PreToolUse').length;
+    const error = trialErrorReason({
+      exitCode: claudeResult.status,
+      output,
+      toolCalls,
+      requireToolCalls: trial.trialId !== null,
+      outsideChanges,
+      forbiddenCalls,
+    });
     const toolCallLog = readToolCallLog(workspaceDir);
     const enrichedOutput = toolCallLog ? `${output}\n\n${toolCallLog}` : output;
 
-    if (isControl && claudeResult.status === 0) {
+    if (isControl && !error) {
       writeControlTranscript(controlTranscriptFile, enrichedOutput);
     }
 
     // Judge uses an isolated `claude -p` subprocess (evals/lib/claude-spawn.mjs) —
     // OAuth via the default ~/.claude/ config dir, no ANTHROPIC_API_KEY required.
     const judgeResult =
-      !isControl && lesson
+      !isControl && lesson && !error
         ? await runJudge({ lesson, controlTranscriptFile, output: enrichedOutput })
         : null;
 
     return {
       output,
+      ...(error && { error }),
       metadata: {
         scenarioId,
         intervention,
         model,
+        trialId: trial.trialId,
+        cliVersion: trial.cliVersion,
         durationMs: Date.now() - startMs,
         exitCode: claudeResult.status,
         stderr: (claudeResult.stderr ?? '').slice(0, 2000),
+        toolCalls,
+        sandbox: { outsideChanges, forbiddenCalls },
         hiddenCheck,
         artifacts,
         cacheHit: false,
@@ -215,7 +285,7 @@ async function runArm({
     };
   } finally {
     try {
-      rmSync(workspaceDir, { recursive: true, force: true });
+      rmSync(sandbox.root, { recursive: true, force: true });
     } catch {
       /* best-effort */
     }
@@ -298,29 +368,6 @@ function readToolCallLog(workspaceDir) {
   }
 }
 
-function writeControlTranscript(controlTranscriptFile, output) {
-  try {
-    mkdirSync(CACHE_DIR, { recursive: true });
-    writeFileSync(controlTranscriptFile, JSON.stringify({ output }, null, 2));
-  } catch {
-    /* best-effort */
-  }
-}
-
-function tryArmCache(cacheFile, isControl, controlTranscriptFile) {
-  if (!existsSync(cacheFile)) return null;
-  let cached;
-  try {
-    cached = JSON.parse(readFileSync(cacheFile, 'utf8'));
-  } catch {
-    return null;
-  }
-  if (isControl && cached.output && !existsSync(controlTranscriptFile)) {
-    writeControlTranscript(controlTranscriptFile, cached.output);
-  }
-  return { ...cached, metadata: { ...cached.metadata, cacheHit: true } };
-}
-
 function parseLessonSnapshot(vars, isControl) {
   if (isControl || !vars.lessonSnapshot) return null;
   try {
@@ -388,55 +435,26 @@ function findClaudeBin() {
   throw new Error('claude binary not found. Set CLAUDE_BIN env var or ensure claude is on PATH.');
 }
 
-// Per-scenario environment variables from scenario.json `env` (e.g. a stale
-// VIRTUAL_ENV to reproduce an env-mismatch). Optional; {} when absent.
-function readScenarioEnv(scenarioDir) {
-  try {
-    return JSON.parse(readFileSync(join(scenarioDir, 'scenario.json'), 'utf8')).env ?? {};
-  } catch {
-    return {};
-  }
-}
-
-function buildEnv(workspaceDir, _intervention, scenarioEnv = {}) {
+function buildEnv(workspaceDir, scenarioEnv, sandboxKeys) {
   // ANTHROPIC_API_KEY and ANTHROPIC_BASE_URL are intentionally excluded so the eval
   // agent bypasses Meridian (which spawns a CC worker with full user settings and
   // opus[1m], causing 20-minute timeouts). Without these vars, CC uses direct OAuth
   // authentication against Anthropic, which respects --setting-sources=project and
   // gives a small-context fast response via the user's subscription.
-  const allowed = [
-    'USER',
-    'LOGNAME',
-    'SHELL',
-    'PATH',
-    'TMPDIR',
-    'TMP',
-    'TEMP',
-    'LANG',
-    'LC_ALL',
-    'LC_CTYPE',
-    'NODE_PATH',
-    'XDG_RUNTIME_DIR',
-  ];
+  const allowed = ['USER', 'LOGNAME', 'SHELL', 'LANG', 'LC_ALL', 'LC_CTYPE', 'NODE_PATH'];
 
   const env = Object.fromEntries(
     allowed.filter(k => process.env[k] != null).map(k => [k, process.env[k]])
   );
 
-  // --setting-sources=project (in claudeArgs) already limits Claude to project-level
-  // settings, so user hooks won't fire. We keep the real HOME so Keychain auth works —
-  // CLAUDE_CONFIG_DIR isolation broke OAuth because tokens live in macOS Keychain, not
-  // in settings.json where the old fallback tried to read them.
-
   const manifestPath = join(workspaceDir, '.eval', 'lesson-manifest.json');
   if (existsSync(manifestPath)) env.LESSONS_MANIFEST_PATH = manifestPath;
   env.LESSONS_DISABLE_SCAN = '1';
 
-  // Per-scenario overrides win (applied last) so a scenario can set/override any
-  // env var the agent will see — VIRTUAL_ENV, custom flags, etc.
+  // Per-scenario overrides (VIRTUAL_ENV, custom flags, ...) apply next. The sandbox's
+  // HOME, TMPDIR, XDG dirs, PATH, and auth token apply last so no scenario can undo them.
   for (const [k, v] of Object.entries(scenarioEnv)) env[k] = String(v);
-
-  return env;
+  return { ...env, ...sandboxKeys };
 }
 
 // ── Cache key computation ──────────────────────────────────────────────────────
@@ -459,53 +477,4 @@ function computeLessonContentHash(lesson) {
     .update(':')
     .update(lesson.solution ?? '')
     .digest('hex');
-}
-
-/**
- * sha256(scenarioContentHash : model : interventionJson [: lessonContentHash])
- * Intervention ids are sorted so order doesn't affect the key.
- * lessonContentHash is included for treatment arms so edits invalidate the cache.
- */
-function computeCacheKey(
-  scenarioDir,
-  intervention,
-  model,
-  lessonContentHash = null,
-  requiresSignature = ''
-) {
-  const sortedIntervention = {
-    type: intervention.type ?? 'none',
-    ids: [...(intervention.ids ?? [])].sort((a, b) => a.localeCompare(b)),
-  };
-  const hash = createHash('sha256')
-    .update(hashDir(scenarioDir))
-    .update(':')
-    .update(model)
-    .update(':')
-    .update(JSON.stringify(sortedIntervention));
-  if (lessonContentHash) hash.update(':').update(lessonContentHash);
-  if (requiresSignature) hash.update(':').update(requiresSignature);
-  return hash.digest('hex');
-}
-
-function hashDir(dir) {
-  const hash = createHash('sha256');
-  for (const relPath of collectFiles(dir).sort()) {
-    hash.update(relPath);
-    hash.update(readFileSync(join(dir, relPath)));
-  }
-  return hash.digest('hex');
-}
-
-function collectFiles(dir, base = '') {
-  const results = [];
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const rel = base ? `${base}/${entry.name}` : entry.name;
-    if (entry.isDirectory()) {
-      results.push(...collectFiles(join(dir, entry.name), rel));
-    } else if (entry.isFile() && !rel.startsWith('node_modules/') && !rel.startsWith('.git/')) {
-      results.push(rel);
-    }
-  }
-  return results;
 }

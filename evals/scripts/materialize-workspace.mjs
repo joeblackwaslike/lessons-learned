@@ -13,13 +13,23 @@
  *
  * Side effects:
  *   - Copies seed-workspace/** into <workspace>/
+ *   - For type=overlay ({"type":"overlay","dir":"<abs dir>"}), copies <dir>/** over the
+ *     seeded workspace; a top-level CLAUDE.md or AGENTS.md is appended, not replaced
  *   - Writes .eval/lesson-manifest.json with the intervention's lessons only
- *     (empty manifest for type=none; full filtered manifest for type=lesson|lesson-group)
+ *     (empty manifest for type=none|claudemd|overlay; filtered manifest for
+ *     type=lesson|lesson-group)
  *
  * Exits 0 on success, non-zero on error.
  */
 
-import { cpSync, mkdirSync, writeFileSync, existsSync, readFileSync } from 'node:fs';
+import {
+  appendFileSync,
+  cpSync,
+  mkdirSync,
+  writeFileSync,
+  existsSync,
+  readFileSync,
+} from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { resolve, join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -66,6 +76,22 @@ if (existsSync(seedSetupScript)) {
     console.error(`seed-setup.mjs failed:\n${result.stderr}`);
     process.exit(1);
   }
+}
+
+// Overlay intervention { type: "overlay", dir }: copy the overlay's files into the seeded workspace. A
+// top-level CLAUDE.md or AGENTS.md is held back and appended below (to the generated
+// CLAUDE.md, or to a seeded AGENTS.md when one exists) instead of replacing the file.
+
+const OVERLAY_APPENDED = ['CLAUDE.md', 'AGENTS.md'];
+if (intervention.type === 'overlay') {
+  if (!intervention.dir || !existsSync(intervention.dir)) {
+    console.error(`overlay dir not found: ${intervention.dir}`);
+    process.exit(1);
+  }
+  cpSync(intervention.dir, workspaceDir, {
+    recursive: true,
+    filter: src => !OVERLAY_APPENDED.some(name => src === join(intervention.dir, name)),
+  });
 }
 
 // --- Lesson manifest injection --------------------------------------------------
@@ -195,11 +221,22 @@ if (intervention.type === 'claudemd') {
 
 writeFileSync(join(workspaceDir, 'CLAUDE.md'), claudeMdSections.join('\n') + '\n');
 
+if (intervention.type === 'overlay') {
+  for (const name of OVERLAY_APPENDED) {
+    const src = join(intervention.dir, name);
+    if (!existsSync(src)) continue;
+    const dest = join(workspaceDir, name);
+    const text = readFileSync(src, 'utf8');
+    if (existsSync(dest)) appendFileSync(dest, `\n${text}`);
+    else writeFileSync(dest, text);
+  }
+}
+
 // --- Helpers --------------------------------------------------------------------
 
 function buildInterventionManifest(intervention) {
-  if (intervention.type === 'none' || intervention.type === 'claudemd') {
-    // Control arm or claudemd arm: empty lesson manifest — no lessons injected
+  if (['none', 'claudemd', 'overlay'].includes(intervention.type)) {
+    // Control, claudemd, and overlay arms: empty lesson manifest — no lessons injected
     return { lessons: [], version: 1, generatedAt: new Date().toISOString() };
   }
 

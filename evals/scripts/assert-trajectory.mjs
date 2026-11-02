@@ -2,7 +2,8 @@
  * assert-trajectory.mjs — Tier 2 Promptfoo JS assertion.
  *
  * Reads the tool-call trajectory from provider metadata artifacts and evaluates
- * declarative assertions defined in the scenario's scenario.json.
+ * declarative assertions defined in the scenario's scenario.json (read from
+ * `vars.scenarioDir` when set, else `evals/scenarios/<scenarioId>`).
  *
  * Assertion types (defined in scenario.json under `trajectoryAssertions`):
  *   required  — a matching event must exist in the trajectory
@@ -26,13 +27,14 @@ const SCENARIOS_DIR = resolve(__dirname, '..', 'scenarios');
 
 export default function assertTrajectory(output, context) {
   const scenarioId = context.vars?.scenarioId;
+  const scenarioDir = context.vars?.scenarioDir;
   const trajectory = context.providerResponse?.metadata?.artifacts?.trajectory ?? [];
 
-  if (!scenarioId) {
+  if (!scenarioId && !scenarioDir) {
     return { pass: true, score: 1, reason: 'No scenarioId — trajectory check skipped' };
   }
 
-  const scenarioJsonPath = join(SCENARIOS_DIR, scenarioId, 'scenario.json');
+  const scenarioJsonPath = join(scenarioDir || join(SCENARIOS_DIR, scenarioId), 'scenario.json');
   if (!existsSync(scenarioJsonPath)) {
     return { pass: true, score: 1, reason: 'No scenario.json — trajectory check skipped' };
   }
