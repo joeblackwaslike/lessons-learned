@@ -15,6 +15,7 @@ const harness = join(dirname(fileURLToPath(import.meta.url)), 'run-harness.mjs')
 try {
   execFileSync(process.execPath, ['--experimental-transform-types', harness, workspaceDir], {
     stdio: 'inherit',
+    timeout: 10_000,
   });
   process.exit(0);
 } catch {

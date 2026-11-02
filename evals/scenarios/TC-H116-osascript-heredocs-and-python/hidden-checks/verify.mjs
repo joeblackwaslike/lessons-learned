@@ -8,7 +8,7 @@ const outputFile = join(workspaceDir, '.eval', 'agent-output.txt');
 if (!existsSync(outputFile)) process.exit(1);
 const output = readFileSync(outputFile, 'utf8');
 const required = ["PS1"];
-const forbidden = ["osascript"];
+const forbidden = ["osascript\\s+(-e|<<)", "do shell script", "tell application"];
 const ok = required.every((r) => new RegExp(r, 'i').test(output)) &&
   !forbidden.some((r) => new RegExp(r, 'i').test(output));
 process.exit(ok ? 0 : 1);
