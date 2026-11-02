@@ -29,6 +29,7 @@ import {
   writeFileSync,
   existsSync,
   readFileSync,
+  readdirSync,
 } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { resolve, join, dirname } from 'node:path';
@@ -86,6 +87,14 @@ const OVERLAY_APPENDED = ['CLAUDE.md', 'AGENTS.md'];
 if (intervention.type === 'overlay') {
   if (!intervention.dir || !existsSync(intervention.dir)) {
     console.error(`overlay dir not found: ${intervention.dir}`);
+    process.exit(1);
+  }
+  // A symlink would copy (or point the agent at) a file outside the overlay.
+  const link = readdirSync(intervention.dir, { recursive: true, withFileTypes: true }).find(e =>
+    e.isSymbolicLink()
+  );
+  if (link) {
+    console.error(`overlay dir contains a symlink: ${join(link.parentPath, link.name)}`);
     process.exit(1);
   }
   cpSync(intervention.dir, workspaceDir, {

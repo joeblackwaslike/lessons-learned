@@ -30,7 +30,7 @@
  */
 
 import { spawnSync } from 'node:child_process';
-import { rmSync, existsSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
+import { copyFileSync, rmSync, existsSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -45,13 +45,15 @@ import {
 import {
   createTrialSandbox,
   diffSnapshots,
-  readForbiddenCalls,
   readOAuthToken,
+  readStubCalls,
+  redact,
   sandboxCommand,
   sandboxEnv,
   snapshotWatchPaths,
   trialErrorReason,
 } from '../lib/trial-sandbox.mjs';
+import { runProcessGroup } from '../lib/process-group.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const EVALS_ROOT = resolve(__dirname, '..');
@@ -106,7 +108,7 @@ export default class ClaudeAgentProvider {
       : { pluginDirs: [], signature: '' };
     const claudeBin = findClaudeBin();
     const trial = { trialId, cliVersion: cliVersion(claudeBin) };
-    const controlHash = computeControlHash(scenarioId, model, requiresSignature);
+    const controlHash = computeControlHash(scenarioId, model, requiresSignature, trial.cliVersion);
     const controlTranscriptFile = join(cacheDir(), `control-${controlHash}.json`);
     const lessonContentHash = lesson ? computeLessonContentHash(lesson) : null;
     const useSerena = !isControl && vars.mcp !== 'none';
@@ -131,7 +133,7 @@ export default class ClaudeAgentProvider {
     const armResult = await runArm({
       prompt,
       scenarioDir,
-      scenarioEnv: scenario.env ?? {},
+      scenario,
       intervention,
       model,
       timeout,
@@ -145,6 +147,7 @@ export default class ClaudeAgentProvider {
       claudeBin,
       trial,
       useSerena,
+      noCache,
       startMs: Date.now(),
     });
 
@@ -162,7 +165,7 @@ export default class ClaudeAgentProvider {
 async function runArm({
   prompt,
   scenarioDir,
-  scenarioEnv,
+  scenario,
   intervention,
   model,
   timeout,
@@ -176,15 +179,17 @@ async function runArm({
   claudeBin,
   trial,
   useSerena,
+  noCache,
   startMs,
 }) {
-  const token = readOAuthToken();
-  const sandbox = createTrialSandbox(scenarioId);
+  const token = readOAuthToken({ minValidMs: Math.max(5 * 60_000, timeout + 2 * 60_000) });
+  const simulateRemote = scenario.sandbox?.simulateRemote === true;
+  const sandbox = createTrialSandbox(scenarioId, { simulateRemote });
   const workspaceDir = sandbox.workspace;
   try {
     materializeWorkspace(scenarioDir, workspaceDir, intervention);
 
-    const env = buildEnv(workspaceDir, scenarioEnv, sandboxEnv(sandbox, token));
+    const env = buildEnv(workspaceDir, scenario.env ?? {}, sandboxEnv(sandbox, token));
     // Pin the agent model explicitly. Without --model, `claude --print` uses the
     // OAuth session's default model (which silently changed to Opus over this
     // project's life and confounded earlier CONTROL_CORRECT results), while the
@@ -221,36 +226,41 @@ async function runArm({
       loadSerena ? [join(EVALS_ROOT, '.uv-cache')] : []
     );
     const before = snapshotWatchPaths();
-    const claudeResult = spawnSync(spawn.command, spawn.args, {
+    const claudeResult = await runProcessGroup(spawn.command, spawn.args, {
       cwd: workspaceDir,
       env,
-      encoding: 'utf8',
       timeout,
       maxBuffer: 10 * 1024 * 1024,
     });
     const outsideChanges = diffSnapshots(before, snapshotWatchPaths());
-    const forbiddenCalls = readForbiddenCalls(sandbox);
+    const stubCalls = readStubCalls(sandbox);
+    const forbiddenCalls = simulateRemote ? [] : stubCalls;
+    const simulatedCalls = simulateRemote ? stubCalls : [];
 
-    const output = claudeResult.stdout ?? '';
+    const output = redact(claudeResult.stdout, token);
     const evalMetaDir = join(workspaceDir, '.eval');
     mkdirSync(evalMetaDir, { recursive: true });
     writeFileSync(join(evalMetaDir, 'agent-output.txt'), output);
+    restoreHookLogs(sandbox.logDir, evalMetaDir);
 
     const hiddenCheck = runVerify(scenarioDir, workspaceDir);
     const artifacts = collectArtifacts(workspaceDir, scenarioDir);
     const toolCalls = (artifacts.trajectory ?? []).filter(e => e.type === 'PreToolUse').length;
     const error = trialErrorReason({
       exitCode: claudeResult.status,
+      signal: claudeResult.signal,
+      timedOut: claudeResult.timedOut,
+      overflow: claudeResult.overflow,
       output,
       toolCalls,
-      requireToolCalls: trial.trialId !== null,
+      requireToolCalls: trial.trialId !== null && scenario.allowNoToolCalls !== true,
       outsideChanges,
       forbiddenCalls,
     });
     const toolCallLog = readToolCallLog(workspaceDir);
-    const enrichedOutput = toolCallLog ? `${output}\n\n${toolCallLog}` : output;
+    const enrichedOutput = redact(toolCallLog ? `${output}\n\n${toolCallLog}` : output, token);
 
-    if (isControl && !error) {
+    if (isControl && !error && !noCache) {
       writeControlTranscript(controlTranscriptFile, enrichedOutput);
     }
 
@@ -261,34 +271,52 @@ async function runArm({
         ? await runJudge({ lesson, controlTranscriptFile, output: enrichedOutput })
         : null;
 
-    return {
-      output,
-      ...(error && { error }),
-      metadata: {
-        scenarioId,
-        intervention,
-        model,
-        trialId: trial.trialId,
-        cliVersion: trial.cliVersion,
-        durationMs: Date.now() - startMs,
-        exitCode: claudeResult.status,
-        stderr: (claudeResult.stderr ?? '').slice(0, 2000),
-        toolCalls,
-        sandbox: { outsideChanges, forbiddenCalls },
-        hiddenCheck,
-        artifacts,
-        cacheHit: false,
-        cacheKey,
-        controlHash,
-        ...(judgeResult !== null && { judgeResult }),
+    return redact(
+      {
+        output,
+        ...(error && { error }),
+        metadata: {
+          scenarioId,
+          intervention,
+          model,
+          trialId: trial.trialId,
+          cliVersion: trial.cliVersion,
+          durationMs: Date.now() - startMs,
+          exitCode: claudeResult.status,
+          // Redact before truncating so a token cut at the boundary cannot survive.
+          stderr: redact(claudeResult.stderr, token).slice(0, 2000),
+          toolCalls,
+          sandbox: { outsideChanges, forbiddenCalls, simulatedCalls },
+          hiddenCheck,
+          artifacts,
+          cacheHit: false,
+          cacheKey,
+          controlHash,
+          ...(judgeResult !== null && { judgeResult }),
+        },
       },
-    };
+      token
+    );
   } finally {
     try {
       rmSync(sandbox.root, { recursive: true, force: true });
     } catch {
       /* best-effort */
     }
+  }
+}
+
+/**
+ * The hook shims log to the trial's eval-log dir, outside the workspace, so the agent
+ * cannot erase (`git clean -fdx`) or forge them. Copy those logs over whatever the
+ * workspace's .eval holds before artifacts are collected.
+ */
+function restoreHookLogs(logDir, evalMetaDir) {
+  for (const name of ['hook-events.ndjson', 'tool-calls.jsonl']) {
+    const src = join(logDir, name);
+    const dest = join(evalMetaDir, name);
+    if (existsSync(src)) copyFileSync(src, dest);
+    else rmSync(dest, { force: true });
   }
 }
 
@@ -459,14 +487,16 @@ function buildEnv(workspaceDir, scenarioEnv, sandboxKeys) {
 
 // ── Cache key computation ──────────────────────────────────────────────────────
 
-/** sha256(prompt + ':' + model) — stable key for control transcript reuse across lessons */
-function computeControlHash(scenarioId, model, requiresSignature = '') {
+/** sha256(scenarioId : model : requires : cliVersion) — control transcript reuse across lessons */
+function computeControlHash(scenarioId, model, requiresSignature, cliVersion) {
   return createHash('sha256')
     .update(scenarioId)
     .update(':')
     .update(model)
     .update(':')
     .update(requiresSignature)
+    .update(':cli=')
+    .update(cliVersion)
     .digest('hex');
 }
 

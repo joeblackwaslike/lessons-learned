@@ -8,7 +8,7 @@
 
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -75,11 +75,12 @@ export function writeControlTranscript(controlTranscriptFile, output) {
   }
 }
 
-/** Content hash of every file under `dir`, skipping `node_modules/` and `.git/`. */
+/** Hash of every file's path, mode, and content under `dir`, skipping `node_modules/` and `.git/`. */
 export function hashDir(dir) {
   const hash = createHash('sha256');
   for (const relPath of collectFiles(dir).sort()) {
     hash.update(relPath);
+    hash.update(statSync(join(dir, relPath)).mode.toString(8));
     hash.update(readFileSync(join(dir, relPath)));
   }
   return hash.digest('hex');

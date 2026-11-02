@@ -26,7 +26,8 @@ try {
 
 if (event.tool_name) {
   const workspaceDir = event.cwd || process.cwd();
-  const evalDir = join(workspaceDir, '.eval');
+  // The provider points EVAL_LOG_DIR outside the workspace so the agent cannot erase the log.
+  const evalDir = process.env.EVAL_LOG_DIR || join(workspaceDir, '.eval');
   mkdirSync(evalDir, { recursive: true });
 
   const record = {
