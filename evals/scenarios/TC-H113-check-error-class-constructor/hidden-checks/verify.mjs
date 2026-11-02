@@ -18,6 +18,7 @@ try {
     timeout: 10_000,
   });
   process.exit(0);
-} catch {
+} catch (err) {
+  console.error(`RateLimitError harness execution failed (${harness}):`, err);
   process.exit(1);
 }
