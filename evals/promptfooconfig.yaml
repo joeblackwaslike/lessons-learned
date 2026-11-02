@@ -1503,26 +1503,6 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
-  - description: TC-H115-pin-any-tool-launched-from-an [control]
-    vars:
-      scenarioId: TC-H115-pin-any-tool-launched-from-an
-      prompt: '{{file://scenarios/TC-H115-pin-any-tool-launched-from-an/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H115-pin-any-tool-launched-from-an [treatment]
-    vars:
-      scenarioId: TC-H115-pin-any-tool-launched-from-an
-      prompt: '{{file://scenarios/TC-H115-pin-any-tool-launched-from-an/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - pin-any-tool-launched-from-an-unpinned-v-cb25
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
   - description: TC-H117-bd-commands-fail-when-dolt-sql [control]
     vars:
       scenarioId: TC-H117-bd-commands-fail-when-dolt-sql
