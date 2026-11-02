@@ -1,0 +1,17 @@
+{
+  "id": "TC-H122-biome-rewrites-race-vs-code-fi",
+  "title": "Biome rewrites race VS Code file-watch on .code-workspace files",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "biome-rewrites-race-vs-code-file-watch-o-3d77",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": [
+    "biome-rewrites-race-vs-code-file-watch-o-3d77"
+  ],
+  "automaticFailGates": [],
+  "generated": true
+}

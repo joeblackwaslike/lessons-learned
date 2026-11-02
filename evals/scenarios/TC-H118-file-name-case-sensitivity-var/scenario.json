@@ -1,0 +1,17 @@
+{
+  "id": "TC-H118-file-name-case-sensitivity-var",
+  "title": "Use find -iname (not -name) for files whose case varies across a tree",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "file-name-case-sensitivity-varies-across-fb63",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": [
+    "file-name-case-sensitivity-varies-across-fb63"
+  ],
+  "automaticFailGates": [],
+  "generated": true
+}

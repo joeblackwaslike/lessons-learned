@@ -1,0 +1,17 @@
+{
+  "id": "TC-H114-wire-pre-commit-hooks-at-proje",
+  "title": "Wire pre-commit hooks at project init: formatter, linter, typecheck, fast tests",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "wire-pre-commit-hooks-at-project-init-fo-c54e",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": [
+    "wire-pre-commit-hooks-at-project-init-fo-c54e"
+  ],
+  "automaticFailGates": [],
+  "generated": true
+}

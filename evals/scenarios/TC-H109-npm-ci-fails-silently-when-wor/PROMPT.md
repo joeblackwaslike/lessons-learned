@@ -1,0 +1,1 @@
+Add a Dockerfile for our `packages/api` service that installs dependencies efficiently using `npm ci`. The root `package.json` uses npm workspaces with `packages/api`, `packages/shared`, and `packages/utils`, but the API service only needs its own `package.json` and the root lockfile copied in to keep the image small.

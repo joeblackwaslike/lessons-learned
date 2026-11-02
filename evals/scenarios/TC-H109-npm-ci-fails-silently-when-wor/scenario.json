@@ -1,0 +1,17 @@
+{
+  "id": "TC-H109-npm-ci-fails-silently-when-wor",
+  "title": "npm ci fails silently when workspace packages referenced in lockfile are not cop",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "npm-ci-fails-silently-when-workspace-pac-9452",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": [
+    "npm-ci-fails-silently-when-workspace-pac-9452"
+  ],
+  "automaticFailGates": [],
+  "generated": true
+}

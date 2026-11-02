@@ -1,0 +1,17 @@
+{
+  "id": "TC-H113-check-error-class-constructor",
+  "title": "Check error class constructor signatures before using in adapters",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "check-error-class-constructor-signatures-830b",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": [
+    "check-error-class-constructor-signatures-830b"
+  ],
+  "automaticFailGates": [],
+  "generated": true
+}

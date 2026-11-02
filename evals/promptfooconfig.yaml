@@ -1363,6 +1363,263 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
-
-outputPath: results/cache/latest-run.json
-sharing: false
+  - description: TC-H105-gh-cli-rate-limiting-can-mask [control]
+    vars:
+      scenarioId: TC-H105-gh-cli-rate-limiting-can-mask
+      prompt: '{{file://scenarios/TC-H105-gh-cli-rate-limiting-can-mask/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H105-gh-cli-rate-limiting-can-mask [treatment]
+    vars:
+      scenarioId: TC-H105-gh-cli-rate-limiting-can-mask
+      prompt: '{{file://scenarios/TC-H105-gh-cli-rate-limiting-can-mask/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - gh-cli-rate-limiting-can-mask-pr-visibil-4f69
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H106-curl-fails-silently-on-wrong-g [control]
+    vars:
+      scenarioId: TC-H106-curl-fails-silently-on-wrong-g
+      prompt: '{{file://scenarios/TC-H106-curl-fails-silently-on-wrong-g/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H106-curl-fails-silently-on-wrong-g [treatment]
+    vars:
+      scenarioId: TC-H106-curl-fails-silently-on-wrong-g
+      prompt: '{{file://scenarios/TC-H106-curl-fails-silently-on-wrong-g/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - curl-fails-silently-on-wrong-github-bran-b8cf
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H107-clean-serena-dirs-from-worktre [control]
+    vars:
+      scenarioId: TC-H107-clean-serena-dirs-from-worktre
+      prompt: '{{file://scenarios/TC-H107-clean-serena-dirs-from-worktre/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H107-clean-serena-dirs-from-worktre [treatment]
+    vars:
+      scenarioId: TC-H107-clean-serena-dirs-from-worktre
+      prompt: '{{file://scenarios/TC-H107-clean-serena-dirs-from-worktre/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - clean-serena-dirs-from-worktrees-before-f65b
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H111-obsidian-vault-uri-schemes-fai [control]
+    vars:
+      scenarioId: TC-H111-obsidian-vault-uri-schemes-fai
+      prompt: '{{file://scenarios/TC-H111-obsidian-vault-uri-schemes-fai/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H111-obsidian-vault-uri-schemes-fai [treatment]
+    vars:
+      scenarioId: TC-H111-obsidian-vault-uri-schemes-fai
+      prompt: '{{file://scenarios/TC-H111-obsidian-vault-uri-schemes-fai/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - obsidian-vault-uri-schemes-fail-silently-caf1
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H112-typescript-require-import-requ [control]
+    vars:
+      scenarioId: TC-H112-typescript-require-import-requ
+      prompt: '{{file://scenarios/TC-H112-typescript-require-import-requ/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H112-typescript-require-import-requ [treatment]
+    vars:
+      scenarioId: TC-H112-typescript-require-import-requ
+      prompt: '{{file://scenarios/TC-H112-typescript-require-import-requ/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - typescript-require-import-requires-eslin-46bb
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H113-check-error-class-constructor [control]
+    vars:
+      scenarioId: TC-H113-check-error-class-constructor
+      prompt: '{{file://scenarios/TC-H113-check-error-class-constructor/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H113-check-error-class-constructor [treatment]
+    vars:
+      scenarioId: TC-H113-check-error-class-constructor
+      prompt: '{{file://scenarios/TC-H113-check-error-class-constructor/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - check-error-class-constructor-signatures-830b
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H114-wire-pre-commit-hooks-at-proje [control]
+    vars:
+      scenarioId: TC-H114-wire-pre-commit-hooks-at-proje
+      prompt: '{{file://scenarios/TC-H114-wire-pre-commit-hooks-at-proje/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H114-wire-pre-commit-hooks-at-proje [treatment]
+    vars:
+      scenarioId: TC-H114-wire-pre-commit-hooks-at-proje
+      prompt: '{{file://scenarios/TC-H114-wire-pre-commit-hooks-at-proje/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - wire-pre-commit-hooks-at-project-init-fo-c54e
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H115-pin-any-tool-launched-from-an [control]
+    vars:
+      scenarioId: TC-H115-pin-any-tool-launched-from-an
+      prompt: '{{file://scenarios/TC-H115-pin-any-tool-launched-from-an/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H115-pin-any-tool-launched-from-an [treatment]
+    vars:
+      scenarioId: TC-H115-pin-any-tool-launched-from-an
+      prompt: '{{file://scenarios/TC-H115-pin-any-tool-launched-from-an/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - pin-any-tool-launched-from-an-unpinned-v-cb25
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H117-bd-commands-fail-when-dolt-sql [control]
+    vars:
+      scenarioId: TC-H117-bd-commands-fail-when-dolt-sql
+      prompt: '{{file://scenarios/TC-H117-bd-commands-fail-when-dolt-sql/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H117-bd-commands-fail-when-dolt-sql [treatment]
+    vars:
+      scenarioId: TC-H117-bd-commands-fail-when-dolt-sql
+      prompt: '{{file://scenarios/TC-H117-bd-commands-fail-when-dolt-sql/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - bd-commands-fail-when-dolt-sql-server-ho-198e
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H118-file-name-case-sensitivity-var [control]
+    vars:
+      scenarioId: TC-H118-file-name-case-sensitivity-var
+      prompt: '{{file://scenarios/TC-H118-file-name-case-sensitivity-var/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H118-file-name-case-sensitivity-var [treatment]
+    vars:
+      scenarioId: TC-H118-file-name-case-sensitivity-var
+      prompt: '{{file://scenarios/TC-H118-file-name-case-sensitivity-var/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - file-name-case-sensitivity-varies-across-fb63
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H119-git-worktree-gitignore-not-aut [control]
+    vars:
+      scenarioId: TC-H119-git-worktree-gitignore-not-aut
+      prompt: '{{file://scenarios/TC-H119-git-worktree-gitignore-not-aut/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H119-git-worktree-gitignore-not-aut [treatment]
+    vars:
+      scenarioId: TC-H119-git-worktree-gitignore-not-aut
+      prompt: '{{file://scenarios/TC-H119-git-worktree-gitignore-not-aut/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - git-worktree-gitignore-not-automatically-f055
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H122-biome-rewrites-race-vs-code-fi [control]
+    vars:
+      scenarioId: TC-H122-biome-rewrites-race-vs-code-fi
+      prompt: '{{file://scenarios/TC-H122-biome-rewrites-race-vs-code-fi/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H122-biome-rewrites-race-vs-code-fi [treatment]
+    vars:
+      scenarioId: TC-H122-biome-rewrites-race-vs-code-fi
+      prompt: '{{file://scenarios/TC-H122-biome-rewrites-race-vs-code-fi/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - biome-rewrites-race-vs-code-file-watch-o-3d77
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs
+  - description: TC-H123-launchd-does-not-inherit-shell [control]
+    vars:
+      scenarioId: TC-H123-launchd-does-not-inherit-shell
+      prompt: '{{file://scenarios/TC-H123-launchd-does-not-inherit-shell/PROMPT.md}}'
+      intervention:
+        type: none
+        ids: []
+  - description: TC-H123-launchd-does-not-inherit-shell [treatment]
+    vars:
+      scenarioId: TC-H123-launchd-does-not-inherit-shell
+      prompt: '{{file://scenarios/TC-H123-launchd-does-not-inherit-shell/PROMPT.md}}'
+      intervention:
+        type: lesson
+        ids:
+          - launchd-does-not-inherit-shell-env-set-h-5a1f
+    assert:
+      - type: javascript
+        value: file://scripts/assert-hidden-check.mjs
+      - type: javascript
+        value: file://scripts/assert-judge.mjs

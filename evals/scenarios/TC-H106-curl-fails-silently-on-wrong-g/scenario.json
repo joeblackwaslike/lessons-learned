@@ -1,0 +1,17 @@
+{
+  "id": "TC-H106-curl-fails-silently-on-wrong-g",
+  "title": "GitHub raw 404 may mean wrong branch name, not bad URL pattern",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "curl-fails-silently-on-wrong-github-bran-b8cf",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": [
+    "curl-fails-silently-on-wrong-github-bran-b8cf"
+  ],
+  "automaticFailGates": [],
+  "generated": true
+}

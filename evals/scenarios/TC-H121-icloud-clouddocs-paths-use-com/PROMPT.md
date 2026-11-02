@@ -1,0 +1,1 @@
+Write a bash script that syncs my project's output files to iCloud Drive so they're automatically available on my other Macs. The files should go into a subfolder called `project-backups` inside iCloud Drive.

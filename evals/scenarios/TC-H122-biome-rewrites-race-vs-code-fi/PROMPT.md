@@ -1,0 +1,1 @@
+You're setting up Biome in a new monorepo and want it to handle formatting for all files including config files. Add Biome to the project and configure it to format everything in the workspace, then run it.

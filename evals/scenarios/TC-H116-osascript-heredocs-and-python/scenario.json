@@ -1,0 +1,17 @@
+{
+  "id": "TC-H116-osascript-heredocs-and-python",
+  "title": "osascript heredocs and Python interpolation mangle $ in files",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "osascript-heredocs-and-python-interpolat-acf6",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": [
+    "osascript-heredocs-and-python-interpolat-acf6"
+  ],
+  "automaticFailGates": [],
+  "generated": true
+}

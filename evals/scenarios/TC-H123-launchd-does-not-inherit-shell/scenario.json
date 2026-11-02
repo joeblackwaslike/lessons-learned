@@ -1,0 +1,17 @@
+{
+  "id": "TC-H123-launchd-does-not-inherit-shell",
+  "title": "launchd does not inherit shell env — set HOME in plist",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "launchd-does-not-inherit-shell-env-set-h-5a1f",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": [
+    "launchd-does-not-inherit-shell-env-set-h-5a1f"
+  ],
+  "automaticFailGates": [],
+  "generated": true
+}

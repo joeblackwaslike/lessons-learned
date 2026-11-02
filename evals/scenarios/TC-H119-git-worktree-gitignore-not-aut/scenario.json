@@ -1,0 +1,17 @@
+{
+  "id": "TC-H119-git-worktree-gitignore-not-aut",
+  "title": "Create worktrees via the using-git-worktrees skill; gitignore manual ones",
+  "category": "pretooluse",
+  "lessonType": "hint",
+  "interventionType": "lesson",
+  "lessonId": "git-worktree-gitignore-not-automatically-f055",
+  "difficulty": "auto",
+  "promptFile": "PROMPT.md",
+  "workspaceSeedDir": "seed-workspace",
+  "verifyScript": "hidden-checks/verify.mjs",
+  "recommendedInterventions": [
+    "git-worktree-gitignore-not-automatically-f055"
+  ],
+  "automaticFailGates": [],
+  "generated": true
+}

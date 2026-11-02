@@ -1,0 +1,17 @@
+#!/bin/sh
+# Offline mirror of github raw: repo acme/legacy-tool only has branch "master".
+fail=0; out=""; url=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -o) out="$2"; shift ;;
+    -*f*) fail=1 ;;
+    http*) url="$1" ;;
+  esac
+  shift
+done
+case "$url" in
+  https://raw.githubusercontent.com/acme/legacy-tool/master/install.sh) body='#!/bin/sh
+echo legacy-tool-installer-v3' ;;
+  *) [ "$fail" = 1 ] && { echo "curl: (22) The requested URL returned error: 404" >&2; exit 22; }; exit 0 ;;
+esac
+if [ -n "$out" ]; then printf '%s\n' "$body" > "$out"; else printf '%s\n' "$body"; fi

@@ -1,0 +1,1 @@
+Download `install.sh` from the `acme/legacy-tool` GitHub repo (raw content, via curl) and save it as `./install.sh` in this directory. This sandbox is offline, so use the mirror curl at `./bin/curl` instead of the system one. I don't remember which branch the repo uses.

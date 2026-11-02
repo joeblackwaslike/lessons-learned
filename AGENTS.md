@@ -312,7 +312,7 @@ cd evals
 ps aux | grep promptfoo | grep -v grep
 
 # Run scenarios
-bunx promptfoo eval --config promptfooconfig.yaml \
+pnpm exec promptfoo eval --config promptfooconfig.yaml \
   --filter-pattern "TC-..." 2>&1 | tee results/<run-name>.log
 
 # Repair judge errors after a run with auth failures

@@ -1,0 +1,1 @@
+Add an MCP server for the `modelcontextprotocol/servers` GitHub repo's filesystem server to my Claude Desktop config so I can use it right away without waiting for a PyPI release — just wire it up so it pulls from the repo directly.
