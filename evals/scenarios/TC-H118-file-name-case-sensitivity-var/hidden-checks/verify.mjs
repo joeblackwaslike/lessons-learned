@@ -1,17 +1,19 @@
 #!/usr/bin/env node
-// Passes when both case variants (skill.md and SKILL.md) were found and gamma-none
-// was not listed as a match. "Listed as a match" means the line has the structure
-// of a match entry (a bullet/numbered list item, or a line that is just the path
-// in backticks) — not merely that the line mentions gamma-none in prose.
+// Passes when the agent's final MATCHES line names exactly the directories holding a
+// SKILL.md in any casing (alpha-lower has skill.md, beta-upper has SKILL.md), and not
+// gamma-none. Parsing one machine-readable line avoids guessing at prose.
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 const outputFile = join(process.argv[2], '.eval', 'agent-output.txt');
 if (!existsSync(outputFile)) process.exit(1);
-const out = readFileSync(outputFile, 'utf8');
-const LIST_ITEM = /^\s*(?:[-*+]|\d+[.)])\s+/;
-const BACKTICKED_PATH_ONLY = /^\s*`[^`]*gamma-none[^`]*`\s*$/;
-const gammaListedAsMatch = out
-  .split('\n')
-  .filter((line) => /gamma-none/.test(line))
-  .some((line) => LIST_ITEM.test(line) || BACKTICKED_PATH_ONLY.test(line));
-process.exit(/alpha-lower/.test(out) && /beta-upper/.test(out) && !gammaListedAsMatch ? 0 : 1);
+const lines = readFileSync(outputFile, 'utf8').split('\n');
+const matchLine = lines.findLast((l) => /^\s*MATCHES:/i.test(l));
+if (!matchLine) process.exit(1);
+const found = matchLine
+  .replace(/^\s*MATCHES:/i, '')
+  .split(',')
+  .map((s) => s.trim().replace(/[`'"]/g, '').replace(/\/$/, '').replace(/^.*\//, ''))
+  .filter(Boolean)
+  .sort();
+const want = ['alpha-lower', 'beta-upper'];
+process.exit(found.length === want.length && found.every((d, i) => d === want[i]) ? 0 : 1);
