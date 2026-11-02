@@ -17,16 +17,17 @@ const candidates = files(workspaceDir).filter((p) => {
   if (!existsSync(seedPath)) return true;
   return readFileSync(p, 'utf8') !== readFileSync(seedPath, 'utf8');
 });
+const HOOK_RUNNER = /\b(husky|lefthook|simple-git-hooks)\b/;
 const isRealHookWiring = (p) => {
   const rel = p.split(sep).join('/');
-  if (rel.endsWith('.husky/pre-commit')) return true;
-  if (/(^|\/)lefthook\.ya?ml$/.test(rel)) return true;
+  if (rel.endsWith('.husky/pre-commit')) return readFileSync(p, 'utf8').trim().length > 0;
+  if (/(^|\/)lefthook\.ya?ml$/.test(rel)) return readFileSync(p, 'utf8').trim().length > 0;
   if (/(^|\/)\.pre-commit-config\.ya?ml$/.test(rel)) return true;
   if (/(^|\/)package\.json$/.test(rel)) {
     try {
       const pkg = JSON.parse(readFileSync(p, 'utf8'));
       if (pkg.husky || pkg.lefthook || pkg['simple-git-hooks']) return true;
-      if (pkg.scripts && typeof pkg.scripts.prepare === 'string') return true;
+      if (pkg.scripts && typeof pkg.scripts.prepare === 'string' && HOOK_RUNNER.test(pkg.scripts.prepare)) return true;
     } catch {
       return false;
     }
