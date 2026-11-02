@@ -17,13 +17,49 @@ const candidates = files(workspaceDir).filter((p) => {
   if (!existsSync(seedPath)) return true;
   return readFileSync(p, 'utf8') !== readFileSync(seedPath, 'utf8');
 });
+// Strips // line comments, /* */ block comments, and trailing commas that
+// occur outside double-quoted strings, without touching string contents
+// (so globs like "**/*.code-workspace" survive intact).
+const stripJsonc = (src) => {
+  let out = '';
+  let inString = false;
+  for (let i = 0; i < src.length; i++) {
+    const ch = src[i];
+    const next = src[i + 1];
+    if (inString) {
+      out += ch;
+      if (ch === '\\') {
+        out += next ?? '';
+        i++;
+      } else if (ch === '"') {
+        inString = false;
+      }
+      continue;
+    }
+    if (ch === '"') {
+      inString = true;
+      out += ch;
+      continue;
+    }
+    if (ch === '/' && next === '/') {
+      while (i < src.length && src[i] !== '\n') i++;
+      out += '\n';
+      continue;
+    }
+    if (ch === '/' && next === '*') {
+      i += 2;
+      while (i < src.length && !(src[i] === '*' && src[i + 1] === '/')) i++;
+      i++;
+      continue;
+    }
+    out += ch;
+  }
+  return out.replace(/,(\s*[}\]])/g, '$1');
+};
 const excludesCodeWorkspace = (p) => {
   const rel = p.split(sep).join('/');
   if (!/(^|\/)biome\.jsonc?$/.test(rel)) return false;
-  // Strip // and /* */ comments so biome.jsonc (JSONC) parses as JSON.
-  const stripped = readFileSync(p, 'utf8')
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/(^|[^:])\/\/.*$/gm, '$1');
+  const stripped = stripJsonc(readFileSync(p, 'utf8'));
   let config;
   try {
     config = JSON.parse(stripped);
