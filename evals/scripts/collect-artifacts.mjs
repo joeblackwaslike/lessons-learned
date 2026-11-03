@@ -116,7 +116,9 @@ const evalMeta = existsSync(evalMetaPath) ? JSON.parse(readFileSync(evalMetaPath
 const parseErrors = hookEvents.filter(e => e.type === 'PARSE_ERROR').length + droppedLines;
 
 // --- Emit -----------------------------------------------------------------------
-console.log(JSON.stringify({ hookEvents, workspaceDiff, trajectory, evalMeta, parseErrors }, null, 2));
+console.log(
+  JSON.stringify({ hookEvents, workspaceDiff, trajectory, evalMeta, parseErrors }, null, 2)
+);
 
 // --- Helpers --------------------------------------------------------------------
 

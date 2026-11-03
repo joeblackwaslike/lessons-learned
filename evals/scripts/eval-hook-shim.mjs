@@ -27,8 +27,11 @@ try {
   mkdirSync(evalDir, { recursive: true });
   appendFileSync(
     join(evalDir, 'hook-events.ndjson'),
-    JSON.stringify({ type: 'PARSE_ERROR', timestamp: new Date().toISOString(), error: err.message }) +
-      '\n'
+    JSON.stringify({
+      type: 'PARSE_ERROR',
+      timestamp: new Date().toISOString(),
+      error: err.message,
+    }) + '\n'
   );
 }
 

@@ -37,7 +37,9 @@ export function assertRealDir(dir) {
     throw new Error(`${dir} does not exist (expected a real directory)`);
   }
   if (stat.isSymbolicLink() || !stat.isDirectory()) {
-    throw new Error(`${dir} is not a real directory — the agent may have replaced it with a symlink`);
+    throw new Error(
+      `${dir} is not a real directory — the agent may have replaced it with a symlink`
+    );
   }
 }
 
