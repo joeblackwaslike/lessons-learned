@@ -62,6 +62,7 @@ import {
 } from '../lib/trial-sandbox.mjs';
 import { runProcessGroup } from '../lib/process-group.mjs';
 import {
+  assertRealDir,
   buildEnv,
   collectArtifacts,
   ensureRealDir,
@@ -246,8 +247,12 @@ async function runArm({
     const forbiddenCalls = simulateRemote ? [] : stubCalls;
     const simulatedCalls = simulateRemote ? stubCalls : [];
 
-    const events = parseEvents(run.stdout);
+    const { events, droppedLines } = parseEvents(run.stdout);
     const output = scrub(lastAgentMessage(events));
+    // The agent could replace workspace/ itself with a symlink; every path built under it
+    // below (including .eval) must not follow that ancestor link. Unlike .eval or the log
+    // dir, workspace/ holds nothing the parent can safely regenerate.
+    assertRealDir(workspaceDir);
     // The agent could write to the log dir, so it may have swapped it or its files for symlinks.
     ensureRealDir(sandbox.logDir);
     writeRegularFile(join(sandbox.logDir, 'hook-events.ndjson'), toHookEvents(events));
@@ -265,7 +270,11 @@ async function runArm({
     } catch (err) {
       collectionError = err.message;
     }
-    const infraError = verifyError ?? collectionError;
+    const telemetryError =
+      droppedLines > 0
+        ? `${droppedLines} codex event line(s) could not be parsed — trajectory evidence is incomplete`
+        : null;
+    const infraError = verifyError ?? collectionError ?? telemetryError;
     const toolCalls = (artifacts.trajectory ?? []).filter(e => e.type === 'PreToolUse').length;
     const reason =
       infraError ??
@@ -379,17 +388,18 @@ function unwrapShell(command) {
   return match ? match[1].replaceAll(`'\\''`, `'`) : text;
 }
 
+/** @returns {{ events: any[], droppedLines: number }} */
 function parseEvents(stdout) {
-  return stdout
-    .split('\n')
-    .filter(Boolean)
-    .flatMap(line => {
-      try {
-        return [JSON.parse(line)];
-      } catch {
-        return [];
-      }
-    });
+  const events = [];
+  let droppedLines = 0;
+  for (const line of stdout.split('\n').filter(Boolean)) {
+    try {
+      events.push(JSON.parse(line));
+    } catch {
+      droppedLines += 1;
+    }
+  }
+  return { events, droppedLines };
 }
 
 function lastAgentMessage(events) {

@@ -289,6 +289,41 @@ describe('codex sandbox', () => {
     assert.equal(r.metadata.toolCalls, 1, r.error);
   });
 
+  it('the trial errors instead of restoring through an agent-replaced workspace', async () => {
+    h.useFakeCodex({
+      FAKE_CODEX_RUN: 'outside="$(mktemp -d)"; d="$PWD"; cd ..; rm -rf "$d"; ln -s "$outside" "$d"',
+    });
+    await assert.rejects(h.callCodex({ trialId: 'l3', noCache: true }), /not a real directory/);
+  });
+
+  it('a malformed codex event line is surfaced as an error instead of a silent gap', async () => {
+    const eventsFile = join(h.base, 'malformed-events.jsonl');
+    h.writeFile(
+      eventsFile,
+      [
+        JSON.stringify({
+          type: 'item.completed',
+          item: {
+            id: 'cmd_0',
+            type: 'command_execution',
+            command: "/bin/zsh -lc 'echo hi'",
+            aggregated_output: '',
+            exit_code: 0,
+            status: 'completed',
+          },
+        }),
+        'not valid json',
+        JSON.stringify({
+          type: 'turn.completed',
+          usage: { input_tokens: 10, cached_input_tokens: 0, output_tokens: 2 },
+        }),
+      ].join('\n') + '\n'
+    );
+    h.useFakeCodex({ FAKE_CODEX_EVENTS: eventsFile });
+    const r = await h.callCodex({ trialId: 'l4', noCache: true });
+    assert.match(r.error, /could not be parsed/);
+  });
+
   it('the agent cannot read the real auth.json', darwinOnly, async () => {
     h.useFakeCodex({ FAKE_CODEX_RUN: 'cat "$FAKE_REAL_HOME/.codex/auth.json"' });
     const r = await h.callCodex({ trialId: 'a0', noCache: true });

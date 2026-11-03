@@ -83,8 +83,13 @@ if (existsSync(join(workspaceDir, '.git'))) {
 const evalMetaPath = join(evalMetaDir, 'intervention.json');
 const evalMeta = existsSync(evalMetaPath) ? JSON.parse(readFileSync(evalMetaPath, 'utf8')) : {};
 
+// --- Telemetry integrity ---------------------------------------------------------
+// A record the hook shim couldn't parse means lost trajectory evidence for that tool
+// call — the caller must not treat this run as a cleanly observed success.
+const parseErrors = hookEvents.filter(e => e.type === 'PARSE_ERROR').length;
+
 // --- Emit -----------------------------------------------------------------------
-console.log(JSON.stringify({ hookEvents, workspaceDiff, trajectory, evalMeta }, null, 2));
+console.log(JSON.stringify({ hookEvents, workspaceDiff, trajectory, evalMeta, parseErrors }, null, 2));
 
 // --- Helpers --------------------------------------------------------------------
 

@@ -340,6 +340,52 @@ describe('trial evidence', () => {
     assert.ok(existsSync(join(logDir, 'hook-events.ndjson')));
     assert.equal(existsSync(join(ws, '.eval')), false);
   });
+
+  it('the hook shim records malformed stdin instead of silently discarding it', () => {
+    const logDir = join(h.base, 'eval-log-malformed');
+    const run = spawnSync(process.execPath, [HOOK_SHIM], {
+      input: 'not valid json',
+      env: { ...process.env, EVAL_LOG_DIR: logDir },
+      encoding: 'utf8',
+    });
+    assert.equal(run.status, 0, run.stderr);
+    const logged = readFileSync(join(logDir, 'hook-events.ndjson'), 'utf8');
+    assert.match(logged, /"type":"PARSE_ERROR"/);
+  });
+
+  it('a malformed hook event is surfaced as an error instead of a silent gap', async () => {
+    h.useFakeClaude({
+      FAKE_CLAUDE_RUN:
+        'printf \'{"type":"PARSE_ERROR","timestamp":"now","error":"boom"}\\n\' >> "${EVAL_LOG_DIR:-.eval}/hook-events.ndjson"',
+    });
+    const r = await h.call({ trialId: 'e3', noCache: true });
+    assert.match(r.error, /could not be parsed/);
+  });
+
+  it('the trial errors instead of restoring through an agent-replaced workspace', async () => {
+    h.useFakeClaude({
+      FAKE_CLAUDE_RUN:
+        'outside="$(mktemp -d)"; d="$PWD"; cd ..; rm -rf "$d"; ln -s "$outside" "$d"',
+    });
+    await assert.rejects(h.call({ trialId: 'e4', noCache: true }), /not a real directory/);
+  });
+
+  it('the trial repairs an agent-replaced log dir instead of following it', async () => {
+    setScenario({ allowNoToolCalls: true });
+    const outside = mkdtempSync(join(tmpdir(), 'ws-outside-logdir-'));
+    h.writeFile(join(outside, 'hook-events.ndjson'), 'forged');
+    h.useFakeClaude({
+      FAKE_CLAUDE_OUTPUT: 'NONE',
+      // Replacing the log dir with a symlink after the fake CLI has already written its own
+      // (real) hook events means those real events are lost too — forfeiting trajectory
+      // evidence is the acceptable cost of refusing to trust an agent-forged log dir.
+      FAKE_CLAUDE_RUN: `d="\${EVAL_LOG_DIR:-.eval}"; rm -rf "$d"; ln -s '${outside}' "$d"`,
+    });
+    const r = await h.call({ trialId: 'e5', noCache: true });
+    assert.equal(r.error, undefined, r.error);
+    assert.equal(readFileSync(join(outside, 'hook-events.ndjson'), 'utf8'), 'forged');
+    assert.deepEqual(r.metadata.artifacts.trajectory, []);
+  });
 });
 
 describe('cache and transcript hygiene', () => {

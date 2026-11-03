@@ -57,6 +57,7 @@ import {
 } from '../lib/trial-sandbox.mjs';
 import { runProcessGroup } from '../lib/process-group.mjs';
 import {
+  assertRealDir,
   buildEnv,
   collectArtifacts,
   ensureRealDir,
@@ -257,6 +258,14 @@ async function runArm({
     const simulatedCalls = simulateRemote ? stubCalls : [];
 
     const output = redact(claudeResult.stdout, token);
+    // The agent could replace workspace/ itself with a symlink; every path built under
+    // it below (including .eval) must not follow that ancestor link. Unlike .eval or the
+    // log dir, workspace/ holds nothing the parent can safely regenerate, so fail hard
+    // instead of repairing.
+    assertRealDir(workspaceDir);
+    // The agent could also replace the log dir with a symlink; repair it like .eval below,
+    // so a forged log dir cannot smuggle outside content into the collected hook logs.
+    ensureRealDir(sandbox.logDir);
     const evalMetaDir = join(workspaceDir, '.eval');
     ensureRealDir(evalMetaDir);
     writeRegularFile(join(evalMetaDir, 'agent-output.txt'), output);
@@ -271,9 +280,14 @@ async function runArm({
       collectionError = err.message;
     }
     const toolCalls = (artifacts.trajectory ?? []).filter(e => e.type === 'PreToolUse').length;
+    const telemetryError =
+      artifacts.parseErrors > 0
+        ? `${artifacts.parseErrors} hook event(s) could not be parsed — trajectory evidence is incomplete`
+        : null;
     const error =
       verifyError ??
       collectionError ??
+      telemetryError ??
       trialErrorReason({
         exitCode: claudeResult.status,
         signal: claudeResult.signal,

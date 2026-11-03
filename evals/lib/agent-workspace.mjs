@@ -22,6 +22,26 @@ const MATERIALIZE_SCRIPT = join(EVALS_ROOT, 'scripts', 'materialize-workspace.mj
 const COLLECT_SCRIPT = join(EVALS_ROOT, 'scripts', 'collect-artifacts.mjs');
 
 /**
+ * Refuse to proceed if `dir` (the trial's workspace or log directory) is not a real
+ * directory — an agent can remove it and plant a symlink to somewhere outside the trial
+ * root, and every later `ensureRealDir`/`restoreHookLogs` call that builds a path *under*
+ * `dir` would otherwise follow that ancestor link in the unsandboxed parent process.
+ * Throws rather than repairing, since repairing would silently discard the agent's real
+ * output.
+ */
+export function assertRealDir(dir) {
+  let stat;
+  try {
+    stat = lstatSync(dir);
+  } catch {
+    throw new Error(`${dir} does not exist (expected a real directory)`);
+  }
+  if (stat.isSymbolicLink() || !stat.isDirectory()) {
+    throw new Error(`${dir} is not a real directory — the agent may have replaced it with a symlink`);
+  }
+}
+
+/**
  * Create `dir` as a real directory, removing any symlink (or other non-directory entry) an
  * agent planted there first — the agent-controlled workspace is restored into after the agent
  * exits, in the unsandboxed parent, so a planted `.eval` symlink must never be followed. An
