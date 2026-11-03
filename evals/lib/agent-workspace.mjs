@@ -43,11 +43,12 @@ export function ensureRealDir(dir) {
 /**
  * Remove any existing entry at `path` without following a symlink and without trusting
  * `lstat`'s regular-file report — a hard link also reports as a regular file, but writing
- * through it would truncate the shared inode. Unlinking first and then creating fresh is safe
- * for both cases.
+ * through it would truncate the shared inode, and an agent may have planted a directory
+ * there instead. Unlinking (recursively, if a directory) and then creating fresh is safe
+ * for all three cases.
  */
 function clearDestination(path) {
-  rmSync(path, { force: true });
+  rmSync(path, { recursive: true, force: true });
 }
 
 /** Write `content` to `path`, refusing to follow an existing symlink or hard link there. */
@@ -125,6 +126,9 @@ export function runVerify(scenarioDir, workspaceDir) {
     encoding: 'utf8',
     timeout: 30_000,
   });
+  if (result.error) {
+    throw new Error(`verify (${verifyScriptPath}) failed to spawn: ${result.error.message}`);
+  }
   return {
     pass: result.status === 0,
     details: (result.stdout + result.stderr).trim(),
@@ -160,12 +164,23 @@ export function collectArtifacts(workspaceDir, scenarioDir) {
   }
 }
 
-/** The workspace's `.eval/tool-calls.jsonl` as a `## TOOL CALL LOG` block, or null. */
+/**
+ * The workspace's `.eval/tool-calls.jsonl` as a `## TOOL CALL LOG` block, or null if the
+ * log is absent or empty. Throws if the log exists but can't be read or parsed, so a
+ * malformed log is never mistaken for an absent one.
+ */
 export function readToolCallLog(workspaceDir) {
   const logPath = join(workspaceDir, '.eval', 'tool-calls.jsonl');
   if (!existsSync(logPath)) return null;
+  let raw;
   try {
-    const lines = readFileSync(logPath, 'utf8')
+    raw = readFileSync(logPath, 'utf8');
+  } catch (err) {
+    throw new Error(`tool-call log (${logPath}) could not be read: ${err.message}`);
+  }
+  let lines;
+  try {
+    lines = raw
       .split('\n')
       .filter(Boolean)
       .map(line => {
@@ -177,9 +192,9 @@ export function readToolCallLog(workspaceDir) {
             : JSON.stringify(input).slice(0, 200);
         return `  [${rec.tool_name}] ${summary}`;
       });
-    if (lines.length === 0) return null;
-    return `## TOOL CALL LOG\n${lines.join('\n')}`;
-  } catch {
-    return null;
+  } catch (err) {
+    throw new Error(`tool-call log (${logPath}) is malformed: ${err.message}`);
   }
+  if (lines.length === 0) return null;
+  return `## TOOL CALL LOG\n${lines.join('\n')}`;
 }
