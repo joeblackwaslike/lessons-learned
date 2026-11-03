@@ -85,6 +85,18 @@ describe('symlink safety when restoring agent workspace metadata', () => {
     assert.equal(readFileSync(join(evalMetaDir, 'hook-events.ndjson'), 'utf8'), 'real log line\n');
   });
 
+  it('restoreHookLogs does not copy through an agent-planted symlink at a hook-log source', () => {
+    const logDir = mkdtempSync(join(tmpdir(), 'ws-logdir-'));
+    const evalMetaDir = mkdtempSync(join(tmpdir(), 'ws-evalmeta-'));
+    const secret = join(mkdtempSync(join(tmpdir(), 'ws-secret-')), 'credential');
+    writeFileSync(secret, 'TOP SECRET');
+    symlinkSync(secret, join(logDir, 'tool-calls.jsonl'));
+
+    restoreHookLogs(logDir, evalMetaDir);
+
+    assert.equal(existsSync(join(evalMetaDir, 'tool-calls.jsonl')), false);
+  });
+
   it('restoreHookLogs removes a planted symlink when the real log is absent', () => {
     const logDir = mkdtempSync(join(tmpdir(), 'ws-logdir-'));
     const evalMetaDir = mkdtempSync(join(tmpdir(), 'ws-evalmeta-'));

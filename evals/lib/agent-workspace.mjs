@@ -114,7 +114,7 @@ export function restoreHookLogs(logDir, evalMetaDir) {
     const src = join(logDir, name);
     const dest = join(evalMetaDir, name);
     clearDestination(dest);
-    if (existsSync(src)) copyFileSync(src, dest);
+    if (existsSync(src) && lstatSync(src).isFile()) copyFileSync(src, dest);
   }
 }
 
