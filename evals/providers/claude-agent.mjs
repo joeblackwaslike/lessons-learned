@@ -30,7 +30,7 @@
  */
 
 import { spawnSync } from 'node:child_process';
-import { copyFileSync, rmSync, existsSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
+import { rmSync, existsSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -54,12 +54,18 @@ import {
   trialErrorReason,
 } from '../lib/trial-sandbox.mjs';
 import { runProcessGroup } from '../lib/process-group.mjs';
+import {
+  buildEnv,
+  collectArtifacts,
+  materializeWorkspace,
+  readToolCallLog,
+  restoreHookLogs,
+  runVerify,
+} from '../lib/agent-workspace.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const EVALS_ROOT = resolve(__dirname, '..');
 
-const MATERIALIZE_SCRIPT = join(EVALS_ROOT, 'scripts', 'materialize-workspace.mjs');
-const COLLECT_SCRIPT = join(EVALS_ROOT, 'scripts', 'collect-artifacts.mjs');
 const JUDGE_SCRIPT = join(EVALS_ROOT, 'scripts', 'judge.mjs');
 
 export default class ClaudeAgentProvider {
@@ -306,96 +312,6 @@ async function runArm({
   }
 }
 
-/**
- * The hook shims log to the trial's eval-log dir, outside the workspace, so the agent
- * cannot erase (`git clean -fdx`) or forge them. Copy those logs over whatever the
- * workspace's .eval holds before artifacts are collected.
- */
-function restoreHookLogs(logDir, evalMetaDir) {
-  for (const name of ['hook-events.ndjson', 'tool-calls.jsonl']) {
-    const src = join(logDir, name);
-    const dest = join(evalMetaDir, name);
-    if (existsSync(src)) copyFileSync(src, dest);
-    else rmSync(dest, { force: true });
-  }
-}
-
-function materializeWorkspace(scenarioDir, workspaceDir, intervention) {
-  const result = spawnSync(
-    process.execPath,
-    [
-      '--no-warnings',
-      MATERIALIZE_SCRIPT,
-      '--scenario',
-      scenarioDir,
-      '--workspace',
-      workspaceDir,
-      '--intervention',
-      JSON.stringify(intervention),
-    ],
-    { encoding: 'utf8', timeout: 30_000 }
-  );
-  if (result.status !== 0) {
-    throw new Error(`materialize-workspace failed:\n${result.stderr}`);
-  }
-}
-
-function runVerify(scenarioDir, workspaceDir) {
-  const verifyScriptPath = join(scenarioDir, 'hidden-checks', 'verify.mjs');
-  if (!existsSync(verifyScriptPath)) {
-    return { pass: true, details: 'no verify script', skipped: true };
-  }
-  const result = spawnSync(process.execPath, ['--no-warnings', verifyScriptPath, workspaceDir], {
-    encoding: 'utf8',
-    timeout: 30_000,
-  });
-  return {
-    pass: result.status === 0,
-    details: (result.stdout + result.stderr).trim(),
-    exitCode: result.status,
-    skipped: false,
-  };
-}
-
-function collectArtifacts(workspaceDir, scenarioDir) {
-  const result = spawnSync(
-    process.execPath,
-    ['--no-warnings', COLLECT_SCRIPT, '--workspace', workspaceDir, '--scenario', scenarioDir],
-    { encoding: 'utf8', timeout: 10_000 }
-  );
-  if (result.status === 0 && result.stdout) {
-    try {
-      return JSON.parse(result.stdout);
-    } catch {
-      /* fall through */
-    }
-  }
-  return {};
-}
-
-function readToolCallLog(workspaceDir) {
-  const logPath = join(workspaceDir, '.eval', 'tool-calls.jsonl');
-  if (!existsSync(logPath)) return null;
-  try {
-    const lines = readFileSync(logPath, 'utf8')
-      .split('\n')
-      .filter(Boolean)
-      .map(line => {
-        const rec = JSON.parse(line);
-        const input = rec.tool_input ?? {};
-        const summary =
-          rec.tool_name === 'Bash'
-            ? (input.command ?? '').slice(0, 200)
-            : JSON.stringify(input).slice(0, 200);
-        return `  [${rec.tool_name}] ${summary}`;
-      });
-    if (lines.length === 0) return null;
-    return `## TOOL CALL LOG\n${lines.join('\n')}`;
-  } catch {
-    return null;
-  }
-}
-
 function parseLessonSnapshot(vars, isControl) {
   if (isControl || !vars.lessonSnapshot) return null;
   try {
@@ -461,28 +377,6 @@ function findClaudeBin() {
   }
 
   throw new Error('claude binary not found. Set CLAUDE_BIN env var or ensure claude is on PATH.');
-}
-
-function buildEnv(workspaceDir, scenarioEnv, sandboxKeys) {
-  // ANTHROPIC_API_KEY and ANTHROPIC_BASE_URL are intentionally excluded so the eval
-  // agent bypasses Meridian (which spawns a CC worker with full user settings and
-  // opus[1m], causing 20-minute timeouts). Without these vars, CC uses direct OAuth
-  // authentication against Anthropic, which respects --setting-sources=project and
-  // gives a small-context fast response via the user's subscription.
-  const allowed = ['USER', 'LOGNAME', 'SHELL', 'LANG', 'LC_ALL', 'LC_CTYPE', 'NODE_PATH'];
-
-  const env = Object.fromEntries(
-    allowed.filter(k => process.env[k] != null).map(k => [k, process.env[k]])
-  );
-
-  const manifestPath = join(workspaceDir, '.eval', 'lesson-manifest.json');
-  if (existsSync(manifestPath)) env.LESSONS_MANIFEST_PATH = manifestPath;
-  env.LESSONS_DISABLE_SCAN = '1';
-
-  // Per-scenario overrides (VIRTUAL_ENV, custom flags, ...) apply next. The sandbox's
-  // HOME, TMPDIR, XDG dirs, PATH, and auth token apply last so no scenario can undo them.
-  for (const [k, v] of Object.entries(scenarioEnv)) env[k] = String(v);
-  return { ...env, ...sandboxKeys };
 }
 
 // ── Cache key computation ──────────────────────────────────────────────────────
