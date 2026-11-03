@@ -99,7 +99,9 @@ function shellQuote(s) {
 }
 
 function writeStubs(sb) {
-  const realGit = spawnSync('sh', ['-c', 'command -v git'], { encoding: 'utf8' }).stdout.trim();
+  const realGit = spawnSync('/bin/sh', ['-c', 'command -v git'], {
+    encoding: 'utf8',
+  }).stdout.trim();
   const record = name => `printf '%s\\n' "${name} $*" >> ${shellQuote(sb.log)}`;
   const refuse = name =>
     `${record(name)}; echo "eval sandbox: ${name} $1 is disabled in eval trials" >&2; exit ${FORBIDDEN_EXIT}`;
@@ -235,7 +237,7 @@ export function snapshotWatchPaths(home = watchHome()) {
 export function diffSnapshots(before, after) {
   return Object.keys({ ...before, ...after })
     .filter(k => before[k] !== after[k])
-    .sort();
+    .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
 }
 
 /** Calls the `gh`/`git` stubs intercepted during the trial, one string per call. */
@@ -255,8 +257,10 @@ export function readOAuthToken({ minValidMs = 5 * 60_000 } = {}) {
   if (process.env.CLAUDE_CODE_OAUTH_TOKEN) return process.env.CLAUDE_CODE_OAUTH_TOKEN;
   let raw = '';
   if (process.platform === 'darwin') {
+    // Resolved via PATH (not hardcoded) so tests can stub it; this runs on the
+    // developer's own trusted machine, never inside the sandboxed trial.
     const r = spawnSync(
-      'security',
+      'security', // NOSONAR
       ['find-generic-password', '-s', 'Claude Code-credentials', '-w'],
       {
         encoding: 'utf8',
@@ -284,7 +288,7 @@ export function readOAuthToken({ minValidMs = 5 * 60_000 } = {}) {
 export function redact(value, secret) {
   if (!secret) return value;
   const json = JSON.stringify(value);
-  return json === undefined ? value : JSON.parse(json.split(secret).join('[REDACTED]'));
+  return typeof json !== 'string' ? value : JSON.parse(json.split(secret).join('[REDACTED]'));
 }
 
 const CLI_ERROR =

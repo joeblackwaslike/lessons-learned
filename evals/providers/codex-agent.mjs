@@ -469,7 +469,7 @@ function findCodexBin() {
   for (const candidate of candidates) {
     if (existsSync(candidate)) return candidate;
   }
-  const which = spawnSync('which', ['codex'], { encoding: 'utf8' });
+  const which = spawnSync('/usr/bin/which', ['codex'], { encoding: 'utf8' });
   if (which.status === 0 && which.stdout.trim()) return which.stdout.trim();
   throw new Error('codex binary not found. Set CODEX_BIN or put codex on PATH.');
 }
