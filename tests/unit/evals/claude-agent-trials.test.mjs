@@ -77,6 +77,18 @@ describe('independent trials', () => {
   });
 });
 
+describe('prompt cache separation', () => {
+  it('a different prompt with the same trialId and scenario does not reuse the cache', async () => {
+    h.useFakeClaude();
+    const first = await h.call({ trialId: 'trial-p' }, {}, 'do task A');
+    assert.equal(first.metadata.cacheHit, false, first.error);
+    const second = await h.call({ trialId: 'trial-p' }, {}, 'do task B');
+    assert.equal(second.metadata.cacheHit, false, second.error);
+    assert.notEqual(first.metadata.cacheKey, second.metadata.cacheKey);
+    assert.equal(h.runs().length, 2);
+  });
+});
+
 describe('mcp cache separation', () => {
   it('a treatment arm with vars.mcp "none" does not reuse the Serena arm cache entry', async () => {
     h.useFakeClaude();
@@ -226,6 +238,56 @@ describe('overlay interventions', () => {
   });
 });
 
+describe('control transcript identity', () => {
+  function controlTranscript(result) {
+    const file = join(process.env.EVAL_CACHE_DIR, `control-${result.metadata.controlHash}.json`);
+    return JSON.parse(readFileSync(file, 'utf8')).output;
+  }
+
+  it('interleaved trial ids: a treatment finds its own trial control, not another trial\'s', async () => {
+    h.useFakeClaude({ FAKE_CLAUDE_OUTPUT: 'control-A' });
+    const controlA = await h.call({ trialId: 'trial-A', noCache: true });
+    h.useFakeClaude({ FAKE_CLAUDE_OUTPUT: 'control-B' });
+    const controlB = await h.call({ trialId: 'trial-B', noCache: true });
+    assert.notEqual(controlA.metadata.controlHash, controlB.metadata.controlHash);
+
+    const overlay = join(h.base, 'overlay');
+    h.writeFile(join(overlay, 'CLAUDE.md'), 'rule');
+    h.useFakeClaude({ FAKE_CLAUDE_OUTPUT: 'treatment-A' });
+    const treatmentA = await h.call({
+      trialId: 'trial-A',
+      noCache: true,
+      intervention: { type: 'overlay', dir: overlay },
+    });
+    assert.equal(treatmentA.metadata.controlHash, controlA.metadata.controlHash);
+    assert.match(controlTranscript(treatmentA), /control-A/);
+  });
+
+  it('changed scenario content between trials with the same trialId changes the control hash', async () => {
+    h.useFakeClaude();
+    const before = await h.call({ trialId: 'trial-same', noCache: true });
+    h.writeFile(join(h.scenarioDir, 'scenario.json'), JSON.stringify({ allowNoToolCalls: true }));
+    const after = await h.call({ trialId: 'trial-same', noCache: true });
+    assert.notEqual(before.metadata.controlHash, after.metadata.controlHash);
+  });
+
+  it('noCache still writes a control transcript for its treatment to find', async () => {
+    h.useFakeClaude({ FAKE_CLAUDE_OUTPUT: 'control-nc' });
+    const control = await h.call({ trialId: 'trial-nc', noCache: true });
+    assert.match(controlTranscript(control), /control-nc/);
+
+    const overlay = join(h.base, 'overlay');
+    h.writeFile(join(overlay, 'CLAUDE.md'), 'rule');
+    h.useFakeClaude({ FAKE_CLAUDE_OUTPUT: 'treatment-nc' });
+    const treatment = await h.call({
+      trialId: 'trial-nc',
+      noCache: true,
+      intervention: { type: 'overlay', dir: overlay },
+    });
+    assert.equal(treatment.metadata.controlHash, control.metadata.controlHash);
+  });
+});
+
 describe('assertTrajectory', () => {
   it('assertTrajectory honors vars.scenarioDir', () => {
     h.writeFile(
@@ -243,5 +305,25 @@ describe('assertTrajectory', () => {
       },
     });
     assert.equal(result.pass, false);
+  });
+
+  it('a missing scenario.json is a failing assertion, not a passing skip', () => {
+    const missingDir = join(h.base, 'no-such-scenario-dir');
+    const result = assertTrajectory('', {
+      vars: { scenarioId: 'whatever', scenarioDir: missingDir },
+      providerResponse: { metadata: { artifacts: { trajectory: [] } } },
+    });
+    assert.equal(result.pass, false);
+    assert.equal(result.score, 0);
+  });
+
+  it('malformed scenario.json is a failing assertion, not a passing skip', () => {
+    h.writeFile(join(h.scenarioDir, 'scenario.json'), '{not valid json');
+    const result = assertTrajectory('', {
+      vars: { scenarioId: 'whatever', scenarioDir: h.scenarioDir },
+      providerResponse: { metadata: { artifacts: { trajectory: [] } } },
+    });
+    assert.equal(result.pass, false);
+    assert.equal(result.score, 0);
   });
 });

@@ -61,6 +61,14 @@ describe('computeCacheKey', () => {
     assert.equal(keys[0], keys[1]);
   });
 
+  it('a different prompt changes the key with everything else unchanged', () => {
+    const dir = scenario();
+    const trial = { trialId: null, cliVersion: '1' };
+    const a = computeCacheKey(dir, none, 'sonnet', null, '', trial, 'do task A');
+    const b = computeCacheKey(dir, none, 'sonnet', null, '', trial, 'do task B');
+    assert.notEqual(a, b);
+  });
+
   it('hashDir ignores node_modules and .git', () => {
     const dir = scenario();
     const before = hashDir(dir);

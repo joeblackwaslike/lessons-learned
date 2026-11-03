@@ -36,17 +36,17 @@ export default function assertTrajectory(output, context) {
 
   const scenarioJsonPath = join(scenarioDir || join(SCENARIOS_DIR, scenarioId), 'scenario.json');
   if (!existsSync(scenarioJsonPath)) {
-    return { pass: true, score: 1, reason: 'No scenario.json — trajectory check skipped' };
+    return { pass: false, score: 0, reason: `scenario.json not found at ${scenarioJsonPath}` };
   }
 
   let scenario;
   try {
     scenario = JSON.parse(readFileSync(scenarioJsonPath, 'utf8'));
-  } catch {
+  } catch (err) {
     return {
-      pass: true,
-      score: 1,
-      reason: 'Could not parse scenario.json — trajectory check skipped',
+      pass: false,
+      score: 0,
+      reason: `Could not parse scenario.json at ${scenarioJsonPath}: ${err.message}`,
     };
   }
 

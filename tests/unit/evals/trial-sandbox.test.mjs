@@ -343,11 +343,15 @@ describe('trial evidence', () => {
 });
 
 describe('cache and transcript hygiene', () => {
-  it('a noCache trial writes neither a cache entry nor a control transcript', async () => {
+  it('a noCache trial writes no arm-result cache entry, but still writes its control transcript', async () => {
     h.useFakeClaude();
-    await h.call({ trialId: 'c1', noCache: true });
+    const result = await h.call({ trialId: 'c1', noCache: true });
     const cacheDir = process.env.EVAL_CACHE_DIR;
-    assert.deepEqual(existsSync(cacheDir) ? readdirSync(cacheDir) : [], []);
+    // The control transcript is a separate side-channel the judge needs even under
+    // noCache; only the arm-result cache entry itself must be absent.
+    assert.deepEqual(existsSync(cacheDir) ? readdirSync(cacheDir) : [], [
+      `control-${result.metadata.controlHash}.json`,
+    ]);
     const again = await h.call({ trialId: 'c1' });
     assert.equal(again.metadata.cacheHit, false);
   });

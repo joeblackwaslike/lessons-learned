@@ -135,7 +135,15 @@ export default class CodexAgentProvider {
     const trial = { trialId, cliVersion: cliVersion(codexBin) };
     const outerSandbox = sandboxExecEnabled();
     const signature = `agent=codex;sandbox=${outerSandbox ? 'bypassed' : 'workspace-write'}`;
-    const cacheKey = computeCacheKey(scenarioDir, intervention, model, null, signature, trial);
+    const cacheKey = computeCacheKey(
+      scenarioDir,
+      intervention,
+      model,
+      null,
+      signature,
+      trial,
+      prompt
+    );
     const cacheFile = join(cacheDir(), `${cacheKey}.json`);
 
     if (!noCache) {
@@ -244,21 +252,29 @@ async function runArm({
     restoreHookLogs(sandbox.logDir, evalMetaDir);
 
     const hiddenCheck = runVerify(scenarioDir, workspaceDir);
-    const artifacts = collectArtifacts(workspaceDir, scenarioDir);
+    let artifacts = {};
+    let collectionError = null;
+    try {
+      artifacts = collectArtifacts(workspaceDir, scenarioDir);
+    } catch (err) {
+      collectionError = err.message;
+    }
     const toolCalls = (artifacts.trajectory ?? []).filter(e => e.type === 'PreToolUse').length;
-    const reason = trialErrorReason({
-      agent: 'codex',
-      exitCode: run.status,
-      signal: run.signal,
-      timedOut: run.timedOut,
-      overflow: run.overflow,
-      output,
-      toolCalls,
-      requireToolCalls: scenario.allowNoToolCalls !== true,
-      outsideChanges,
-      forbiddenCalls,
-    });
-    const eventError = codexEventError(events);
+    const reason =
+      collectionError ??
+      trialErrorReason({
+        agent: 'codex',
+        exitCode: run.status,
+        signal: run.signal,
+        timedOut: run.timedOut,
+        overflow: run.overflow,
+        output,
+        toolCalls,
+        requireToolCalls: scenario.allowNoToolCalls !== true,
+        outsideChanges,
+        forbiddenCalls,
+      });
+    const eventError = collectionError ? null : codexEventError(events);
     const error = reason && eventError ? `${reason} (${eventError})` : (reason ?? eventError);
 
     return scrub({

@@ -90,20 +90,31 @@ export function runVerify(scenarioDir, workspaceDir) {
   };
 }
 
+/**
+ * Runs collect-artifacts.mjs. Throws rather than returning `{}` on any failure — a
+ * silent empty result would make a missing trajectory look like an absence of
+ * prohibited behavior instead of a broken collector. Callers must treat a thrown error
+ * as an infrastructure failure: mark the trial as an error and never cache it.
+ */
 export function collectArtifacts(workspaceDir, scenarioDir) {
   const result = spawnSync(
     process.execPath,
     ['--no-warnings', COLLECT_SCRIPT, '--workspace', workspaceDir, '--scenario', scenarioDir],
     { encoding: 'utf8', timeout: 10_000 }
   );
-  if (result.status === 0 && result.stdout) {
-    try {
-      return JSON.parse(result.stdout);
-    } catch {
-      /* fall through */
-    }
+  if (result.error) {
+    throw new Error(`collect-artifacts (${COLLECT_SCRIPT}) failed to spawn: ${result.error.message}`);
   }
-  return {};
+  if (result.status !== 0) {
+    throw new Error(
+      `collect-artifacts (${COLLECT_SCRIPT}) exited ${result.status}: ${(result.stderr ?? '').slice(0, 2000)}`
+    );
+  }
+  try {
+    return JSON.parse(result.stdout);
+  } catch (err) {
+    throw new Error(`collect-artifacts (${COLLECT_SCRIPT}) returned invalid JSON: ${err.message}`);
+  }
 }
 
 /** The workspace's `.eval/tool-calls.jsonl` as a `## TOOL CALL LOG` block, or null. */

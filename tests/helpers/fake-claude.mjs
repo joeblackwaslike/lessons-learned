@@ -153,10 +153,10 @@ export function useTrialHarness() {
     );
   };
 
-  h.call = (vars = {}, config = {}) => {
+  h.call = (vars = {}, config = {}, prompt = 'do the task') => {
     const provider = new ClaudeAgentProvider({ config: { model: 'sonnet' } });
     return provider.callApi(
-      'do the task',
+      prompt,
       { vars: { scenarioId: 'TC-test', scenarioDir: h.scenarioDir, ...vars } },
       { config: { timeout: 20_000, ...config } }
     );

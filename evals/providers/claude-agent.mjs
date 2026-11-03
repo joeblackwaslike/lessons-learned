@@ -25,7 +25,7 @@
  * Tier 3 judge integration:
  *   - Control arms write transcript to results/cache/control-{controlHash}.json
  *   - Treatment arms read control transcript and call judge.mjs → judgeResult in metadata
- *   - controlHash = sha256(prompt + model)
+ *   - controlHash = sha256(scenario content + scenarioId + model + requires + cliVersion[+trialId])
  *   - lessonContentHash = sha256(lesson.problem + lesson.solution) → included in cacheKey
  */
 
@@ -39,6 +39,7 @@ import {
   cacheDir,
   cliVersion,
   computeCacheKey,
+  hashDir,
   tryArmCache,
   writeControlTranscript,
 } from '../lib/arm-cache.mjs';
@@ -114,7 +115,16 @@ export default class ClaudeAgentProvider {
       : { pluginDirs: [], signature: '' };
     const claudeBin = findClaudeBin();
     const trial = { trialId, cliVersion: cliVersion(claudeBin) };
-    const controlHash = computeControlHash(scenarioId, model, requiresSignature, trial.cliVersion);
+    // Derived from scenario content + trialId, not the arm's own cacheKey, so a control
+    // and its treatment (which differ in intervention) still land on the same transcript.
+    const controlHash = computeControlHash(
+      scenarioDir,
+      scenarioId,
+      model,
+      requiresSignature,
+      trial.cliVersion,
+      trial.trialId
+    );
     const controlTranscriptFile = join(cacheDir(), `control-${controlHash}.json`);
     const lessonContentHash = lesson ? computeLessonContentHash(lesson) : null;
     const useSerena = !isControl && vars.mcp !== 'none';
@@ -127,7 +137,8 @@ export default class ClaudeAgentProvider {
       model,
       lessonContentHash,
       keySignature,
-      trial
+      trial,
+      prompt
     );
     const cacheFile = join(cacheDir(), `${cacheKey}.json`);
 
@@ -153,7 +164,6 @@ export default class ClaudeAgentProvider {
       claudeBin,
       trial,
       useSerena,
-      noCache,
       startMs: Date.now(),
     });
 
@@ -185,7 +195,6 @@ async function runArm({
   claudeBin,
   trial,
   useSerena,
-  noCache,
   startMs,
 }) {
   const token = readOAuthToken({ minValidMs: Math.max(5 * 60_000, timeout + 2 * 60_000) });
@@ -250,23 +259,33 @@ async function runArm({
     restoreHookLogs(sandbox.logDir, evalMetaDir);
 
     const hiddenCheck = runVerify(scenarioDir, workspaceDir);
-    const artifacts = collectArtifacts(workspaceDir, scenarioDir);
+    let artifacts = {};
+    let collectionError = null;
+    try {
+      artifacts = collectArtifacts(workspaceDir, scenarioDir);
+    } catch (err) {
+      collectionError = err.message;
+    }
     const toolCalls = (artifacts.trajectory ?? []).filter(e => e.type === 'PreToolUse').length;
-    const error = trialErrorReason({
-      exitCode: claudeResult.status,
-      signal: claudeResult.signal,
-      timedOut: claudeResult.timedOut,
-      overflow: claudeResult.overflow,
-      output,
-      toolCalls,
-      requireToolCalls: trial.trialId !== null && scenario.allowNoToolCalls !== true,
-      outsideChanges,
-      forbiddenCalls,
-    });
+    const error =
+      collectionError ??
+      trialErrorReason({
+        exitCode: claudeResult.status,
+        signal: claudeResult.signal,
+        timedOut: claudeResult.timedOut,
+        overflow: claudeResult.overflow,
+        output,
+        toolCalls,
+        requireToolCalls: trial.trialId !== null && scenario.allowNoToolCalls !== true,
+        outsideChanges,
+        forbiddenCalls,
+      });
     const toolCallLog = readToolCallLog(workspaceDir);
     const enrichedOutput = redact(toolCallLog ? `${output}\n\n${toolCallLog}` : output, token);
 
-    if (isControl && !error && !noCache) {
+    // Not gated on noCache: a control run with noCache must still leave a transcript for
+    // its treatment to judge against, independent of whether the arm result itself is cached.
+    if (isControl && !error) {
       writeControlTranscript(controlTranscriptFile, enrichedOutput);
     }
 
@@ -381,17 +400,26 @@ function findClaudeBin() {
 
 // ── Cache key computation ──────────────────────────────────────────────────────
 
-/** sha256(scenarioId : model : requires : cliVersion) — control transcript reuse across lessons */
-function computeControlHash(scenarioId, model, requiresSignature, cliVersion) {
-  return createHash('sha256')
+/**
+ * sha256(scenario content : scenarioId : model : requires : cliVersion[:trial=trialId]).
+ * Hashing the scenario's own content (not just its id) and the trial id keeps independent
+ * statistical trials and edited scenario revisions from sharing one control transcript,
+ * while leaving out the intervention so a control and its treatment — which differ only in
+ * intervention — land on the same transcript.
+ */
+function computeControlHash(scenarioDir, scenarioId, model, requiresSignature, cliVersion, trialId) {
+  const hash = createHash('sha256')
+    .update(hashDir(scenarioDir))
+    .update(':')
     .update(scenarioId)
     .update(':')
     .update(model)
     .update(':')
     .update(requiresSignature)
     .update(':cli=')
-    .update(cliVersion)
-    .digest('hex');
+    .update(cliVersion);
+  if (trialId) hash.update(':trial=').update(String(trialId));
+  return hash.digest('hex');
 }
 
 /** sha256(problem + ':' + solution) — changes when lesson content is edited */

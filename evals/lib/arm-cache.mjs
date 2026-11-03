@@ -1,9 +1,9 @@
 /**
  * Arm result cache shared by the agent providers.
  *
- * A cache entry is keyed by scenario content, model, intervention, lesson content,
- * the resolved `requires` set, the agent CLI version, and (for statistical trials) a
- * trial id, so repeated trials never collapse into one cached result.
+ * A cache entry is keyed by scenario content, model, intervention, the supplied prompt,
+ * lesson content, the resolved `requires` set, the agent CLI version, and (for statistical
+ * trials) a trial id, so repeated trials never collapse into one cached result.
  */
 
 import { spawnSync } from 'node:child_process';
@@ -20,9 +20,12 @@ export function cacheDir() {
 }
 
 /**
- * sha256 over scenario content, model, intervention, optional lesson hash and requires
- * signature, then `:cli=<cliVersion>` always and `:trial=<trialId>` when set. Overlay
- * interventions hash the overlay dir's content (not its path, which is a temp dir).
+ * sha256 over scenario content, model, intervention, the supplied prompt, optional lesson
+ * hash and requires signature, then `:cli=<cliVersion>` always and `:trial=<trialId>` when
+ * set. Overlay interventions hash the overlay dir's content (not its path, which is a temp
+ * dir). The prompt is hashed explicitly because providers accept it independently of
+ * scenarioDir — a different prompt with everything else unchanged must not reuse the
+ * previous task's cached output.
  */
 export function computeCacheKey(
   scenarioDir,
@@ -30,7 +33,8 @@ export function computeCacheKey(
   model,
   lessonContentHash = null,
   requiresSignature = '',
-  trial = { trialId: null, cliVersion: '' }
+  trial = { trialId: null, cliVersion: '' },
+  prompt = ''
 ) {
   const sortedIntervention = {
     type: intervention.type ?? 'none',
@@ -41,7 +45,9 @@ export function computeCacheKey(
     .update(':')
     .update(model)
     .update(':')
-    .update(JSON.stringify(sortedIntervention));
+    .update(JSON.stringify(sortedIntervention))
+    .update(':prompt=')
+    .update(prompt ?? '');
   if (intervention.type === 'overlay') hash.update(':overlay=').update(hashDir(intervention.dir));
   if (lessonContentHash) hash.update(':').update(lessonContentHash);
   if (requiresSignature) hash.update(':').update(requiresSignature);
