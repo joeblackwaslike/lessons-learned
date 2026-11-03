@@ -21,30 +21,38 @@ const EVALS_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const MATERIALIZE_SCRIPT = join(EVALS_ROOT, 'scripts', 'materialize-workspace.mjs');
 const COLLECT_SCRIPT = join(EVALS_ROOT, 'scripts', 'collect-artifacts.mjs');
 
-/** Remove `path` if it's a symlink (or any non-regular entry), without following it. */
-function clearIfLinked(path) {
-  let stat;
-  try {
-    stat = lstatSync(path);
-  } catch {
-    return;
-  }
-  if (stat.isSymbolicLink() || !stat.isFile()) rmSync(path, { recursive: true, force: true });
-}
-
 /**
- * Create `dir` as a real directory, removing any symlink an agent planted there first — the
- * agent-controlled workspace is restored into after the agent exits, in the unsandboxed
- * parent, so a planted `.eval` symlink must never be followed.
+ * Create `dir` as a real directory, removing any symlink (or other non-directory entry) an
+ * agent planted there first — the agent-controlled workspace is restored into after the agent
+ * exits, in the unsandboxed parent, so a planted `.eval` symlink must never be followed. An
+ * existing real directory (and its contents, e.g. materialized `.eval` metadata) is preserved.
  */
 export function ensureRealDir(dir) {
-  clearIfLinked(dir);
+  let stat;
+  try {
+    stat = lstatSync(dir);
+  } catch {
+    stat = null;
+  }
+  if (stat && (stat.isSymbolicLink() || !stat.isDirectory())) {
+    rmSync(dir, { recursive: true, force: true });
+  }
   mkdirSync(dir, { recursive: true });
 }
 
-/** Write `content` to `path`, refusing to follow an existing symlink there. */
+/**
+ * Remove any existing entry at `path` without following a symlink and without trusting
+ * `lstat`'s regular-file report — a hard link also reports as a regular file, but writing
+ * through it would truncate the shared inode. Unlinking first and then creating fresh is safe
+ * for both cases.
+ */
+function clearDestination(path) {
+  rmSync(path, { force: true });
+}
+
+/** Write `content` to `path`, refusing to follow an existing symlink or hard link there. */
 export function writeRegularFile(path, content) {
-  clearIfLinked(path);
+  clearDestination(path);
   writeFileSync(path, content);
 }
 
@@ -103,9 +111,8 @@ export function restoreHookLogs(logDir, evalMetaDir) {
   for (const name of ['hook-events.ndjson', 'tool-calls.jsonl']) {
     const src = join(logDir, name);
     const dest = join(evalMetaDir, name);
-    clearIfLinked(dest);
+    clearDestination(dest);
     if (existsSync(src)) copyFileSync(src, dest);
-    else rmSync(dest, { force: true });
   }
 }
 

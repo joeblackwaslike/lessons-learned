@@ -2,6 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   existsSync,
+  linkSync,
   lstatSync,
   mkdtempSync,
   mkdirSync,
@@ -96,5 +97,50 @@ describe('symlink safety when restoring agent workspace metadata', () => {
 
     assert.equal(existsSync(join(evalMetaDir, 'tool-calls.jsonl')), false);
     assert.equal(readFileSync(secret, 'utf8'), 'original');
+  });
+
+  it('ensureRealDir preserves an existing real directory and its contents', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ws-realdir-'));
+    const evalDir = join(dir, '.eval');
+    mkdirSync(evalDir);
+    writeFileSync(join(evalDir, 'intervention.json'), '{"kept":true}');
+
+    ensureRealDir(evalDir);
+
+    assert.equal(lstatSync(evalDir).isDirectory(), true);
+    assert.equal(
+      readFileSync(join(evalDir, 'intervention.json'), 'utf8'),
+      '{"kept":true}'
+    );
+  });
+
+  it('writeRegularFile does not truncate an agent-planted hard link at the destination', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ws-hardlink-'));
+    const secret = join(dir, 'outside-secret.txt');
+    writeFileSync(secret, 'original');
+    const dest = join(dir, 'agent-output.txt');
+    linkSync(secret, dest);
+
+    writeRegularFile(dest, 'written by harness');
+
+    assert.equal(readFileSync(secret, 'utf8'), 'original');
+    assert.equal(readFileSync(dest, 'utf8'), 'written by harness');
+  });
+
+  it('restoreHookLogs does not truncate an agent-planted hard link at a hook-log destination', () => {
+    const logDir = mkdtempSync(join(tmpdir(), 'ws-logdir-'));
+    writeFileSync(join(logDir, 'hook-events.ndjson'), 'real log line\n');
+    const evalMetaDir = mkdtempSync(join(tmpdir(), 'ws-evalmeta-'));
+    const secret = join(evalMetaDir, 'outside-secret.txt');
+    writeFileSync(secret, 'original');
+    linkSync(secret, join(evalMetaDir, 'hook-events.ndjson'));
+
+    restoreHookLogs(logDir, evalMetaDir);
+
+    assert.equal(readFileSync(secret, 'utf8'), 'original');
+    assert.equal(
+      readFileSync(join(evalMetaDir, 'hook-events.ndjson'), 'utf8'),
+      'real log line\n'
+    );
   });
 });
