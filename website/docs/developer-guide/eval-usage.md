@@ -18,7 +18,7 @@ The Tier 3 judge (`scripts/judge.mjs`) and `probe-scenario.mjs`, `gen-regression
 `generate-scenarios.mjs`, and `repair-judge-errors.mjs` all call an isolated `claude -p`
 subprocess (see `lib/claude-spawn.mjs`) — auth is via your `claude login` session (the default
 `~/.claude/` config dir), same as the agent arm. No env vars required, no meridian proxy needed.
-`providers/claude-agent.mjs`'s `buildEnv()` similarly excludes `ANTHROPIC_API_KEY`/
+`lib/agent-workspace.mjs`'s `buildEnv()` similarly excludes `ANTHROPIC_API_KEY`/
 `ANTHROPIC_BASE_URL` so the agent runs through direct OAuth (routing through meridian would spawn
 a full-settings CC worker that can 20-minute-timeout).
 

@@ -244,7 +244,7 @@ describe('control transcript identity', () => {
     return JSON.parse(readFileSync(file, 'utf8')).output;
   }
 
-  it('interleaved trial ids: a treatment finds its own trial control, not another trial\'s', async () => {
+  it("interleaved trial ids: a treatment finds its own trial control, not another trial's", async () => {
     h.useFakeClaude({ FAKE_CLAUDE_OUTPUT: 'control-A' });
     const controlA = await h.call({ trialId: 'trial-A', noCache: true });
     h.useFakeClaude({ FAKE_CLAUDE_OUTPUT: 'control-B' });

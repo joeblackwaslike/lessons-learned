@@ -150,7 +150,9 @@ export function collectArtifacts(workspaceDir, scenarioDir) {
     { encoding: 'utf8', timeout: 10_000 }
   );
   if (result.error) {
-    throw new Error(`collect-artifacts (${COLLECT_SCRIPT}) failed to spawn: ${result.error.message}`);
+    throw new Error(
+      `collect-artifacts (${COLLECT_SCRIPT}) failed to spawn: ${result.error.message}`
+    );
   }
   if (result.status !== 0) {
     throw new Error(

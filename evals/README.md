@@ -9,7 +9,8 @@ evals/
 ├── promptfooconfig.yaml          # Single config: all scenarios + extensions
 ├── justfile                      # just eval-smoke / eval-run / eval-report / eval-clean / ...
 ├── providers/
-│   └── claude-agent.mjs          # Runs Claude Code, writes control transcript, calls Tier 3 judge
+│   ├── claude-agent.mjs          # Runs Claude Code, writes control transcript, calls Tier 3 judge
+│   └── codex-agent.mjs           # Runs Codex CLI (codex exec --json) in an isolated CODEX_HOME
 ├── tools/
 │   └── mock-serena.mjs           # Mock Serena MCP server for scenarios that need it stubbed
 ├── scripts/

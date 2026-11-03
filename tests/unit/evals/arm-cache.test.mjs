@@ -90,10 +90,7 @@ describe('isCacheableArmResult', () => {
   });
 
   it('is false for a SKIP judge result (treatment ran before its control)', () => {
-    assert.equal(
-      isCacheableArmResult({ metadata: { judgeResult: { outcome: 'SKIP' } } }),
-      false
-    );
+    assert.equal(isCacheableArmResult({ metadata: { judgeResult: { outcome: 'SKIP' } } }), false);
   });
 
   it('is false for a judge exception', () => {

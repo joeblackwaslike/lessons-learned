@@ -82,10 +82,7 @@ describe('symlink safety when restoring agent workspace metadata', () => {
     restoreHookLogs(logDir, evalMetaDir);
 
     assert.equal(readFileSync(secret, 'utf8'), 'original');
-    assert.equal(
-      readFileSync(join(evalMetaDir, 'hook-events.ndjson'), 'utf8'),
-      'real log line\n'
-    );
+    assert.equal(readFileSync(join(evalMetaDir, 'hook-events.ndjson'), 'utf8'), 'real log line\n');
   });
 
   it('restoreHookLogs removes a planted symlink when the real log is absent', () => {
@@ -110,10 +107,7 @@ describe('symlink safety when restoring agent workspace metadata', () => {
     ensureRealDir(evalDir);
 
     assert.equal(lstatSync(evalDir).isDirectory(), true);
-    assert.equal(
-      readFileSync(join(evalDir, 'intervention.json'), 'utf8'),
-      '{"kept":true}'
-    );
+    assert.equal(readFileSync(join(evalDir, 'intervention.json'), 'utf8'), '{"kept":true}');
   });
 
   it('writeRegularFile does not truncate an agent-planted hard link at the destination', () => {
@@ -140,10 +134,7 @@ describe('symlink safety when restoring agent workspace metadata', () => {
     restoreHookLogs(logDir, evalMetaDir);
 
     assert.equal(readFileSync(secret, 'utf8'), 'original');
-    assert.equal(
-      readFileSync(join(evalMetaDir, 'hook-events.ndjson'), 'utf8'),
-      'real log line\n'
-    );
+    assert.equal(readFileSync(join(evalMetaDir, 'hook-events.ndjson'), 'utf8'), 'real log line\n');
   });
 
   it('writeRegularFile removes an agent-planted directory at the destination', () => {
