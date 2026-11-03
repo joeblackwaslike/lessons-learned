@@ -271,6 +271,41 @@ describe('control transcript identity', () => {
     assert.notEqual(before.metadata.controlHash, after.metadata.controlHash);
   });
 
+  it('interleaved prompts under the same trial id get separate control transcripts', async () => {
+    h.useFakeClaude({ FAKE_CLAUDE_OUTPUT: 'control-task-A' });
+    const controlA = await h.call({ trialId: 'trial-shared', noCache: true }, {}, 'do task A');
+    h.useFakeClaude({ FAKE_CLAUDE_OUTPUT: 'control-task-B' });
+    const controlB = await h.call({ trialId: 'trial-shared', noCache: true }, {}, 'do task B');
+    assert.notEqual(controlA.metadata.controlHash, controlB.metadata.controlHash);
+
+    const overlay = join(h.base, 'overlay');
+    h.writeFile(join(overlay, 'CLAUDE.md'), 'rule');
+    h.useFakeClaude({ FAKE_CLAUDE_OUTPUT: 'treatment-task-A' });
+    const treatmentA = await h.call(
+      { trialId: 'trial-shared', noCache: true, intervention: { type: 'overlay', dir: overlay } },
+      {},
+      'do task A'
+    );
+    assert.equal(treatmentA.metadata.controlHash, controlA.metadata.controlHash);
+    assert.match(controlTranscript(treatmentA), /control-task-A/);
+  });
+
+  it('a cache-hit control reconstructs its transcript with the tool-call log intact', async () => {
+    const { unlinkSync } = await import('node:fs');
+    h.useFakeClaude({ FAKE_CLAUDE_OUTPUT: 'control-rebuilt' });
+    const control = await h.call({ trialId: 'trial-rebuild' });
+    const transcriptFile = join(
+      process.env.EVAL_CACHE_DIR,
+      `control-${control.metadata.controlHash}.json`
+    );
+    assert.match(controlTranscript(control), /TOOL CALL LOG/);
+    unlinkSync(transcriptFile);
+
+    const second = await h.call({ trialId: 'trial-rebuild' });
+    assert.equal(second.metadata.cacheHit, true);
+    assert.match(controlTranscript(second), /TOOL CALL LOG/);
+  });
+
   it('noCache still writes a control transcript for its treatment to find', async () => {
     h.useFakeClaude({ FAKE_CLAUDE_OUTPUT: 'control-nc' });
     const control = await h.call({ trialId: 'trial-nc', noCache: true });

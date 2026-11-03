@@ -25,7 +25,7 @@
  * Tier 3 judge integration:
  *   - Control arms write transcript to results/cache/control-{controlHash}.json
  *   - Treatment arms read control transcript and call judge.mjs → judgeResult in metadata
- *   - controlHash = sha256(scenario content + scenarioId + model + requires + cliVersion[+trialId])
+ *   - controlHash = sha256(scenario content + scenarioId + model + requires + prompt + cliVersion[+trialId])
  *   - lessonContentHash = sha256(lesson.problem + lesson.solution) → included in cacheKey
  */
 
@@ -40,6 +40,7 @@ import {
   cliVersion,
   computeCacheKey,
   hashDir,
+  isCacheableArmResult,
   tryArmCache,
   writeControlTranscript,
 } from '../lib/arm-cache.mjs';
@@ -58,10 +59,12 @@ import { runProcessGroup } from '../lib/process-group.mjs';
 import {
   buildEnv,
   collectArtifacts,
+  ensureRealDir,
   materializeWorkspace,
   readToolCallLog,
   restoreHookLogs,
   runVerify,
+  writeRegularFile,
 } from '../lib/agent-workspace.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -123,7 +126,8 @@ export default class ClaudeAgentProvider {
       model,
       requiresSignature,
       trial.cliVersion,
-      trial.trialId
+      trial.trialId,
+      prompt
     );
     const controlTranscriptFile = join(cacheDir(), `control-${controlHash}.json`);
     const lessonContentHash = lesson ? computeLessonContentHash(lesson) : null;
@@ -167,7 +171,7 @@ export default class ClaudeAgentProvider {
       startMs: Date.now(),
     });
 
-    if (!noCache && !armResult.error) {
+    if (!noCache && isCacheableArmResult(armResult)) {
       mkdirSync(cacheDir(), { recursive: true });
       writeFileSync(cacheFile, JSON.stringify(armResult, null, 2));
     }
@@ -254,8 +258,8 @@ async function runArm({
 
     const output = redact(claudeResult.stdout, token);
     const evalMetaDir = join(workspaceDir, '.eval');
-    mkdirSync(evalMetaDir, { recursive: true });
-    writeFileSync(join(evalMetaDir, 'agent-output.txt'), output);
+    ensureRealDir(evalMetaDir);
+    writeRegularFile(join(evalMetaDir, 'agent-output.txt'), output);
     restoreHookLogs(sandbox.logDir, evalMetaDir);
 
     const hiddenCheck = runVerify(scenarioDir, workspaceDir);
@@ -317,6 +321,9 @@ async function runArm({
           cacheHit: false,
           cacheKey,
           controlHash,
+          // Enriched output (with the tool-call log) so a cache hit can rebuild the control
+          // transcript if the side-channel file was deleted after this run was cached.
+          transcript: enrichedOutput,
           ...(judgeResult !== null && { judgeResult }),
         },
       },
@@ -407,7 +414,15 @@ function findClaudeBin() {
  * while leaving out the intervention so a control and its treatment — which differ only in
  * intervention — land on the same transcript.
  */
-function computeControlHash(scenarioDir, scenarioId, model, requiresSignature, cliVersion, trialId) {
+function computeControlHash(
+  scenarioDir,
+  scenarioId,
+  model,
+  requiresSignature,
+  cliVersion,
+  trialId,
+  prompt
+) {
   const hash = createHash('sha256')
     .update(hashDir(scenarioDir))
     .update(':')
@@ -416,6 +431,8 @@ function computeControlHash(scenarioDir, scenarioId, model, requiresSignature, c
     .update(model)
     .update(':')
     .update(requiresSignature)
+    .update(':prompt=')
+    .update(prompt ?? '')
     .update(':cli=')
     .update(cliVersion);
   if (trialId) hash.update(':trial=').update(String(trialId));

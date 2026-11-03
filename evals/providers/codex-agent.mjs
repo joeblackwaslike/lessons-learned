@@ -64,9 +64,11 @@ import { runProcessGroup } from '../lib/process-group.mjs';
 import {
   buildEnv,
   collectArtifacts,
+  ensureRealDir,
   materializeWorkspace,
   restoreHookLogs,
   runVerify,
+  writeRegularFile,
 } from '../lib/agent-workspace.mjs';
 
 const EVALS_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -247,8 +249,8 @@ async function runArm({
     writeFileSync(join(sandbox.logDir, 'hook-events.ndjson'), toHookEvents(events));
     writeFileSync(join(sandbox.logDir, 'tool-calls.jsonl'), toToolCallLog(events));
     const evalMetaDir = join(workspaceDir, '.eval');
-    mkdirSync(evalMetaDir, { recursive: true });
-    writeFileSync(join(evalMetaDir, 'agent-output.txt'), output);
+    ensureRealDir(evalMetaDir);
+    writeRegularFile(join(evalMetaDir, 'agent-output.txt'), output);
     restoreHookLogs(sandbox.logDir, evalMetaDir);
 
     const hiddenCheck = runVerify(scenarioDir, workspaceDir);

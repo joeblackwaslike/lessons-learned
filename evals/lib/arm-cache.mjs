@@ -56,7 +56,11 @@ export function computeCacheKey(
   return hash.digest('hex');
 }
 
-/** Return the cached arm result marked `cacheHit: true`, or null on a miss. */
+/**
+ * Return the cached arm result marked `cacheHit: true`, or null on a miss. Reconstructs a
+ * deleted control transcript from `metadata.transcript` (the enriched output including the
+ * tool-call log), falling back to plain `output` only when the cache predates that field.
+ */
 export function tryArmCache(cacheFile, isControl, controlTranscriptFile) {
   if (!existsSync(cacheFile)) return null;
   let cached;
@@ -65,10 +69,23 @@ export function tryArmCache(cacheFile, isControl, controlTranscriptFile) {
   } catch {
     return null;
   }
-  if (isControl && cached.output && !existsSync(controlTranscriptFile)) {
-    writeControlTranscript(controlTranscriptFile, cached.output);
+  const transcript = cached.metadata?.transcript ?? cached.output;
+  if (isControl && transcript && !existsSync(controlTranscriptFile)) {
+    writeControlTranscript(controlTranscriptFile, transcript);
   }
   return { ...cached, metadata: { ...cached.metadata, cacheHit: true } };
+}
+
+/**
+ * Whether an arm result is safe to cache: never a trial error, and never a treatment whose
+ * judge result is incomplete (SKIP — control not yet run — or a judge exception), since
+ * caching either would permanently freeze an un-graded or mis-graded result.
+ */
+export function isCacheableArmResult(armResult) {
+  if (armResult.error) return false;
+  const judgeResult = armResult.metadata?.judgeResult;
+  if (judgeResult && (judgeResult.outcome === 'SKIP' || judgeResult.error === true)) return false;
+  return true;
 }
 
 /** Best-effort write of a control arm's transcript for the Tier 3 judge. */

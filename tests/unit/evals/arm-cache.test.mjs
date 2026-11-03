@@ -3,7 +3,13 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { computeCacheKey, cliVersion, hashDir } from '../../../evals/lib/arm-cache.mjs';
+import {
+  computeCacheKey,
+  cliVersion,
+  hashDir,
+  isCacheableArmResult,
+  tryArmCache,
+} from '../../../evals/lib/arm-cache.mjs';
 import { makeFakeClaude } from '../../helpers/fake-claude.mjs';
 
 function scenario() {
@@ -75,6 +81,70 @@ describe('computeCacheKey', () => {
     mkdirSync(join(dir, 'node_modules'));
     writeFileSync(join(dir, 'node_modules', 'x.js'), 'x');
     assert.equal(hashDir(dir), before);
+  });
+});
+
+describe('isCacheableArmResult', () => {
+  it('is false for a trial error', () => {
+    assert.equal(isCacheableArmResult({ error: 'boom', metadata: {} }), false);
+  });
+
+  it('is false for a SKIP judge result (treatment ran before its control)', () => {
+    assert.equal(
+      isCacheableArmResult({ metadata: { judgeResult: { outcome: 'SKIP' } } }),
+      false
+    );
+  });
+
+  it('is false for a judge exception', () => {
+    assert.equal(
+      isCacheableArmResult({ metadata: { judgeResult: { outcome: 'SKIP', error: true } } }),
+      false
+    );
+  });
+
+  it('is true for a clean result with no judge', () => {
+    assert.equal(isCacheableArmResult({ metadata: {} }), true);
+  });
+
+  it('is true for a successfully judged treatment', () => {
+    assert.equal(
+      isCacheableArmResult({ metadata: { judgeResult: { outcome: 'LESSON_HELPS' } } }),
+      true
+    );
+  });
+});
+
+describe('tryArmCache', () => {
+  it('reconstructs a deleted control transcript from metadata.transcript, including the tool-call log', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'arm-cache-restore-'));
+    const cacheFile = join(dir, 'arm.json');
+    const controlTranscriptFile = join(dir, 'control.json');
+    writeFileSync(
+      cacheFile,
+      JSON.stringify({
+        output: 'plain output only',
+        metadata: { transcript: 'plain output only\n\n## TOOL CALL LOG\n  [Bash] echo hi' },
+      })
+    );
+
+    const result = tryArmCache(cacheFile, true, controlTranscriptFile);
+
+    assert.equal(result.metadata.cacheHit, true);
+    const restored = JSON.parse(readFileSync(controlTranscriptFile, 'utf8')).output;
+    assert.match(restored, /TOOL CALL LOG/);
+  });
+
+  it('falls back to plain output when a cache entry predates metadata.transcript', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'arm-cache-restore-'));
+    const cacheFile = join(dir, 'arm.json');
+    const controlTranscriptFile = join(dir, 'control.json');
+    writeFileSync(cacheFile, JSON.stringify({ output: 'legacy output', metadata: {} }));
+
+    tryArmCache(cacheFile, true, controlTranscriptFile);
+
+    const restored = JSON.parse(readFileSync(controlTranscriptFile, 'utf8')).output;
+    assert.equal(restored, 'legacy output');
   });
 });
 

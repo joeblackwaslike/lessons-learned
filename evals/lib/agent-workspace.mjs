@@ -5,13 +5,48 @@
  */
 
 import { spawnSync } from 'node:child_process';
-import { copyFileSync, existsSync, readFileSync, rmSync } from 'node:fs';
+import {
+  copyFileSync,
+  existsSync,
+  lstatSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const EVALS_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const MATERIALIZE_SCRIPT = join(EVALS_ROOT, 'scripts', 'materialize-workspace.mjs');
 const COLLECT_SCRIPT = join(EVALS_ROOT, 'scripts', 'collect-artifacts.mjs');
+
+/** Remove `path` if it's a symlink (or any non-regular entry), without following it. */
+function clearIfLinked(path) {
+  let stat;
+  try {
+    stat = lstatSync(path);
+  } catch {
+    return;
+  }
+  if (stat.isSymbolicLink() || !stat.isFile()) rmSync(path, { recursive: true, force: true });
+}
+
+/**
+ * Create `dir` as a real directory, removing any symlink an agent planted there first — the
+ * agent-controlled workspace is restored into after the agent exits, in the unsandboxed
+ * parent, so a planted `.eval` symlink must never be followed.
+ */
+export function ensureRealDir(dir) {
+  clearIfLinked(dir);
+  mkdirSync(dir, { recursive: true });
+}
+
+/** Write `content` to `path`, refusing to follow an existing symlink there. */
+export function writeRegularFile(path, content) {
+  clearIfLinked(path);
+  writeFileSync(path, content);
+}
 
 export function materializeWorkspace(scenarioDir, workspaceDir, intervention) {
   const result = spawnSync(
@@ -68,6 +103,7 @@ export function restoreHookLogs(logDir, evalMetaDir) {
   for (const name of ['hook-events.ndjson', 'tool-calls.jsonl']) {
     const src = join(logDir, name);
     const dest = join(evalMetaDir, name);
+    clearIfLinked(dest);
     if (existsSync(src)) copyFileSync(src, dest);
     else rmSync(dest, { force: true });
   }

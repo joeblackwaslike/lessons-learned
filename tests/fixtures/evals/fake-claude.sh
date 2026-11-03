@@ -16,6 +16,7 @@ mkdir -p "$log_dir"
 i=0
 while [ "$i" -lt "${FAKE_CLAUDE_TOOL_CALLS:-1}" ]; do
   printf '{"type":"PreToolUse","tool_name":"Bash","tool_input":{"command":"ls"}}\n' >> "$log_dir/hook-events.ndjson"
+  printf '{"tool_name":"Bash","tool_input":{"command":"ls"}}\n' >> "$log_dir/tool-calls.jsonl"
   i=$((i + 1))
 done
 if [ -n "$FAKE_CLAUDE_RUN" ]; then sh -c "$FAKE_CLAUDE_RUN" 2>&1; fi
