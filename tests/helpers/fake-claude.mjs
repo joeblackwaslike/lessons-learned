@@ -37,6 +37,7 @@ const ENV_KEYS = [
   'EVAL_WATCH_HOME',
   'EVAL_NO_CACHE',
   'EVAL_SANDBOX_EXEC',
+  'EVAL_SANDBOX_WRITABLE',
   'CLAUDE_CODE_OAUTH_TOKEN',
   'LESSONS_DATA_DIR',
 ];
@@ -77,9 +78,11 @@ export function useTrialHarness() {
   beforeEach(() => {
     saved = Object.fromEntries(ENV_KEYS.map(k => [k, process.env[k]]));
     const base = mkdtempSync(join(tmpdir(), 'trials-'));
+    const writable = join(base, 'agent-writable');
     Object.assign(h, {
       base,
-      log: join(base, 'claude-runs.log'),
+      writable,
+      log: join(writable, 'claude-runs.log'),
       fakeHome: join(base, 'fake-real-home'),
       scenarioDir: join(base, 'scenario'),
       bins: join(base, 'bins'),
@@ -97,6 +100,7 @@ export function useTrialHarness() {
     writeFile(join(h.scenarioDir, 'scenario.json'), '{}');
     writeFile(join(h.scenarioDir, 'seed-workspace', 'app.txt'), 'seed');
     mkdirSync(h.bins);
+    mkdirSync(writable);
     const emptyData = join(base, 'empty-data');
     mkdirSync(emptyData);
 
@@ -104,6 +108,8 @@ export function useTrialHarness() {
     process.env.EVAL_WATCH_HOME = h.fakeHome;
     process.env.CLAUDE_CODE_OAUTH_TOKEN = 'test-token';
     process.env.LESSONS_DATA_DIR = emptyData;
+    // The fakes log their runs here from inside the sandbox-exec profile.
+    process.env.EVAL_SANDBOX_WRITABLE = writable;
     delete process.env.EVAL_NO_CACHE;
     delete process.env.EVAL_CODEX_MODEL;
     delete process.env.EVAL_SANDBOX_EXEC;

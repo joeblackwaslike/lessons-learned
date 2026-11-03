@@ -7,9 +7,9 @@
  * PATH in the spawn env, in `CLAUDE_ENV_FILE` (sourced before every Bash tool command),
  * and in the temp home's shell startup files, so shells that reset PATH (nix-darwin's
  * /etc/zshenv, path_helper in login shells) still find the stubs first. On macOS the
- * agent also runs under `sandbox-exec`: no writes under the real home, no reads of its
- * credential files, no connections to unix sockets under it, Docker's socket, localhost,
- * or ports 22 and 9418. A before/after snapshot of watched real-home paths catches
+ * agent also runs under `sandbox-exec`: no writes outside the trial root, no reads of the
+ * real home's credential files, no connections to unix sockets under it, Docker's socket,
+ * localhost, or ports 22 and 9418. A before/after snapshot of watched real-home paths catches
  * anything that still gets through. The agent authenticates with
  * `CLAUDE_CODE_OAUTH_TOKEN`, read from the real login, so nothing is written into the
  * real `~/.claude`.
@@ -158,13 +158,21 @@ export function sandboxEnv(sb, token) {
   };
 }
 
+/** Whether `sandboxCommand` wraps agents in sandbox-exec (macOS, unless `EVAL_SANDBOX_EXEC=0`). */
+export function sandboxExecEnabled() {
+  return (
+    process.platform === 'darwin' &&
+    process.env.EVAL_SANDBOX_EXEC !== '0' &&
+    existsSync('/usr/bin/sandbox-exec')
+  );
+}
+
 /**
- * The command and args to spawn `bin args` with. On macOS (unless `EVAL_SANDBOX_EXEC=0`)
- * this wraps it in `sandbox-exec` with the profile from `sandboxProfile`.
+ * The command and args to spawn `bin args` with. When `sandboxExecEnabled()` this wraps it
+ * in `sandbox-exec` with the profile from `sandboxProfile`.
  */
 export function sandboxCommand(sb, bin, args, extraWritable = []) {
-  const enabled = process.platform === 'darwin' && process.env.EVAL_SANDBOX_EXEC !== '0';
-  if (!enabled || !existsSync('/usr/bin/sandbox-exec')) return { command: bin, args };
+  if (!sandboxExecEnabled()) return { command: bin, args };
   return {
     command: '/usr/bin/sandbox-exec',
     args: ['-p', sandboxProfile(sb, extraWritable), bin, ...args],
@@ -172,15 +180,16 @@ export function sandboxCommand(sb, bin, args, extraWritable = []) {
 }
 
 /**
- * sandbox-exec profile: allow by default, then deny writes under the real home (except
- * the trial root and `extraWritable`), reads of credential paths under it, and outbound
- * connections to unix sockets under it or in /var/run, to localhost, and to TCP ports
- * 22 (SSH) and 9418 (git://).
+ * sandbox-exec profile: allow by default, then deny every write except to the trial root,
+ * /dev, `extraWritable`, and the colon-separated `EVAL_SANDBOX_WRITABLE` (tests log there);
+ * deny reads of credential paths under the real home, and outbound connections to unix
+ * sockets under it or in /var/run, to localhost, and to TCP ports 22 (SSH) and 9418 (git://).
  */
 export function sandboxProfile(sb, extraWritable = []) {
   const quote = p => `"${p.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
   const home = realpathSync(watchHome());
-  const writable = [sb.root, ...extraWritable].map(p => {
+  const fromEnv = (process.env.EVAL_SANDBOX_WRITABLE ?? '').split(':').filter(Boolean);
+  const writable = [sb.root, '/dev', ...extraWritable, ...fromEnv].map(p => {
     mkdirSync(p, { recursive: true });
     return `(allow file-write* (subpath ${quote(realpathSync(p))}))`;
   });
@@ -191,7 +200,7 @@ export function sandboxProfile(sb, extraWritable = []) {
   return [
     '(version 1)',
     '(allow default)',
-    `(deny file-write* (subpath ${quote(home)}))`,
+    '(deny file-write*)',
     ...writable,
     `(deny file-read* ${secrets.join(' ')})`,
     '(deny network-outbound',

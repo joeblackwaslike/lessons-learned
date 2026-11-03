@@ -132,7 +132,8 @@ What each trial gets:
   `.bashrc`, `.bash_profile`, and `.profile` (`BASH_ENV` and `ENV` point at them). The rest of
   `PATH` is the provider's own, so node, pnpm, uv, and python3 stay available.
 - On macOS, `sandbox-exec` (turn off with `EVAL_SANDBOX_EXEC=0`) with this profile: allow by
-  default, then deny writes under the real home except the trial root; deny reads of
+  default, then deny every write except to the trial root (workspace, home, tmp, logs),
+  `/dev`, and paths a provider adds (Serena's `.uv-cache`); deny reads of
   `~/.ssh`, `~/.config/gh`, `~/.aws`, `~/Library/Keychains`, `~/.git-credentials`,
   `~/.claude/.credentials.json`, `~/.netrc`, and `~/.npmrc`; deny outbound connections to unix
   sockets under the real home (this covers OrbStack's Docker socket) or matching
@@ -151,11 +152,14 @@ What it does not stop:
 
 - Reads anywhere except the denied paths: the agent can read the real home, including
   this repo and `~/.claude` (but not `~/.claude/.credentials.json`).
-- Writes outside the real home (`/tmp`, `/opt/homebrew`, `/usr/local`).
-- HTTPS to any host. Real `git` or `gh` called by absolute path, `curl`, or `npm` can reach
-  the network; the stubs only catch what resolves through `PATH`. They have no credentials
-  to push with, since the credential files and the Keychain are unreadable and the temp home
-  has no git or gh config.
+- HTTPS to any host. Seatbelt filters connections by address and port, not by host name,
+  so it cannot allow only the model API. Codex's own `--sandbox workspace-write` blocks
+  network for the commands it runs, but macOS cannot nest that seatbelt inside this one, so
+  under `sandbox-exec` Codex runs with its sandbox bypassed and its commands get the same
+  open network as Claude's. Real `git` or `gh` called by absolute path, `curl`, or `npm` can
+  reach the network; the stubs only catch what resolves through `PATH`. They have no
+  credentials to push with, since the credential files and the Keychain are unreadable and
+  the temp home has no git or gh config.
 - IPC that `(allow default)` leaves open: `defaults write` (via cfprefsd, which writes the
   real `~/Library/Preferences`), `launchctl`, `osascript` and other Apple Events, pasteboard,
   and other mach services. These act through daemons outside the sandbox, so a trial using

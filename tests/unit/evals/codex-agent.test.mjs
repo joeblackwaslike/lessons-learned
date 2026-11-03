@@ -71,6 +71,31 @@ describe('event mapping', () => {
       tool_input: { file_path: '/w/a.txt' },
     });
   });
+  it('web searches and MCP tool calls count as tool calls', () => {
+    const mcp = {
+      id: 'm1',
+      type: 'mcp_tool_call',
+      server: 'serena',
+      tool: 'find_symbol',
+      arguments: { name: 'main' },
+    };
+    const events = [
+      { type: 'item.started', item: { id: 'w1', type: 'web_search', query: '' } },
+      { type: 'item.completed', item: { id: 'w1', type: 'web_search', query: 'node test' } },
+      { type: 'item.started', item: { ...mcp, status: 'in_progress' } },
+      { type: 'item.completed', item: { ...mcp, status: 'completed' } },
+    ];
+    assert.deepEqual(
+      toToolCallLog(events)
+        .split('\n')
+        .filter(Boolean)
+        .map(l => JSON.parse(l)),
+      [
+        { tool_name: 'WebSearch', tool_input: { query: 'node test' } },
+        { tool_name: 'mcp__serena__find_symbol', tool_input: { name: 'main' } },
+      ]
+    );
+  });
 });
 
 describe('codex provider', () => {
@@ -240,6 +265,45 @@ describe('codex auth', () => {
     assert.equal(h.runs().length, 0);
   });
 
+  it('a corrupt ~/.codex/auth.json throws a fixed message that does not quote it', async () => {
+    h.writeFile(join(h.fakeHome, '.codex', 'auth.json'), '{"tokens": SECRET-CORRUPT');
+    h.useFakeCodex();
+    const err = await h.callCodex({ noCache: true }).catch(e => e);
+    assert.match(err.message, /auth\.json is not valid JSON/);
+    assert.doesNotMatch(err.message, /SECRET-CORRUPT/);
+    assert.equal(h.runs().length, 0);
+  });
+
+  it('a truncated auth.json copy is not written back', async () => {
+    const real = join(h.fakeHome, '.codex', 'auth.json');
+    const before = readFileSync(real, 'utf8');
+    h.useFakeCodex({ FAKE_CODEX_AUTH_WRITE: '{"tok' });
+    const r = await h.callCodex({ noCache: true });
+    assert.equal(r.metadata.sandbox.authWriteBack, 'skipped: invalid copy');
+    assert.equal(readFileSync(real, 'utf8'), before);
+  });
+
+  it('rotated tokens are redacted as well as the original ones', async () => {
+    const tokens = { ...FAKE_CODEX_AUTH.tokens, access_token: 'acctok-NEW-555' };
+    const rotated = { ...FAKE_CODEX_AUTH, tokens: { ...tokens, refresh_token: 'reftok-NEW-666' } };
+    h.useFakeCodex({
+      FAKE_CODEX_AUTH_WRITE: JSON.stringify(rotated),
+      FAKE_CODEX_RUN: 'cat "$CODEX_HOME/auth.json"',
+      FAKE_CODEX_STDERR: 'cat "$CODEX_HOME/auth.json"',
+      FAKE_CODEX_OUTPUT: 'old=acctok-SECRET-222',
+    });
+    const r = await h.callCodex({ trialId: 'a2' });
+    assert.equal(r.error, undefined, r.error);
+    const cached = readFileSync(
+      join(process.env.EVAL_CACHE_DIR, `${r.metadata.cacheKey}.json`),
+      'utf8'
+    );
+    for (const text of [JSON.stringify(r), cached]) {
+      assert.doesNotMatch(text, AUTH_SECRETS);
+      assert.doesNotMatch(text, /NEW-555|NEW-666/);
+    }
+  });
+
   it('a refreshed token is written back to the real auth.json, mode 0600', async () => {
     const refreshed = JSON.stringify({ ...FAKE_CODEX_AUTH, last_refresh: 'new' });
     h.useFakeCodex({ FAKE_CODEX_AUTH_WRITE: refreshed });
@@ -265,10 +329,11 @@ describe('codex auth', () => {
   it('write-back is skipped when the real auth.json changed during the trial', async () => {
     process.env.EVAL_SANDBOX_EXEC = '0';
     h.useFakeCodex({
-      FAKE_CODEX_AUTH_WRITE: '{"from":"trial"}',
+      FAKE_CODEX_AUTH_WRITE: JSON.stringify({ ...FAKE_CODEX_AUTH, last_refresh: 'trial' }),
       FAKE_CODEX_RUN: `printf '{"from":"live"}' > "$FAKE_REAL_HOME/.codex/auth.json"`,
     });
-    await h.callCodex({ noCache: true });
+    const r = await h.callCodex({ noCache: true });
+    assert.match(r.metadata.sandbox.authWriteBack, /real auth\.json changed/);
     assert.equal(readFileSync(join(h.fakeHome, '.codex', 'auth.json'), 'utf8'), '{"from":"live"}');
   });
 });
@@ -302,13 +367,25 @@ describe('codex trial errors', () => {
 });
 
 describe('codex cache', () => {
-  it('noCache with distinct trialIds runs codex each time', async () => {
+  it('noCache runs codex every time for the same trialId and writes no cache entry', async () => {
     h.useFakeCodex();
-    for (const trialId of ['n1', 'n2', 'n3']) {
-      const r = await h.callCodex({ trialId, noCache: true });
+    for (let i = 0; i < 3; i++) {
+      const r = await h.callCodex({ trialId: 'n1', noCache: true });
       assert.equal(r.metadata.cacheHit, false);
     }
     assert.equal(h.runs().length, 3);
+    const dir = process.env.EVAL_CACHE_DIR;
+    assert.deepEqual(existsSync(dir) ? readdirSync(dir) : [], []);
+  });
+
+  it('a run without sandbox-exec misses the cache of a sandbox-exec run', darwinOnly, async () => {
+    h.useFakeCodex();
+    const outer = await h.callCodex({ trialId: 'sb' });
+    process.env.EVAL_SANDBOX_EXEC = '0';
+    const inner = await h.callCodex({ trialId: 'sb' });
+    assert.notEqual(outer.metadata.cacheKey, inner.metadata.cacheKey);
+    assert.equal(inner.metadata.cacheHit, false);
+    assert.equal(h.runs().length, 2);
   });
 
   it('same trialId without noCache hits the cache', async () => {

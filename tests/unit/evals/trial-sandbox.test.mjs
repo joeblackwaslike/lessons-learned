@@ -8,6 +8,8 @@ import {
   mkdtempSync,
   readFileSync,
   readdirSync,
+  realpathSync,
+  rmSync,
   symlinkSync,
 } from 'node:fs';
 import net from 'node:net';
@@ -15,6 +17,11 @@ import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { hashDir } from '../../../evals/lib/arm-cache.mjs';
+import {
+  createTrialSandbox,
+  sandboxCommand,
+  sandboxProfile,
+} from '../../../evals/lib/trial-sandbox.mjs';
 import { useTrialHarness } from '../../helpers/fake-claude.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
@@ -100,6 +107,38 @@ describe('sandbox PATH reaches every shell', () => {
   });
 });
 
+describe('sandbox-exec write confinement', () => {
+  it('the profile denies every write, then allows the trial root, /dev, and extra paths', () => {
+    const sb = createTrialSandbox('profile');
+    try {
+      const extra = join(h.base, 'extra');
+      const lines = sandboxProfile(sb, [extra]).split('\n');
+      const denyAll = lines.indexOf('(deny file-write*)');
+      assert.ok(denyAll > 0, lines.join('\n'));
+      for (const path of [sb.root, '/dev', realpathSync(extra)]) {
+        const allow = lines.indexOf(`(allow file-write* (subpath "${path}"))`);
+        assert.ok(allow > denyAll, `${path} is not allowed after the deny`);
+      }
+    } finally {
+      rmSync(sb.root, { recursive: true, force: true });
+    }
+  });
+
+  it('a write outside the trial root fails; one in the workspace succeeds', darwinOnly, () => {
+    const sb = createTrialSandbox('confine');
+    const outside = mkdtempSync(join(tmpdir(), 'outside-'));
+    try {
+      const script = `echo x > '${outside}/escaped'; echo x > '${sb.workspace}/inside'`;
+      const { command, args } = sandboxCommand(sb, '/bin/sh', ['-c', script]);
+      spawnSync(command, args);
+      assert.equal(existsSync(join(outside, 'escaped')), false);
+      assert.equal(existsSync(join(sb.workspace, 'inside')), true);
+    } finally {
+      rmSync(sb.root, { recursive: true, force: true });
+    }
+  });
+});
+
 describe('sandbox-exec network and read denies', () => {
   it('connecting to a unix socket under the real home is denied', darwinOnly, async () => {
     const sock = join(h.fakeHome, 's.sock');
@@ -169,7 +208,7 @@ describe('simulated remotes', () => {
 
 describe('process lifetime', () => {
   it('a timeout kills the whole process group, including background children', async () => {
-    const pidFile = join(h.base, 'child.pid');
+    const pidFile = join(h.writable, 'child.pid');
     h.useFakeClaude({ FAKE_CLAUDE_RUN: `sleep 30 & echo $! > ${pidFile}; sleep 30` });
     const r = await h.call({ trialId: 'g1', noCache: true }, { timeout: 1000 });
     assert.match(r.error, /timed out/);

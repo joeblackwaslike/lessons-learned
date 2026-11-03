@@ -16,7 +16,8 @@
  * load. Account-level features (ChatGPT apps, remote plugins, computer and browser use,
  * memories) are disabled with `--disable`. If Codex refreshes its token during the trial,
  * the new auth.json is written back to the real one (atomic rename), unless the real one
- * changed meanwhile.
+ * changed meanwhile or the copy is not JSON with a refresh token; old and new tokens are
+ * both redacted. The cache key includes which sandbox Codex ran under.
  *
  * On macOS the run is wrapped in the trial's sandbox-exec profile. macOS refuses to apply
  * a second seatbelt inside one that has any deny rule (`sandbox_apply: Operation not
@@ -54,6 +55,7 @@ import {
   redact,
   sandboxCommand,
   sandboxEnv,
+  sandboxExecEnabled,
   snapshotWatchPaths,
   trialErrorReason,
   watchHome,
@@ -131,7 +133,9 @@ export default class CodexAgentProvider {
     const scenario = JSON.parse(readFileSync(join(scenarioDir, 'scenario.json'), 'utf8'));
     const codexBin = findCodexBin();
     const trial = { trialId, cliVersion: cliVersion(codexBin) };
-    const cacheKey = computeCacheKey(scenarioDir, intervention, model, null, 'agent=codex', trial);
+    const outerSandbox = sandboxExecEnabled();
+    const signature = `agent=codex;sandbox=${outerSandbox ? 'bypassed' : 'workspace-write'}`;
+    const cacheKey = computeCacheKey(scenarioDir, intervention, model, null, signature, trial);
     const cacheFile = join(cacheDir(), `${cacheKey}.json`);
 
     if (!noCache) {
@@ -148,6 +152,7 @@ export default class CodexAgentProvider {
       model,
       timeout,
       codexBin,
+      outerSandbox,
       trial,
       cacheKey,
       startMs: Date.now(),
@@ -170,6 +175,7 @@ async function runArm({
   model,
   timeout,
   codexBin,
+  outerSandbox,
   trial,
   cacheKey,
   startMs,
@@ -182,14 +188,14 @@ async function runArm({
     const codexHome = join(sandbox.root, 'codex-home');
     mkdirSync(codexHome, { mode: 0o700 });
     const auth = copyCodexAuth(codexHome);
-    const scrub = value => auth.secrets.reduce((v, s) => redact(v, s), value);
+    let secrets = auth.secrets;
+    const scrub = value => secrets.reduce((v, s) => redact(v, s), value);
 
     const sandboxKeys = { ...sandboxEnv(sandbox, ''), CODEX_HOME: codexHome };
     delete sandboxKeys.CLAUDE_CODE_OAUTH_TOKEN;
     delete sandboxKeys.CLAUDE_ENV_FILE;
     const env = buildEnv(workspaceDir, scenario.env ?? {}, sandboxKeys);
 
-    const outerSandbox = sandboxCommand(sandbox, codexBin, []).command !== codexBin;
     const codexArgs = [
       'exec',
       '--json',
@@ -221,6 +227,7 @@ async function runArm({
       });
     } finally {
       authWriteBack = writeBackCodexAuth(auth);
+      secrets = [...new Set([...auth.secrets, ...authWriteBack.secrets])];
     }
     const outsideChanges = diffSnapshots(before, snapshotWatchPaths());
     const stubCalls = readStubCalls(sandbox);
@@ -275,7 +282,7 @@ async function runArm({
           forbiddenCalls,
           simulatedCalls,
           codexSandbox: outerSandbox ? 'bypassed (sandbox-exec wraps codex)' : 'workspace-write',
-          authWriteBack,
+          authWriteBack: authWriteBack.status,
         },
         hiddenCheck,
         artifacts,
@@ -295,9 +302,10 @@ async function runArm({
 /**
  * Tool calls in a `codex exec --json` event stream, in order, one per item id:
  * `command_execution` items become Bash calls (the `/bin/zsh -lc '...'` wrapper removed),
- * `file_change` items one Edit call per changed path.
+ * `mcp_tool_call` items `mcp__<server>__<tool>` calls, completed `web_search` items
+ * WebSearch calls, and completed `file_change` items one Edit call per changed path.
  * @param {any[]} events
- * @returns {{ tool_name: string, tool_input: Record<string, string> }[]}
+ * @returns {{ tool_name: string, tool_input: Record<string, unknown> }[]}
  */
 function toolCallsFrom(events) {
   const seen = new Set();
@@ -309,6 +317,15 @@ function toolCallsFrom(events) {
     if (item.type === 'command_execution') {
       seen.add(item.id);
       calls.push({ tool_name: 'Bash', tool_input: { command: unwrapShell(item.command) } });
+    } else if (item.type === 'mcp_tool_call') {
+      seen.add(item.id);
+      calls.push({
+        tool_name: `mcp__${item.server}__${item.tool}`,
+        tool_input: item.arguments ?? {},
+      });
+    } else if (item.type === 'web_search' && type === 'item.completed') {
+      seen.add(item.id);
+      calls.push({ tool_name: 'WebSearch', tool_input: { query: item.query } });
     } else if (item.type === 'file_change' && type === 'item.completed') {
       seen.add(item.id);
       for (const change of item.changes ?? []) {
@@ -376,9 +393,20 @@ function copyCodexAuth(codexHome) {
     throw new Error(`no Codex login for eval trials: ${real} is missing; run \`codex login\``);
   }
   const original = readFileSync(real);
+  const parsed = parseAuth(original);
+  if (!parsed) throw new Error(`${real} is not valid JSON; run \`codex login\``);
   const copy = join(codexHome, 'auth.json');
   writeFileSync(copy, original, { mode: 0o600 });
-  return { real, copy, original, secrets: secretValues(JSON.parse(original.toString('utf8'))) };
+  return { real, copy, original, secrets: secretValues(parsed) };
+}
+
+/** auth.json bytes parsed, or null when they are not JSON (so errors never quote them). */
+function parseAuth(bytes) {
+  try {
+    return JSON.parse(bytes.toString('utf8'));
+  } catch {
+    return null;
+  }
 }
 
 function secretValues(value, key = '') {
@@ -390,20 +418,28 @@ function secretValues(value, key = '') {
 /**
  * C16: Codex may rotate its refresh token inside the temp home, which would invalidate the
  * real login. Write a changed copy back atomically, but only over the bytes that were
- * copied, so a login refreshed by a live session meanwhile is never overwritten.
+ * copied, so a login refreshed by a live session meanwhile is never overwritten, and only
+ * when the copy is JSON with a refresh token, so a write cut short by a kill is never kept.
+ * Returns the outcome and the copy's secret values (rotated tokens, for redaction).
  */
 function writeBackCodexAuth({ real, copy, original }) {
-  if (!existsSync(copy)) return 'copy missing';
+  if (!existsSync(copy)) return { status: 'copy missing', secrets: [] };
   const current = readFileSync(copy);
-  if (current.equals(original)) return 'unchanged';
+  const parsed = parseAuth(current);
+  const secrets = parsed ? secretValues(parsed) : [];
+  if (current.equals(original)) return { status: 'unchanged', secrets };
+  const refreshToken = parsed?.tokens?.refresh_token;
+  if (typeof refreshToken !== 'string' || !refreshToken) {
+    return { status: 'skipped: invalid copy', secrets };
+  }
   if (!existsSync(real) || !readFileSync(real).equals(original)) {
-    return 'skipped: the real auth.json changed during the trial';
+    return { status: 'skipped: the real auth.json changed during the trial', secrets };
   }
   const tmp = `${real}.eval-${process.pid}.tmp`;
   writeFileSync(tmp, current, { mode: 0o600 });
   chmodSync(tmp, 0o600);
   renameSync(tmp, real);
-  return 'written back';
+  return { status: 'written back', secrets };
 }
 
 function findCodexBin() {
