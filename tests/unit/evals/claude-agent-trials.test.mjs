@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, existsSync } from 'node:fs';
+import { mkdtempSync, readFileSync, existsSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -284,6 +284,29 @@ describe('overlay interventions', () => {
     const ws = materialize(overlay);
     const manifest = JSON.parse(readFileSync(join(ws, '.eval', 'lesson-manifest.json'), 'utf8'));
     assert.deepEqual(manifest.lessons, []);
+  });
+
+  it('rejects an overlay dir containing a symlink', () => {
+    const overlay = join(h.base, 'overlay');
+    h.writeFile(join(overlay, 'CLAUDE.md'), 'rule');
+    symlinkSync(join(h.base, 'app.txt'), join(overlay, 'escape.txt'));
+    const ws = mkdtempSync(join(tmpdir(), 'ovl-ws-'));
+    const run = spawnSync(
+      process.execPath,
+      [
+        MATERIALIZE,
+        '--scenario',
+        h.scenarioDir,
+        '--workspace',
+        ws,
+        '--intervention',
+        JSON.stringify({ type: 'overlay', dir: overlay }),
+      ],
+      { encoding: 'utf8' }
+    );
+    assert.notEqual(run.status, 0);
+    assert.match(run.stderr, /symlink/);
+    assert.equal(existsSync(join(ws, 'escape.txt')), false);
   });
 });
 
