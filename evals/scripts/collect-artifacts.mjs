@@ -38,6 +38,7 @@ const evalMetaDir = join(workspaceDir, '.eval');
 // Hook events are written to .eval/hook-events.ndjson by the eval hook shim
 // (installed during workspace materialization in Phase 2)
 const hookEventsPath = join(evalMetaDir, 'hook-events.ndjson');
+let droppedLines = 0;
 const hookEvents = existsSync(hookEventsPath)
   ? readFileSync(hookEventsPath, 'utf8')
       .split('\n')
@@ -46,6 +47,7 @@ const hookEvents = existsSync(hookEventsPath)
         try {
           return JSON.parse(line);
         } catch {
+          droppedLines += 1;
           return null;
         }
       })
@@ -66,11 +68,36 @@ const trajectory = hookEvents
 // --- Workspace diff -------------------------------------------------------------
 let workspaceDiff = '';
 if (existsSync(join(workspaceDir, '.git'))) {
-  const diffResult = spawnSync('git', ['diff', '--stat', 'HEAD'], {
-    cwd: workspaceDir,
-    encoding: 'utf8',
-    timeout: 10_000,
-  });
+  const diffResult = spawnSync(
+    'git',
+    [
+      '-c',
+      'diff.external=',
+      '-c',
+      'core.fsmonitor=false',
+      '-c',
+      'core.pager=cat',
+      'diff',
+      '--no-ext-diff',
+      '--stat',
+      'HEAD',
+    ],
+    {
+      cwd: workspaceDir,
+      encoding: 'utf8',
+      timeout: 10_000,
+      env: (() => {
+        const env = { ...process.env, GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: '/dev/null' };
+        delete env.GIT_EXTERNAL_DIFF;
+        return env;
+      })(),
+    }
+  );
+  if (diffResult.error || diffResult.status !== 0) {
+    throw new Error(
+      `workspace diff (${workspaceDir}) failed: ${diffResult.error?.message ?? `exit ${diffResult.status}${diffResult.signal ? ` signal ${diffResult.signal}` : ''}: ${(diffResult.stderr ?? '').slice(0, 2000)}`}`
+    );
+  }
   workspaceDiff = diffResult.stdout ?? '';
 } else {
   // No .git in seed — list all files created
@@ -86,7 +113,7 @@ const evalMeta = existsSync(evalMetaPath) ? JSON.parse(readFileSync(evalMetaPath
 // --- Telemetry integrity ---------------------------------------------------------
 // A record the hook shim couldn't parse means lost trajectory evidence for that tool
 // call — the caller must not treat this run as a cleanly observed success.
-const parseErrors = hookEvents.filter(e => e.type === 'PARSE_ERROR').length;
+const parseErrors = hookEvents.filter(e => e.type === 'PARSE_ERROR').length + droppedLines;
 
 // --- Emit -----------------------------------------------------------------------
 console.log(JSON.stringify({ hookEvents, workspaceDiff, trajectory, evalMeta, parseErrors }, null, 2));

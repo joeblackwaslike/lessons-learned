@@ -12,6 +12,7 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { spawnSync } from 'node:child_process';
 import {
   collectArtifacts,
   ensureRealDir,
@@ -20,6 +21,14 @@ import {
   runVerify,
   writeRegularFile,
 } from '../../../evals/lib/agent-workspace.mjs';
+
+function git(cwd, args) {
+  const result = spawnSync('git', args, { cwd, encoding: 'utf8' });
+  if (result.status !== 0) {
+    throw new Error(`git ${args.join(' ')} failed: ${result.stderr}`);
+  }
+  return result.stdout;
+}
 
 describe('collectArtifacts', () => {
   it('throws naming the collector script and exit status instead of returning {}', () => {
@@ -41,6 +50,52 @@ describe('collectArtifacts', () => {
     const scenario = mkdtempSync(join(tmpdir(), 'collect-scn-'));
     const artifacts = collectArtifacts(workspace, scenario);
     assert.deepEqual(artifacts.trajectory, []);
+  });
+
+  it('counts an unparseable hook-events.ndjson line as a parse error', () => {
+    const workspace = mkdtempSync(join(tmpdir(), 'collect-ws-'));
+    const scenario = mkdtempSync(join(tmpdir(), 'collect-scn-'));
+    mkdirSync(join(workspace, '.eval'), { recursive: true });
+    writeFileSync(
+      join(workspace, '.eval', 'hook-events.ndjson'),
+      '{"type":"PreToolUse","tool_name":"Bash"}\nnot valid json\n'
+    );
+
+    const artifacts = collectArtifacts(workspace, scenario);
+
+    assert.equal(artifacts.parseErrors, 1);
+    assert.equal(artifacts.hookEvents.length, 1);
+  });
+
+  it('does not execute an agent-planted diff.external or core.fsmonitor hook', () => {
+    const workspace = mkdtempSync(join(tmpdir(), 'collect-ws-'));
+    const scenario = mkdtempSync(join(tmpdir(), 'collect-scn-'));
+    const marker = join(workspace, 'marker.txt');
+    const hookScript = join(workspace, 'evil-hook.sh');
+    writeFileSync(hookScript, `#!/bin/sh\necho pwned > "${marker}"\n`, { mode: 0o755 });
+
+    git(workspace, ['init', '-q']);
+    git(workspace, ['config', 'user.email', 'test@example.com']);
+    git(workspace, ['config', 'user.name', 'Test']);
+    writeFileSync(join(workspace, 'file.txt'), 'original\n');
+    git(workspace, ['add', '.']);
+    git(workspace, ['commit', '-q', '-m', 'init']);
+    git(workspace, ['config', 'diff.external', hookScript]);
+    git(workspace, ['config', 'core.fsmonitor', hookScript]);
+    writeFileSync(join(workspace, 'file.txt'), 'changed\n');
+
+    collectArtifacts(workspace, scenario);
+
+    assert.equal(existsSync(marker), false);
+  });
+
+  it('propagates a failing workspace diff instead of treating it as empty', () => {
+    const workspace = mkdtempSync(join(tmpdir(), 'collect-ws-'));
+    const scenario = mkdtempSync(join(tmpdir(), 'collect-scn-'));
+    // A .git that is not a real repository makes `git diff` fail non-zero.
+    mkdirSync(join(workspace, '.git'));
+
+    assert.throws(() => collectArtifacts(workspace, scenario), /collect-artifacts.*exited/);
   });
 });
 
