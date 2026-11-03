@@ -33,6 +33,10 @@ jobs:
       # Root package only: evals/ and website/ deps are ~1800 packages these checks never load.
       - run: pnpm install --frozen-lockfile --filter lessons-learned
 
+      # Trial-sandbox tests assert PATH-stub resolution under a login zsh (the shell macOS
+      # agents and nix-darwin reset PATH in), which ubuntu-latest does not ship by default.
+      - run: sudo apt-get update && sudo apt-get install -y zsh
+
       - run: pnpm run format:check
 
       - run: pnpm run lint --format=github
