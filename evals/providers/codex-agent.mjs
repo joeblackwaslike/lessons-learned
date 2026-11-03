@@ -67,7 +67,7 @@ import {
   ensureRealDir,
   materializeWorkspace,
   restoreHookLogs,
-  runVerify,
+  tryVerify,
   writeRegularFile,
 } from '../lib/agent-workspace.mjs';
 
@@ -224,7 +224,9 @@ async function runArm({
       '--',
       prompt,
     ];
-    const spawn = sandboxCommand(sandbox, codexBin, codexArgs);
+    const spawn = sandboxCommand(sandbox, codexBin, codexArgs, [], {
+      selfConfined: !outerSandbox,
+    });
     const before = snapshotWatchPaths();
     let run;
     let authWriteBack;
@@ -246,14 +248,16 @@ async function runArm({
 
     const events = parseEvents(run.stdout);
     const output = scrub(lastAgentMessage(events));
-    writeFileSync(join(sandbox.logDir, 'hook-events.ndjson'), toHookEvents(events));
-    writeFileSync(join(sandbox.logDir, 'tool-calls.jsonl'), toToolCallLog(events));
+    // The agent could write to the log dir, so it may have swapped it or its files for symlinks.
+    ensureRealDir(sandbox.logDir);
+    writeRegularFile(join(sandbox.logDir, 'hook-events.ndjson'), toHookEvents(events));
+    writeRegularFile(join(sandbox.logDir, 'tool-calls.jsonl'), toToolCallLog(events));
     const evalMetaDir = join(workspaceDir, '.eval');
     ensureRealDir(evalMetaDir);
     writeRegularFile(join(evalMetaDir, 'agent-output.txt'), output);
     restoreHookLogs(sandbox.logDir, evalMetaDir);
 
-    const hiddenCheck = runVerify(scenarioDir, workspaceDir);
+    const { hiddenCheck, verifyError } = tryVerify(scenarioDir, workspaceDir);
     let artifacts = {};
     let collectionError = null;
     try {
@@ -261,9 +265,10 @@ async function runArm({
     } catch (err) {
       collectionError = err.message;
     }
+    const infraError = verifyError ?? collectionError;
     const toolCalls = (artifacts.trajectory ?? []).filter(e => e.type === 'PreToolUse').length;
     const reason =
-      collectionError ??
+      infraError ??
       trialErrorReason({
         agent: 'codex',
         exitCode: run.status,
@@ -276,7 +281,7 @@ async function runArm({
         outsideChanges,
         forbiddenCalls,
       });
-    const eventError = collectionError ? null : codexEventError(events);
+    const eventError = infraError ? null : codexEventError(events);
     const error = reason && eventError ? `${reason} (${eventError})` : (reason ?? eventError);
 
     return scrub({

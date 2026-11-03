@@ -77,15 +77,16 @@ export function tryArmCache(cacheFile, isControl, controlTranscriptFile) {
 }
 
 /**
- * Whether an arm result is safe to cache: never a trial error, and never a treatment whose
- * judge result is incomplete (SKIP — control not yet run — or a judge exception), since
- * caching either would permanently freeze an un-graded or mis-graded result.
+ * Whether an arm result is safe to cache: never a trial error, never a treatment whose
+ * judge result is incomplete (SKIP — control not yet run — or a judge exception), and never
+ * a lesson treatment with no judge result (lesson injection failed), since assert-judge
+ * needs one and caching would permanently freeze an un-graded or mis-graded result.
  */
 export function isCacheableArmResult(armResult) {
   if (armResult.error) return false;
   const judgeResult = armResult.metadata?.judgeResult;
-  if (judgeResult && (judgeResult.outcome === 'SKIP' || judgeResult.error === true)) return false;
-  return true;
+  if (!judgeResult) return armResult.metadata?.intervention?.type !== 'lesson';
+  return judgeResult.outcome !== 'SKIP' && judgeResult.error !== true;
 }
 
 /** Best-effort write of a control arm's transcript for the Tier 3 judge. */
@@ -98,13 +99,18 @@ export function writeControlTranscript(controlTranscriptFile, output) {
   }
 }
 
-/** Hash of every file's path, mode, and content under `dir`, skipping `node_modules/` and `.git/`. */
+/**
+ * Hash of every file's path, mode, and content under `dir`, skipping `node_modules/` and
+ * `.git/`. Each field is length-prefixed so distinct trees cannot concatenate to the same bytes.
+ */
 export function hashDir(dir) {
   const hash = createHash('sha256');
   for (const relPath of collectFiles(dir).sort()) {
-    hash.update(relPath);
-    hash.update(statSync(join(dir, relPath)).mode.toString(8));
-    hash.update(readFileSync(join(dir, relPath)));
+    const path = join(dir, relPath);
+    for (const field of [relPath, statSync(path).mode.toString(8), readFileSync(path)]) {
+      const bytes = Buffer.from(field);
+      hash.update(`${bytes.length}:`).update(bytes);
+    }
   }
   return hash.digest('hex');
 }

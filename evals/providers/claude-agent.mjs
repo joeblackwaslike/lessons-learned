@@ -63,7 +63,7 @@ import {
   materializeWorkspace,
   readToolCallLog,
   restoreHookLogs,
-  runVerify,
+  tryVerify,
   writeRegularFile,
 } from '../lib/agent-workspace.mjs';
 
@@ -262,7 +262,7 @@ async function runArm({
     writeRegularFile(join(evalMetaDir, 'agent-output.txt'), output);
     restoreHookLogs(sandbox.logDir, evalMetaDir);
 
-    const hiddenCheck = runVerify(scenarioDir, workspaceDir);
+    const { hiddenCheck, verifyError } = tryVerify(scenarioDir, workspaceDir);
     let artifacts = {};
     let collectionError = null;
     try {
@@ -272,6 +272,7 @@ async function runArm({
     }
     const toolCalls = (artifacts.trajectory ?? []).filter(e => e.type === 'PreToolUse').length;
     const error =
+      verifyError ??
       collectionError ??
       trialErrorReason({
         exitCode: claudeResult.status,

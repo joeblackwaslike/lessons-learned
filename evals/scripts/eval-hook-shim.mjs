@@ -27,7 +27,8 @@ try {
 if (event.tool_name) {
   // event.cwd is the agent's working directory (the workspace); fall back to process.cwd()
   const workspaceDir = event.cwd || process.cwd();
-  // The provider points EVAL_LOG_DIR outside the workspace so the agent cannot erase the log.
+  // The provider points EVAL_LOG_DIR outside the workspace so a `git clean` there keeps the
+  // log. The agent can still write to it, so the log is not tamper-proof.
   const evalDir = process.env.EVAL_LOG_DIR || join(workspaceDir, '.eval');
   mkdirSync(evalDir, { recursive: true });
 

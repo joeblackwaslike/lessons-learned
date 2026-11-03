@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import assertTrajectory from '../../../evals/scripts/assert-trajectory.mjs';
-import { useTrialHarness } from '../../helpers/fake-claude.mjs';
+import { sandboxExecUsable, useTrialHarness } from '../../helpers/fake-claude.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const MATERIALIZE = join(root, 'evals', 'scripts', 'materialize-workspace.mjs');
@@ -19,6 +19,7 @@ describe('independent trials', () => {
     for (let i = 0; i < 30; i++)
       results.push(await h.call({ trialId: `trial-${i}`, noCache: true }));
     assert.equal(h.runs().length, 30);
+    assert.equal(new Set(h.runs().map(run => dirname(run.home))).size, 30);
     assert.ok(results.every(r => r.metadata.cacheHit === false));
     assert.equal(new Set(results.map(r => r.metadata.cacheKey)).size, 30);
     assert.ok(
@@ -150,7 +151,7 @@ describe('trial sandbox', () => {
 
   it(
     'on macOS the write sandbox blocks writes under the real home',
-    { skip: process.platform !== 'darwin' },
+    { skip: !sandboxExecUsable && 'sandbox-exec is missing or unusable here' },
     async () => {
       h.useFakeClaude({ FAKE_CLAUDE_RUN: 'touch "$FAKE_REAL_HOME/.claude/settings.json.new"' });
       const r = await h.call({ trialId: 'trial-j', noCache: true });
@@ -187,6 +188,54 @@ describe('trial errors', () => {
     assert.match(r.error, /usage limit|API/i);
     const again = await h.call({ trialId: 'trial-n' });
     assert.equal(again.metadata.cacheHit, false);
+  });
+});
+
+describe('unconfined runs', () => {
+  it('without sandbox-exec, a permission-skipping claude run throws unless EVAL_ALLOW_UNSANDBOXED=1', async () => {
+    process.env.EVAL_SANDBOX_EXEC = '0';
+    delete process.env.EVAL_ALLOW_UNSANDBOXED;
+    h.useFakeClaude();
+    await assert.rejects(h.call({ trialId: 'trial-u', noCache: true }), /EVAL_ALLOW_UNSANDBOXED/);
+    assert.equal(h.runs().length, 0);
+  });
+});
+
+describe('infrastructure errors', () => {
+  it('a hidden check that cannot run is a trial error, not a thrown call, and is not cached', async () => {
+    // Over spawnSync's 1 MB buffer, so runVerify throws ENOBUFS.
+    h.writeFile(
+      join(h.scenarioDir, 'hidden-checks', 'verify.mjs'),
+      "process.stdout.write('x'.repeat(2 * 1024 * 1024));\n"
+    );
+    h.useFakeClaude();
+    const r = await h.call({ trialId: 'trial-v' });
+    assert.match(r.error, /verify/);
+    assert.equal(
+      existsSync(join(process.env.EVAL_CACHE_DIR, `${r.metadata.cacheKey}.json`)),
+      false
+    );
+  });
+
+  it('a judge that throws leaves the treatment uncached', async () => {
+    h.useFakeClaude({ FAKE_CLAUDE_OUTPUT: 'control-j' });
+    await h.call({ trialId: 'trial-judge', noCache: true });
+    const overlay = join(h.base, 'overlay');
+    h.writeFile(join(overlay, 'CLAUDE.md'), 'rule');
+    // The judge's `claude -p` call prints nothing, so callClaude rejects.
+    h.useFakeClaude({ FAKE_CLAUDE_OUTPUT: 'treatment-j', FAKE_CLAUDE_JUDGE_OUTPUT: '' });
+    const lesson = { summary: 's', problem: 'p', solution: 'x' };
+    const r = await h.call({
+      trialId: 'trial-judge',
+      intervention: { type: 'overlay', dir: overlay },
+      lessonSnapshot: JSON.stringify(lesson),
+    });
+    assert.equal(r.error, undefined, r.error);
+    assert.equal(r.metadata.judgeResult.error, true, JSON.stringify(r.metadata.judgeResult));
+    assert.equal(
+      existsSync(join(process.env.EVAL_CACHE_DIR, `${r.metadata.cacheKey}.json`)),
+      false
+    );
   });
 });
 

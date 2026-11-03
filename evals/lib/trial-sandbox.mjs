@@ -171,10 +171,20 @@ export function sandboxExecEnabled() {
 
 /**
  * The command and args to spawn `bin args` with. When `sandboxExecEnabled()` this wraps it
- * in `sandbox-exec` with the profile from `sandboxProfile`.
+ * in `sandbox-exec` with the profile from `sandboxProfile`. Otherwise it throws, so a
+ * permission-skipping agent never runs without OS confinement, unless `selfConfined` (the
+ * agent applies its own sandbox) or `EVAL_ALLOW_UNSANDBOXED=1`.
  */
-export function sandboxCommand(sb, bin, args, extraWritable = []) {
-  if (!sandboxExecEnabled()) return { command: bin, args };
+export function sandboxCommand(sb, bin, args, extraWritable = [], { selfConfined = false } = {}) {
+  if (!sandboxExecEnabled()) {
+    if (!selfConfined && process.env.EVAL_ALLOW_UNSANDBOXED !== '1') {
+      throw new Error(
+        `sandbox-exec is unavailable or EVAL_SANDBOX_EXEC=0, so ${bin} would run with ` +
+          'permissions skipped and no OS confinement; set EVAL_ALLOW_UNSANDBOXED=1 to run it anyway'
+      );
+    }
+    return { command: bin, args };
+  }
   return {
     command: '/usr/bin/sandbox-exec',
     args: ['-p', sandboxProfile(sb, extraWritable), bin, ...args],

@@ -6,6 +6,13 @@ if [ "$1" = "--version" ]; then
   echo "${FAKE_CLAUDE_VERSION:-9.9.9} (Fake)"
   exit 0
 fi
+# The judge's single-shot `claude -p --tools ""` call (evals/lib/claude-spawn.mjs).
+for a in "$@"; do
+  if [ "$a" = "--tools" ]; then
+    printf '%s\n' "${FAKE_CLAUDE_JUDGE_OUTPUT-}"
+    exit 0
+  fi
+done
 if [ -n "$FAKE_CLAUDE_LOG" ]; then
   printf 'home=%s\tpath0=%s\ttmpdir=%s\ttoken=%s\targs=%s\n' \
     "$HOME" "${PATH%%:*}" "$TMPDIR" "${CLAUDE_CODE_OAUTH_TOKEN:+set}" \

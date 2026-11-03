@@ -140,14 +140,22 @@ What each trial gets:
   sockets under the real home (this covers OrbStack's Docker socket) or matching
   `/var/run/*.sock`, to any localhost port (e.g. the Dolt server on 3308), and to TCP ports
   22 (SSH) and 9418 (`git://`). HTTPS to the internet stays open; the CLI needs it.
+  Without `sandbox-exec` (off macOS, or `EVAL_SANDBOX_EXEC=0`) the Claude provider throws
+  instead of running, because it passes `--dangerously-skip-permissions` and nothing else
+  would confine it; set `EVAL_ALLOW_UNSANDBOXED=1` to run it unconfined anyway. Codex needs
+  no opt-in: without `sandbox-exec` it runs under its own `--sandbox workspace-write`.
 - A before/after snapshot of `~/github` (top-level names), `~/.claude/settings.json`,
   `~/.claude/CLAUDE.md`, `~/Library/Application Support/Claude/claude_desktop_config.json`,
   and `~/.codex/config.toml`.
 - Hook logs (`hook-events.ndjson`, `tool-calls.jsonl`) written to `EVAL_LOG_DIR` in the trial
   root, outside the workspace, then copied over the workspace's `.eval/` before artifacts are
-  collected. Clearing or forging `.eval/` in the workspace changes nothing.
+  collected. Clearing or forging `.eval/` in the workspace (a `git clean -fdx`, say) changes
+  nothing. The logs are not tamper-proof: `EVAL_LOG_DIR` is in the agent's env and inside the
+  writable trial root, so a hostile agent can delete or forge entries there. The trajectory
+  tiers assume a cooperative agent under test.
 - The agent runs in its own process group. On timeout or when output passes 10 MB, the
-  whole group gets SIGTERM, then SIGKILL; leftovers are killed when the CLI exits.
+  whole group gets SIGTERM, then SIGKILL; leftovers are killed when the CLI exits. A
+  descendant that calls `setsid()` leaves the group, so neither kill reaches it.
 
 What it does not stop:
 
@@ -158,15 +166,18 @@ What it does not stop:
   network for the commands it runs, but macOS cannot nest that seatbelt inside this one, so
   under `sandbox-exec` Codex runs with its sandbox bypassed and its commands get the same
   open network as Claude's. Real `git` or `gh` called by absolute path, `curl`, or `npm` can
-  reach the network; the stubs only catch what resolves through `PATH`. They have no
-  credentials to push with, since the credential files and the Keychain are unreadable and
-  the temp home has no git or gh config.
+  reach the network; the stubs only catch what resolves through `PATH`. Under macOS
+  `sandbox-exec` they have no credentials to push with, since the credential files and the
+  Keychain are unreadable and the temp home has no git or gh config. Without `sandbox-exec`
+  the read denies are gone, so a command that names a credential file by its real path can
+  read it.
 - IPC that `(allow default)` leaves open: `defaults write` (via cfprefsd, which writes the
   real `~/Library/Preferences`), `launchctl`, `osascript` and other Apple Events, pasteboard,
   and other mach services. These act through daemons outside the sandbox, so a trial using
   them can change the real machine without tripping the write deny or the snapshot.
 - Connections to this machine's non-loopback addresses.
-- Off macOS there is no `sandbox-exec`: only the temp home, the stubs, and the snapshot.
+- Off macOS there is no `sandbox-exec`: only the temp home, the stubs, and the snapshot (plus
+  Codex's own sandbox; Claude runs only with `EVAL_ALLOW_UNSANDBOXED=1`).
 
 Scenarios whose mistake is a push or a PR set `"sandbox": { "simulateRemote": true }` in
 `scenario.json`. The stubs then succeed with canned output (a PR create prints a fake PR
@@ -175,30 +186,44 @@ URL, `git push` says `Everything up-to-date`) and the calls land in
 `trajectoryAssertions` or `verify.mjs` decide whether the mistake happened. Seeds must not
 contain remote URLs.
 
-The agent authenticates with `CLAUDE_CODE_OAUTH_TOKEN`. When that variable is unset, the
-provider reads the access token of your `claude login` from the macOS Keychain (or
+The Claude agent authenticates with `CLAUDE_CODE_OAUTH_TOKEN`. When that variable is unset,
+the Claude provider reads the access token of your `claude login` from the macOS Keychain (or
 `~/.claude/.credentials.json`) and passes only that token, never the refresh token. A token
 that expires within the trial timeout plus two minutes (at least five minutes) stops the run;
 start any `claude` session to refresh it, or export a long-lived token from
 `claude setup-token`. The token is in the agent's environment, so a tool call can print it;
 the provider replaces it with `[REDACTED]` in everything it returns or caches.
 
-The provider returns `error` (an ERROR row in promptfoo, never cached) when `claude` exits
+Codex authenticates with a 0600 copy of `~/.codex/auth.json` in a temp `CODEX_HOME`; under
+`sandbox-exec`, reads of the real file are denied. A token Codex refreshes during the trial is written
+back to the real file only if that file is unchanged and the copy is valid JSON with a
+refresh token. Old and new tokens are redacted.
+
+Either provider returns `error` (an ERROR row in promptfoo, never cached) when the CLI exits
 non-zero, times out, overflows its output buffer, prints a usage-limit or API error, changes
-a watched path, makes a refused `gh`/`git` call, or produces no output and no tool calls. For
-statistical trials (`vars.trialId` set), a run with zero tool calls is an error too, unless
-`scenario.json` sets `"allowNoToolCalls": true`.
+a watched path, makes a refused `gh`/`git` call, produces no output and no tool calls, or
+when the hidden check or artifact collection cannot run. A Claude run with zero tool calls
+is an error only for statistical trials (`vars.trialId` set); a Codex run with zero tool
+calls is always an error. Either way `scenario.json` can set `"allowNoToolCalls": true`.
 
 ## Cache Behavior
 
-| Cache file                                 | Key                                                                                            | Purpose                                                                     |
-| ------------------------------------------ | ---------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| `results/cache/{cacheKey}.json`            | `sha256(scenarioHash + model + interventionJson + lessonContentHash + cliVersion [+ trialId])` | Full arm result; treatment arms re-run when lesson problem/solution changes |
-| `results/cache/control-{controlHash}.json` | `sha256(scenarioId + model + requiresSignature + cliVersion)`                                  | Control transcript; reused by all lessons sharing the same trigger prompt   |
+| Cache file                                               | Key                                                                                                                          | Purpose                                                                     |
+| -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| `results/cache/{cacheKey}.json` (both providers)         | `sha256(scenario dir contents + model + intervention + prompt [+ lessonContentHash] [+ signature] + cliVersion [+ trialId])` | Full arm result; treatment arms re-run when lesson problem/solution changes |
+| `results/cache/control-{controlHash}.json` (Claude only) | `sha256(scenario dir contents + scenarioId + model + requiresSignature + prompt + cliVersion [+ trialId])`                   | Control transcript the Tier 3 judge compares a treatment against            |
 
-Overlay interventions also hash the overlay dir's files (paths, modes, content; an overlay
-containing a symlink is rejected). `vars.noCache: true` (or `EVAL_NO_CACHE=1`) skips the cache
-and the control-transcript write for statistical trials; `EVAL_CACHE_DIR` moves the cache.
+"Scenario dir contents" is every file's path, mode, and content under the scenario dir
+(`node_modules/` and `.git/` skipped). The signature is the lesson's resolved `requires`
+set for Claude (plus `:mcp=none` for a treatment without Serena) and
+`agent=codex;sandbox=bypassed|workspace-write` for Codex. Codex has no lessons, so its key
+never has a lessonContentHash, and it writes no control transcript. Overlay interventions
+also hash the overlay dir's files (an overlay containing a symlink is rejected).
+
+`vars.noCache: true` (or `EVAL_NO_CACHE=1`) skips the arm-result cache, read and write. A
+Claude control under noCache still writes its control transcript, so its treatment can be
+judged. `EVAL_CACHE_DIR` moves the cache. A treatment whose judge did not grade it (SKIP, a
+judge error, or a lesson arm with no lesson snapshot) is never cached.
 
 Clear all caches: `npm run eval:clean`
 

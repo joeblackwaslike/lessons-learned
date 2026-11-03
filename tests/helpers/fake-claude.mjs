@@ -1,10 +1,12 @@
 import { beforeEach, afterEach } from 'node:test';
+import { spawnSync } from 'node:child_process';
 import {
   chmodSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  rmSync,
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -38,9 +40,16 @@ const ENV_KEYS = [
   'EVAL_NO_CACHE',
   'EVAL_SANDBOX_EXEC',
   'EVAL_SANDBOX_WRITABLE',
+  'EVAL_ALLOW_UNSANDBOXED',
   'CLAUDE_CODE_OAUTH_TOKEN',
   'LESSONS_DATA_DIR',
 ];
+
+/** Whether sandbox-exec exists and can apply a profile here (it cannot inside another seatbelt). */
+export const sandboxExecUsable =
+  process.platform === 'darwin' &&
+  spawnSync('/usr/bin/sandbox-exec', ['-p', '(version 1)(allow default)', '/usr/bin/true'])
+    .status === 0;
 
 /**
  * Write an executable `claude` into `dir` that exports `env` and runs the fake-claude
@@ -110,6 +119,8 @@ export function useTrialHarness() {
     process.env.LESSONS_DATA_DIR = emptyData;
     // The fakes log their runs here from inside the sandbox-exec profile.
     process.env.EVAL_SANDBOX_WRITABLE = writable;
+    // Off macOS, or with EVAL_SANDBOX_EXEC=0, the fake claude runs unconfined.
+    process.env.EVAL_ALLOW_UNSANDBOXED = '1';
     delete process.env.EVAL_NO_CACHE;
     delete process.env.EVAL_CODEX_MODEL;
     delete process.env.EVAL_SANDBOX_EXEC;
@@ -120,6 +131,7 @@ export function useTrialHarness() {
       if (v === undefined) delete process.env[k];
       else process.env[k] = v;
     }
+    rmSync(h.base, { recursive: true, force: true });
   });
 
   h.writeFile = writeFile;

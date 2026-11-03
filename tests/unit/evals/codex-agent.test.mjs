@@ -155,6 +155,30 @@ describe('codex provider', () => {
     assert.equal(verdict.pass, false, verdict.reason);
   });
 
+  it('a quoted command reaches the trajectory intact', async () => {
+    const command = `echo "it's done" | grep 'done'`;
+    h.useFakeCodex({ FAKE_CODEX_COMMAND: command });
+    const r = await h.callCodex({ trialId: 'q1', noCache: true });
+    assert.equal(r.error, undefined, r.error);
+    assert.equal(r.metadata.toolCalls, 1);
+    assert.equal(r.metadata.artifacts.trajectory[0].command, command);
+  });
+
+  it('a hidden check that cannot run is a trial error, not a thrown call, and is not cached', async () => {
+    // Over spawnSync's 1 MB buffer, so runVerify throws ENOBUFS.
+    h.writeFile(
+      join(h.scenarioDir, 'hidden-checks', 'verify.mjs'),
+      "process.stdout.write('x'.repeat(2 * 1024 * 1024));\n"
+    );
+    h.useFakeCodex();
+    const r = await h.callCodex({ trialId: 'v1' });
+    assert.match(r.error, /verify/);
+    assert.equal(
+      existsSync(join(process.env.EVAL_CACHE_DIR, `${r.metadata.cacheKey}.json`)),
+      false
+    );
+  });
+
   it('the trial root is removed after a failed trial', async () => {
     h.useFakeCodex({ FAKE_CODEX_EXIT: '1' });
     const r = await h.callCodex({ trialId: 'g1', noCache: true });
@@ -231,6 +255,38 @@ describe('codex sandbox', () => {
     }
     assert.match(inner, /--sandbox workspace-write/);
     assert.doesNotMatch(inner, /--dangerously-bypass-approvals-and-sandbox/);
+  });
+
+  it('without sandbox-exec, codex runs confined by its own sandbox and needs no opt-in', async () => {
+    process.env.EVAL_SANDBOX_EXEC = '0';
+    delete process.env.EVAL_ALLOW_UNSANDBOXED;
+    h.useFakeCodex();
+    const r = await h.callCodex({ noCache: true });
+    assert.equal(r.error, undefined, r.error);
+    assert.match(h.runs()[0].args, /--sandbox workspace-write/);
+  });
+
+  it('log writes do not follow a symlink the agent planted at a log file', async () => {
+    const target = join(h.base, 'target.txt');
+    h.writeFile(target, 'original');
+    h.useFakeCodex({
+      FAKE_CODEX_RUN: `ln -sf '${target}' "$EVAL_LOG_DIR/hook-events.ndjson"; ln -sf '${target}' "$EVAL_LOG_DIR/tool-calls.jsonl"`,
+    });
+    const r = await h.callCodex({ trialId: 'l1', noCache: true });
+    assert.equal(readFileSync(target, 'utf8'), 'original');
+    assert.equal(r.metadata.toolCalls, 1, r.error);
+  });
+
+  it('log writes do not follow the log dir replaced by a symlink', async () => {
+    const targetDir = join(h.base, 'target-dir');
+    h.writeFile(join(targetDir, 'hook-events.ndjson'), 'original');
+    h.useFakeCodex({
+      FAKE_CODEX_RUN: `rm -rf "$EVAL_LOG_DIR"; ln -s '${targetDir}' "$EVAL_LOG_DIR"`,
+    });
+    const r = await h.callCodex({ trialId: 'l2', noCache: true });
+    assert.equal(readFileSync(join(targetDir, 'hook-events.ndjson'), 'utf8'), 'original');
+    assert.deepEqual(readdirSync(targetDir), ['hook-events.ndjson']);
+    assert.equal(r.metadata.toolCalls, 1, r.error);
   });
 
   it('the agent cannot read the real auth.json', darwinOnly, async () => {

@@ -104,9 +104,10 @@ export function buildEnv(workspaceDir, scenarioEnv, sandboxKeys) {
 }
 
 /**
- * Hook logs are written to the trial's eval-log dir, outside the workspace, so the agent
- * cannot erase (`git clean -fdx`) or forge them. Copy those logs over whatever the
- * workspace's .eval holds before artifacts are collected.
+ * Hook logs are written to the trial's eval-log dir, outside the workspace, so clearing or
+ * forging the workspace's .eval (`git clean -fdx`) does not change them. Copy those logs
+ * over whatever the workspace's .eval holds before artifacts are collected. The eval-log dir
+ * is agent-writable too, so this is not tamper-proof against a hostile agent.
  */
 export function restoreHookLogs(logDir, evalMetaDir) {
   for (const name of ['hook-events.ndjson', 'tool-calls.jsonl']) {
@@ -135,6 +136,21 @@ export function runVerify(scenarioDir, workspaceDir) {
     exitCode: result.status,
     skipped: false,
   };
+}
+
+/**
+ * `runVerify`, with an infrastructure failure (the check could not run) returned as
+ * `verifyError` so the caller marks the trial an error, never cached, instead of throwing.
+ */
+export function tryVerify(scenarioDir, workspaceDir) {
+  try {
+    return { hiddenCheck: runVerify(scenarioDir, workspaceDir), verifyError: null };
+  } catch (err) {
+    return {
+      hiddenCheck: { pass: false, details: err.message, skipped: false },
+      verifyError: err.message,
+    };
+  }
 }
 
 /**

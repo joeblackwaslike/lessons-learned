@@ -1,6 +1,13 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
+import {
+  chmodSync,
+  mkdtempSync,
+  mkdirSync,
+  writeFileSync,
+  readFileSync,
+  existsSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
@@ -80,7 +87,22 @@ describe('computeCacheKey', () => {
     const before = hashDir(dir);
     mkdirSync(join(dir, 'node_modules'));
     writeFileSync(join(dir, 'node_modules', 'x.js'), 'x');
+    mkdirSync(join(dir, '.git'));
+    writeFileSync(join(dir, '.git', 'HEAD'), 'ref: refs/heads/main\n');
     assert.equal(hashDir(dir), before);
+  });
+
+  it('hashDir tells apart trees whose path, mode, and content bytes concatenate the same', () => {
+    const tree = files => {
+      const dir = mkdtempSync(join(tmpdir(), 'arm-cache-frame-'));
+      for (const [name, content] of Object.entries(files)) {
+        writeFileSync(join(dir, name), content);
+        chmodSync(join(dir, name), 0o644);
+      }
+      return dir;
+    };
+    // "a" + "100644" + "b100644c" vs "a" + "100644" + "" + "b" + "100644" + "c"
+    assert.notEqual(hashDir(tree({ a: 'b100644c' })), hashDir(tree({ a: '', b: 'c' })));
   });
 });
 
@@ -93,11 +115,16 @@ describe('isCacheableArmResult', () => {
     assert.equal(isCacheableArmResult({ metadata: { judgeResult: { outcome: 'SKIP' } } }), false);
   });
 
-  it('is false for a judge exception', () => {
+  it('is false for a judge exception, whatever outcome it carries', () => {
     assert.equal(
-      isCacheableArmResult({ metadata: { judgeResult: { outcome: 'SKIP', error: true } } }),
+      isCacheableArmResult({ metadata: { judgeResult: { outcome: 'FAIL', error: true } } }),
       false
     );
+  });
+
+  it('is false for a lesson treatment that has no judge result', () => {
+    const intervention = { type: 'lesson', ids: ['some-lesson'] };
+    assert.equal(isCacheableArmResult({ metadata: { intervention } }), false);
   });
 
   it('is true for a clean result with no judge', () => {
