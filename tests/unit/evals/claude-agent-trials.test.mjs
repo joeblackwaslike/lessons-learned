@@ -100,6 +100,19 @@ describe('mcp cache separation', () => {
     const r = await h.call({ trialId: 'trial-o', intervention, mcp: 'none' });
     assert.equal(r.metadata.cacheHit, false);
   });
+
+  it('a treatment arm with vars.mcp "none" shares its controlHash with the control arm', async () => {
+    h.useFakeClaude();
+    const overlay = join(h.base, 'overlay');
+    h.writeFile(join(overlay, 'CLAUDE.md'), 'rule');
+    const control = await h.call({ trialId: 'trial-q' });
+    const treatment = await h.call({
+      trialId: 'trial-q',
+      intervention: { type: 'overlay', dir: overlay },
+      mcp: 'none',
+    });
+    assert.equal(control.metadata.controlHash, treatment.metadata.controlHash);
+  });
 });
 
 describe('confinement cache separation', () => {

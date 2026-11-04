@@ -127,15 +127,16 @@ export default class ClaudeAgentProvider {
     const keySignature =
       (!isControl && !useSerena ? `${requiresSignature}:mcp=none` : requiresSignature) +
       `:os=${confinement}`;
+    // Independent of isControl/useSerena so a control run and the treatment arm paired
+    // against it compute the same hash — only requires + confinement identify the transcript.
+    const controlSignature = `${requiresSignature}:os=${confinement}`;
     // Derived from scenario content + trialId, not the arm's own cacheKey, so a control
     // and its treatment (which differ in intervention) still land on the same transcript.
-    // keySignature (not raw requiresSignature) so confined and unconfined runs of the same
-    // scenario don't share a control transcript — see cacheKey below for the same reasoning.
     const controlHash = computeControlHash(
       scenarioDir,
       scenarioId,
       model,
-      keySignature,
+      controlSignature,
       trial.cliVersion,
       trial.trialId,
       prompt
