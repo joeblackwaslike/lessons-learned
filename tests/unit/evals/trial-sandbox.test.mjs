@@ -353,6 +353,20 @@ describe('trial evidence', () => {
     assert.match(logged, /"type":"PARSE_ERROR"/);
   });
 
+  for (const stdin of ['{}', '[]']) {
+    it(`the hook shim records a PARSE_ERROR for structurally invalid stdin ${stdin}`, () => {
+      const logDir = join(h.base, `eval-log-invalid-${stdin.replace(/\W/g, '')}`);
+      const run = spawnSync(process.execPath, [HOOK_SHIM], {
+        input: stdin,
+        env: { ...process.env, EVAL_LOG_DIR: logDir },
+        encoding: 'utf8',
+      });
+      assert.equal(run.status, 0, run.stderr);
+      const logged = readFileSync(join(logDir, 'hook-events.ndjson'), 'utf8');
+      assert.match(logged, /"type":"PARSE_ERROR"/);
+    });
+  }
+
   it('a malformed hook event is surfaced as an error instead of a silent gap', async () => {
     h.useFakeClaude({
       FAKE_CLAUDE_RUN:

@@ -20,8 +20,11 @@ try {
 let event = {};
 try {
   const parsed = JSON.parse(raw);
-  if (parsed === null || typeof parsed !== 'object') {
+  if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
     throw new Error(`parsed event is not an object: ${typeof parsed}`);
+  }
+  if (typeof parsed.tool_name !== 'string' || parsed.tool_name === '') {
+    throw new Error('parsed event is missing a nonempty tool_name');
   }
   event = parsed;
 } catch (err) {

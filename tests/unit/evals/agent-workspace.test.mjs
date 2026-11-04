@@ -321,4 +321,22 @@ describe('eval-post-hook-shim', () => {
     const artifacts = collectArtifacts(workspace, scenario);
     assert.ok(artifacts.parseErrors > 0);
   });
+
+  for (const stdin of ['{}', '[]']) {
+    it(`records a PARSE_ERROR for structurally invalid stdin ${stdin}`, () => {
+      const logDir = mkdtempSync(join(tmpdir(), 'post-hook-invalid-'));
+      const result = spawnSync('node', [SHIM], {
+        input: stdin,
+        encoding: 'utf8',
+        env: { ...process.env, EVAL_LOG_DIR: logDir },
+      });
+
+      assert.equal(result.status, 0);
+      assert.equal(result.stdout, '{}');
+      const logPath = join(logDir, 'tool-calls.jsonl');
+      assert.ok(existsSync(logPath));
+      const record = JSON.parse(readFileSync(logPath, 'utf8').trim());
+      assert.equal(record.type, 'PARSE_ERROR');
+    });
+  }
 });
