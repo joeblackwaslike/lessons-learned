@@ -48,20 +48,22 @@ export function computeCacheKey(
     type: intervention.type ?? 'none',
     ids: [...(intervention.ids ?? [])].sort((a, b) => a.localeCompare(b)),
   };
-  const hash = createHash('sha256')
-    .update(hashDir(scenarioDir))
-    .update(':')
-    .update(model)
-    .update(':')
-    .update(JSON.stringify(sortedIntervention))
-    .update(':prompt=')
-    .update(prompt ?? '');
-  if (intervention.type === 'overlay') hash.update(':overlay=').update(hashDir(intervention.dir));
-  if (lessonContentHash) hash.update(':').update(lessonContentHash);
-  if (requiresSignature) hash.update(':').update(requiresSignature);
-  hash.update(':cli=').update(trial.cliVersion ?? '');
-  if (trial.trialId !== undefined && trial.trialId !== null)
-    hash.update(':trial=').update(String(trial.trialId));
+  const hash = createHash('sha256');
+  const fields = [
+    hashDir(scenarioDir),
+    model,
+    JSON.stringify(sortedIntervention),
+    prompt ?? '',
+    intervention.type === 'overlay' ? hashDir(intervention.dir) : '',
+    lessonContentHash ?? '',
+    requiresSignature ?? '',
+    trial.cliVersion ?? '',
+    trial.trialId !== undefined && trial.trialId !== null ? String(trial.trialId) : '',
+  ];
+  for (const field of fields) {
+    const bytes = Buffer.from(field);
+    hash.update(`${bytes.length}:`).update(bytes);
+  }
   return hash.digest('hex');
 }
 

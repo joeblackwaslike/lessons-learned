@@ -84,6 +84,18 @@ describe('computeCacheKey', () => {
     assert.notEqual(a, b);
   });
 
+  it('variable-length fields do not collide across a shifted delimiter', () => {
+    const dir = scenario();
+    const trial = { trialId: null, cliVersion: '1' };
+    const a = computeCacheKey(dir, none, 'x:cli=y', null, '', { trialId: null, cliVersion: 'z' });
+    const b = computeCacheKey(dir, none, 'x', null, '', { trialId: null, cliVersion: 'y:cli=z' });
+    assert.notEqual(a, b);
+
+    const c = computeCacheKey(dir, none, 'sonnet', 'same', '', trial);
+    const d = computeCacheKey(dir, none, 'sonnet', null, 'same', trial);
+    assert.notEqual(c, d);
+  });
+
   it('hashDir ignores node_modules and .git', () => {
     const dir = scenario();
     const before = hashDir(dir);

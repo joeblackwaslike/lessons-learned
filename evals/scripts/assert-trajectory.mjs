@@ -28,7 +28,7 @@ const SCENARIOS_DIR = resolve(__dirname, '..', 'scenarios');
 export default function assertTrajectory(output, context) {
   const scenarioId = context.vars?.scenarioId;
   const scenarioDir = context.vars?.scenarioDir;
-  const trajectory = context.providerResponse?.metadata?.artifacts?.trajectory ?? [];
+  const artifacts = context.providerResponse?.metadata?.artifacts;
 
   if (!scenarioId && !scenarioDir) {
     return { pass: true, score: 1, reason: 'No scenarioId — trajectory check skipped' };
@@ -54,6 +54,22 @@ export default function assertTrajectory(output, context) {
   if (assertions.length === 0) {
     return { pass: true, score: 1, reason: 'No trajectory assertions defined for this scenario' };
   }
+
+  if (!Array.isArray(artifacts?.trajectory)) {
+    return {
+      pass: false,
+      score: 0,
+      reason: 'Trajectory assertions are defined but no trajectory artifact was collected — telemetry is missing',
+    };
+  }
+  if (artifacts.parseErrors) {
+    return {
+      pass: false,
+      score: 0,
+      reason: `Trajectory assertions are defined but ${artifacts.parseErrors} telemetry record(s) failed to parse — evidence is incomplete`,
+    };
+  }
+  const trajectory = artifacts.trajectory;
 
   const failures = [];
   const passes = [];
@@ -83,7 +99,12 @@ function evaluate(assertion, trajectory) {
   const label =
     description ?? `${type}: ${[tool, commandMatch, pathMatch].filter(Boolean).join(' ')}`;
 
-  const found = trajectory.some(e => matchesEvent(e, tool, commandMatch, pathMatch));
+  let found;
+  try {
+    found = trajectory.some(e => matchesEvent(e, tool, commandMatch, pathMatch));
+  } catch (err) {
+    return { pass: false, reason: `✗ ${label} — ${err.message}` };
+  }
 
   switch (type) {
     case 'required':
@@ -105,7 +126,16 @@ function evaluate(assertion, trajectory) {
 
 function matchesEvent(event, tool, commandMatch, pathMatch) {
   if (tool && event.tool !== tool) return false;
-  if (commandMatch && !new RegExp(commandMatch, 'i').test(event.command ?? '')) return false;
-  if (pathMatch && !new RegExp(pathMatch, 'i').test(event.path ?? '')) return false;
+  if (commandMatch && !compileRegex('commandMatch', commandMatch).test(event.command ?? ''))
+    return false;
+  if (pathMatch && !compileRegex('pathMatch', pathMatch).test(event.path ?? '')) return false;
   return true;
+}
+
+function compileRegex(field, pattern) {
+  try {
+    return new RegExp(pattern, 'i');
+  } catch (err) {
+    throw new Error(`Invalid ${field} regex "${pattern}" — fix scenario.json (${err.message})`);
+  }
 }
