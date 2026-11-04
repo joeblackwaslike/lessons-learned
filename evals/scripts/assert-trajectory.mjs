@@ -2,7 +2,8 @@
  * assert-trajectory.mjs — Tier 2 Promptfoo JS assertion.
  *
  * Reads the tool-call trajectory from provider metadata artifacts and evaluates
- * declarative assertions defined in the scenario's scenario.json.
+ * declarative assertions defined in the scenario's scenario.json (read from
+ * `vars.scenarioDir` when set, else `evals/scenarios/<scenarioId>`).
  *
  * Assertion types (defined in scenario.json under `trajectoryAssertions`):
  *   required  — a matching event must exist in the trajectory
@@ -26,25 +27,26 @@ const SCENARIOS_DIR = resolve(__dirname, '..', 'scenarios');
 
 export default function assertTrajectory(output, context) {
   const scenarioId = context.vars?.scenarioId;
-  const trajectory = context.providerResponse?.metadata?.artifacts?.trajectory ?? [];
+  const scenarioDir = context.vars?.scenarioDir;
+  const artifacts = context.providerResponse?.metadata?.artifacts;
 
-  if (!scenarioId) {
+  if (!scenarioId && !scenarioDir) {
     return { pass: true, score: 1, reason: 'No scenarioId — trajectory check skipped' };
   }
 
-  const scenarioJsonPath = join(SCENARIOS_DIR, scenarioId, 'scenario.json');
+  const scenarioJsonPath = join(scenarioDir || join(SCENARIOS_DIR, scenarioId), 'scenario.json');
   if (!existsSync(scenarioJsonPath)) {
-    return { pass: true, score: 1, reason: 'No scenario.json — trajectory check skipped' };
+    return { pass: false, score: 0, reason: `scenario.json not found at ${scenarioJsonPath}` };
   }
 
   let scenario;
   try {
     scenario = JSON.parse(readFileSync(scenarioJsonPath, 'utf8'));
-  } catch {
+  } catch (err) {
     return {
-      pass: true,
-      score: 1,
-      reason: 'Could not parse scenario.json — trajectory check skipped',
+      pass: false,
+      score: 0,
+      reason: `Could not parse scenario.json at ${scenarioJsonPath}: ${err.message}`,
     };
   }
 
@@ -52,6 +54,23 @@ export default function assertTrajectory(output, context) {
   if (assertions.length === 0) {
     return { pass: true, score: 1, reason: 'No trajectory assertions defined for this scenario' };
   }
+
+  if (!Array.isArray(artifacts?.trajectory)) {
+    return {
+      pass: false,
+      score: 0,
+      reason:
+        'Trajectory assertions are defined but no trajectory artifact was collected — telemetry is missing',
+    };
+  }
+  if (artifacts.parseErrors) {
+    return {
+      pass: false,
+      score: 0,
+      reason: `Trajectory assertions are defined but ${artifacts.parseErrors} telemetry record(s) failed to parse — evidence is incomplete`,
+    };
+  }
+  const trajectory = artifacts.trajectory;
 
   const failures = [];
   const passes = [];
@@ -81,7 +100,14 @@ function evaluate(assertion, trajectory) {
   const label =
     description ?? `${type}: ${[tool, commandMatch, pathMatch].filter(Boolean).join(' ')}`;
 
-  const found = trajectory.some(e => matchesEvent(e, tool, commandMatch, pathMatch));
+  let found;
+  try {
+    const commandRegex = commandMatch ? compileRegex('commandMatch', commandMatch) : null;
+    const pathRegex = pathMatch ? compileRegex('pathMatch', pathMatch) : null;
+    found = trajectory.some(e => matchesEvent(e, tool, commandRegex, pathRegex));
+  } catch (err) {
+    return { pass: false, reason: `✗ ${label} — ${err.message}` };
+  }
 
   switch (type) {
     case 'required':
@@ -97,13 +123,21 @@ function evaluate(assertion, trajectory) {
         reason: !found ? `✓ ${label}` : `✗ ${label} — found in trajectory but should not be`,
       };
     default:
-      return { pass: true, reason: `[unknown assertion type "${type}" — skipped]` };
+      return { pass: false, reason: `Unknown assertion type "${type}" — fix scenario.json` };
   }
 }
 
-function matchesEvent(event, tool, commandMatch, pathMatch) {
+function matchesEvent(event, tool, commandRegex, pathRegex) {
   if (tool && event.tool !== tool) return false;
-  if (commandMatch && !new RegExp(commandMatch, 'i').test(event.command ?? '')) return false;
-  if (pathMatch && !new RegExp(pathMatch, 'i').test(event.path ?? '')) return false;
+  if (commandRegex && !commandRegex.test(event.command ?? '')) return false;
+  if (pathRegex && !pathRegex.test(event.path ?? '')) return false;
   return true;
+}
+
+function compileRegex(field, pattern) {
+  try {
+    return new RegExp(pattern, 'i');
+  } catch (err) {
+    throw new Error(`Invalid ${field} regex "${pattern}" — fix scenario.json (${err.message})`);
+  }
 }

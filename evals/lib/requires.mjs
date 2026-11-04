@@ -45,7 +45,7 @@ export function resolveLessonRequires(lessonSlug) {
   db.close();
   if (!row?.requires) return { pluginDirs: [], signature: '' };
 
-  const parsed = JSON.parse(row.requires);
+  const parsed = JSON.parse(String(row.requires));
   const alternatives = Array.isArray(parsed) ? parsed : [parsed];
   const errors = [];
   for (const req of alternatives) {

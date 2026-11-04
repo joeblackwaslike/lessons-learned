@@ -9,7 +9,8 @@ evals/
 ├── promptfooconfig.yaml          # Single config: all scenarios + extensions
 ├── justfile                      # just eval-smoke / eval-run / eval-report / eval-clean / ...
 ├── providers/
-│   └── claude-agent.mjs          # Runs Claude Code, writes control transcript, calls Tier 3 judge
+│   ├── claude-agent.mjs          # Runs Claude Code, writes control transcript, calls Tier 3 judge
+│   └── codex-agent.mjs           # Runs Codex CLI (codex exec --json) in an isolated CODEX_HOME
 ├── tools/
 │   └── mock-serena.mjs           # Mock Serena MCP server for scenarios that need it stubbed
 ├── scripts/
@@ -111,17 +112,124 @@ The judge (`scripts/judge.mjs`) runs inside `claude-agent.mjs` for treatment arm
 **Prerequisites:** `judge.mjs`, `probe-scenario.mjs`, `gen-regression-traps.mjs`,
 `generate-scenarios.mjs`, and `repair-judge-errors.mjs` all call an isolated `claude -p`
 subprocess (see `lib/claude-spawn.mjs`) — OAuth via your `claude login` session (the default
-`~/.claude/` config dir), no env vars required, no meridian proxy needed. This matches the
-agent arm's auth path — see `providers/claude-agent.mjs`'s `buildEnv()`. Control arms must run
+`~/.claude/` config dir), no env vars required, no meridian proxy needed. Control arms must run
 before treatment arms — guaranteed by `maxConcurrency: 1` in the config, with all controls
 listed before treatments.
 
+## Agent Arm Sandbox
+
+Agent arms run with permissions skipped, so each one runs in a per-trial sandbox
+(`lib/trial-sandbox.mjs`). It narrows what a trial can do to the real machine; it is not a jail.
+
+What each trial gets:
+
+- A temp root with its own workspace, `HOME`, `TMPDIR`, and XDG dirs. The CLI's own state
+  (`~/.claude.json`, settings, transcripts) goes to the temp home and is deleted afterwards.
+- A stub `bin/` first on `PATH`. `gh` and the `git` network commands (`push`, `pull`, `fetch`,
+  `clone`, `ls-remote`, `remote add|set-url`) exit 97 and are logged; other `git` commands run
+  the real git. Shells reset `PATH` on startup (nix-darwin's `/etc/zshenv`, `path_helper` in
+  login shells), so the same `PATH` is also exported from `CLAUDE_ENV_FILE` (sourced before
+  every Bash tool command) and from the temp home's `.zshenv`, `.zprofile`, `.zshrc`, `.zlogin`,
+  `.bashrc`, `.bash_profile`, and `.profile` (`BASH_ENV` and `ENV` point at them). The rest of
+  `PATH` is the provider's own, so node, pnpm, uv, and python3 stay available.
+- On macOS, `sandbox-exec` (turn off with `EVAL_SANDBOX_EXEC=0`) with this profile: allow by
+  default, then deny every write except to the trial root (workspace, home, tmp, logs),
+  `/dev`, and paths a provider adds (Serena's `.uv-cache`); deny reads of
+  `~/.ssh`, `~/.config/gh`, `~/.aws`, `~/Library/Keychains`, `~/.git-credentials`,
+  `~/.claude/.credentials.json`, `~/.netrc`, and `~/.npmrc`; deny outbound connections to unix
+  sockets under the real home (this covers OrbStack's Docker socket) or matching
+  `/var/run/*.sock`, to any localhost port (e.g. the Dolt server on 3308), and to TCP ports
+  22 (SSH) and 9418 (`git://`). HTTPS to the internet stays open; the CLI needs it.
+  Without `sandbox-exec` (off macOS, or `EVAL_SANDBOX_EXEC=0`) the Claude provider throws
+  instead of running, because it passes `--dangerously-skip-permissions` and nothing else
+  would confine it; set `EVAL_ALLOW_UNSANDBOXED=1` to run it unconfined anyway. Codex needs
+  no opt-in: without `sandbox-exec` it runs under its own `--sandbox workspace-write`.
+- A before/after snapshot of `~/github` (top-level names), `~/.claude/settings.json`,
+  `~/.claude/CLAUDE.md`, `~/Library/Application Support/Claude/claude_desktop_config.json`,
+  and `~/.codex/config.toml`.
+- Hook logs (`hook-events.ndjson`, `tool-calls.jsonl`) written to `EVAL_LOG_DIR` in the trial
+  root, outside the workspace, then copied over the workspace's `.eval/` before artifacts are
+  collected. Clearing or forging `.eval/` in the workspace (a `git clean -fdx`, say) changes
+  nothing. The logs are not tamper-proof: `EVAL_LOG_DIR` is in the agent's env and inside the
+  writable trial root, so a hostile agent can delete or forge entries there. The trajectory
+  tiers assume a cooperative agent under test.
+- The agent runs in its own process group. On timeout or when output passes 10 MB, the
+  whole group gets SIGTERM, then SIGKILL; leftovers are killed when the CLI exits. A
+  descendant that calls `setsid()` leaves the group, so neither kill reaches it.
+
+What it does not stop:
+
+- Reads anywhere except the denied paths: the agent can read the real home, including
+  this repo and `~/.claude` (but not `~/.claude/.credentials.json`).
+- HTTPS to any host. Seatbelt filters connections by address and port, not by host name,
+  so it cannot allow only the model API. Codex's own `--sandbox workspace-write` blocks
+  network for the commands it runs, but macOS cannot nest that seatbelt inside this one, so
+  under `sandbox-exec` Codex runs with its sandbox bypassed and its commands get the same
+  open network as Claude's. Real `git` or `gh` called by absolute path, `curl`, or `npm` can
+  reach the network; the stubs only catch what resolves through `PATH`. Under macOS
+  `sandbox-exec` they have no credentials to push with, since the credential files and the
+  Keychain are unreadable and the temp home has no git or gh config. Without `sandbox-exec`
+  the read denies are gone, so a command that names a credential file by its real path can
+  read it.
+- IPC that `(allow default)` leaves open: `defaults write` (via cfprefsd, which writes the
+  real `~/Library/Preferences`), `launchctl`, `osascript` and other Apple Events, pasteboard,
+  and other mach services. These act through daemons outside the sandbox, so a trial using
+  them can change the real machine without tripping the write deny or the snapshot.
+- Connections to this machine's non-loopback addresses.
+- Off macOS there is no `sandbox-exec`: only the temp home, the stubs, and the snapshot (plus
+  Codex's own sandbox; Claude runs only with `EVAL_ALLOW_UNSANDBOXED=1`).
+
+Scenarios whose mistake is a push or a PR set `"sandbox": { "simulateRemote": true }` in
+`scenario.json`. The stubs then succeed with canned output (a PR create prints a fake PR
+URL, `git push` says `Everything up-to-date`) and the calls land in
+`metadata.sandbox.simulatedCalls` instead of failing the trial; the scenario's
+`trajectoryAssertions` or `verify.mjs` decide whether the mistake happened. Seeds must not
+contain remote URLs.
+
+The Claude agent authenticates with `CLAUDE_CODE_OAUTH_TOKEN`. When that variable is unset,
+the Claude provider reads the access token of your `claude login` from the macOS Keychain (or
+`~/.claude/.credentials.json`) and passes only that token, never the refresh token. A token
+that expires within the trial timeout plus two minutes (at least five minutes) stops the run;
+start any `claude` session to refresh it, or export a long-lived token from
+`claude setup-token`. The token is in the agent's environment, so a tool call can print it;
+the provider replaces it with `[REDACTED]` in everything it returns or caches.
+
+Codex authenticates with a 0600 copy of `~/.codex/auth.json` in a temp `CODEX_HOME`; under
+`sandbox-exec`, reads of the real file are denied. A token Codex refreshes during the trial is written
+back to the real file only if that file is unchanged and the copy is valid JSON with a
+refresh token. Old and new tokens are redacted.
+
+Either provider returns `error` (an ERROR row in promptfoo, never cached) when the CLI exits
+non-zero, times out, overflows its output buffer, prints a usage-limit or API error, changes
+a watched path, makes a refused `gh`/`git` call, produces no output and no tool calls, finds
+the workspace directory replaced with a symlink (a replaced log directory is
+repaired, not an error), finds a hook or tool-call log line
+that could not be parsed (incomplete trajectory evidence), or when the hidden check or
+artifact collection cannot run. A Claude run with zero tool calls is an error only for
+statistical trials (`vars.trialId` set); a Codex run with zero tool calls is always an error.
+Either way `scenario.json` can set `"allowNoToolCalls": true`.
+
 ## Cache Behavior
 
-| Cache file                                 | Key                                                                   | Purpose                                                                     |
-| ------------------------------------------ | --------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| `results/cache/{cacheKey}.json`            | `sha256(scenarioHash + model + interventionJson + lessonContentHash)` | Full arm result; treatment arms re-run when lesson problem/solution changes |
-| `results/cache/control-{controlHash}.json` | `sha256(prompt + model)`                                              | Control transcript; reused by all lessons sharing the same trigger prompt   |
+| Cache file                                               | Key                                                                                                                          | Purpose                                                                     |
+| -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| `results/cache/{cacheKey}.json` (both providers)         | `sha256(scenario dir contents + model + intervention + prompt [+ lessonContentHash] [+ signature] + cliVersion [+ trialId])` | Full arm result; treatment arms re-run when lesson problem/solution changes |
+| `results/cache/control-{controlHash}.json` (Claude only) | `sha256(scenario dir contents + scenarioId + model + requiresSignature:os=confinement + prompt + cliVersion [+ trialId])`    | Control transcript the Tier 3 judge compares a treatment against            |
+
+"Scenario dir contents" is every file's path, mode, and content under the scenario dir
+(`node_modules/` and `.git/` skipped). The signature is the lesson's resolved `requires`
+set for Claude (plus `:mcp=none` for a treatment without Serena, plus `:os=confined` or
+`:os=unconfined` from `sandboxExecEnabled()`) and `agent=codex;sandbox=bypassed|workspace-write`
+for Codex. The control hash uses only `requiresSignature:os=confinement` — never `:mcp=none` —
+so a control run and the treatment arm paired against it land on the same transcript. Codex has
+no lessons, so its key never has a lessonContentHash, and it writes no control transcript.
+Overlay interventions also hash the overlay dir's files (an overlay containing a symlink is
+rejected).
+
+`vars.noCache: true` (or `EVAL_NO_CACHE=1`) skips the arm-result cache, read and write. A
+Claude control under noCache still writes its control transcript, so its treatment can be
+judged. `EVAL_CACHE_DIR` moves the cache. A treatment whose judge did not grade it (SKIP, a
+judge error, or a lesson arm with no lesson snapshot) is never cached.
 
 Clear all caches: `npm run eval:clean`
 

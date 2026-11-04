@@ -19,15 +19,35 @@ try {
 
 let event = {};
 try {
-  event = JSON.parse(raw);
+  const parsed = JSON.parse(raw);
+  if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw new Error(`parsed event is not an object: ${typeof parsed}`);
+  }
+  if (typeof parsed.tool_name !== 'string' || parsed.tool_name === '') {
+    throw new Error('parsed event is missing a nonempty tool_name');
+  }
+  event = parsed;
 } catch {
-  // malformed stdin — log nothing, allow tool call
+  // Malformed or non-object stdin would otherwise be silently indistinguishable from a quiet
+  // tool call, masking lost trajectory evidence. Record it so collect-artifacts.mjs can surface it.
+  const evalDir = process.env.EVAL_LOG_DIR || join(process.cwd(), '.eval');
+  mkdirSync(evalDir, { recursive: true });
+  appendFileSync(
+    join(evalDir, 'hook-events.ndjson'),
+    JSON.stringify({
+      type: 'PARSE_ERROR',
+      timestamp: new Date().toISOString(),
+      error: 'malformed hook input',
+    }) + '\n'
+  );
 }
 
 if (event.tool_name) {
   // event.cwd is the agent's working directory (the workspace); fall back to process.cwd()
   const workspaceDir = event.cwd || process.cwd();
-  const evalDir = join(workspaceDir, '.eval');
+  // The provider points EVAL_LOG_DIR outside the workspace so a `git clean` there keeps the
+  // log. The agent can still write to it, so the log is not tamper-proof.
+  const evalDir = process.env.EVAL_LOG_DIR || join(workspaceDir, '.eval');
   mkdirSync(evalDir, { recursive: true });
 
   const record = {

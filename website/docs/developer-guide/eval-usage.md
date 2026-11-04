@@ -18,7 +18,7 @@ The Tier 3 judge (`scripts/judge.mjs`) and `probe-scenario.mjs`, `gen-regression
 `generate-scenarios.mjs`, and `repair-judge-errors.mjs` all call an isolated `claude -p`
 subprocess (see `lib/claude-spawn.mjs`) — auth is via your `claude login` session (the default
 `~/.claude/` config dir), same as the agent arm. No env vars required, no meridian proxy needed.
-`providers/claude-agent.mjs`'s `buildEnv()` similarly excludes `ANTHROPIC_API_KEY`/
+`lib/agent-workspace.mjs`'s `buildEnv()` similarly excludes `ANTHROPIC_API_KEY`/
 `ANTHROPIC_BASE_URL` so the agent runs through direct OAuth (routing through meridian would spawn
 a full-settings CC worker that can 20-minute-timeout).
 
@@ -218,10 +218,10 @@ Rule types: `required` (must appear), `forbidden` (must not appear). Match field
 
 ## Cache Reference
 
-| File                                | Key                                                             | When it clears                              |
-| ----------------------------------- | --------------------------------------------------------------- | ------------------------------------------- |
-| `results/cache/{key}.json`          | `sha256(scenarioHash + model + lessonProblem + lessonSolution)` | Lesson edited (problem or solution changed) |
-| `results/cache/control-{hash}.json` | `sha256(prompt + model)`                                        | `npm run eval:clean`                        |
+| File                                | Key (exact inputs: Cache Behavior table in `evals/README.md`)                                          | When it clears                                             |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------- |
+| `results/cache/{key}.json`          | scenario dir contents, model, intervention, prompt, lesson content, OS confinement, CLI version, trial | Any input changes (e.g. lesson problem or solution edited) |
+| `results/cache/control-{hash}.json` | scenario dir contents, scenarioId, model, requires, OS confinement, prompt, CLI version, trial         | Any input changes, or `npm run eval:clean`                 |
 
 ```bash
 npm run eval:clean   # wipe all caches (next run is a full cold run)
