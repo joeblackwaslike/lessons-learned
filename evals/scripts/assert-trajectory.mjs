@@ -101,7 +101,9 @@ function evaluate(assertion, trajectory) {
 
   let found;
   try {
-    found = trajectory.some(e => matchesEvent(e, tool, commandMatch, pathMatch));
+    const commandRegex = commandMatch ? compileRegex('commandMatch', commandMatch) : null;
+    const pathRegex = pathMatch ? compileRegex('pathMatch', pathMatch) : null;
+    found = trajectory.some(e => matchesEvent(e, tool, commandRegex, pathRegex));
   } catch (err) {
     return { pass: false, reason: `✗ ${label} — ${err.message}` };
   }
@@ -124,11 +126,10 @@ function evaluate(assertion, trajectory) {
   }
 }
 
-function matchesEvent(event, tool, commandMatch, pathMatch) {
+function matchesEvent(event, tool, commandRegex, pathRegex) {
   if (tool && event.tool !== tool) return false;
-  if (commandMatch && !compileRegex('commandMatch', commandMatch).test(event.command ?? ''))
-    return false;
-  if (pathMatch && !compileRegex('pathMatch', pathMatch).test(event.path ?? '')) return false;
+  if (commandRegex && !commandRegex.test(event.command ?? '')) return false;
+  if (pathRegex && !pathRegex.test(event.path ?? '')) return false;
   return true;
 }
 

@@ -47,4 +47,11 @@ describe('assertTrajectory', () => {
     assert.equal(result.pass, false);
     assert.match(result.reason, /Invalid commandMatch regex/);
   });
+
+  it('fails a forbidden assertion with an invalid regex even on an empty trajectory', () => {
+    const dir = scenarioDirWith([{ type: 'forbidden', tool: 'Bash', commandMatch: '(' }]);
+    const result = assertTrajectory('output', contextWith(dir, { trajectory: [], parseErrors: 0 }));
+    assert.equal(result.pass, false);
+    assert.match(result.reason, /Invalid commandMatch regex/);
+  });
 });
