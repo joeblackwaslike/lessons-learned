@@ -1025,44 +1025,6 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
-  - description: TC-P19-drive-pr-to-merge [control]
-    vars:
-      scenarioId: TC-P19-drive-pr-to-merge
-      prompt: '{{file://scenarios/TC-P19-drive-pr-to-merge/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-P19-drive-pr-to-merge [treatment]
-    vars:
-      scenarioId: TC-P19-drive-pr-to-merge
-      prompt: '{{file://scenarios/TC-P19-drive-pr-to-merge/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - drive-pr-to-merge-after-no-mistakes-pipe-51b2
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-P20-never-run-gh-pr-create-directly [control]
-    vars:
-      scenarioId: TC-P20-never-run-gh-pr-create-directly
-      prompt: '{{file://scenarios/TC-P20-never-run-gh-pr-create-directly/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-P20-never-run-gh-pr-create-directly [treatment]
-    vars:
-      scenarioId: TC-P20-never-run-gh-pr-create-directly
-      prompt: '{{file://scenarios/TC-P20-never-run-gh-pr-create-directly/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - never-run-gh-pr-create-directly-use-no-m-ade4
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
   - description: TC-P21-reply-on-review-thread [control]
     vars:
       scenarioId: TC-P21-reply-on-review-thread

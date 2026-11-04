@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-11-02T06:43:16.181Z",
+  "generatedAt": "2026-11-04T10:00:15.353Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -92,37 +92,6 @@
       "summary": "Attach evidence to every load-bearing claim; state confidence that matches it",
       "problem": "Verified facts and unchecked inferences get written in the same confident register, so the reader cannot tell which is which and cannot calibrate. In one session this produced four wrong high-confidence assertions: a token-cost estimate off by two orders of magnitude that was embedded in a decision prompt, a root cause attributed to the wrong config file, a blast radius inflated 17x by an unfiltered find, and a claim that two agent runtimes lacked a feature they demonstrably have. Two came from relaying subagent output as fact. Every one was cheap to check and none was checked.",
       "solution": "Four rules. (1) A quantity that feeds a decision must be computed, or explicitly labelled as not computed - if a number is going into a recommendation or an AskUserQuestion option, it is load-bearing. (2) Mark evidentiary status inline: measured / derived / estimated / unverified. (3) A diagnosis must state what would falsify it and whether that check was run. (4) Counts from find/grep are raw until filtered - report the filter with the number or omit the number. Subagent and tool output is evidence, not fact; relaying it inherits its uncertainty."
-    },
-    "01M2YVQ1BKGFJB4SN33SCGWPGN": {
-      "slug": "drive-pr-to-merge-after-no-mistakes-pipe-51b2",
-      "type": "reminder",
-      "priority": 10,
-      "toolNames": [
-        "Bash"
-      ],
-      "commandRegexSources": [],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
-      "modelRegexSources": [],
-      "outputRegexSources": [
-        {
-          "source": "outcome: passed",
-          "flags": "i"
-        },
-        {
-          "source": "pr_state: open",
-          "flags": "i"
-        }
-      ],
-      "tags": [
-        "workflow:pr",
-        "severity:autonomy"
-      ],
-      "scope": null,
-      "message": "## Lesson: Drive PR to merge after no-mistakes pipeline passes\nAfter no-mistakes creates a PR (outcome: passed in output), the agent treats PR creation as task-complete and ends its turn instead of immediately driving the review loop to merge. The rule to own the full review loop exists in AGENTS.md but is overridden by the done-looking CLI output.\n**Fix**: Find the PR: gh pr list --head $(git branch --show-current) --json number,url\nThen: gh pr view <N> --json reviewDecision,reviews,statusCheckRollup\nOwn the whole review loop — triage bot feedback, fix issues, re-poll, merge. Do NOT return to the user until merged or blocked by a human decision.",
-      "summary": "Drive PR to merge after no-mistakes pipeline passes",
-      "problem": "After no-mistakes creates a PR (outcome: passed in output), the agent treats PR creation as task-complete and ends its turn instead of immediately driving the review loop to merge. The rule to own the full review loop exists in AGENTS.md but is overridden by the done-looking CLI output.",
-      "solution": "Find the PR: gh pr list --head $(git branch --show-current) --json number,url\nThen: gh pr view <N> --json reviewDecision,reviews,statusCheckRollup\nOwn the whole review loop — triage bot feedback, fix issues, re-poll, merge. Do NOT return to the user until merged or blocked by a human decision."
     },
     "01M2YVQ8PH1Y69AH5HC8YDAZPF": {
       "slug": "enter-plan-mode-before-writing-a-plan-fi-1771",
@@ -3127,42 +3096,6 @@
       "summary": "launchd does not inherit shell env — set HOME in plist",
       "problem": "LaunchAgent scripts fail when HOME is unset because launchd does not inherit the shell environment. No need to wrap in env bash if the script has a shebang.",
       "solution": "Always set HOME in EnvironmentVariables in the plist. Only add env bash wrapper if the script lacks a shebang."
-    },
-    "01M3ZN88H69QG45NH4RHRT5179": {
-      "slug": "never-run-gh-pr-create-directly-use-no-m-ade4",
-      "type": "guard",
-      "priority": 5,
-      "toolNames": [
-        "Bash"
-      ],
-      "commandRegexSources": [
-        {
-          "source": "gh pr create",
-          "flags": ""
-        },
-        {
-          "source": "gh pr new",
-          "flags": ""
-        },
-        {
-          "source": "gh pr open",
-          "flags": ""
-        }
-      ],
-      "commandMatchTarget": "executable",
-      "pathRegexSources": [],
-      "modelRegexSources": [],
-      "outputRegexSources": [],
-      "tags": [
-        "tool:git",
-        "severity:workflow-violation",
-        "category:agent-behavior"
-      ],
-      "scope": null,
-      "message": "## Lesson: Never run gh pr create directly — use no-mistakes axi run instead\nCalling gh pr create directly bypasses the mandatory no-mistakes gate (AI review, lint, doc gap detection). Tests green locally is not sufficient — the gate runs additional checks before push+PR.\n**Fix**: Use `no-mistakes axi run --intent \"...\"` instead of gh pr create. It runs the full gate, pushes, and creates the PR on pass. Never call gh pr create directly.",
-      "summary": "Never run gh pr create directly — use no-mistakes axi run instead",
-      "problem": "Calling gh pr create directly bypasses the mandatory no-mistakes gate (AI review, lint, doc gap detection). Tests green locally is not sufficient — the gate runs additional checks before push+PR.",
-      "solution": "Use `no-mistakes axi run --intent \"...\"` instead of gh pr create. It runs the full gate, pushes, and creates the PR on pass. Never call gh pr create directly."
     },
     "01KR5BQ1RRM862559YJN0YK2EM": {
       "slug": "always-add-timeout-and-p-nocacheprovider-013f",
