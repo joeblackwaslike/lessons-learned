@@ -308,7 +308,7 @@ async function runArm({
         // Redact before truncating so a secret cut at the boundary cannot survive.
         stderr: scrub(run.stderr).slice(0, 2000),
         toolCalls,
-        usage: events.findLast(e => e.type === 'turn.completed')?.usage ?? null,
+        usage: events.filter(e => e.type === 'turn.completed').at(-1)?.usage ?? null,
         sandbox: {
           outsideChanges,
           forbiddenCalls,
@@ -403,9 +403,9 @@ function parseEvents(stdout) {
 }
 
 function lastAgentMessage(events) {
-  const message = events.findLast(
-    e => e.type === 'item.completed' && e.item?.type === 'agent_message'
-  );
+  const message = events
+    .filter(e => e.type === 'item.completed' && e.item?.type === 'agent_message')
+    .at(-1);
   return message?.item.text ?? '';
 }
 
