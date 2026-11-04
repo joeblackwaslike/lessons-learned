@@ -22,6 +22,7 @@ fi
 if [ -n "$FAKE_CODEX_AUTH_WRITE" ]; then printf '%s' "$FAKE_CODEX_AUTH_WRITE" > "$CODEX_HOME/auth.json"; fi
 if [ -n "$FAKE_CODEX_EVENTS" ]; then
   cat "$FAKE_CODEX_EVENTS"
+  if [ -n "$FAKE_CODEX_HANG" ]; then sleep "$FAKE_CODEX_HANG"; fi
   exit "${FAKE_CODEX_EXIT:-0}"
 fi
 message() {

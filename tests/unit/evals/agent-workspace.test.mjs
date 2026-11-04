@@ -115,6 +115,25 @@ describe('collectArtifacts', () => {
   });
 });
 
+describe('collectArtifacts HEAD detection', () => {
+  it('treats an unborn HEAD as nothing to diff', () => {
+    const workspace = mkdtempSync(join(tmpdir(), 'collect-ws-'));
+    const scenario = mkdtempSync(join(tmpdir(), 'collect-scn-'));
+    git(workspace, ['init', '-q']);
+    writeFileSync(join(workspace, 'new.txt'), 'x\n');
+    const artifacts = collectArtifacts(workspace, scenario);
+    assert.match(artifacts.workspaceDiff, /Untracked files:\nnew\.txt/);
+  });
+
+  it('surfaces a repo with a corrupt HEAD as a collector error', () => {
+    const workspace = mkdtempSync(join(tmpdir(), 'collect-ws-'));
+    const scenario = mkdtempSync(join(tmpdir(), 'collect-scn-'));
+    git(workspace, ['init', '-q']);
+    writeFileSync(join(workspace, '.git', 'HEAD'), 'garbage\n');
+    assert.throws(() => collectArtifacts(workspace, scenario), /collect-artifacts.*exited/);
+  });
+});
+
 describe('symlink safety when restoring agent workspace metadata', () => {
   it('writeRegularFile does not follow an agent-planted symlink at the destination', () => {
     const dir = mkdtempSync(join(tmpdir(), 'ws-symlink-'));

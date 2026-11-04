@@ -97,12 +97,19 @@ const trajectory = [...hookEvents, ...postHookEvents]
 // --- Workspace diff -------------------------------------------------------------
 let workspaceDiff = '';
 if (existsSync(join(workspaceDir, '.git'))) {
-  const hasHead =
-    spawnSync('/usr/bin/git', ['rev-parse', '--verify', '--quiet', 'HEAD'], {
-      cwd: workspaceDir,
-      stdio: 'ignore',
-      timeout: 10_000,
-    }).status === 0;
+  const gitProbe = args =>
+    spawnSync('/usr/bin/git', args, { cwd: workspaceDir, encoding: 'utf8', timeout: 10_000 });
+  const headProbe = gitProbe(['rev-parse', '--verify', '--quiet', 'HEAD']);
+  const hasHead = headProbe.status === 0;
+  if (!hasHead) {
+    const dirProbe =
+      headProbe.error || headProbe.status !== 1 ? null : gitProbe(['rev-parse', '--git-dir']);
+    if (dirProbe?.status !== 0) {
+      throw new Error(
+        `HEAD probe (${workspaceDir}) failed: ${headProbe.error?.message ?? `exit ${headProbe.status}${headProbe.signal ? ` signal ${headProbe.signal}` : ''}: ${(headProbe.stderr ?? '').slice(0, 2000)}`}`
+      );
+    }
+  }
   // An unborn HEAD (no commits) has nothing to diff against; the untracked listing still runs.
   if (hasHead) {
     const diffResult = spawnSync(

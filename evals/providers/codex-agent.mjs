@@ -275,7 +275,8 @@ async function runArm({
       droppedLines > 0
         ? `${droppedLines} codex event line(s) could not be parsed — trajectory evidence is incomplete`
         : null;
-    const infraError = verifyError ?? collectionError ?? telemetryError;
+    const killed = run.timedOut || run.overflow;
+    const infraError = verifyError ?? collectionError ?? (killed ? null : telemetryError);
     const toolCalls = (artifacts.trajectory ?? []).filter(e => e.type === 'PreToolUse').length;
     const reason =
       infraError ??
@@ -397,7 +398,9 @@ function parseEvents(stdout) {
   let droppedLines = 0;
   for (const line of stdout.split('\n').filter(Boolean)) {
     try {
-      events.push(JSON.parse(line));
+      const event = JSON.parse(line);
+      if (typeof event?.type !== 'string') throw new TypeError('not an event');
+      events.push(event);
     } catch {
       droppedLines += 1;
     }

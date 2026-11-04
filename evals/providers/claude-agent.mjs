@@ -436,7 +436,7 @@ function findClaudeBin() {
 // ── Cache key computation ──────────────────────────────────────────────────────
 
 /**
- * sha256(scenario content : scenarioId : model : requires : prompt : cliVersion[:trial=trialId]).
+ * sha256(scenario content : scenarioId : model : requires:os=confinement : prompt : cliVersion[:trial=trialId]).
  * Hashing the scenario's own content (not just its id) and the trial id keeps independent
  * statistical trials and edited scenario revisions from sharing one control transcript,
  * while leaving out the intervention so a control and its treatment — which differ only in

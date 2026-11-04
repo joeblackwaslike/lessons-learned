@@ -329,6 +329,22 @@ describe('codex sandbox', () => {
     assert.match(r.error, /could not be parsed/);
   });
 
+  it('a JSON line that is not an event object counts as a dropped line', async () => {
+    const eventsFile = join(h.base, 'null-events.jsonl');
+    h.writeFile(eventsFile, 'null\n3\n[]\n{"type":5}\n');
+    h.useFakeCodex({ FAKE_CODEX_EVENTS: eventsFile });
+    const r = await h.callCodex({ trialId: 'l5', noCache: true });
+    assert.match(r.error, /4 codex event line\(s\) could not be parsed/);
+  });
+
+  it('a timeout with a partial last JSON line reports the timeout, not incomplete telemetry', async () => {
+    const eventsFile = join(h.base, 'partial-events.jsonl');
+    h.writeFile(eventsFile, '{"type":"item.comp');
+    h.useFakeCodex({ FAKE_CODEX_EVENTS: eventsFile, FAKE_CODEX_HANG: '30' });
+    const r = await h.callCodex({ noCache: true }, { timeout: 1000 });
+    assert.match(r.error, /timed out/);
+  });
+
   it('the agent cannot read the real auth.json', darwinOnly, async () => {
     h.useFakeCodex({ FAKE_CODEX_RUN: 'cat "$FAKE_REAL_HOME/.codex/auth.json"' });
     const r = await h.callCodex({ trialId: 'a0', noCache: true });
