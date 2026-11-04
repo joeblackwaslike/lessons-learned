@@ -20,8 +20,19 @@ try {
 let event = {};
 try {
   event = JSON.parse(raw);
-} catch {
-  // malformed stdin — log nothing, allow tool call
+} catch (err) {
+  // Malformed stdin would otherwise be silently indistinguishable from a quiet tool call,
+  // masking lost trajectory evidence. Record it so collect-artifacts.mjs can surface it.
+  const evalDir = process.env.EVAL_LOG_DIR || join(process.cwd(), '.eval');
+  mkdirSync(evalDir, { recursive: true });
+  appendFileSync(
+    join(evalDir, 'tool-calls.jsonl'),
+    JSON.stringify({
+      type: 'PARSE_ERROR',
+      timestamp: new Date().toISOString(),
+      error: err.message,
+    }) + '\n'
+  );
 }
 
 if (event.tool_name) {

@@ -7,6 +7,8 @@ import {
   writeFileSync,
   readFileSync,
   existsSync,
+  rmSync,
+  symlinkSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -103,6 +105,15 @@ describe('computeCacheKey', () => {
     };
     // "a" + "100644" + "b100644c" vs "a" + "100644" + "" + "b" + "100644" + "c"
     assert.notEqual(hashDir(tree({ a: 'b100644c' })), hashDir(tree({ a: '', b: 'c' })));
+  });
+
+  it('hashDir changes when a seed symlink is retargeted', () => {
+    const dir = scenario();
+    symlinkSync('/tmp/target-a', join(dir, 'link'));
+    const before = hashDir(dir);
+    rmSync(join(dir, 'link'));
+    symlinkSync('/tmp/target-b', join(dir, 'link'));
+    assert.notEqual(hashDir(dir), before);
   });
 });
 

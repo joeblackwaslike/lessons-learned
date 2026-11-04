@@ -8,7 +8,15 @@
 
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  lstatSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  readlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -101,13 +109,18 @@ export function writeControlTranscript(controlTranscriptFile, output) {
 
 /**
  * Hash of every file's path, mode, and content under `dir`, skipping `node_modules/` and
- * `.git/`. Each field is length-prefixed so distinct trees cannot concatenate to the same bytes.
+ * `.git/`. A symlink's target path is hashed as its content (not the content it points to),
+ * so retargeting a seed symlink changes the hash even though the symlink itself isn't
+ * dereferenced. Each field is length-prefixed so distinct trees cannot concatenate to the
+ * same bytes.
  */
 export function hashDir(dir) {
   const hash = createHash('sha256');
   for (const relPath of collectFiles(dir).sort()) {
     const path = join(dir, relPath);
-    for (const field of [relPath, statSync(path).mode.toString(8), readFileSync(path)]) {
+    const stat = lstatSync(path);
+    const content = stat.isSymbolicLink() ? readlinkSync(path) : readFileSync(path);
+    for (const field of [relPath, stat.mode.toString(8), content]) {
       const bytes = Buffer.from(field);
       hash.update(`${bytes.length}:`).update(bytes);
     }
@@ -119,9 +132,10 @@ function collectFiles(dir, base = '') {
   const results = [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const rel = base ? `${base}/${entry.name}` : entry.name;
+    if (rel.startsWith('node_modules/') || rel.startsWith('.git/')) continue;
     if (entry.isDirectory()) {
       results.push(...collectFiles(join(dir, entry.name), rel));
-    } else if (entry.isFile() && !rel.startsWith('node_modules/') && !rel.startsWith('.git/')) {
+    } else if (entry.isFile() || entry.isSymbolicLink()) {
       results.push(rel);
     }
   }

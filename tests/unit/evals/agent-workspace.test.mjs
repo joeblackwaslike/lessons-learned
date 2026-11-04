@@ -11,7 +11,8 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import {
   collectArtifacts,
@@ -65,6 +66,21 @@ describe('collectArtifacts', () => {
 
     assert.equal(artifacts.parseErrors, 1);
     assert.equal(artifacts.hookEvents.length, 1);
+  });
+
+  it('counts a PARSE_ERROR record in tool-calls.jsonl as a parse error', () => {
+    const workspace = mkdtempSync(join(tmpdir(), 'collect-ws-'));
+    const scenario = mkdtempSync(join(tmpdir(), 'collect-scn-'));
+    mkdirSync(join(workspace, '.eval'), { recursive: true });
+    // This is what eval-post-hook-shim.mjs writes to tool-calls.jsonl on malformed stdin.
+    writeFileSync(
+      join(workspace, '.eval', 'tool-calls.jsonl'),
+      '{"type":"PARSE_ERROR","error":"boom"}\n'
+    );
+
+    const artifacts = collectArtifacts(workspace, scenario);
+
+    assert.equal(artifacts.parseErrors, 1);
   });
 
   it('does not execute an agent-planted diff.external or core.fsmonitor hook', () => {
@@ -267,5 +283,42 @@ describe('readToolCallLog', () => {
     writeFileSync(join(evalDir, 'tool-calls.jsonl'), 'not valid json\n');
 
     assert.throws(() => readToolCallLog(workspace), /tool-calls\.jsonl.*malformed/);
+  });
+});
+
+describe('eval-post-hook-shim', () => {
+  const SHIM = join(
+    dirname(fileURLToPath(import.meta.url)),
+    '..',
+    '..',
+    '..',
+    'evals',
+    'scripts',
+    'eval-post-hook-shim.mjs'
+  );
+
+  it('records a PARSE_ERROR in tool-calls.jsonl instead of silently discarding malformed stdin', () => {
+    const logDir = mkdtempSync(join(tmpdir(), 'post-hook-'));
+    const result = spawnSync('node', [SHIM], {
+      input: 'not valid json',
+      encoding: 'utf8',
+      env: { ...process.env, EVAL_LOG_DIR: logDir },
+    });
+
+    assert.equal(result.status, 0);
+    assert.equal(result.stdout, '{}');
+    const logPath = join(logDir, 'tool-calls.jsonl');
+    assert.ok(existsSync(logPath));
+    const record = JSON.parse(readFileSync(logPath, 'utf8').trim());
+    assert.equal(record.type, 'PARSE_ERROR');
+
+    // The resulting telemetry gap makes collectArtifacts report a nonzero parseErrors
+    // count, which is what makes claude-agent.mjs treat the trial as uncacheable.
+    const workspace = mkdtempSync(join(tmpdir(), 'post-hook-ws-'));
+    mkdirSync(join(workspace, '.eval'), { recursive: true });
+    writeFileSync(join(workspace, '.eval', 'tool-calls.jsonl'), readFileSync(logPath, 'utf8'));
+    const scenario = mkdtempSync(join(tmpdir(), 'post-hook-scn-'));
+    const artifacts = collectArtifacts(workspace, scenario);
+    assert.ok(artifacts.parseErrors > 0);
   });
 });

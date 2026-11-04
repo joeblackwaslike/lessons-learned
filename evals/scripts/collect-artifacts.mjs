@@ -54,6 +54,20 @@ const hookEvents = existsSync(hookEventsPath)
       .filter(Boolean)
   : [];
 
+// Post-hook events are written to .eval/tool-calls.jsonl by the eval post-hook shim.
+// Malformed stdin there is recorded as a PARSE_ERROR line, same convention as above.
+const toolCallsPath = join(evalMetaDir, 'tool-calls.jsonl');
+let toolCallParseErrors = 0;
+if (existsSync(toolCallsPath)) {
+  for (const line of readFileSync(toolCallsPath, 'utf8').split('\n').filter(Boolean)) {
+    try {
+      if (JSON.parse(line).type === 'PARSE_ERROR') toolCallParseErrors += 1;
+    } catch {
+      toolCallParseErrors += 1;
+    }
+  }
+}
+
 // --- Extract tool trajectory ----------------------------------------------------
 const trajectory = hookEvents
   .filter(e => e.type === 'PreToolUse' || e.type === 'PostToolUse')
@@ -113,7 +127,8 @@ const evalMeta = existsSync(evalMetaPath) ? JSON.parse(readFileSync(evalMetaPath
 // --- Telemetry integrity ---------------------------------------------------------
 // A record the hook shim couldn't parse means lost trajectory evidence for that tool
 // call — the caller must not treat this run as a cleanly observed success.
-const parseErrors = hookEvents.filter(e => e.type === 'PARSE_ERROR').length + droppedLines;
+const parseErrors =
+  hookEvents.filter(e => e.type === 'PARSE_ERROR').length + droppedLines + toolCallParseErrors;
 
 // --- Emit -----------------------------------------------------------------------
 console.log(
