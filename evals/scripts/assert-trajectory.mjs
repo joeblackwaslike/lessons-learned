@@ -59,7 +59,8 @@ export default function assertTrajectory(output, context) {
     return {
       pass: false,
       score: 0,
-      reason: 'Trajectory assertions are defined but no trajectory artifact was collected — telemetry is missing',
+      reason:
+        'Trajectory assertions are defined but no trajectory artifact was collected — telemetry is missing',
     };
   }
   if (artifacts.parseErrors) {

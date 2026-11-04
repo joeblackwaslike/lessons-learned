@@ -31,11 +31,12 @@ describe('runProcessGroup', () => {
 
   it('a child ignoring SIGTERM is escalated to SIGKILL', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'process-group-'));
-    const result = await runProcessGroup(
-      'bash',
-      ['-c', "trap '' TERM; sleep 30"],
-      { cwd: dir, env: process.env, timeout: 300, maxBuffer: 10_000_000 }
-    );
+    const result = await runProcessGroup('bash', ['-c', "trap '' TERM; sleep 30"], {
+      cwd: dir,
+      env: process.env,
+      timeout: 300,
+      maxBuffer: 10_000_000,
+    });
     assert.equal(result.timedOut, true);
     assert.equal(result.signal, 'SIGKILL');
   });

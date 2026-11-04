@@ -31,7 +31,6 @@ if (!args['--workspace'] || !args['--scenario']) {
 }
 
 const workspaceDir = resolve(args['--workspace']);
-const scenarioDir = resolve(args['--scenario']);
 
 const evalMetaDir = join(workspaceDir, '.eval');
 
