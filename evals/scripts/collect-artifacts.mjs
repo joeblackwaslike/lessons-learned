@@ -96,7 +96,7 @@ const trajectory = [...hookEvents, ...postHookEvents]
 let workspaceDiff = '';
 if (existsSync(join(workspaceDir, '.git'))) {
   const diffResult = spawnSync(
-    'git',
+    '/usr/bin/git',
     [
       '-c',
       'diff.external=',
@@ -128,7 +128,7 @@ if (existsSync(join(workspaceDir, '.git'))) {
   workspaceDiff = diffResult.stdout ?? '';
 
   const untrackedResult = spawnSync(
-    'git',
+    '/usr/bin/git',
     ['-c', 'core.fsmonitor=false', 'ls-files', '--others', '--exclude-standard'],
     { cwd: workspaceDir, encoding: 'utf8', timeout: 10_000 }
   );

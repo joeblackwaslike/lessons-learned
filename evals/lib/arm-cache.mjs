@@ -58,7 +58,7 @@ export function computeCacheKey(
     lessonContentHash ?? '',
     requiresSignature ?? '',
     trial.cliVersion ?? '',
-    trial.trialId !== undefined && trial.trialId !== null ? String(trial.trialId) : '',
+    String(trial.trialId ?? ''),
   ];
   for (const field of fields) {
     const bytes = Buffer.from(field);
