@@ -120,18 +120,6 @@ export default class ClaudeAgentProvider {
       : { pluginDirs: [], signature: '' };
     const claudeBin = findClaudeBin();
     const trial = { trialId, cliVersion: cliVersion(claudeBin) };
-    // Derived from scenario content + trialId, not the arm's own cacheKey, so a control
-    // and its treatment (which differ in intervention) still land on the same transcript.
-    const controlHash = computeControlHash(
-      scenarioDir,
-      scenarioId,
-      model,
-      requiresSignature,
-      trial.cliVersion,
-      trial.trialId,
-      prompt
-    );
-    const controlTranscriptFile = join(cacheDir(), `control-${controlHash}.json`);
     const lessonContentHash = lesson ? computeLessonContentHash(lesson) : null;
     const useSerena = !isControl && vars.mcp !== 'none';
     // A treatment arm without Serena is a different arm, so it must not share a cache entry.
@@ -139,6 +127,20 @@ export default class ClaudeAgentProvider {
     const keySignature =
       (!isControl && !useSerena ? `${requiresSignature}:mcp=none` : requiresSignature) +
       `:os=${confinement}`;
+    // Derived from scenario content + trialId, not the arm's own cacheKey, so a control
+    // and its treatment (which differ in intervention) still land on the same transcript.
+    // keySignature (not raw requiresSignature) so confined and unconfined runs of the same
+    // scenario don't share a control transcript — see cacheKey below for the same reasoning.
+    const controlHash = computeControlHash(
+      scenarioDir,
+      scenarioId,
+      model,
+      keySignature,
+      trial.cliVersion,
+      trial.trialId,
+      prompt
+    );
+    const controlTranscriptFile = join(cacheDir(), `control-${controlHash}.json`);
     const cacheKey = computeCacheKey(
       scenarioDir,
       intervention,

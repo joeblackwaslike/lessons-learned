@@ -114,6 +114,7 @@ describe('confinement cache separation', () => {
       const unconfined = await h.call({ trialId: 'trial-os' });
       assert.equal(unconfined.metadata.cacheHit, false);
       assert.notEqual(confined.metadata.cacheKey, unconfined.metadata.cacheKey);
+      assert.notEqual(confined.metadata.controlHash, unconfined.metadata.controlHash);
     }
   );
 });
