@@ -5,7 +5,12 @@ import { existsSync, mkdtempSync, readFileSync, readdirSync, statSync } from 'no
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { toHookEvents, toToolCallLog } from '../../../evals/providers/codex-agent.mjs';
+import {
+  toHookEvents,
+  toToolCallLog,
+  unwrapShell,
+  writeBackCodexAuth,
+} from '../../../evals/providers/codex-agent.mjs';
 import assertTrajectory from '../../../evals/scripts/assert-trajectory.mjs';
 import { FAKE_CODEX_AUTH, useTrialHarness } from '../../helpers/fake-claude.mjs';
 
@@ -495,5 +500,35 @@ describe('codex cache', () => {
     const b = await h.callCodex({ trialId: 'v' });
     assert.notEqual(a.metadata.cacheKey, b.metadata.cacheKey);
     assert.equal(b.metadata.cacheHit, false);
+  });
+});
+
+describe('unwrapShell', () => {
+  it('unwraps single- and double-quoted -lc wrappers', () => {
+    assert.equal(unwrapShell(`/bin/zsh -lc 'echo "it'\\''s"'`), `echo "it's"`);
+    assert.equal(unwrapShell('/bin/zsh -lc "git status"'), 'git status');
+    assert.equal(unwrapShell('bash -c "echo \\"hi\\" \\$HOME"'), 'echo "hi" $HOME');
+    assert.equal(unwrapShell('ls -la'), 'ls -la');
+  });
+});
+
+describe('writeBackCodexAuth with an unreadable copy', () => {
+  const original = Buffer.from('{"tokens":{"refresh_token":"r"}}');
+
+  it('skips a directory at the copy path', () => {
+    const copy = mkdtempSync(join(tmpdir(), 'auth-dir-'));
+    const real = join(mkdtempSync(join(tmpdir(), 'auth-real-')), 'auth.json');
+    const result = writeBackCodexAuth({ real, copy, original });
+    assert.equal(result.status, 'skipped: unreadable copy');
+    assert.equal(existsSync(real), false);
+  });
+
+  it('skips a FIFO at the copy path without blocking', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'auth-fifo-'));
+    const copy = join(dir, 'auth.json');
+    const made = spawnSync('/usr/bin/mkfifo', [copy]);
+    assert.equal(made.status, 0, String(made.stderr));
+    const result = writeBackCodexAuth({ real: join(dir, 'real.json'), copy, original });
+    assert.equal(result.status, 'skipped: unreadable copy');
   });
 });

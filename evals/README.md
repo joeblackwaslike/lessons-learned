@@ -202,7 +202,8 @@ refresh token. Old and new tokens are redacted.
 Either provider returns `error` (an ERROR row in promptfoo, never cached) when the CLI exits
 non-zero, times out, overflows its output buffer, prints a usage-limit or API error, changes
 a watched path, makes a refused `gh`/`git` call, produces no output and no tool calls, finds
-the workspace or log directory replaced with a symlink, finds a hook or tool-call log line
+the workspace directory replaced with a symlink (a replaced log directory is
+repaired, not an error), finds a hook or tool-call log line
 that could not be parsed (incomplete trajectory evidence), or when the hidden check or
 artifact collection cannot run. A Claude run with zero tool calls is an error only for
 statistical trials (`vars.trialId` set); a Codex run with zero tool calls is always an error.

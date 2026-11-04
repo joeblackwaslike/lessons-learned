@@ -41,6 +41,7 @@ import {
   existsSync,
   mkdirSync,
   readFileSync,
+  lstatSync,
   renameSync,
   rmSync,
   writeFileSync,
@@ -382,10 +383,12 @@ export function toHookEvents(events) {
     .join('');
 }
 
-function unwrapShell(command) {
+export function unwrapShell(command) {
   const text = Array.isArray(command) ? command.join(' ') : String(command ?? '');
-  const match = /^(?:\S*\/)?(?:bash|zsh|sh) -l?c '([\s\S]*)'$/.exec(text);
-  return match ? match[1].replaceAll(`'\\''`, `'`) : text;
+  const single = /^(?:\S*\/)?(?:bash|zsh|sh) -l?c '([\s\S]*)'$/.exec(text);
+  if (single) return single[1].replaceAll(`'\\''`, `'`);
+  const double = /^(?:\S*\/)?(?:bash|zsh|sh) -l?c "([\s\S]*)"$/.exec(text);
+  return double ? double[1].replace(/\\([\\"$`])/g, '$1') : text;
 }
 
 /** @returns {{ events: any[], droppedLines: number }} */
@@ -455,9 +458,15 @@ function secretValues(value, key = '') {
  * when the copy is JSON with a refresh token, so a write cut short by a kill is never kept.
  * Returns the outcome and the copy's secret values (rotated tokens, for redaction).
  */
-function writeBackCodexAuth({ real, copy, original }) {
+export function writeBackCodexAuth({ real, copy, original }) {
   if (!existsSync(copy)) return { status: 'copy missing', secrets: [] };
-  const current = readFileSync(copy);
+  let current;
+  try {
+    if (!lstatSync(copy).isFile()) return { status: 'skipped: unreadable copy', secrets: [] };
+    current = readFileSync(copy);
+  } catch {
+    return { status: 'skipped: unreadable copy', secrets: [] };
+  }
   const parsed = parseAuth(current);
   const secrets = parsed ? secretValues(parsed) : [];
   if (current.equals(original)) return { status: 'unchanged', secrets };

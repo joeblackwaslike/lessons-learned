@@ -221,7 +221,7 @@ Rule types: `required` (must appear), `forbidden` (must not appear). Match field
 | File                                | Key (exact inputs: Cache Behavior table in `evals/README.md`)                          | When it clears                                             |
 | ----------------------------------- | -------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
 | `results/cache/{key}.json`          | scenario dir contents, model, intervention, prompt, lesson content, CLI version, trial | Any input changes (e.g. lesson problem or solution edited) |
-| `results/cache/control-{hash}.json` | scenario dir contents, scenarioId, model, requires, prompt, CLI version, trial         | `npm run eval:clean`                                       |
+| `results/cache/control-{hash}.json` | scenario dir contents, scenarioId, model, requires, prompt, CLI version, trial         | Any input changes, or `npm run eval:clean`                 |
 
 ```bash
 npm run eval:clean   # wipe all caches (next run is a full cold run)

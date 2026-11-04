@@ -31,7 +31,7 @@ echo '{"type":"thread.started","thread_id":"00000000-0000-0000-0000-000000000000
 echo '{"type":"turn.started"}'
 # The command as a JSON string, wrapped like codex does: /bin/zsh -lc '<command>', with each
 # ' written as '\''.
-cmd=$(node -e 'const q="\x27";console.log(JSON.stringify("/bin/zsh -lc "+q+process.argv[1].replaceAll(q,q+"\\"+q+q)+q))' "${FAKE_CODEX_COMMAND:-ls}")
+cmd=$(node -e 'const q="\x27";console.log(JSON.stringify("/bin/zsh -lc "+q+process.argv[1].replaceAll(q,q+"\\"+q+q)+q))' -- "${FAKE_CODEX_COMMAND:-ls}")
 i=0
 while [ "$i" -lt "${FAKE_CODEX_TOOL_CALLS:-1}" ]; do
   printf '{"type":"item.started","item":{"id":"cmd_%s","type":"command_execution","command":%s,"aggregated_output":"","exit_code":null,"status":"in_progress"}}\n' "$i" "$cmd"

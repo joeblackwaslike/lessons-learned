@@ -9,6 +9,7 @@ fi
 # The judge's single-shot `claude -p --tools ""` call (evals/lib/claude-spawn.mjs).
 for a in "$@"; do
   if [ "$a" = "--tools" ]; then
+    cat >/dev/null
     printf '%s\n' "${FAKE_CLAUDE_JUDGE_OUTPUT-}"
     exit 0
   fi

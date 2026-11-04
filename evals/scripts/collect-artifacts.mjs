@@ -23,6 +23,8 @@ import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
+const RESPONSE_SUMMARY_LIMIT = 2000;
+
 const args = parseArgs(process.argv.slice(2));
 
 if (!args['--workspace'] || !args['--scenario']) {
@@ -68,7 +70,7 @@ if (existsSync(toolCallsPath)) {
       toolCallParseErrors += 1;
       continue;
     }
-    if (record.type === 'PARSE_ERROR') {
+    if (record === null || typeof record !== 'object' || record.type === 'PARSE_ERROR') {
       toolCallParseErrors += 1;
     } else {
       postHookEvents.push(record);
@@ -87,7 +89,7 @@ const trajectory = [...hookEvents, ...postHookEvents]
     tool: e.tool_name ?? e.tool ?? e.toolName,
     command: e.tool_input?.command ?? e.input?.command,
     path: e.tool_input?.file_path ?? e.input?.file_path,
-    response: e.tool_response,
+    response: summarizeResponse(e.tool_response),
     timestamp: e.timestamp,
   }))
   .sort((a, b) => (a.timestamp ?? '').localeCompare(b.timestamp ?? ''));
@@ -95,37 +97,46 @@ const trajectory = [...hookEvents, ...postHookEvents]
 // --- Workspace diff -------------------------------------------------------------
 let workspaceDiff = '';
 if (existsSync(join(workspaceDir, '.git'))) {
-  const diffResult = spawnSync(
-    '/usr/bin/git',
-    [
-      '-c',
-      'diff.external=',
-      '-c',
-      'core.fsmonitor=false',
-      '-c',
-      'core.pager=cat',
-      'diff',
-      '--no-ext-diff',
-      '--stat',
-      'HEAD',
-    ],
-    {
+  const hasHead =
+    spawnSync('/usr/bin/git', ['rev-parse', '--verify', '--quiet', 'HEAD'], {
       cwd: workspaceDir,
-      encoding: 'utf8',
+      stdio: 'ignore',
       timeout: 10_000,
-      env: (() => {
-        const env = { ...process.env, GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: '/dev/null' };
-        delete env.GIT_EXTERNAL_DIFF;
-        return env;
-      })(),
-    }
-  );
-  if (diffResult.error || diffResult.status !== 0) {
-    throw new Error(
-      `workspace diff (${workspaceDir}) failed: ${diffResult.error?.message ?? `exit ${diffResult.status}${diffResult.signal ? ` signal ${diffResult.signal}` : ''}: ${(diffResult.stderr ?? '').slice(0, 2000)}`}`
+    }).status === 0;
+  // An unborn HEAD (no commits) has nothing to diff against; the untracked listing still runs.
+  if (hasHead) {
+    const diffResult = spawnSync(
+      '/usr/bin/git',
+      [
+        '-c',
+        'diff.external=',
+        '-c',
+        'core.fsmonitor=false',
+        '-c',
+        'core.pager=cat',
+        'diff',
+        '--no-ext-diff',
+        '--stat',
+        'HEAD',
+      ],
+      {
+        cwd: workspaceDir,
+        encoding: 'utf8',
+        timeout: 10_000,
+        env: (() => {
+          const env = { ...process.env, GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: '/dev/null' };
+          delete env.GIT_EXTERNAL_DIFF;
+          return env;
+        })(),
+      }
     );
+    if (diffResult.error || diffResult.status !== 0) {
+      throw new Error(
+        `workspace diff (${workspaceDir}) failed: ${diffResult.error?.message ?? `exit ${diffResult.status}${diffResult.signal ? ` signal ${diffResult.signal}` : ''}: ${(diffResult.stderr ?? '').slice(0, 2000)}`}`
+      );
+    }
+    workspaceDiff = diffResult.stdout ?? '';
   }
-  workspaceDiff = diffResult.stdout ?? '';
 
   const untrackedResult = spawnSync(
     '/usr/bin/git',
@@ -171,10 +182,16 @@ function listFiles(dir) {
   const results = [];
   for (const entry of readdirSync(dir, { withFileTypes: true, recursive: true })) {
     if (entry.isFile()) {
-      results.push(relative(dir, join(entry.parentPath, entry.name)));
+      results.push(relative(dir, join(entry.parentPath ?? entry.path ?? dir, entry.name)));
     }
   }
   return results;
+}
+
+function summarizeResponse(response) {
+  if (response === undefined) return undefined;
+  const text = typeof response === 'string' ? response : JSON.stringify(response);
+  return text.length > RESPONSE_SUMMARY_LIMIT ? text.slice(0, RESPONSE_SUMMARY_LIMIT) : text;
 }
 
 function parseArgs(argv) {

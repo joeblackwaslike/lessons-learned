@@ -281,7 +281,15 @@ export function readOAuthToken({ minValidMs = 5 * 60_000 } = {}) {
   }
   const file = join(watchHome(), '.claude', '.credentials.json');
   if (!raw && existsSync(file)) raw = readFileSync(file, 'utf8');
-  const oauth = raw ? JSON.parse(raw).claudeAiOauth : null;
+  let oauth = null;
+  if (raw) {
+    try {
+      oauth = JSON.parse(raw).claudeAiOauth;
+    } catch {
+      // JSON.parse messages can quote fragments of the credential document.
+      throw new Error('Claude credentials are not valid JSON: run `claude` and /login again');
+    }
+  }
   if (!oauth?.accessToken) {
     throw new Error('no Claude login found for eval trials: run `claude` and /login first');
   }

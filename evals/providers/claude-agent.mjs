@@ -52,6 +52,7 @@ import {
   redact,
   sandboxCommand,
   sandboxEnv,
+  sandboxExecEnabled,
   snapshotWatchPaths,
   trialErrorReason,
 } from '../lib/trial-sandbox.mjs';
@@ -134,8 +135,10 @@ export default class ClaudeAgentProvider {
     const lessonContentHash = lesson ? computeLessonContentHash(lesson) : null;
     const useSerena = !isControl && vars.mcp !== 'none';
     // A treatment arm without Serena is a different arm, so it must not share a cache entry.
+    const confinement = sandboxExecEnabled() ? 'confined' : 'unconfined';
     const keySignature =
-      !isControl && !useSerena ? `${requiresSignature}:mcp=none` : requiresSignature;
+      (!isControl && !useSerena ? `${requiresSignature}:mcp=none` : requiresSignature) +
+      `:os=${confinement}`;
     const cacheKey = computeCacheKey(
       scenarioDir,
       intervention,
@@ -279,6 +282,13 @@ async function runArm({
     } catch (err) {
       collectionError = err.message;
     }
+    let toolCallLog = '';
+    let toolCallLogError = null;
+    try {
+      toolCallLog = readToolCallLog(workspaceDir);
+    } catch (err) {
+      toolCallLogError = `tool-call log unreadable: ${err.message}`;
+    }
     const toolCalls = (artifacts.trajectory ?? []).filter(e => e.type === 'PreToolUse').length;
     const telemetryError =
       artifacts.parseErrors > 0
@@ -287,6 +297,7 @@ async function runArm({
     const error =
       verifyError ??
       collectionError ??
+      toolCallLogError ??
       telemetryError ??
       trialErrorReason({
         exitCode: claudeResult.status,
@@ -299,7 +310,6 @@ async function runArm({
         outsideChanges,
         forbiddenCalls,
       });
-    const toolCallLog = readToolCallLog(workspaceDir);
     const enrichedOutput = redact(toolCallLog ? `${output}\n\n${toolCallLog}` : output, token);
 
     // Not gated on noCache: a control run with noCache must still leave a transcript for
@@ -423,7 +433,7 @@ function findClaudeBin() {
 // ── Cache key computation ──────────────────────────────────────────────────────
 
 /**
- * sha256(scenario content : scenarioId : model : requires : cliVersion[:trial=trialId]).
+ * sha256(scenario content : scenarioId : model : requires : prompt : cliVersion[:trial=trialId]).
  * Hashing the scenario's own content (not just its id) and the trial id keeps independent
  * statistical trials and edited scenario revisions from sharing one control transcript,
  * while leaving out the intervention so a control and its treatment — which differ only in

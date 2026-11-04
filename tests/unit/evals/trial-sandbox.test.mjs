@@ -11,6 +11,7 @@ import {
   realpathSync,
   rmSync,
   symlinkSync,
+  writeFileSync,
 } from 'node:fs';
 import net from 'node:net';
 import { tmpdir } from 'node:os';
@@ -19,6 +20,7 @@ import { fileURLToPath } from 'node:url';
 import { hashDir } from '../../../evals/lib/arm-cache.mjs';
 import {
   createTrialSandbox,
+  readOAuthToken,
   sandboxCommand,
   sandboxProfile,
 } from '../../../evals/lib/trial-sandbox.mjs';
@@ -27,6 +29,8 @@ import { useTrialHarness } from '../../helpers/fake-claude.mjs';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const MATERIALIZE = join(root, 'evals', 'scripts', 'materialize-workspace.mjs');
 const HOOK_SHIM = join(root, 'evals', 'scripts', 'eval-hook-shim.mjs');
+const POST_HOOK_SHIM = join(root, 'evals', 'scripts', 'eval-post-hook-shim.mjs');
+const COLLECT = join(root, 'evals', 'scripts', 'collect-artifacts.mjs');
 const darwinOnly = {
   skip: process.platform !== 'darwin' && 'sandbox-exec exists only on macOS',
 };
@@ -353,9 +357,30 @@ describe('trial evidence', () => {
     assert.match(logged, /"type":"PARSE_ERROR"/);
   });
 
-  for (const stdin of ['{}', '[]']) {
+  for (const [shim, logName] of [
+    [HOOK_SHIM, 'hook-events.ndjson'],
+    [POST_HOOK_SHIM, 'tool-calls.jsonl'],
+  ]) {
+    it(`${logName} PARSE_ERROR stores a fixed marker, not the quoted input`, () => {
+      const logDir = join(h.base, `eval-log-marker-${logName}`);
+      const run = spawnSync(process.execPath, [shim], {
+        input: '{"token":"sk-SECRET-fragment',
+        env: { ...process.env, EVAL_LOG_DIR: logDir },
+        encoding: 'utf8',
+      });
+      assert.equal(run.status, 0, run.stderr);
+      const logged = readFileSync(join(logDir, logName), 'utf8');
+      assert.equal(JSON.parse(logged).error, 'malformed hook input');
+      assert.doesNotMatch(logged, /SECRET/);
+    });
+  }
+
+  for (const [label, stdin] of [
+    ['empty-object', '{}'],
+    ['array', '[]'],
+  ]) {
     it(`the hook shim records a PARSE_ERROR for structurally invalid stdin ${stdin}`, () => {
-      const logDir = join(h.base, `eval-log-invalid-${stdin.replace(/\W/g, '')}`);
+      const logDir = join(h.base, `eval-log-invalid-${label}`);
       const run = spawnSync(process.execPath, [HOOK_SHIM], {
         input: stdin,
         env: { ...process.env, EVAL_LOG_DIR: logDir },
@@ -363,9 +388,78 @@ describe('trial evidence', () => {
       });
       assert.equal(run.status, 0, run.stderr);
       const logged = readFileSync(join(logDir, 'hook-events.ndjson'), 'utf8');
+      assert.equal(logged.trim().split('\n').length, 1);
       assert.match(logged, /"type":"PARSE_ERROR"/);
     });
   }
+
+  describe('collect-artifacts', () => {
+    function collect(files, { git = false } = {}) {
+      const ws = mkdtempSync(join(tmpdir(), 'collect-ws-'));
+      mkdirSync(join(ws, '.eval'));
+      for (const [name, text] of Object.entries(files)) writeFileSync(join(ws, name), text);
+      if (git) spawnSync('/usr/bin/git', ['init', '-q'], { cwd: ws });
+      const run = spawnSync(process.execPath, [COLLECT, '--workspace', ws, '--scenario', ws], {
+        encoding: 'utf8',
+      });
+      return { run, out: run.status === 0 ? JSON.parse(run.stdout) : null };
+    }
+
+    it('a null or non-object tool-calls line is a parse error, not a crash', () => {
+      const { run, out } = collect({
+        '.eval/tool-calls.jsonl': 'null\n42\n{"tool_name":"Bash","tool_input":{"command":"ls"}}\n',
+      });
+      assert.equal(run.status, 0, run.stderr);
+      assert.equal(out.parseErrors, 2);
+      assert.equal(out.trajectory.length, 0);
+    });
+
+    it('a repo with no commits does not fail the diff', () => {
+      const { run, out } = collect({ 'a.txt': 'x' }, { git: true });
+      assert.equal(run.status, 0, run.stderr);
+      assert.match(out.workspaceDiff, /a\.txt/);
+    });
+
+    it('a no-git workspace lists root-level files workspace-relative', () => {
+      const { out } = collect({ 'root.txt': 'x' });
+      assert.match(out.workspaceDiff, /^root\.txt$/m);
+    });
+
+    it('caps the PostToolUse response summary', () => {
+      const big = 'y'.repeat(50_000);
+      const { out } = collect({
+        '.eval/tool-calls.jsonl':
+          JSON.stringify({
+            type: 'PostToolUse',
+            timestamp: 't',
+            tool_name: 'Bash',
+            tool_input: { command: 'ls' },
+            tool_response: { stdout: big },
+          }) + '\n',
+      });
+      assert.equal(out.trajectory.length, 1);
+      assert.ok(out.trajectory[0].response.length <= 2000);
+      assert.ok(JSON.stringify(out).length < 10_000);
+    });
+  });
+
+  describe('readOAuthToken', () => {
+    it('a malformed credentials document throws a fixed message without quoting it', () => {
+      delete process.env.CLAUDE_CODE_OAUTH_TOKEN;
+      const stubBin = join(h.base, 'stub-security');
+      h.writeFile(join(stubBin, 'security'), '#!/bin/sh\nexit 1\n');
+      chmodSync(join(stubBin, 'security'), 0o755);
+      process.env.PATH = `${stubBin}:${process.env.PATH}`;
+      h.writeFile(
+        join(h.fakeHome, '.claude', '.credentials.json'),
+        '{"claudeAiOauth":{"accessToken":"sk-ant-oat01-LEAKME'
+      );
+      assert.throws(
+        () => readOAuthToken(),
+        err => /not valid JSON/.test(String(err)) && !/LEAKME|sk-ant/.test(String(err))
+      );
+    });
+  });
 
   it('a malformed hook event is surfaced as an error instead of a silent gap', async () => {
     h.useFakeClaude({

@@ -102,6 +102,22 @@ describe('mcp cache separation', () => {
   });
 });
 
+describe('confinement cache separation', () => {
+  it(
+    'an unconfined run never shares a cache key with a confined run',
+    { skip: !sandboxExecUsable && 'sandbox-exec is missing or unusable here' },
+    async () => {
+      h.useFakeClaude();
+      const confined = await h.call({ trialId: 'trial-os' });
+      process.env.EVAL_SANDBOX_EXEC = '0';
+      process.env.EVAL_ALLOW_UNSANDBOXED = '1';
+      const unconfined = await h.call({ trialId: 'trial-os' });
+      assert.equal(unconfined.metadata.cacheHit, false);
+      assert.notEqual(confined.metadata.cacheKey, unconfined.metadata.cacheKey);
+    }
+  );
+});
+
 describe('trial sandbox', () => {
   it('runs claude with a per-trial HOME and TMPDIR, the stub bin first on PATH, and a token', async () => {
     h.useFakeClaude();
@@ -202,6 +218,18 @@ describe('unconfined runs', () => {
 });
 
 describe('infrastructure errors', () => {
+  it('a malformed tool-calls.jsonl is a trial error, not a thrown call, and is not cached', async () => {
+    h.useFakeClaude({
+      FAKE_CLAUDE_RUN: 'printf \'not json\\n\' >> "${EVAL_LOG_DIR:-.eval}/tool-calls.jsonl"',
+    });
+    const r = await h.call({ trialId: 'trial-tcl' });
+    assert.match(r.error, /tool-call log/);
+    assert.equal(
+      existsSync(join(process.env.EVAL_CACHE_DIR, `${r.metadata.cacheKey}.json`)),
+      false
+    );
+  });
+
   it('a hidden check that cannot run is a trial error, not a thrown call, and is not cached', async () => {
     // Over spawnSync's 1 MB buffer, so runVerify throws ENOBUFS.
     h.writeFile(

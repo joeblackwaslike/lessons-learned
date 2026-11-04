@@ -27,7 +27,7 @@ try {
     throw new Error('parsed event is missing a nonempty tool_name');
   }
   event = parsed;
-} catch (err) {
+} catch {
   // Malformed or non-object stdin would otherwise be silently indistinguishable from a quiet
   // tool call, masking lost trajectory evidence. Record it so collect-artifacts.mjs can surface it.
   const evalDir = process.env.EVAL_LOG_DIR || join(process.cwd(), '.eval');
@@ -37,7 +37,7 @@ try {
     JSON.stringify({
       type: 'PARSE_ERROR',
       timestamp: new Date().toISOString(),
-      error: err.message,
+      error: 'malformed hook input',
     }) + '\n'
   );
 }

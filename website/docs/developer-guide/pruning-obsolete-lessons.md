@@ -25,7 +25,7 @@ Read the **Tier 3 Judge Summary**. `CONTROL_CORRECT` outcomes are pruning candid
 
 ### 2. Verify fresh — BUST THE CACHE FIRST ⚠️
 
-**The providers (`providers/claude-agent.mjs`, `providers/codex-agent.mjs`) content-address their cache** (`results/cache/`) — see the Cache Behavior table in [evals/README.md](https://github.com/joeblackwaslike/lessons-learned/blob/main/evals/README.md) for the exact keys each provider uses. A re-run **silently replays old cached transcripts and old judge verdicts** unless one of those inputs changed. A run that looks "complete" in seconds is almost certainly cache hits.
+**The providers (`providers/claude-agent.mjs`, `providers/codex-agent.mjs`) content-address their cache** (`results/cache/`) — see the Cache Behavior table in [evals/README.md](https://github.com/joeblackwaslike/lessons-learned/blob/main/evals/README.md) for the exact keys each provider uses. A re-run **silently replays old cached results** unless one of those inputs changed (the Claude provider caches judge verdicts with the result; the Codex provider caches only the agent result). A run that looks "complete" in seconds is almost certainly cache hits.
 
 Before trusting any verdict, confirm it ran fresh:
 
