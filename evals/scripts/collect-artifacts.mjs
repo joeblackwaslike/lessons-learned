@@ -24,13 +24,14 @@ import { join, relative, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 const args = parseArgs(process.argv.slice(2));
-const workspaceDir = resolve(args['--workspace'] ?? '');
-const scenarioDir = resolve(args['--scenario'] ?? '');
 
-if (!workspaceDir || !scenarioDir) {
+if (!args['--workspace'] || !args['--scenario']) {
   console.error('Usage: collect-artifacts.mjs --workspace <dir> --scenario <dir>');
   process.exit(1);
 }
+
+const workspaceDir = resolve(args['--workspace']);
+const scenarioDir = resolve(args['--scenario']);
 
 const evalMetaDir = join(workspaceDir, '.eval');
 
@@ -58,26 +59,39 @@ const hookEvents = existsSync(hookEventsPath)
 // Malformed stdin there is recorded as a PARSE_ERROR line, same convention as above.
 const toolCallsPath = join(evalMetaDir, 'tool-calls.jsonl');
 let toolCallParseErrors = 0;
+const postHookEvents = [];
 if (existsSync(toolCallsPath)) {
   for (const line of readFileSync(toolCallsPath, 'utf8').split('\n').filter(Boolean)) {
+    let record;
     try {
-      if (JSON.parse(line).type === 'PARSE_ERROR') toolCallParseErrors += 1;
+      record = JSON.parse(line);
     } catch {
       toolCallParseErrors += 1;
+      continue;
+    }
+    if (record.type === 'PARSE_ERROR') {
+      toolCallParseErrors += 1;
+    } else {
+      postHookEvents.push(record);
     }
   }
 }
 
 // --- Extract tool trajectory ----------------------------------------------------
-const trajectory = hookEvents
+// Pre-hook events carry the invocation; post-hook events carry the same call's response.
+// Both are kept (not deduped against each other — they are different phases of one call)
+// and merged in timestamp order so a reader sees invocation followed by completion.
+const trajectory = [...hookEvents, ...postHookEvents]
   .filter(e => e.type === 'PreToolUse' || e.type === 'PostToolUse')
   .map(e => ({
     type: e.type,
     tool: e.tool_name ?? e.tool ?? e.toolName,
     command: e.tool_input?.command ?? e.input?.command,
     path: e.tool_input?.file_path ?? e.input?.file_path,
+    response: e.tool_response,
     timestamp: e.timestamp,
-  }));
+  }))
+  .sort((a, b) => (a.timestamp ?? '').localeCompare(b.timestamp ?? ''));
 
 // --- Workspace diff -------------------------------------------------------------
 let workspaceDiff = '';
@@ -113,6 +127,23 @@ if (existsSync(join(workspaceDir, '.git'))) {
     );
   }
   workspaceDiff = diffResult.stdout ?? '';
+
+  const untrackedResult = spawnSync(
+    'git',
+    ['-c', 'core.fsmonitor=false', 'ls-files', '--others', '--exclude-standard'],
+    { cwd: workspaceDir, encoding: 'utf8', timeout: 10_000 }
+  );
+  if (untrackedResult.error || untrackedResult.status !== 0) {
+    throw new Error(
+      `untracked file listing (${workspaceDir}) failed: ${untrackedResult.error?.message ?? `exit ${untrackedResult.status}: ${(untrackedResult.stderr ?? '').slice(0, 2000)}`}`
+    );
+  }
+  const untrackedFiles = untrackedResult.stdout
+    .split('\n')
+    .filter(f => f && !f.startsWith('.eval/'));
+  if (untrackedFiles.length > 0) {
+    workspaceDiff += `\nUntracked files:\n${untrackedFiles.join('\n')}`;
+  }
 } else {
   // No .git in seed — list all files created
   workspaceDiff = listFiles(workspaceDir)

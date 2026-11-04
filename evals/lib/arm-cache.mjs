@@ -60,7 +60,8 @@ export function computeCacheKey(
   if (lessonContentHash) hash.update(':').update(lessonContentHash);
   if (requiresSignature) hash.update(':').update(requiresSignature);
   hash.update(':cli=').update(trial.cliVersion ?? '');
-  if (trial.trialId) hash.update(':trial=').update(String(trial.trialId));
+  if (trial.trialId !== undefined && trial.trialId !== null)
+    hash.update(':trial=').update(String(trial.trialId));
   return hash.digest('hex');
 }
 

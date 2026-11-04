@@ -99,7 +99,7 @@ function evaluate(assertion, trajectory) {
         reason: !found ? `✓ ${label}` : `✗ ${label} — found in trajectory but should not be`,
       };
     default:
-      return { pass: true, reason: `[unknown assertion type "${type}" — skipped]` };
+      return { pass: false, reason: `Unknown assertion type "${type}" — fix scenario.json` };
   }
 }
 
