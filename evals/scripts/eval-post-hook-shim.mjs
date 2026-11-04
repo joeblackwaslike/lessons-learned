@@ -19,10 +19,14 @@ try {
 
 let event = {};
 try {
-  event = JSON.parse(raw);
+  const parsed = JSON.parse(raw);
+  if (parsed === null || typeof parsed !== 'object') {
+    throw new Error(`parsed event is not an object: ${typeof parsed}`);
+  }
+  event = parsed;
 } catch (err) {
-  // Malformed stdin would otherwise be silently indistinguishable from a quiet tool call,
-  // masking lost trajectory evidence. Record it so collect-artifacts.mjs can surface it.
+  // Malformed or non-object stdin would otherwise be silently indistinguishable from a quiet
+  // tool call, masking lost trajectory evidence. Record it so collect-artifacts.mjs can surface it.
   const evalDir = process.env.EVAL_LOG_DIR || join(process.cwd(), '.eval');
   mkdirSync(evalDir, { recursive: true });
   appendFileSync(

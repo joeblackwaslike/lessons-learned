@@ -97,13 +97,19 @@ export function isCacheableArmResult(armResult) {
   return judgeResult.outcome !== 'SKIP' && judgeResult.error !== true;
 }
 
-/** Best-effort write of a control arm's transcript for the Tier 3 judge. */
+/**
+ * Write a control arm's transcript for the Tier 3 judge. Throws on failure — a treatment
+ * cannot be graded without the control transcript it compares against, so a filesystem
+ * failure here must surface as an infrastructure error, not a silently incomplete run.
+ */
 export function writeControlTranscript(controlTranscriptFile, output) {
   try {
     mkdirSync(dirname(controlTranscriptFile), { recursive: true });
     writeFileSync(controlTranscriptFile, JSON.stringify({ output }, null, 2));
-  } catch {
-    /* best-effort */
+  } catch (err) {
+    throw new Error(`Failed to write control transcript ${controlTranscriptFile}: ${err.message}`, {
+      cause: err,
+    });
   }
 }
 

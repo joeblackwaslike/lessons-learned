@@ -20,7 +20,7 @@
  */
 
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { join, relative, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 const args = parseArgs(process.argv.slice(2));
@@ -141,10 +141,7 @@ function listFiles(dir) {
   const results = [];
   for (const entry of readdirSync(dir, { withFileTypes: true, recursive: true })) {
     if (entry.isFile()) {
-      const rel = entry.parentPath
-        ? `${entry.parentPath.replace(dir + '/', '')}/${entry.name}`
-        : entry.name;
-      results.push(rel);
+      results.push(relative(dir, join(entry.parentPath, entry.name)));
     }
   }
   return results;
