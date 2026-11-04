@@ -214,14 +214,17 @@ Either way `scenario.json` can set `"allowNoToolCalls": true`.
 | Cache file                                               | Key                                                                                                                          | Purpose                                                                     |
 | -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
 | `results/cache/{cacheKey}.json` (both providers)         | `sha256(scenario dir contents + model + intervention + prompt [+ lessonContentHash] [+ signature] + cliVersion [+ trialId])` | Full arm result; treatment arms re-run when lesson problem/solution changes |
-| `results/cache/control-{controlHash}.json` (Claude only) | `sha256(scenario dir contents + scenarioId + model + requiresSignature + prompt + cliVersion [+ trialId])`                   | Control transcript the Tier 3 judge compares a treatment against            |
+| `results/cache/control-{controlHash}.json` (Claude only) | `sha256(scenario dir contents + scenarioId + model + requiresSignature:os=confinement + prompt + cliVersion [+ trialId])`    | Control transcript the Tier 3 judge compares a treatment against            |
 
 "Scenario dir contents" is every file's path, mode, and content under the scenario dir
 (`node_modules/` and `.git/` skipped). The signature is the lesson's resolved `requires`
-set for Claude (plus `:mcp=none` for a treatment without Serena) and
-`agent=codex;sandbox=bypassed|workspace-write` for Codex. Codex has no lessons, so its key
-never has a lessonContentHash, and it writes no control transcript. Overlay interventions
-also hash the overlay dir's files (an overlay containing a symlink is rejected).
+set for Claude (plus `:mcp=none` for a treatment without Serena, plus `:os=confined` or
+`:os=unconfined` from `sandboxExecEnabled()`) and `agent=codex;sandbox=bypassed|workspace-write`
+for Codex. The control hash uses only `requiresSignature:os=confinement` — never `:mcp=none` —
+so a control run and the treatment arm paired against it land on the same transcript. Codex has
+no lessons, so its key never has a lessonContentHash, and it writes no control transcript.
+Overlay interventions also hash the overlay dir's files (an overlay containing a symlink is
+rejected).
 
 `vars.noCache: true` (or `EVAL_NO_CACHE=1`) skips the arm-result cache, read and write. A
 Claude control under noCache still writes its control transcript, so its treatment can be
