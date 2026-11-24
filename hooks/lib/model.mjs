@@ -83,9 +83,7 @@ function scanSessionJsonl(sessionId, cwd) {
   const projectId = cwd ? cwdToProjectId(cwd) : null;
 
   // Try the known project directory first, then scan all project dirs as fallback
-  const candidateDirs = projectId
-    ? [join(projectsDir, projectId), projectsDir]
-    : [projectsDir];
+  const candidateDirs = projectId ? [join(projectsDir, projectId), projectsDir] : [projectsDir];
 
   for (const dir of candidateDirs) {
     const model = tryReadJsonlModel(join(dir, `${sessionId}.jsonl`));

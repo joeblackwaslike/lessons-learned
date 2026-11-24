@@ -293,13 +293,19 @@ describe('matchLessons — modelScopeRegexSources', () => {
       ],
     });
     const lessons = { L1: withHaiku };
-    assert.equal(matchLessons(lessons, 'Bash', 'pytest', '', null, '', 'claude-haiku-4-5').length, 1);
+    assert.equal(
+      matchLessons(lessons, 'Bash', 'pytest', '', null, '', 'claude-haiku-4-5').length,
+      1
+    );
     assert.deepEqual(matchLessons(lessons, 'Bash', 'pytest', '', null, '', 'claude-haiku-5-0'), []);
   });
 
   it('matches case-insensitively', () => {
     const lessons = { L1: scopedLesson };
-    assert.equal(matchLessons(lessons, 'Bash', 'pytest', '', null, '', 'Claude-Sonnet-4-6').length, 1);
+    assert.equal(
+      matchLessons(lessons, 'Bash', 'pytest', '', null, '', 'Claude-Sonnet-4-6').length,
+      1
+    );
   });
 });
 

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { writeFileSync, mkdirSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { tmpdir, homedir } from 'node:os';
+import { homedir } from 'node:os';
 import { detectModel } from '../../../../hooks/lib/model.mjs';
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
@@ -52,8 +52,7 @@ describe('detectModel', () => {
     writeFileSync(cacheFile(sessionId), 'claude-sonnet-4-6', 'utf8');
     const result = detectModel(sessionId, null);
     assert.equal(result, 'claude-sonnet-4-6');
-    // cleanup
-    try { rmSync(cacheFile(sessionId)); } catch {}
+    rmSync(cacheFile(sessionId), { force: true });
   });
 
   it('parses model from a fixture JSONL file in projectId directory', () => {
@@ -68,13 +67,11 @@ describe('detectModel', () => {
     lines.push(JSON.stringify({ type: 'message', model: 'claude-haiku-4-5', content: [] }));
     writeFileSync(jsonlPath, lines.join('\n'), 'utf8');
 
-    const cwd = `/${projectId.replace(/-/g, '/')}`;
     const result = detectModel(sessionId, `/${projectId}`);
     assert.equal(result, 'claude-haiku-4-5');
 
-    // cleanup
-    try { rmSync(jsonlPath); rmSync(projectDir, { recursive: true }); } catch {}
-    try { rmSync(cacheFile(sessionId)); } catch {}
+    rmSync(projectDir, { recursive: true, force: true });
+    rmSync(cacheFile(sessionId), { force: true });
   });
 
   it('returns null when all sources fail and no settings.json model', () => {

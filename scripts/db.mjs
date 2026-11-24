@@ -365,7 +365,8 @@ function applyMigrations(db) {
           embedding        BLOB,
           duplicatedBy     TEXT,
           requires         TEXT,
-          modelPatterns    TEXT NOT NULL DEFAULT '[]'
+          contentPatterns  TEXT NOT NULL DEFAULT '[]',
+          modelScope       TEXT NOT NULL DEFAULT '[]'
         )
       `);
       db.exec(`
@@ -375,7 +376,7 @@ function applyMigrations(db) {
                  priority, confidence, tags, source, sourceSessionIds,
                  occurrenceCount, sessionCount, projectCount,
                  contentHash, createdAt, updatedAt, reviewedAt, archivedAt, archiveReason,
-                 commandMatchTarget, scope, embedding, duplicatedBy, requires, modelPatterns
+                 commandMatchTarget, scope, embedding, duplicatedBy, requires, contentPatterns, modelScope
           FROM lessons
       `);
       db.exec('DROP TABLE lessons');

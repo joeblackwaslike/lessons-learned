@@ -58,7 +58,15 @@ function anyRegexMatches(regexSources, target) {
  * @param {string|null} currentModel - Detected runtime model ID (e.g. "claude-sonnet-4-6").
  *   Null means unknown — modelScopeRegexSources gate is skipped (safe default: fires).
  */
-export function matchLessons(lessons, toolName, command, filePath, projectId = null, content = '', currentModel = null) {
+export function matchLessons(
+  lessons,
+  toolName,
+  command,
+  filePath,
+  projectId = null,
+  content = '',
+  currentModel = null
+) {
   const matches = [];
 
   for (const [id, lesson] of Object.entries(lessons)) {

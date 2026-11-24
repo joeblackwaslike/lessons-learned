@@ -168,7 +168,7 @@ test-hook-codex cmd:
 # Usage: just eval-graduation claude-sonnet-5-5
 eval-graduation model:
     cd evals && EVAL_AGENT_MODEL={{model}} EVAL_CONTROL_ONLY=1 \
-        npx promptfoo eval --config promptfooconfig.yaml
+        pnpm exec promptfoo eval --config promptfooconfig.yaml
 
 # ── Maintenance ────────────────────────────────────────────────────────────────
 
