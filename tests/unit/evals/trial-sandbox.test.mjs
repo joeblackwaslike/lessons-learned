@@ -278,6 +278,11 @@ describe('uv cache git passthrough', () => {
     'a Serena fetch with a second remote': `cd "$C" && git fetch ${serena} https://example.com/evil.git`,
     'a Serena fetch with -c config': `cd "$C" && git -c url.x.insteadOf=${serena} fetch ${serena}`,
     'a Serena fetch from a cache repo whose config rewrites URLs': `cd "$C" && git config url.file:///x.insteadOf ${serena} && git fetch ${serena}`,
+    'a Serena fetch from a cache repo whose config includes a rewriting file': `cd "$C" && printf '[url "file:///x"]\\n insteadOf = ${serena}\\n' > "$TMPDIR/inc" && git config include.path "$TMPDIR/inc" && git fetch ${serena}`,
+    'a Serena fetch with a mixed-case InsteadOf key': `cd "$C" && git config url.file:///x.InsteadOf ${serena} && git fetch ${serena}`,
+    'a Serena fetch from inside the cache repo git dir': `git -C "$C" config url.file:///x.insteadOf ${serena}; cd "$C/.git" && git fetch ${serena}`,
+    'a clone whose cache path source climbs out with ..':
+      'git clone --local "$C/../../x" "$TMPDIR/x"',
     'a clone from a remote': 'git clone https://example.com/evil.git "$TMPDIR/x"',
     'a clone hiding the cache path in --upload-pack':
       'git clone --upload-pack=/x/.uv-cache/git-v1/up "$C" "$TMPDIR/x"',
