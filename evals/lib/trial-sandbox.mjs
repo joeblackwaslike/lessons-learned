@@ -238,7 +238,7 @@ export function sandboxProfile(sb, extraWritable = []) {
     return `(allow file-write* (subpath ${quote(realpathSync(p))}))`;
   });
   const claudeTmpRoot = `/private/tmp/claude-${process.getuid()}`;
-  mkdirSync(claudeTmpRoot, { recursive: true, mode: 0o700 });
+  if (process.platform === 'darwin') mkdirSync(claudeTmpRoot, { recursive: true, mode: 0o700 });
   const trialSlug = basename(sb.root).replace(/[^A-Za-z0-9]/g, '[^/]');
   const claudeTmp = `(allow file-write* (regex #"^${claudeTmpRoot}/[^/]*${trialSlug}[^/]*(/.*)?$"))`;
   const secrets = [
