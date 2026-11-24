@@ -513,6 +513,10 @@ function validateLesson(input) {
   if (input.trigger && PROSE_TRIGGER_RE.test(input.trigger.trim()))
     errors.push(`trigger "${input.trigger}" looks like prose, not a shell command`);
 
+  if (input.modelPatterns !== undefined)
+    errors.push(
+      'modelPatterns was renamed contentPatterns; rename the field so its content filter is kept'
+    );
   errors.push(...modelScopeErrors(input.modelScope));
 
   // directive/protocol + toolNames: toolNames are silently ignored for session-start types

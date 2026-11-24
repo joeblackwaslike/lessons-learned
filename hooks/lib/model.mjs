@@ -70,7 +70,8 @@ function modelFromSettings() {
 }
 
 /**
- * Detect the running model. A subagent may run a different model from the session whose
+ * Detect the running model. Only Claude Code sessions are detected; other platforms
+ * (`LESSONS_AGENT_PLATFORM` of codex or gemini) report unknown. A subagent may run a different model from the session whose
  * transcript the hook sees, so a hook input carrying an `agent_id` reports unknown.
  *
  * @param {{ model?: unknown, transcript_path?: string, agent_id?: string }|null|undefined} hookInput parsed hook stdin
@@ -78,6 +79,8 @@ function modelFromSettings() {
  */
 export function detectModel(hookInput) {
   if (process.env.LESSONS_LEARNED_MODEL) return process.env.LESSONS_LEARNED_MODEL;
+  if (process.env.LESSONS_AGENT_PLATFORM && process.env.LESSONS_AGENT_PLATFORM !== 'cc')
+    return null;
   if (hookInput?.agent_id) return null;
   return (
     fullModelId(hookInput?.model) ??

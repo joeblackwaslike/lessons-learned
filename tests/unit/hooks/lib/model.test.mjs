@@ -105,6 +105,17 @@ describe('detectModel', () => {
     assert.equal(detectModel({ transcript_path: path, agent_id: 'agent-1' }), null);
   });
 
+  it('reports unknown on non-Claude platforms, ignoring the Claude settings and transcript', () => {
+    writeSettings({ model: 'claude-opus-4-1' });
+    const path = writeTranscript([assistant('claude-sonnet-5-5')]);
+    process.env.LESSONS_AGENT_PLATFORM = 'codex';
+    try {
+      assert.equal(detectModel({ transcript_path: path }), null);
+    } finally {
+      delete process.env.LESSONS_AGENT_PLATFORM;
+    }
+  });
+
   it('returns null when no source yields a model', () => {
     assert.equal(detectModel(undefined), null);
     assert.equal(detectModel({ transcript_path: join(dir, 'nope.jsonl') }), null);
