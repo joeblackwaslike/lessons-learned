@@ -29,7 +29,10 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { tmpdir, userInfo } from 'node:os';
-import { basename, join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const UV_GIT_CACHE = join(dirname(fileURLToPath(import.meta.url)), '..', '.uv-cache', 'git-v1');
 
 const WATCH_FILES = [
   '.claude/settings.json',
@@ -126,10 +129,12 @@ function writeStubs(sb) {
       'done',
       ...(realGit
         ? [
+            `GITCACHE=${shellQuote(UV_GIT_CACHE)}`,
             'ok=1; url=""; cached=""',
             'case "$1" in',
             '  fetch)',
-            '    case "$PWD" in */.uv-cache/git-v1/*) ;; *) ok="";; esac',
+            '    case "$(pwd -P)" in "$GITCACHE"/*) ;; *) ok="";; esac',
+            '    grep -qs insteadOf "$PWD/config" "$PWD/.git/config" && ok=""',
             '    for a in "$@"; do case "$a" in',
             '      fetch|--force|--update-head-ok|--quiet|-q|--no-tags|--tags|+*:refs/*|refs/*) ;;',
             '      https://github.com/oraios/serena) url=1;;',
@@ -139,13 +144,13 @@ function writeStubs(sb) {
             '  clone)',
             '    for a in "$@"; do case "$a" in',
             '      clone|--local|--shared|--no-hardlinks|--no-checkout|--quiet|-l|-s|-n|-q) ;;',
-            '      */.uv-cache/git-v1/*) cached=1;;',
             '      -*|*:*) ok="";;',
+            '      "$GITCACHE"/*) cached=1;;',
             '    esac; done',
             '    [ -z "$cached" ] && ok="";;',
             '  *) ok="";;',
             'esac',
-            `[ -n "$ok" ] && exec env -u GIT_CONFIG_COUNT -u GIT_SSH -u GIT_SSH_COMMAND -u GIT_PROXY_COMMAND GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null ${shellQuote(realGit)} "$@"`,
+            `[ -n "$ok" ] && exec env -i PATH="$PATH" HOME="$HOME" TMPDIR="$TMPDIR" LANG="\${LANG:-C}" GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null ${shellQuote(realGit)} "$@"`,
           ]
         : []),
       'case "$sub" in',
@@ -231,7 +236,7 @@ export function sandboxProfile(sb, extraWritable = []) {
     return `(allow file-write* (subpath ${quote(realpathSync(p))}))`;
   });
   const claudeTmpRoot = `/private/tmp/claude-${process.getuid()}`;
-  mkdirSync(claudeTmpRoot, { recursive: true });
+  mkdirSync(claudeTmpRoot, { recursive: true, mode: 0o700 });
   const trialSlug = basename(sb.root).replace(/[^A-Za-z0-9]/g, '[^/]');
   const claudeTmp = `(allow file-write* (regex #"^${claudeTmpRoot}/[^/]*${trialSlug}[^/]*(/.*)?$"))`;
   const secrets = [
