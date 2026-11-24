@@ -72,17 +72,33 @@ This pattern fires on `pytest tests/` but not on `pytest --no-header tests/` —
 
 These fields give you finer control over when a lesson fires and whether it appears in the manifest at all.
 
-#### `modelPatterns`
+#### `contentPatterns`
 
-An array of regexes tested against the command or file path as an AND gate. When non-empty, the lesson only fires if at least one pattern matches. Use this to restrict a lesson to a specific model or provider.
+An array of regexes tested against the command, the edit content or the file path as an AND gate. When non-empty, the lesson only fires if at least one pattern matches. Use this to restrict a lesson to code that mentions a specific model or provider.
 
 ```json
 {
-  "modelPatterns": ["o3", "o4-mini", "reasoning_effort"]
+  "contentPatterns": ["o3", "o4-mini", "reasoning_effort"]
 }
 ```
 
 Pair with tags like `model-version:o3` or `provider:openai` to make the intent explicit.
+
+#### `modelScope`
+
+An array of regexes tested against the model ID of the session that is running (for example `claude-sonnet-4-6`). When non-empty, the lesson only fires on a matching model. Empty means every model, and so does a session whose model cannot be detected.
+
+Name the oldest generation that still needs the lesson. Lower tiers of the same generation are implied, so `claude-opus-5` also covers `claude-sonnet-5` and `claude-haiku-5`, and `claude-sonnet-4` covers `claude-sonnet-4-6` and `claude-haiku-4`.
+
+```json
+{
+  "modelScope": ["claude-sonnet-4"]
+}
+```
+
+`modelScope` applies to every lesson type: hints and guards at PreToolUse, directives and protocols at session start and after compaction, subagent starts, and reminders. The hooks read the model from the hook input, then the last assistant message in the transcript, then `~/.claude/settings.json` when it holds a full model ID. Set `LESSONS_LEARNED_MODEL` to override it.
+
+To find out whether a lesson is still needed on a new model, run its eval scenario on that model (`EVAL_AGENT_MODEL=<model-id>`). A `CONTROL_CORRECT` verdict means the model gets it right without the lesson; if the lesson still helps on the older model, set `modelScope` to the older generation instead of retiring it.
 
 #### `outputPatterns`
 

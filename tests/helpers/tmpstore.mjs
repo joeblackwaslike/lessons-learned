@@ -20,7 +20,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const FIXTURES_DIR = join(__dirname, '..', 'fixtures');
 const REAL_CONFIG = join(__dirname, '..', '..', 'data', 'config.json');
 
-const SCHEMA_SQL = `
+export const SCHEMA_SQL = `
 PRAGMA journal_mode=WAL;
 CREATE TABLE IF NOT EXISTS lessons (
   id TEXT PRIMARY KEY, slug TEXT NOT NULL UNIQUE,

@@ -103,11 +103,17 @@
           "default": [],
           "description": "Pre-compiled regex sources for file path matching. Globs converted to regex at build time."
         },
-        "modelRegexSources": {
+        "contentRegexSources": {
           "type": "array",
           "items": { "$ref": "#/$defs/regexSource" },
           "default": [],
-          "description": "Pre-compiled regex sources AND-gated against the command or file path."
+          "description": "Pre-compiled regex sources AND-gated against the command or file content."
+        },
+        "modelScopeRegexSources": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/regexSource" },
+          "default": [],
+          "description": "Pre-compiled regex sources OR-matched against the runtime model ID. Empty = fires for all models. Expanded at build time to include implied lower-tier families."
         },
         "tags": {
           "type": "array",

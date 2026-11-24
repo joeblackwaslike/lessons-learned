@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { matchLessons, findBlocker } from '../../../core/match.mjs';
+import { matchLessons, findBlocker, inModelScope } from '../../../core/match.mjs';
 
 // ─── Fixtures ──────────────────────────────────────────────────────────────
 
@@ -253,6 +253,62 @@ describe('matchLessons', () => {
   });
 });
 
+// ─── modelScopeRegexSources gate ──────────────────────────────────────────
+
+describe('matchLessons — modelScopeRegexSources', () => {
+  const scopedLesson = makeLesson({
+    modelScopeRegexSources: [{ source: 'claude-sonnet-4', flags: 'i' }],
+  });
+
+  it('fires when currentModel is null (safe default)', () => {
+    const lessons = { L1: scopedLesson };
+    const result = matchLessons(lessons, 'Bash', 'pytest', '', null, '', null);
+    assert.equal(result.length, 1);
+  });
+
+  it('fires when currentModel matches the scope pattern', () => {
+    const lessons = { L1: scopedLesson };
+    const result = matchLessons(lessons, 'Bash', 'pytest', '', null, '', 'claude-sonnet-4-6');
+    assert.equal(result.length, 1);
+  });
+
+  it('does not fire when currentModel does not match', () => {
+    const lessons = { L1: scopedLesson };
+    const result = matchLessons(lessons, 'Bash', 'pytest', '', null, '', 'claude-sonnet-5-5');
+    assert.deepEqual(result, []);
+  });
+
+  it('fires for all models when modelScopeRegexSources is empty', () => {
+    const lessons = { L1: makeLesson({ modelScopeRegexSources: [] }) };
+    const result = matchLessons(lessons, 'Bash', 'pytest', '', null, '', 'claude-sonnet-5-5');
+    assert.equal(result.length, 1);
+  });
+
+  it('fires for expanded lower-tier models (haiku matches sonnet-4 scope)', () => {
+    const withHaiku = makeLesson({
+      // Expanded at build time: claude-sonnet-4 scope → also claude-haiku-4
+      modelScopeRegexSources: [
+        { source: 'claude-sonnet-4', flags: 'i' },
+        { source: 'claude-haiku-4', flags: 'i' },
+      ],
+    });
+    const lessons = { L1: withHaiku };
+    assert.equal(
+      matchLessons(lessons, 'Bash', 'pytest', '', null, '', 'claude-haiku-4-5').length,
+      1
+    );
+    assert.deepEqual(matchLessons(lessons, 'Bash', 'pytest', '', null, '', 'claude-haiku-5-0'), []);
+  });
+
+  it('matches case-insensitively', () => {
+    const lessons = { L1: scopedLesson };
+    assert.equal(
+      matchLessons(lessons, 'Bash', 'pytest', '', null, '', 'Claude-Sonnet-4-6').length,
+      1
+    );
+  });
+});
+
 // ─── findBlocker ───────────────────────────────────────────────────────────
 
 describe('findBlocker', () => {
@@ -287,5 +343,37 @@ describe('findBlocker', () => {
     ];
     const result = findBlocker(matches, 'cmd');
     assert.equal(result.reason, 'First block');
+  });
+});
+
+describe('inModelScope', () => {
+  const scoped = { modelScopeRegexSources: [{ source: 'claude-sonnet-4', flags: 'i' }] };
+
+  it('applies when the lesson has no scope or the model is unknown', () => {
+    assert.equal(inModelScope({}, 'claude-sonnet-5-5'), true);
+    assert.equal(inModelScope({ modelScopeRegexSources: [] }, 'claude-sonnet-5-5'), true);
+    assert.equal(inModelScope(scoped, null), true);
+    assert.equal(inModelScope(scoped, ''), true);
+  });
+
+  it('applies only to models matching the scope', () => {
+    assert.equal(inModelScope(scoped, 'claude-sonnet-4-6'), true);
+    assert.equal(inModelScope(scoped, 'claude-sonnet-5-5'), false);
+  });
+});
+
+describe('matchLessons — contentRegexSources', () => {
+  const lesson = {
+    type: 'hint',
+    toolNames: ['Bash'],
+    commandRegexSources: [{ source: 'deploy', flags: '' }],
+    pathRegexSources: [],
+    contentRegexSources: [{ source: 'staging', flags: 'i' }],
+    priority: 5,
+  };
+
+  it('fires only when the content gate also matches the command', () => {
+    assert.equal(matchLessons({ a: lesson }, 'Bash', 'deploy to staging', '').length, 1);
+    assert.equal(matchLessons({ a: lesson }, 'Bash', 'deploy to prod', '').length, 0);
   });
 });

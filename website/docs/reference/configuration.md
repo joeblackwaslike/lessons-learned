@@ -23,6 +23,7 @@ Every field has an environment variable equivalent that takes precedence over th
 | `autoScanIntervalHours`          | `LESSONS_AUTO_SCAN_INTERVAL_HOURS`         | integer |
 | `maxCandidatesPerScan`           | `LESSONS_MAX_CANDIDATES_PER_SCAN`          | integer |
 | _(config file path)_             | `LESSONS_CONFIG_PATH`                      | path    |
+| _(model override)_               | `LESSONS_LEARNED_MODEL`                    | string  |
 
 :::note Rebuild requirement
 Env vars for `minConfidence` and `minPriority` only take effect at manifest build time (`node scripts/lessons.mjs build`). The injection hook reads these from the embedded manifest config, not directly from env. All other env vars are read at hook runtime.

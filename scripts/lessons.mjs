@@ -75,6 +75,7 @@ import {
   updateDeepScanSize,
 } from './scanner/incremental.mjs';
 import { patternScanFile } from './scanner/structural.mjs';
+import { expandModelScope, modelScopeErrors } from '../core/model-scope.mjs';
 import { deepScanFile } from './scanner/deep-scan.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -512,6 +513,12 @@ function validateLesson(input) {
   if (input.trigger && PROSE_TRIGGER_RE.test(input.trigger.trim()))
     errors.push(`trigger "${input.trigger}" looks like prose, not a shell command`);
 
+  if (input.modelPatterns !== undefined)
+    errors.push(
+      'modelPatterns was renamed contentPatterns; rename the field so its content filter is kept'
+    );
+  errors.push(...modelScopeErrors(input.modelScope));
+
   // directive/protocol + toolNames: toolNames are silently ignored for session-start types
   const isSessionStart = input.type === 'directive' || input.type === 'protocol';
   if (isSessionStart && input.tool)
@@ -524,11 +531,11 @@ function validateLesson(input) {
   const hasPatterns =
     (Array.isArray(input.commandPatterns) && input.commandPatterns.length > 0) ||
     (Array.isArray(input.pathPatterns) && input.pathPatterns.length > 0) ||
-    (Array.isArray(input.modelPatterns) && input.modelPatterns.length > 0) ||
+    (Array.isArray(input.contentPatterns) && input.contentPatterns.length > 0) ||
     !!input.trigger;
   if (isInjectOnMatch && hasPatterns && !input.tool)
     errors.push(
-      'hint/guard with commandPatterns, pathPatterns, or modelPatterns but no toolNames — lesson can never fire; set "tool" to at least one tool name (e.g. "Bash")'
+      'hint/guard with commandPatterns, pathPatterns, or contentPatterns but no toolNames — lesson can never fire; set "tool" to at least one tool name (e.g. "Bash")'
     );
 
   // reminder: requires toolNames; warns if no pattern sets (fires on every tool call)
@@ -831,13 +838,25 @@ function buildManifest() {
       })
       .filter(Boolean);
 
-    const modelRegexSources = (lesson.modelPatterns ?? [])
+    const contentRegexSources = (lesson.contentPatterns ?? [])
       .map(p => {
         try {
           new RegExp(p);
           return { source: p, flags: 'i' };
         } catch {
-          console.warn(`  Warning: invalid model pattern in ${lesson.slug}: ${p}`);
+          console.warn(`  Warning: invalid content pattern in ${lesson.slug}: ${p}`);
+          return null;
+        }
+      })
+      .filter(Boolean);
+
+    const modelScopeRegexSources = expandModelScope(lesson.modelScope ?? [])
+      .map(p => {
+        try {
+          new RegExp(p);
+          return { source: p, flags: 'i' };
+        } catch {
+          console.warn(`  Warning: invalid modelScope pattern in ${lesson.slug}: ${p}`);
           return null;
         }
       })
@@ -868,7 +887,8 @@ function buildManifest() {
       commandRegexSources,
       commandMatchTarget,
       pathRegexSources,
-      modelRegexSources,
+      contentRegexSources,
+      modelScopeRegexSources,
       outputRegexSources,
       tags: lesson.tags ?? [],
       scope: lesson.scope ?? null,
@@ -942,8 +962,9 @@ function addLessonInternal(input) {
     toolNames: triggers.toolNames ?? [],
     commandPatterns,
     pathPatterns: triggers.pathPatterns ?? [],
-    modelPatterns: input.modelPatterns ?? [],
+    contentPatterns: input.contentPatterns ?? [],
     outputPatterns: triggers.outputPatterns ?? [],
+    modelScope: input.modelScope ?? [],
     priority: input.priority ?? 5,
     confidence,
     tags: input.tags ?? [],

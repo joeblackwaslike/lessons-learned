@@ -29,7 +29,7 @@ An adapter is a script that:
 
 ## Core API
 
-### `matchLessons(lessons, toolName, command, filePath) → Match[]`
+### `matchLessons(lessons, toolName, command, filePath, projectId, content, currentModel) → Match[]`
 
 ```js
 import { matchLessons, findBlocker } from '../core/match.mjs';

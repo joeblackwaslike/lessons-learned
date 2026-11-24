@@ -66,7 +66,8 @@ commandPatterns     TEXT NOT NULL DEFAULT '[]'   -- JSON array of regex strings
 pathPatterns        TEXT NOT NULL DEFAULT '[]'   -- JSON array of glob strings
 outputPatterns      TEXT NOT NULL DEFAULT '[]'   -- JSON array of regex strings, matched against tool_response (reminder type)
 commandMatchTarget  TEXT                      -- NULL | 'full' | 'executable'
-modelPatterns       TEXT NOT NULL DEFAULT '[]'   -- JSON array of regex strings, AND-gated
+contentPatterns     TEXT NOT NULL DEFAULT '[]'   -- JSON array of regex strings, AND-gated
+modelScope          TEXT NOT NULL DEFAULT '[]'   -- JSON array of regex strings matched against the running model ID
 scope               TEXT                      -- NULL = global; project-ID string = scoped
 priority            INTEGER NOT NULL DEFAULT 5  -- 1-10
 confidence          REAL NOT NULL DEFAULT 0.8   -- 0.0-1.0

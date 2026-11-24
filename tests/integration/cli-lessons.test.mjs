@@ -93,6 +93,26 @@ describe('lessons add', () => {
     assert.ok(stderr.includes('Failed') || stderr.includes('validation'));
   });
 
+  it('rejects the renamed modelPatterns field instead of dropping its filter', async () => {
+    const bad = { ...VALID_LESSON_2, modelPatterns: ['o3'] };
+    const { exitCode, stderr } = await run(LESSONS_CLI, {
+      args: ['add', '--json', JSON.stringify(bad)],
+      env: env(),
+    });
+    assert.notEqual(exitCode, 0);
+    assert.match(stderr, /renamed contentPatterns/);
+  });
+
+  it('rejects a malformed modelScope', async () => {
+    const bad = { ...VALID_LESSON_2, modelScope: 'claude-sonnet-4' };
+    const { exitCode, stderr } = await run(LESSONS_CLI, {
+      args: ['add', '--json', JSON.stringify(bad)],
+      env: env(),
+    });
+    assert.notEqual(exitCode, 0);
+    assert.match(stderr, /modelScope must be an array/);
+  });
+
   it('rejects a lesson with short problem (< 20 chars)', async () => {
     const bad = { ...VALID_LESSON_2, problem: 'npm install bad' };
     const { exitCode } = await run(LESSONS_CLI, {

@@ -57,8 +57,11 @@ hand.
   // before matching commandPatterns, so guards don't fire on quoted JSON values
   "commandMatchTarget": "executable",
 
-  // Regex patterns AND-gated against the command or file path
-  "modelPatterns": [],
+  // Regex patterns AND-gated against the command, edit content or file path
+  "contentPatterns": [],
+
+  // Model IDs that still need this lesson ([] = every model)
+  "modelScope": [],
 
   // Glob patterns matched against Read/Edit/Write file paths
   "pathPatterns": [],

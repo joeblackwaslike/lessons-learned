@@ -46,6 +46,19 @@ function anyRegexMatches(regexSources, target) {
 }
 
 /**
+ * Whether a lesson applies to the running model. A lesson without a model scope, or an
+ * unknown model (null), always applies: the safe default is to inject.
+ *
+ * @param {{ modelScopeRegexSources?: Array }} lesson
+ * @param {string|null} currentModel
+ * @returns {boolean}
+ */
+export function inModelScope(lesson, currentModel) {
+  if (!lesson.modelScopeRegexSources?.length || !currentModel) return true;
+  return anyRegexMatches(lesson.modelScopeRegexSources, currentModel);
+}
+
+/**
  * @param {Object} lessons
  * @param {string} toolName
  * @param {string} command  - Bash command (command invocations)
@@ -55,8 +68,18 @@ function anyRegexMatches(regexSources, target) {
  *   For path-tool invocations, `commandPatterns` are tested against this and
  *   AND-combined with `pathPatterns`, so a content-specific lesson fires only
  *   when the edit actually contains the pattern — not on every matching file.
+ * @param {string|null} currentModel - Detected runtime model ID (e.g. "claude-sonnet-4-6").
+ *   Null means unknown — modelScopeRegexSources gate is skipped (safe default: fires).
  */
-export function matchLessons(lessons, toolName, command, filePath, projectId = null, content = '') {
+export function matchLessons(
+  lessons,
+  toolName,
+  command,
+  filePath,
+  projectId = null,
+  content = '',
+  currentModel = null
+) {
   const matches = [];
 
   for (const [id, lesson] of Object.entries(lessons)) {
@@ -97,25 +120,17 @@ export function matchLessons(lessons, toolName, command, filePath, projectId = n
       matched = false;
     }
 
-    // modelRegexSources is an AND gate: if non-empty, at least one must match
-    // the command OR file path. This gates model-specific lessons to contexts
-    // where the target model is actually referenced.
-    if (matched && lesson.modelRegexSources?.length) {
-      const modelTarget = command || content || filePath;
-      let modelMatched = false;
-      for (const regexDef of lesson.modelRegexSources) {
-        try {
-          const re = new RegExp(regexDef.source, regexDef.flags ?? '');
-          if (re.test(modelTarget)) {
-            modelMatched = true;
-            break;
-          }
-        } catch {
-          // Invalid regex in manifest — skip
-        }
-      }
-      if (!modelMatched) matched = false;
+    // contentRegexSources is an AND gate: if non-empty, at least one must match
+    // the command OR file path. This gates content-context lessons (e.g. lessons about
+    // a specific model's API) to invocations that actually reference that model by name.
+    if (matched && lesson.contentRegexSources?.length) {
+      const contentTarget = command || content || filePath;
+      if (!anyRegexMatches(lesson.contentRegexSources, contentTarget)) matched = false;
     }
+
+    // modelScopeRegexSources: fires only for matching runtime model identities.
+    // If currentModel is null (unknown), skip this gate — fire anyway (safe default).
+    if (matched && !inModelScope(lesson, currentModel)) matched = false;
 
     if (matched) {
       matches.push({

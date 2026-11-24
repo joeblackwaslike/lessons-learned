@@ -14,6 +14,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash, randomBytes } from 'node:crypto';
 import { readdirSync, readFileSync } from 'node:fs';
+import { modelScopeErrors } from '../core/model-scope.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PLUGIN_ROOT = join(__dirname, '..');
@@ -26,8 +27,9 @@ const JSON_COLUMNS = [
   'toolNames',
   'commandPatterns',
   'pathPatterns',
-  'modelPatterns',
+  'contentPatterns',
   'outputPatterns',
+  'modelScope',
   'tags',
   'sourceSessionIds',
 ];
@@ -287,14 +289,32 @@ function applyMigrations(db) {
     }
   }
 
-  // Migration: add modelPatterns column (JSON array of regex strings matched against command + file path)
+  // Migration: contentPatterns is the content AND-gate (formerly modelPatterns). Rename an
+  // old column, or add it to a DB that never had either.
   {
     const cols = db
       .prepare('PRAGMA table_info(lessons)')
       .all()
       .map(r => r.name);
-    if (!cols.includes('modelPatterns')) {
-      db.exec(`ALTER TABLE lessons ADD COLUMN modelPatterns TEXT NOT NULL DEFAULT '[]'`);
+    if (!cols.includes('contentPatterns')) {
+      db.exec(
+        cols.includes('modelPatterns')
+          ? `ALTER TABLE lessons RENAME COLUMN modelPatterns TO contentPatterns`
+          : `ALTER TABLE lessons ADD COLUMN contentPatterns TEXT NOT NULL DEFAULT '[]'`
+      );
+    } else if (cols.includes('modelPatterns')) {
+      db.exec(`ALTER TABLE lessons DROP COLUMN modelPatterns`);
+    }
+  }
+
+  // Migration: add modelScope column (JSON array of regex patterns matched against runtime model ID)
+  {
+    const cols = db
+      .prepare('PRAGMA table_info(lessons)')
+      .all()
+      .map(r => r.name);
+    if (!cols.includes('modelScope')) {
+      db.exec(`ALTER TABLE lessons ADD COLUMN modelScope TEXT NOT NULL DEFAULT '[]'`);
     }
   }
 
@@ -307,57 +327,64 @@ function applyMigrations(db) {
       .map(r => r.name);
     if (!cols.includes('outputPatterns')) {
       db.exec('BEGIN');
-      db.exec(`
-        CREATE TABLE lessons_new (
-          id               TEXT PRIMARY KEY,
-          slug             TEXT NOT NULL UNIQUE,
-          status           TEXT NOT NULL DEFAULT 'candidate'
-                           CHECK(status IN ('candidate','reviewed','active','disabled','archived')),
-          type             TEXT NOT NULL DEFAULT 'hint'
-                           CHECK(type IN ('directive','guard','hint','protocol','reminder')),
-          summary          TEXT NOT NULL,
-          problem          TEXT NOT NULL,
-          solution         TEXT NOT NULL,
-          toolNames        TEXT NOT NULL DEFAULT '[]',
-          commandPatterns  TEXT NOT NULL DEFAULT '[]',
-          pathPatterns     TEXT NOT NULL DEFAULT '[]',
-          outputPatterns   TEXT NOT NULL DEFAULT '[]',
-          priority         INTEGER NOT NULL DEFAULT 5,
-          confidence       REAL NOT NULL DEFAULT 0.8,
-          tags             TEXT NOT NULL DEFAULT '[]',
-          source           TEXT NOT NULL DEFAULT 'heuristic'
-                           CHECK(source IN ('structured','heuristic','manual')),
-          sourceSessionIds TEXT NOT NULL DEFAULT '[]',
-          occurrenceCount  INTEGER NOT NULL DEFAULT 0,
-          sessionCount     INTEGER NOT NULL DEFAULT 0,
-          projectCount     INTEGER NOT NULL DEFAULT 0,
-          contentHash      TEXT NOT NULL,
-          createdAt        TEXT NOT NULL,
-          updatedAt        TEXT NOT NULL,
-          reviewedAt       TEXT,
-          archivedAt       TEXT,
-          archiveReason    TEXT,
-          commandMatchTarget TEXT,
-          scope            TEXT,
-          embedding        BLOB,
-          duplicatedBy     TEXT,
-          requires         TEXT,
-          modelPatterns    TEXT NOT NULL DEFAULT '[]'
-        )
-      `);
-      db.exec(`
-        INSERT INTO lessons_new
-          SELECT id, slug, status, type, summary, problem, solution,
-                 toolNames, commandPatterns, pathPatterns, '[]',
-                 priority, confidence, tags, source, sourceSessionIds,
-                 occurrenceCount, sessionCount, projectCount,
-                 contentHash, createdAt, updatedAt, reviewedAt, archivedAt, archiveReason,
-                 commandMatchTarget, scope, embedding, duplicatedBy, requires, modelPatterns
-          FROM lessons
-      `);
-      db.exec('DROP TABLE lessons');
-      db.exec('ALTER TABLE lessons_new RENAME TO lessons');
-      db.exec('COMMIT');
+      try {
+        db.exec(`
+          CREATE TABLE lessons_new (
+            id               TEXT PRIMARY KEY,
+            slug             TEXT NOT NULL UNIQUE,
+            status           TEXT NOT NULL DEFAULT 'candidate'
+                             CHECK(status IN ('candidate','reviewed','active','disabled','archived')),
+            type             TEXT NOT NULL DEFAULT 'hint'
+                             CHECK(type IN ('directive','guard','hint','protocol','reminder')),
+            summary          TEXT NOT NULL,
+            problem          TEXT NOT NULL,
+            solution         TEXT NOT NULL,
+            toolNames        TEXT NOT NULL DEFAULT '[]',
+            commandPatterns  TEXT NOT NULL DEFAULT '[]',
+            pathPatterns     TEXT NOT NULL DEFAULT '[]',
+            outputPatterns   TEXT NOT NULL DEFAULT '[]',
+            priority         INTEGER NOT NULL DEFAULT 5,
+            confidence       REAL NOT NULL DEFAULT 0.8,
+            tags             TEXT NOT NULL DEFAULT '[]',
+            source           TEXT NOT NULL DEFAULT 'heuristic'
+                             CHECK(source IN ('structured','heuristic','manual')),
+            sourceSessionIds TEXT NOT NULL DEFAULT '[]',
+            occurrenceCount  INTEGER NOT NULL DEFAULT 0,
+            sessionCount     INTEGER NOT NULL DEFAULT 0,
+            projectCount     INTEGER NOT NULL DEFAULT 0,
+            contentHash      TEXT NOT NULL,
+            createdAt        TEXT NOT NULL,
+            updatedAt        TEXT NOT NULL,
+            reviewedAt       TEXT,
+            archivedAt       TEXT,
+            archiveReason    TEXT,
+            commandMatchTarget TEXT,
+            scope            TEXT,
+            embedding        BLOB,
+            duplicatedBy     TEXT,
+            requires         TEXT,
+            contentPatterns  TEXT NOT NULL DEFAULT '[]',
+            modelScope       TEXT NOT NULL DEFAULT '[]',
+            evalSkipReason   TEXT
+          )
+        `);
+        db.exec(`
+          INSERT INTO lessons_new
+            SELECT id, slug, status, type, summary, problem, solution,
+                   toolNames, commandPatterns, pathPatterns, '[]',
+                   priority, confidence, tags, source, sourceSessionIds,
+                   occurrenceCount, sessionCount, projectCount,
+                   contentHash, createdAt, updatedAt, reviewedAt, archivedAt, archiveReason,
+                   commandMatchTarget, scope, embedding, duplicatedBy, requires, contentPatterns, modelScope, evalSkipReason
+            FROM lessons
+        `);
+        db.exec('DROP TABLE lessons');
+        db.exec('ALTER TABLE lessons_new RENAME TO lessons');
+        db.exec('COMMIT');
+      } catch (err) {
+        db.exec('ROLLBACK');
+        throw err;
+      }
       db.exec('CREATE INDEX IF NOT EXISTS idx_lessons_status          ON lessons(status)');
       db.exec('CREATE INDEX IF NOT EXISTS idx_lessons_priority        ON lessons(priority DESC)');
       db.exec(
@@ -550,8 +577,9 @@ export function insertCandidate(db, record) {
     toolNames: record.toolNames ?? [],
     commandPatterns: record.commandPatterns ?? [],
     pathPatterns: record.pathPatterns ?? [],
-    modelPatterns: record.modelPatterns ?? [],
+    contentPatterns: record.contentPatterns ?? [],
     outputPatterns: record.outputPatterns ?? [],
+    modelScope: record.modelScope ?? [],
     priority: record.priority ?? 5,
     confidence: record.confidence ?? 0.8,
     tags: record.tags ?? [],
@@ -574,14 +602,16 @@ export function insertCandidate(db, record) {
     `
     INSERT INTO lessons (
       id, slug, status, type, summary, problem, solution,
-      toolNames, commandPatterns, pathPatterns, modelPatterns, outputPatterns,
+      toolNames, commandPatterns, pathPatterns, contentPatterns, outputPatterns,
+      modelScope,
       priority, confidence, tags, source,
       sourceSessionIds, occurrenceCount, sessionCount, projectCount,
       contentHash, createdAt, updatedAt, reviewedAt, archivedAt, archiveReason,
       duplicatedBy, requires
     ) VALUES (
       :id, :slug, :status, :type, :summary, :problem, :solution,
-      :toolNames, :commandPatterns, :pathPatterns, :modelPatterns, :outputPatterns,
+      :toolNames, :commandPatterns, :pathPatterns, :contentPatterns, :outputPatterns,
+      :modelScope,
       :priority, :confidence, :tags, :source,
       :sourceSessionIds, :occurrenceCount, :sessionCount, :projectCount,
       :contentHash, :createdAt, :updatedAt, :reviewedAt, :archivedAt, :archiveReason,
@@ -637,6 +667,11 @@ function assertSkipReasonHasReceipt(patch) {
   }
 }
 
+function assertModelScopeValid(patch) {
+  const errors = modelScopeErrors(patch.modelScope);
+  if (errors.length > 0) throw new Error(errors.join('; '));
+}
+
 /**
  * Promote records to status='active'. Applies optional per-id field patches first.
  *
@@ -650,7 +685,10 @@ function assertSkipReasonHasReceipt(patch) {
  */
 export function promoteToActive(db, ids, patches = {}) {
   if (ids.length === 0) return [];
-  for (const patch of Object.values(patches)) assertSkipReasonHasReceipt(patch);
+  for (const patch of Object.values(patches)) {
+    assertSkipReasonHasReceipt(patch);
+    assertModelScopeValid(patch);
+  }
 
   const now = new Date().toISOString();
 
@@ -666,7 +704,8 @@ export function promoteToActive(db, ids, patches = {}) {
           'type',
           'commandPatterns',
           'pathPatterns',
-          'modelPatterns',
+          'contentPatterns',
+          'modelScope',
           'priority',
           'confidence',
           'tags',
@@ -733,6 +772,7 @@ export function promoteToActive(db, ids, patches = {}) {
  */
 export function updateRecord(db, id, patch) {
   assertSkipReasonHasReceipt(patch);
+  assertModelScopeValid(patch);
   const PATCHABLE = [
     'summary',
     'problem',
@@ -743,8 +783,9 @@ export function updateRecord(db, id, patch) {
     'commandPatterns',
     'commandMatchTarget',
     'pathPatterns',
-    'modelPatterns',
+    'contentPatterns',
     'outputPatterns',
+    'modelScope',
     'priority',
     'confidence',
     'tags',

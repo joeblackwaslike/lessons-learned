@@ -22,7 +22,7 @@ const SUPPORTED_TOOLS = new Set(['Bash', 'Read', 'Edit', 'Write', 'Glob']);
  * Normalizes tool names via LESSONS_AGENT_PLATFORM env var.
  *
  * @param {string} raw
- * @returns {{ toolName: string, toolInput: Object, sessionId: string, agentId: string, cwd: string } | null}
+ * @returns {{ toolName: string, toolInput: Object, sessionId: string, agentId: string, cwd: string, transcriptPath: string } | null}
  */
 export function parsePayload(raw) {
   if (!raw || !raw.trim()) return null;
@@ -47,12 +47,13 @@ export function parsePayload(raw) {
     sessionId: parsed.session_id ?? '',
     agentId: parsed.agent_id ?? 'main',
     cwd: parsed.cwd ?? '',
+    transcriptPath: parsed.transcript_path ?? '',
   };
 }
 
 /**
  * Read stdin (fd 0) and parse. Thin I/O wrapper around parsePayload.
- * @returns {{ toolName: string, toolInput: Object, sessionId: string, agentId: string, cwd: string } | null}
+ * @returns {{ toolName: string, toolInput: Object, sessionId: string, agentId: string, cwd: string, transcriptPath: string } | null}
  */
 export function parseHookInput() {
   let raw;
