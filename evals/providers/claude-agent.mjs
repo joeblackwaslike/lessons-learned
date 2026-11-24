@@ -30,7 +30,7 @@
  */
 
 import { spawnSync } from 'node:child_process';
-import { rmSync, existsSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -50,6 +50,7 @@ import {
   readOAuthToken,
   readStubCalls,
   redact,
+  removeTrialSandbox,
   sandboxCommand,
   sandboxEnv,
   sandboxExecEnabled,
@@ -359,7 +360,7 @@ async function runArm({
     );
   } finally {
     try {
-      rmSync(sandbox.root, { recursive: true, force: true });
+      removeTrialSandbox(sandbox);
     } catch {
       /* best-effort */
     }

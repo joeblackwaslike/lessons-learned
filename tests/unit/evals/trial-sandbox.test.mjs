@@ -20,6 +20,7 @@ import { fileURLToPath } from 'node:url';
 import { hashDir } from '../../../evals/lib/arm-cache.mjs';
 import {
   createTrialSandbox,
+  removeTrialSandbox,
   readOAuthToken,
   sandboxCommand,
   sandboxProfile,
@@ -250,14 +251,47 @@ describe('uv cache git passthrough', () => {
     return repo(join(gitCache, `test-${process.pid}-${made.length}`));
   }
 
-  it('fetching the Serena repo inside the uv git cache is passed to real git, not refused', async () => {
+  function withFakeGit() {
+    const dir = join(h.base, 'fake-git-bin');
+    const log = join(gitCache, `fake-git-${process.pid}.log`);
+    made.push(log);
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(
+      join(dir, 'git'),
+      `#!/bin/sh\n{ echo "ARGS $*"; env | sort | rg '^(GIT_|HTTPS_PROXY)'; } >> '${log}'\n`,
+      {
+        mode: 0o755,
+      }
+    );
+    const savedPath = process.env.PATH;
+    process.env.PATH = `${dir}:${savedPath}`;
+    return {
+      log: () => (existsSync(log) ? readFileSync(log, 'utf8') : ''),
+      restore: () => {
+        process.env.PATH = savedPath;
+      },
+    };
+  }
+
+  it('the Serena fetch inside the uv git cache reaches git with hooks, proxies and config scrubbed', async () => {
     const dir = cacheRepo();
-    h.useFakeClaude({
-      FAKE_CLAUDE_RUN: `cd '${dir}' && git fetch --force --update-head-ok ${serena} +HEAD:refs/remotes/o/HEAD; true`,
-    });
-    const r = await h.call({ trialId: 'u1', noCache: true });
-    assert.deepEqual(r.metadata.sandbox.forbiddenCalls, []);
-    assert.doesNotMatch(r.output, /eval sandbox/);
+    const fake = withFakeGit();
+    try {
+      h.useFakeClaude({
+        FAKE_CLAUDE_RUN: `cd '${dir}' && GIT_CONFIG_PARAMETERS="'url.x.insteadOf=${serena}'" GIT_DIR=/elsewhere git fetch --force --update-head-ok ${serena} +HEAD:refs/remotes/origin/HEAD`,
+      });
+      const r = await h.call({ trialId: 'u1', noCache: true });
+      assert.deepEqual(r.metadata.sandbox.forbiddenCalls, []);
+      const seen = fake.log();
+      assert.match(
+        seen,
+        /ARGS -c core\.hooksPath=\/dev\/null .*-c protocol\.allow=never .*fetch --force/
+      );
+      assert.match(seen, /GIT_CONFIG_GLOBAL=\/dev\/null/);
+      assert.doesNotMatch(seen, /GIT_CONFIG_PARAMETERS|GIT_DIR=/);
+    } finally {
+      fake.restore();
+    }
   });
 
   it('a local clone of a uv cache path runs real git', async () => {
@@ -284,6 +318,9 @@ describe('uv cache git passthrough', () => {
     'a clone whose cache path source climbs out with ..':
       'git clone --local "$C/../../x" "$TMPDIR/x"',
     'a Serena fetch whose refspec writes outside refs/remotes': `cd "$C" && git fetch ${serena} +refs/heads/x:refs/heads/y`,
+    'a Serena fetch from a cache repo with a URL-shaped remote section': `cd "$C" && git config remote.${serena}.url file:///x && git fetch ${serena}`,
+    'a clone whose destination is in the cache but whose source is not':
+      'git clone --local /somewhere/else "$C/copied"',
     'a clone from a remote': 'git clone https://example.com/evil.git "$TMPDIR/x"',
     'a clone hiding the cache path in --upload-pack':
       'git clone --upload-pack=/x/.uv-cache/git-v1/up "$C" "$TMPDIR/x"',
@@ -299,15 +336,26 @@ describe('uv cache git passthrough', () => {
     });
   }
 
-  it('GIT_CONFIG_PARAMETERS cannot redirect the Serena fetch to another remote', async () => {
-    const dir = cacheRepo();
-    const evil = repo(join(h.base, 'evil-remote'), { commit: true });
-    h.useFakeClaude({
-      FAKE_CLAUDE_RUN: `cd '${dir}' && GIT_CONFIG_PARAMETERS="'url.${evil}.insteadOf=${serena}'" git fetch ${serena} 2>&1; true`,
-    });
-    const r = await h.call({ trialId: 'u4', noCache: true });
-    assert.ok(!r.output.includes(evil), r.output);
-  });
+  it(
+    'removeTrialSandbox deletes the trial root and its Claude tmp dirs, not a sibling',
+    darwinOnly,
+    () => {
+      const sb = createTrialSandbox('cleanup');
+      const base = `/private/tmp/claude-${process.getuid()}`;
+      const mine = join(base, `-slug-${basename(sb.root).replace(/[^A-Za-z0-9]/g, '-')}-workspace`);
+      const other = join(base, '-slug-cleanup-someone-else');
+      mkdirSync(mine, { recursive: true });
+      mkdirSync(other, { recursive: true });
+      try {
+        removeTrialSandbox(sb);
+        assert.equal(existsSync(sb.root), false);
+        assert.equal(existsSync(mine), false);
+        assert.equal(existsSync(other), true);
+      } finally {
+        rmSync(other, { recursive: true, force: true });
+      }
+    }
+  );
 
   it('the profile lets this trial write its Claude tmp dir and no sibling', darwinOnly, () => {
     const sb = createTrialSandbox('claudetmp');
