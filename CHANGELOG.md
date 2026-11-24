@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`modelScope` field** — regex array matched against the running model ID, so a lesson that a newer model no longer needs can stay pinned to the older generations (`["claude-sonnet-4"]`). Empty, or an undetectable model, fires everywhere. Claude tier names expand downward. Hooks read the model from the hook input, the transcript tail, or a full-ID `settings.json` default; `LESSONS_LEARNED_MODEL` overrides it.
+
+### Changed
+
+- **`modelPatterns` is now `contentPatterns`.** It always matched command, content and path text, not the model. A DB migration renames the column.
+
 - **`reminder` lesson type** — PostToolUse hook fires after a tool result returns, before the agent continues. Use for "you just did X, now do Y" mandatory next-step patterns. Matched via `toolNames` + `outputPatterns` (regex against tool output).
 - **`outputPatterns` field** — regex array matched against `tool_response` stdout; compiled to `outputRegexSources` in manifest.
 - **`cli` artifact type for `requires`** — lessons can now require a named CLI tool (`{"type":"cli","name":"no-mistakes"}`) to be installed before they fire.

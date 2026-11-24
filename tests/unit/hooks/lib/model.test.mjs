@@ -100,6 +100,11 @@ describe('detectModel', () => {
     assert.equal(detectModel({ model: 'opus[1m]' }), null);
   });
 
+  it('reports unknown for a subagent, whose model may differ from the session transcript', () => {
+    const path = writeTranscript([assistant('claude-sonnet-5-5')]);
+    assert.equal(detectModel({ transcript_path: path, agent_id: 'agent-1' }), null);
+  });
+
   it('returns null when no source yields a model', () => {
     assert.equal(detectModel(undefined), null);
     assert.equal(detectModel({ transcript_path: join(dir, 'nope.jsonl') }), null);

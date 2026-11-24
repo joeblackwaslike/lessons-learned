@@ -14,6 +14,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash, randomBytes } from 'node:crypto';
 import { readdirSync, readFileSync } from 'node:fs';
+import { modelScopeErrors } from '../core/model-scope.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PLUGIN_ROOT = join(__dirname, '..');
@@ -301,6 +302,8 @@ function applyMigrations(db) {
           ? `ALTER TABLE lessons RENAME COLUMN modelPatterns TO contentPatterns`
           : `ALTER TABLE lessons ADD COLUMN contentPatterns TEXT NOT NULL DEFAULT '[]'`
       );
+    } else if (cols.includes('modelPatterns')) {
+      db.exec(`ALTER TABLE lessons DROP COLUMN modelPatterns`);
     }
   }
 
@@ -664,6 +667,11 @@ function assertSkipReasonHasReceipt(patch) {
   }
 }
 
+function assertModelScopeValid(patch) {
+  const errors = modelScopeErrors(patch.modelScope);
+  if (errors.length > 0) throw new Error(errors.join('; '));
+}
+
 /**
  * Promote records to status='active'. Applies optional per-id field patches first.
  *
@@ -677,7 +685,10 @@ function assertSkipReasonHasReceipt(patch) {
  */
 export function promoteToActive(db, ids, patches = {}) {
   if (ids.length === 0) return [];
-  for (const patch of Object.values(patches)) assertSkipReasonHasReceipt(patch);
+  for (const patch of Object.values(patches)) {
+    assertSkipReasonHasReceipt(patch);
+    assertModelScopeValid(patch);
+  }
 
   const now = new Date().toISOString();
 
@@ -761,6 +772,7 @@ export function promoteToActive(db, ids, patches = {}) {
  */
 export function updateRecord(db, id, patch) {
   assertSkipReasonHasReceipt(patch);
+  assertModelScopeValid(patch);
   const PATCHABLE = [
     'summary',
     'problem',

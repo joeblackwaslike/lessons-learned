@@ -75,7 +75,10 @@ const content =
         ? (toolInput.edits ?? []).map(e => e?.new_string ?? '').join('\n')
         : '';
 
-const currentModel = detectModel({ transcript_path: input.transcriptPath });
+const currentModel = detectModel({
+  transcript_path: input.transcriptPath,
+  agent_id: input.agentId === 'main' ? undefined : input.agentId,
+});
 
 const matches = matchLessons(
   manifest.lessons ?? {},

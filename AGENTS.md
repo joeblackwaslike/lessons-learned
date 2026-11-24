@@ -205,9 +205,11 @@ Key lesson fields:
 1. **`toolNames` check first** — if the lesson's `toolNames` array doesn't include the current tool name, the lesson is skipped entirely. **A lesson with `commandPatterns` or `pathPatterns` but no `toolNames` can never fire.**
 2. `commandPatterns` tested against the command string (or the executable-only portion if `commandMatchTarget: "executable"`)
 3. `pathPatterns` tested against the file path argument
-4. `scope` filter — scoped lessons only match when `cwd`-derived project ID matches
+4. `contentPatterns` — optional AND-gate regex over the command, edit content or path
+5. `modelScope` — optional regex over the running model ID; an undetectable model fires the lesson
+6. `scope` filter — scoped lessons only match when `cwd`-derived project ID matches
 
-`protocol` and `directive` lessons bypass step 1–4 entirely — they inject at session start regardless of tool calls.
+`protocol` and `directive` lessons bypass steps 1–4 and inject at session start regardless of tool calls. They still honor `modelScope`.
 
 ## Lesson type behavior
 

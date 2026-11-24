@@ -4,7 +4,7 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
-import { openDb } from '../../scripts/db.mjs';
+import { openDb, promoteToActive, updateRecord } from '../../scripts/db.mjs';
 import { SCHEMA_SQL } from '../helpers/tmpstore.mjs';
 
 const dirs = [];
@@ -99,5 +99,58 @@ describe('lessons DB migration to contentPatterns and modelScope', () => {
       '["gpt"]'
     );
     second.close();
+  });
+
+  it('drops a stray modelPatterns column left beside contentPatterns', () => {
+    const path = legacyDb(db => insertLesson(db));
+    openDb(path).close();
+    const raw = new DatabaseSync(path);
+    raw.exec(`ALTER TABLE lessons ADD COLUMN modelPatterns TEXT NOT NULL DEFAULT '[]'`);
+    raw.close();
+    const db = openDb(path);
+    assert.ok(!columnsOf(db).includes('modelPatterns'));
+    db.close();
+  });
+
+  it('rolls the rebuild back and leaves the original table when a row violates the new CHECK', () => {
+    const path = legacyDb(db => insertLesson(db, { type: 'not-a-type' }));
+    assert.throws(() => openDb(path), /CHECK/i);
+    const raw = new DatabaseSync(path);
+    const tables = raw.prepare(`SELECT name FROM sqlite_master WHERE type = 'table'`).all();
+    assert.ok(!tables.some(t => t.name === 'lessons_new'));
+    assert.equal(raw.prepare('SELECT type FROM lessons').get().type, 'not-a-type');
+    raw.close();
+  });
+});
+
+describe('modelScope patch validation', () => {
+  function migrated() {
+    const path = legacyDb(db => insertLesson(db));
+    return openDb(path);
+  }
+
+  it('updateRecord rejects a non-array or unrecognised Claude pattern and stores a valid one', () => {
+    const db = migrated();
+    assert.throws(
+      () => updateRecord(db, '1', { modelScope: 'claude-sonnet-4' }),
+      /array of strings/
+    );
+    assert.throws(
+      () => updateRecord(db, '1', { modelScope: ['claude-(sonnet|opus)-4'] }),
+      /must start with claude-/
+    );
+    updateRecord(db, '1', { modelScope: ['claude-sonnet-4'] });
+    assert.equal(
+      db.prepare('SELECT modelScope FROM lessons').get().modelScope,
+      '["claude-sonnet-4"]'
+    );
+    db.close();
+  });
+
+  it('promote rejects an invalid modelScope patch before changing any row', () => {
+    const db = migrated();
+    assert.throws(() => promoteToActive(db, ['1'], { 1: { modelScope: ['sonnet-(4'] } }));
+    assert.equal(db.prepare('SELECT status FROM lessons').get().status, 'candidate');
+    db.close();
   });
 });

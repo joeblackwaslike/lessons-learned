@@ -42,6 +42,10 @@ before(() => {
       commandRegexSources: [{ source: 'scopedmarker', flags: '' }],
     }),
     scopeddirective: lesson('scopeddirective', 'directive'),
+    scopedreminder: lesson('scopedreminder', 'reminder', {
+      toolNames: ['Bash'],
+      solution: 'scopedreminder solution',
+    }),
   };
   writeFileSync(
     manifestPath,
@@ -90,6 +94,48 @@ describe('modelScope in the session-start hook', () => {
   it('omits a scoped directive on a model outside its scope', async () => {
     const { stdout } = await run(script, { stdin, env: env('claude-sonnet-5-5') });
     assert.doesNotMatch(stdout, /scopeddirective/);
+  });
+
+  describe('on a normal session start', () => {
+    const startup = JSON.stringify({ source: 'startup', cwd: '/tmp' });
+
+    it('injects a scoped directive inside its scope', async () => {
+      const { stdout } = await run(script, { stdin: startup, env: env('claude-sonnet-4-6') });
+      assert.match(stdout, /scopeddirective/);
+    });
+
+    it('omits a scoped directive outside its scope', async () => {
+      const { stdout } = await run(script, { stdin: startup, env: env('claude-sonnet-5-5') });
+      assert.doesNotMatch(stdout, /scopeddirective/);
+    });
+  });
+});
+
+describe('modelScope in the PostToolUse hooks', () => {
+  const toolCall = () =>
+    JSON.stringify({
+      tool_name: 'Bash',
+      tool_input: { command: 'echo hi' },
+      tool_response: 'hi',
+      session_id: `model-scope-post-${randomUUID()}`,
+      cwd: '/tmp',
+    });
+
+  it('fires a scoped reminder inside its scope and not outside', async () => {
+    const script = join(hooksDir, 'posttooluse-lesson-remind.mjs');
+    const inside = await run(script, { stdin: toolCall(), env: env('claude-sonnet-4-6') });
+    const outside = await run(script, { stdin: toolCall(), env: env('claude-sonnet-5-5') });
+    assert.match(inside.stdout, /scopedreminder/);
+    assert.doesNotMatch(outside.stdout, /scopedreminder/);
+  });
+
+  it('reinjects a scoped directive inside its scope and not outside', async () => {
+    const script = join(hooksDir, 'posttooluse-directive-reinject.mjs');
+    const reinject = model => ({ ...env(model), LESSONS_REINJECT_TOOL_COUNT: '1' });
+    const inside = await run(script, { stdin: toolCall(), env: reinject('claude-sonnet-4-6') });
+    const outside = await run(script, { stdin: toolCall(), env: reinject('claude-sonnet-5-5') });
+    assert.match(inside.stdout, /scopeddirective/);
+    assert.doesNotMatch(outside.stdout, /scopeddirective/);
   });
 });
 

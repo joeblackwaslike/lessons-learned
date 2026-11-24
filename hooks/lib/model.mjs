@@ -70,13 +70,15 @@ function modelFromSettings() {
 }
 
 /**
- * Detect the running model.
+ * Detect the running model. A subagent may run a different model from the session whose
+ * transcript the hook sees, so a hook input carrying an `agent_id` reports unknown.
  *
- * @param {{ model?: unknown, transcript_path?: string }|null|undefined} hookInput parsed hook stdin
+ * @param {{ model?: unknown, transcript_path?: string, agent_id?: string }|null|undefined} hookInput parsed hook stdin
  * @returns {string|null}
  */
 export function detectModel(hookInput) {
   if (process.env.LESSONS_LEARNED_MODEL) return process.env.LESSONS_LEARNED_MODEL;
+  if (hookInput?.agent_id) return null;
   return (
     fullModelId(hookInput?.model) ??
     modelFromTranscript(hookInput?.transcript_path) ??
