@@ -258,7 +258,7 @@ describe('uv cache git passthrough', () => {
     mkdirSync(dir, { recursive: true });
     writeFileSync(
       join(dir, 'git'),
-      `#!/bin/sh\n{ echo "ARGS $*"; env | sort | rg '^(GIT_|HTTPS_PROXY)'; } >> '${log}'\n`,
+      `#!/bin/sh\n{ echo "ARGS $*"; env | sort | grep -E '^(GIT_|HTTPS_PROXY)'; } >> '${log}'\n`,
       {
         mode: 0o755,
       }
