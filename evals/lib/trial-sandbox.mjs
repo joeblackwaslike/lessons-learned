@@ -126,13 +126,26 @@ function writeStubs(sb) {
       'done',
       ...(realGit
         ? [
-            'case "$PWD $*" in */.uv-cache/git-v1/*)',
-            '  remote=""',
-            '  for a in "$@"; do',
-            '    case "$a" in https://github.com/oraios/serena) ;; *://*|*@*:*) remote=1;; esac',
-            '  done',
-            `  [ -z "$remote" ] && exec ${shellQuote(realGit)} "$@";;`,
+            'ok=1; url=""; cached=""',
+            'case "$1" in',
+            '  fetch)',
+            '    case "$PWD" in */.uv-cache/git-v1/*) ;; *) ok="";; esac',
+            '    for a in "$@"; do case "$a" in',
+            '      fetch|--force|--update-head-ok|--quiet|-q|--no-tags|--tags|+*:refs/*|refs/*) ;;',
+            '      https://github.com/oraios/serena) url=1;;',
+            '      *) ok="";;',
+            '    esac; done',
+            '    [ -z "$url" ] && ok="";;',
+            '  clone)',
+            '    for a in "$@"; do case "$a" in',
+            '      clone|--local|--shared|--no-hardlinks|--no-checkout|--quiet|-l|-s|-n|-q) ;;',
+            '      */.uv-cache/git-v1/*) cached=1;;',
+            '      -*|*:*) ok="";;',
+            '    esac; done',
+            '    [ -z "$cached" ] && ok="";;',
+            '  *) ok="";;',
             'esac',
+            `[ -n "$ok" ] && exec env -u GIT_CONFIG_COUNT -u GIT_SSH -u GIT_SSH_COMMAND -u GIT_PROXY_COMMAND GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null ${shellQuote(realGit)} "$@"`,
           ]
         : []),
       'case "$sub" in',
@@ -204,7 +217,8 @@ export function sandboxCommand(sb, bin, args, extraWritable = [], { selfConfined
 
 /**
  * sandbox-exec profile: allow by default, then deny every write except to the trial root,
- * /dev, `extraWritable`, and the colon-separated `EVAL_SANDBOX_WRITABLE` (tests log there);
+ * /dev, `extraWritable`, the colon-separated `EVAL_SANDBOX_WRITABLE` (tests log there), and
+ * the nested Claude Code's scratch dir `/private/tmp/claude-<uid>/<slug containing the trial root>`;
  * deny reads of credential paths under the real home, and outbound connections to unix
  * sockets under it or in /var/run, to localhost, and to TCP ports 22 (SSH) and 9418 (git://).
  */
@@ -216,7 +230,10 @@ export function sandboxProfile(sb, extraWritable = []) {
     mkdirSync(p, { recursive: true });
     return `(allow file-write* (subpath ${quote(realpathSync(p))}))`;
   });
-  const claudeTmp = `(allow file-write* (regex #"^/private/tmp/claude-${process.getuid()}/[^/]*${basename(sb.root)}[^/]*(/.*)?$"))`;
+  const claudeTmpRoot = `/private/tmp/claude-${process.getuid()}`;
+  mkdirSync(claudeTmpRoot, { recursive: true });
+  const trialSlug = basename(sb.root).replace(/[^A-Za-z0-9]/g, '[^/]');
+  const claudeTmp = `(allow file-write* (regex #"^${claudeTmpRoot}/[^/]*${trialSlug}[^/]*(/.*)?$"))`;
   const secrets = [
     ...SECRET_SUBPATHS.map(rel => `(subpath ${quote(join(home, rel))})`),
     ...SECRET_FILES.map(rel => `(literal ${quote(join(home, rel))})`),

