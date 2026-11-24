@@ -137,7 +137,7 @@ function writeStubs(sb) {
             `    [ -n "$(env -i PATH="$PATH" HOME="$HOME" GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null ${shellQuote(realGit)} config --get-regexp '^url\\..*insteadof$' 2>/dev/null)" ] && ok=""`,
             '    PROTO="-c protocol.allow=never -c protocol.https.allow=always"',
             '    for a in "$@"; do case "$a" in',
-            '      fetch|--force|--update-head-ok|--quiet|-q|--no-tags|--tags|+*:refs/*|refs/*) ;;',
+            '      fetch|--force|--update-head-ok|--quiet|-q|--no-tags|--tags|+*:refs/remotes/*) ;;',
             '      https://github.com/oraios/serena) url=1;;',
             '      *) ok="";;',
             '    esac; done',

@@ -283,6 +283,7 @@ describe('uv cache git passthrough', () => {
     'a Serena fetch from inside the cache repo git dir': `git -C "$C" config url.file:///x.insteadOf ${serena}; cd "$C/.git" && git fetch ${serena}`,
     'a clone whose cache path source climbs out with ..':
       'git clone --local "$C/../../x" "$TMPDIR/x"',
+    'a Serena fetch whose refspec writes outside refs/remotes': `cd "$C" && git fetch ${serena} +refs/heads/x:refs/heads/y`,
     'a clone from a remote': 'git clone https://example.com/evil.git "$TMPDIR/x"',
     'a clone hiding the cache path in --upload-pack':
       'git clone --upload-pack=/x/.uv-cache/git-v1/up "$C" "$TMPDIR/x"',
