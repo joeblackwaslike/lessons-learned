@@ -288,25 +288,19 @@ function applyMigrations(db) {
     }
   }
 
-  // Migration: add modelPatterns column (JSON array of regex strings matched against command + file path)
+  // Migration: contentPatterns is the content AND-gate (formerly modelPatterns). Rename an
+  // old column, or add it to a DB that never had either.
   {
     const cols = db
       .prepare('PRAGMA table_info(lessons)')
       .all()
       .map(r => r.name);
-    if (!cols.includes('modelPatterns')) {
-      db.exec(`ALTER TABLE lessons ADD COLUMN modelPatterns TEXT NOT NULL DEFAULT '[]'`);
-    }
-  }
-
-  // Migration: rename modelPatterns → contentPatterns (content AND-gate, not runtime model identity)
-  {
-    const cols = db
-      .prepare('PRAGMA table_info(lessons)')
-      .all()
-      .map(r => r.name);
-    if (cols.includes('modelPatterns') && !cols.includes('contentPatterns')) {
-      db.exec(`ALTER TABLE lessons RENAME COLUMN modelPatterns TO contentPatterns`);
+    if (!cols.includes('contentPatterns')) {
+      db.exec(
+        cols.includes('modelPatterns')
+          ? `ALTER TABLE lessons RENAME COLUMN modelPatterns TO contentPatterns`
+          : `ALTER TABLE lessons ADD COLUMN contentPatterns TEXT NOT NULL DEFAULT '[]'`
+      );
     }
   }
 
@@ -330,58 +324,64 @@ function applyMigrations(db) {
       .map(r => r.name);
     if (!cols.includes('outputPatterns')) {
       db.exec('BEGIN');
-      db.exec(`
-        CREATE TABLE lessons_new (
-          id               TEXT PRIMARY KEY,
-          slug             TEXT NOT NULL UNIQUE,
-          status           TEXT NOT NULL DEFAULT 'candidate'
-                           CHECK(status IN ('candidate','reviewed','active','disabled','archived')),
-          type             TEXT NOT NULL DEFAULT 'hint'
-                           CHECK(type IN ('directive','guard','hint','protocol','reminder')),
-          summary          TEXT NOT NULL,
-          problem          TEXT NOT NULL,
-          solution         TEXT NOT NULL,
-          toolNames        TEXT NOT NULL DEFAULT '[]',
-          commandPatterns  TEXT NOT NULL DEFAULT '[]',
-          pathPatterns     TEXT NOT NULL DEFAULT '[]',
-          outputPatterns   TEXT NOT NULL DEFAULT '[]',
-          priority         INTEGER NOT NULL DEFAULT 5,
-          confidence       REAL NOT NULL DEFAULT 0.8,
-          tags             TEXT NOT NULL DEFAULT '[]',
-          source           TEXT NOT NULL DEFAULT 'heuristic'
-                           CHECK(source IN ('structured','heuristic','manual')),
-          sourceSessionIds TEXT NOT NULL DEFAULT '[]',
-          occurrenceCount  INTEGER NOT NULL DEFAULT 0,
-          sessionCount     INTEGER NOT NULL DEFAULT 0,
-          projectCount     INTEGER NOT NULL DEFAULT 0,
-          contentHash      TEXT NOT NULL,
-          createdAt        TEXT NOT NULL,
-          updatedAt        TEXT NOT NULL,
-          reviewedAt       TEXT,
-          archivedAt       TEXT,
-          archiveReason    TEXT,
-          commandMatchTarget TEXT,
-          scope            TEXT,
-          embedding        BLOB,
-          duplicatedBy     TEXT,
-          requires         TEXT,
-          contentPatterns  TEXT NOT NULL DEFAULT '[]',
-          modelScope       TEXT NOT NULL DEFAULT '[]'
-        )
-      `);
-      db.exec(`
-        INSERT INTO lessons_new
-          SELECT id, slug, status, type, summary, problem, solution,
-                 toolNames, commandPatterns, pathPatterns, '[]',
-                 priority, confidence, tags, source, sourceSessionIds,
-                 occurrenceCount, sessionCount, projectCount,
-                 contentHash, createdAt, updatedAt, reviewedAt, archivedAt, archiveReason,
-                 commandMatchTarget, scope, embedding, duplicatedBy, requires, contentPatterns, modelScope
-          FROM lessons
-      `);
-      db.exec('DROP TABLE lessons');
-      db.exec('ALTER TABLE lessons_new RENAME TO lessons');
-      db.exec('COMMIT');
+      try {
+        db.exec(`
+          CREATE TABLE lessons_new (
+            id               TEXT PRIMARY KEY,
+            slug             TEXT NOT NULL UNIQUE,
+            status           TEXT NOT NULL DEFAULT 'candidate'
+                             CHECK(status IN ('candidate','reviewed','active','disabled','archived')),
+            type             TEXT NOT NULL DEFAULT 'hint'
+                             CHECK(type IN ('directive','guard','hint','protocol','reminder')),
+            summary          TEXT NOT NULL,
+            problem          TEXT NOT NULL,
+            solution         TEXT NOT NULL,
+            toolNames        TEXT NOT NULL DEFAULT '[]',
+            commandPatterns  TEXT NOT NULL DEFAULT '[]',
+            pathPatterns     TEXT NOT NULL DEFAULT '[]',
+            outputPatterns   TEXT NOT NULL DEFAULT '[]',
+            priority         INTEGER NOT NULL DEFAULT 5,
+            confidence       REAL NOT NULL DEFAULT 0.8,
+            tags             TEXT NOT NULL DEFAULT '[]',
+            source           TEXT NOT NULL DEFAULT 'heuristic'
+                             CHECK(source IN ('structured','heuristic','manual')),
+            sourceSessionIds TEXT NOT NULL DEFAULT '[]',
+            occurrenceCount  INTEGER NOT NULL DEFAULT 0,
+            sessionCount     INTEGER NOT NULL DEFAULT 0,
+            projectCount     INTEGER NOT NULL DEFAULT 0,
+            contentHash      TEXT NOT NULL,
+            createdAt        TEXT NOT NULL,
+            updatedAt        TEXT NOT NULL,
+            reviewedAt       TEXT,
+            archivedAt       TEXT,
+            archiveReason    TEXT,
+            commandMatchTarget TEXT,
+            scope            TEXT,
+            embedding        BLOB,
+            duplicatedBy     TEXT,
+            requires         TEXT,
+            contentPatterns  TEXT NOT NULL DEFAULT '[]',
+            modelScope       TEXT NOT NULL DEFAULT '[]',
+            evalSkipReason   TEXT
+          )
+        `);
+        db.exec(`
+          INSERT INTO lessons_new
+            SELECT id, slug, status, type, summary, problem, solution,
+                   toolNames, commandPatterns, pathPatterns, '[]',
+                   priority, confidence, tags, source, sourceSessionIds,
+                   occurrenceCount, sessionCount, projectCount,
+                   contentHash, createdAt, updatedAt, reviewedAt, archivedAt, archiveReason,
+                   commandMatchTarget, scope, embedding, duplicatedBy, requires, contentPatterns, modelScope, evalSkipReason
+            FROM lessons
+        `);
+        db.exec('DROP TABLE lessons');
+        db.exec('ALTER TABLE lessons_new RENAME TO lessons');
+        db.exec('COMMIT');
+      } catch (err) {
+        db.exec('ROLLBACK');
+        throw err;
+      }
       db.exec('CREATE INDEX IF NOT EXISTS idx_lessons_status          ON lessons(status)');
       db.exec('CREATE INDEX IF NOT EXISTS idx_lessons_priority        ON lessons(priority DESC)');
       db.exec(

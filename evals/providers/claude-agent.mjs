@@ -106,10 +106,6 @@ export default class ClaudeAgentProvider {
     const trialId = typeof vars.trialId === 'string' && vars.trialId ? vars.trialId : null;
     const noCache = vars.noCache === true || process.env.EVAL_NO_CACHE === '1';
 
-    if (!isControl && process.env.EVAL_CONTROL_ONLY === '1') {
-      return { output: '[skipped: EVAL_CONTROL_ONLY=1]', metadata: { skipped: true } };
-    }
-
     const scenarioDir =
       typeof vars.scenarioDir === 'string' && vars.scenarioDir
         ? vars.scenarioDir

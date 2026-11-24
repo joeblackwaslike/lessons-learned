@@ -1,86 +1,107 @@
 import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { writeFileSync, mkdirSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { randomUUID } from 'node:crypto';
-import { homedir } from 'node:os';
-import { detectModel } from '../../../../hooks/lib/model.mjs';
+import { detectModel, modelFromTranscript } from '../../../../hooks/lib/model.mjs';
 
-// ─── Helpers ───────────────────────────────────────────────────────────────
+let dir;
+let savedHome;
+let savedOverride;
 
-function freshSession() {
-  return `test-${randomUUID()}`;
-}
-
-const CACHE_PREFIX = '/tmp/ll-model-';
-
-function cacheFile(sessionId) {
-  return `${CACHE_PREFIX}${sessionId}.txt`;
-}
-
-// ─── Env var cleanup ───────────────────────────────────────────────────────
-
-let savedModel;
 beforeEach(() => {
-  savedModel = process.env.LESSONS_LEARNED_MODEL;
+  dir = mkdtempSync(join(tmpdir(), 'll-model-'));
+  savedHome = process.env.HOME;
+  savedOverride = process.env.LESSONS_LEARNED_MODEL;
+  process.env.HOME = dir;
   delete process.env.LESSONS_LEARNED_MODEL;
 });
+
 afterEach(() => {
-  if (savedModel === undefined) {
-    delete process.env.LESSONS_LEARNED_MODEL;
-  } else {
-    process.env.LESSONS_LEARNED_MODEL = savedModel;
-  }
+  process.env.HOME = savedHome;
+  if (savedOverride === undefined) delete process.env.LESSONS_LEARNED_MODEL;
+  else process.env.LESSONS_LEARNED_MODEL = savedOverride;
+  rmSync(dir, { recursive: true, force: true });
 });
 
-// ─── Tests ─────────────────────────────────────────────────────────────────
+const assistant = model =>
+  JSON.stringify({ type: 'assistant', message: { role: 'assistant', model } });
+const user = () => JSON.stringify({ type: 'user', message: { role: 'user', content: 'hi' } });
+
+function writeTranscript(lines) {
+  const path = join(dir, 'session.jsonl');
+  writeFileSync(path, lines.join('\n') + '\n');
+  return path;
+}
+
+function writeSettings(settings) {
+  mkdirSync(join(dir, '.claude'), { recursive: true });
+  writeFileSync(join(dir, '.claude', 'settings.json'), JSON.stringify(settings));
+}
+
+describe('modelFromTranscript', () => {
+  it('reads message.model from the last assistant entry', () => {
+    const path = writeTranscript([
+      user(),
+      assistant('claude-sonnet-4-6'),
+      user(),
+      assistant('claude-sonnet-5-5'),
+    ]);
+    assert.equal(modelFromTranscript(path), 'claude-sonnet-5-5');
+  });
+
+  it('skips synthetic entries and top-level model keys', () => {
+    const path = writeTranscript([
+      assistant('claude-haiku-4-5'),
+      assistant('<synthetic>'),
+      JSON.stringify({ type: 'system', model: 'claude-opus-5' }),
+    ]);
+    assert.equal(modelFromTranscript(path), 'claude-haiku-4-5');
+  });
+
+  it('finds the model in the tail of a transcript larger than the read window', () => {
+    const filler = Array.from({ length: 4000 }, () => user());
+    const path = writeTranscript([
+      assistant('claude-opus-4-1'),
+      ...filler,
+      assistant('claude-sonnet-5-5'),
+      user(),
+    ]);
+    assert.equal(modelFromTranscript(path), 'claude-sonnet-5-5');
+  });
+
+  it('returns null for a missing file, no path, or a transcript with no assistant model', () => {
+    assert.equal(modelFromTranscript(join(dir, 'nope.jsonl')), null);
+    assert.equal(modelFromTranscript(undefined), null);
+    assert.equal(modelFromTranscript(writeTranscript([user(), 'not json "model"'])), null);
+  });
+});
 
 describe('detectModel', () => {
-  it('returns env var override immediately when set', () => {
-    process.env.LESSONS_LEARNED_MODEL = 'claude-opus-5-5';
-    const result = detectModel('any-session', '/some/cwd');
-    assert.equal(result, 'claude-opus-5-5');
+  it('LESSONS_LEARNED_MODEL overrides every other source', () => {
+    process.env.LESSONS_LEARNED_MODEL = 'claude-opus-5';
+    writeSettings({ model: 'claude-sonnet-4-6' });
+    assert.equal(detectModel({ model: 'claude-haiku-4-5' }), 'claude-opus-5');
   });
 
-  it('returns null when sessionId is null', () => {
-    const result = detectModel(null, '/some/cwd');
-    assert.equal(result, null);
+  it('prefers the hook input model, then the transcript, then settings.json', () => {
+    const path = writeTranscript([assistant('claude-sonnet-5-5')]);
+    writeSettings({ model: 'claude-opus-4-1' });
+    assert.equal(
+      detectModel({ model: 'claude-haiku-4-5', transcript_path: path }),
+      'claude-haiku-4-5'
+    );
+    assert.equal(detectModel({ transcript_path: path }), 'claude-sonnet-5-5');
+    assert.equal(detectModel({}), 'claude-opus-4-1');
   });
 
-  it('returns cached value on second call without re-scanning JSONL', () => {
-    const sessionId = freshSession();
-    writeFileSync(cacheFile(sessionId), 'claude-sonnet-4-6', 'utf8');
-    const result = detectModel(sessionId, null);
-    assert.equal(result, 'claude-sonnet-4-6');
-    rmSync(cacheFile(sessionId), { force: true });
+  it('treats an alias such as "sonnet" as unknown, not as a model ID', () => {
+    writeSettings({ model: 'sonnet' });
+    assert.equal(detectModel({ model: 'opus[1m]' }), null);
   });
 
-  it('parses model from a fixture JSONL file in projectId directory', () => {
-    const sessionId = freshSession();
-    const projectId = `tmp-test-project-${randomUUID()}`;
-    const projectDir = join(homedir(), '.claude', 'projects', projectId);
-    mkdirSync(projectDir, { recursive: true });
-    const jsonlPath = join(projectDir, `${sessionId}.jsonl`);
-
-    // Write a minimal JSONL — model appears around line 18
-    const lines = Array.from({ length: 17 }, () => JSON.stringify({ type: 'filler' }));
-    lines.push(JSON.stringify({ type: 'message', model: 'claude-haiku-4-5', content: [] }));
-    writeFileSync(jsonlPath, lines.join('\n'), 'utf8');
-
-    const result = detectModel(sessionId, `/${projectId}`);
-    assert.equal(result, 'claude-haiku-4-5');
-
-    rmSync(projectDir, { recursive: true, force: true });
-    rmSync(cacheFile(sessionId), { force: true });
-  });
-
-  it('returns null when all sources fail and no settings.json model', () => {
-    const sessionId = freshSession();
-    // Don't create any JSONL, no cache, no env var
-    // (settings.json may have a model on Joe's machine, so we override env to force null path)
-    // We can't easily test the settings.json fallback without mocking, so just verify no crash.
-    const result = detectModel(sessionId, null);
-    // Result is either a string (from settings.json) or null — both are valid
-    assert.ok(result === null || typeof result === 'string');
+  it('returns null when no source yields a model', () => {
+    assert.equal(detectModel(undefined), null);
+    assert.equal(detectModel({ transcript_path: join(dir, 'nope.jsonl') }), null);
   });
 });

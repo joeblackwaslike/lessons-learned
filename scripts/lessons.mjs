@@ -75,6 +75,7 @@ import {
   updateDeepScanSize,
 } from './scanner/incremental.mjs';
 import { patternScanFile } from './scanner/structural.mjs';
+import { expandModelScope, modelScopeErrors } from '../core/model-scope.mjs';
 import { deepScanFile } from './scanner/deep-scan.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -512,6 +513,8 @@ function validateLesson(input) {
   if (input.trigger && PROSE_TRIGGER_RE.test(input.trigger.trim()))
     errors.push(`trigger "${input.trigger}" looks like prose, not a shell command`);
 
+  errors.push(...modelScopeErrors(input.modelScope));
+
   // directive/protocol + toolNames: toolNames are silently ignored for session-start types
   const isSessionStart = input.type === 'directive' || input.type === 'protocol';
   if (isSessionStart && input.tool)
@@ -767,33 +770,6 @@ function detectArtifact(descriptor) {
 function satisfiesRequires(requires) {
   if (Array.isArray(requires)) return requires.some(d => detectArtifact(d));
   return detectArtifact(requires);
-}
-
-// ─── Model scope expansion ───────────────────────────────────────────
-
-const MODEL_TIER = { haiku: 0, sonnet: 1, opus: 2, fable: 3 };
-const TIER_PATTERN = /^claude-(haiku|sonnet|opus|fable)-(\d+)/i;
-
-/**
- * Expand a modelScope pattern list to include implied lower-tier families of the same generation.
- * e.g. ["claude-opus-5"] → ["claude-opus-5", "claude-sonnet-5", "claude-haiku-5"]
- * Non-Claude patterns (e.g. "gpt-4o") pass through unchanged.
- *
- * @param {string[]} patterns
- * @returns {string[]}
- */
-function expandModelScope(patterns) {
-  const expanded = new Set(patterns);
-  for (const p of patterns) {
-    const m = p.match(TIER_PATTERN);
-    if (!m) continue;
-    const family = m[1].toLowerCase();
-    const gen = m[2];
-    for (const [f, t] of Object.entries(MODEL_TIER)) {
-      if (t < MODEL_TIER[family]) expanded.add(`claude-${f}-${gen}`);
-    }
-  }
-  return [...expanded];
 }
 
 // ─── Manifest building ───────────────────────────────────────────────

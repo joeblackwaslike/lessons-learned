@@ -17,6 +17,8 @@ import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 
 import { loadSeenSet, claimLesson } from './lib/dedup.mjs';
+import { detectModel } from './lib/model.mjs';
+import { inModelScope } from '../core/match.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const MANIFEST_PATH =
@@ -89,6 +91,7 @@ function main() {
   const toolResponse = typeof input?.tool_response === 'string' ? input.tool_response : '';
   const command = toolName === 'Bash' ? (toolInput.command ?? '') : '';
   const filePath = PATH_TOOLS.has(toolName) ? (toolInput.file_path ?? '') : '';
+  const currentModel = detectModel(input);
   const cwd = input?.cwd ?? '';
   const projectId = cwd ? cwd.replace(/\//g, '-').replace(/^-/, '') : null;
 
@@ -104,7 +107,7 @@ function main() {
     if (lesson.disabled) return false;
     if (!(lesson.toolNames ?? []).includes(toolName)) return false;
     if (lesson.scope && lesson.scope !== projectId) return false;
-    return true;
+    return inModelScope(lesson, currentModel);
   });
 
   if (reminders.length === 0) return;

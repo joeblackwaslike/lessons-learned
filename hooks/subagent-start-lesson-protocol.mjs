@@ -12,6 +12,8 @@ import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { groupByTag } from './lib/session-start.mjs';
+import { detectModel } from './lib/model.mjs';
+import { inModelScope } from '../core/match.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const MANIFEST_PATH =
@@ -32,10 +34,11 @@ tags: <category:value, ...>
 Only tag genuine problem→solution sequences.`;
 
 function main() {
+  let currentModel = null;
   try {
-    readFileSync(0, 'utf8');
+    currentModel = detectModel(JSON.parse(readFileSync(0, 'utf8')));
   } catch {
-    // consume stdin
+    // empty or malformed stdin: model unknown, lessons apply
   }
 
   let output = LESSON_PROTOCOL_COMPACT;
@@ -43,7 +46,7 @@ function main() {
   try {
     const manifest = JSON.parse(readFileSync(MANIFEST_PATH, 'utf8'));
     const directives = Object.values(manifest.lessons)
-      .filter(l => l.type === 'directive' && !l.disabled)
+      .filter(l => l.type === 'directive' && !l.disabled && inModelScope(l, currentModel))
       .sort((a, b) => (b.priority ?? 5) - (a.priority ?? 5));
 
     if (directives.length > 0) {

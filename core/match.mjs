@@ -46,6 +46,19 @@ function anyRegexMatches(regexSources, target) {
 }
 
 /**
+ * Whether a lesson applies to the running model. A lesson without a model scope, or an
+ * unknown model (null), always applies: the safe default is to inject.
+ *
+ * @param {{ modelScopeRegexSources?: Array }} lesson
+ * @param {string|null} currentModel
+ * @returns {boolean}
+ */
+export function inModelScope(lesson, currentModel) {
+  if (!lesson.modelScopeRegexSources?.length || !currentModel) return true;
+  return anyRegexMatches(lesson.modelScopeRegexSources, currentModel);
+}
+
+/**
  * @param {Object} lessons
  * @param {string} toolName
  * @param {string} command  - Bash command (command invocations)
@@ -117,9 +130,7 @@ export function matchLessons(
 
     // modelScopeRegexSources: fires only for matching runtime model identities.
     // If currentModel is null (unknown), skip this gate — fire anyway (safe default).
-    if (matched && lesson.modelScopeRegexSources?.length && currentModel !== null) {
-      matched = anyRegexMatches(lesson.modelScopeRegexSources, currentModel);
-    }
+    if (matched && !inModelScope(lesson, currentModel)) matched = false;
 
     if (matched) {
       matches.push({

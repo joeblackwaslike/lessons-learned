@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { matchLessons, findBlocker } from '../../../core/match.mjs';
+import { matchLessons, findBlocker, inModelScope } from '../../../core/match.mjs';
 
 // ─── Fixtures ──────────────────────────────────────────────────────────────
 
@@ -343,5 +343,37 @@ describe('findBlocker', () => {
     ];
     const result = findBlocker(matches, 'cmd');
     assert.equal(result.reason, 'First block');
+  });
+});
+
+describe('inModelScope', () => {
+  const scoped = { modelScopeRegexSources: [{ source: 'claude-sonnet-4', flags: 'i' }] };
+
+  it('applies when the lesson has no scope or the model is unknown', () => {
+    assert.equal(inModelScope({}, 'claude-sonnet-5-5'), true);
+    assert.equal(inModelScope({ modelScopeRegexSources: [] }, 'claude-sonnet-5-5'), true);
+    assert.equal(inModelScope(scoped, null), true);
+    assert.equal(inModelScope(scoped, ''), true);
+  });
+
+  it('applies only to models matching the scope', () => {
+    assert.equal(inModelScope(scoped, 'claude-sonnet-4-6'), true);
+    assert.equal(inModelScope(scoped, 'claude-sonnet-5-5'), false);
+  });
+});
+
+describe('matchLessons — contentRegexSources', () => {
+  const lesson = {
+    type: 'hint',
+    toolNames: ['Bash'],
+    commandRegexSources: [{ source: 'deploy', flags: '' }],
+    pathRegexSources: [],
+    contentRegexSources: [{ source: 'staging', flags: 'i' }],
+    priority: 5,
+  };
+
+  it('fires only when the content gate also matches the command', () => {
+    assert.equal(matchLessons({ a: lesson }, 'Bash', 'deploy to staging', '').length, 1);
+    assert.equal(matchLessons({ a: lesson }, 'Bash', 'deploy to prod', '').length, 0);
   });
 });

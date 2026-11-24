@@ -75,7 +75,7 @@ const content =
         ? (toolInput.edits ?? []).map(e => e?.new_string ?? '').join('\n')
         : '';
 
-const currentModel = detectModel(sessionId, cwd);
+const currentModel = detectModel({ transcript_path: input.transcriptPath });
 
 const matches = matchLessons(
   manifest.lessons ?? {},

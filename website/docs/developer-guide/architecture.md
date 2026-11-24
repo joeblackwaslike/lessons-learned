@@ -205,10 +205,11 @@ graph TD
 1. **`toolNames`** — exact match on the normalized tool name. This is a gate: a lesson whose `toolNames` doesn't include the current tool is skipped entirely, regardless of its other patterns.
 2. **`commandPatterns`** — regex tested against the `command` field of a `Bash` tool call. If `commandMatchTarget` is `"executable"` (the default for `guard` lessons), quoted strings are stripped from the command before matching, so a guard doesn't trigger on trigger words inside `--patch '...'` JSON values.
 3. **`pathPatterns`** — glob (converted to regex at build time) tested against `file_path` of `Read`/`Edit`/`Write`/`Glob` tool calls.
-4. **`modelPatterns`** — if non-empty, an additional AND-gate regex tested against the command or file path; the lesson only fires when a `modelPatterns` entry also matches.
-5. **`scope`** — if set, the lesson only matches when the hook's `cwd`-derived project ID equals `scope`.
+4. **`contentPatterns`** — if non-empty, an additional AND-gate regex tested against the command, edit content or file path; the lesson only fires when a `contentPatterns` entry also matches.
+5. **`modelScope`** — if non-empty and the running model is known, the lesson only fires when the model ID matches one of its patterns. An unknown model fires the lesson.
+6. **`scope`** — if set, the lesson only matches when the hook's `cwd`-derived project ID equals `scope`.
 
-Matching is a pure function with no side effects. All regex objects are pre-compiled from `commandRegexSources`/`pathRegexSources`/`modelRegexSources`, stored as `{ source, flags }` pairs in the manifest.
+Matching is a pure function with no side effects. All regex objects are pre-compiled from `commandRegexSources`/`pathRegexSources`/`contentRegexSources`/`modelScopeRegexSources`, stored as `{ source, flags }` pairs in the manifest.
 
 ### Dedup
 

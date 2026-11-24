@@ -23,6 +23,8 @@ import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { groupByTag } from './lib/session-start.mjs';
+import { detectModel } from './lib/model.mjs';
+import { inModelScope } from '../core/match.mjs';
 import { LESSON_INJECTION_ORIENTATION, LESSON_PROTOCOL } from './lib/orientation.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -96,7 +98,7 @@ function percentageFromTranscript(transcriptPath) {
   return null;
 }
 
-function buildOutput(manifest, projectId = null) {
+function buildOutput(manifest, projectId = null, currentModel = null) {
   const cfg = manifest.config ?? {};
   const ssMaxLessons = cfg.maxSessionStartLessons ?? 20;
   const ssMaxBytes = cfg.sessionStartBudgetBytes ?? 8192;
@@ -105,7 +107,8 @@ function buildOutput(manifest, projectId = null) {
     l =>
       (l.type === 'directive' || l.type === 'protocol') &&
       !l.disabled &&
-      (l.scope == null || l.scope === projectId)
+      (l.scope == null || l.scope === projectId) &&
+      inModelScope(l, currentModel)
   );
 
   const allSorted = allLessons.slice().sort((a, b) => (b.priority ?? 5) - (a.priority ?? 5));
@@ -225,7 +228,7 @@ function main() {
     return;
   }
 
-  const output = buildOutput(manifest, projectId);
+  const output = buildOutput(manifest, projectId, detectModel(input));
   if (output) process.stdout.write(output);
 }
 

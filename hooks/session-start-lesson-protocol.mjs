@@ -14,6 +14,8 @@ import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { groupByTag } from './lib/session-start.mjs';
+import { detectModel } from './lib/model.mjs';
+import { inModelScope } from '../core/match.mjs';
 import { LESSON_INJECTION_ORIENTATION, LESSON_PROTOCOL } from './lib/orientation.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -23,10 +25,12 @@ const MANIFEST_PATH =
 function main() {
   let sessionType = '';
   let projectId = null;
+  let currentModel = null;
   try {
     const stdin = readFileSync(0, 'utf8');
     const data = JSON.parse(stdin);
     sessionType = data.session_type ?? '';
+    currentModel = detectModel(data);
     const cwd = data.cwd ?? '';
     if (cwd) projectId = cwd.replace(/\//g, '-').replace(/^-/, '');
   } catch {
@@ -45,7 +49,8 @@ function main() {
         l =>
           (l.type === 'directive' || l.type === 'protocol') &&
           !l.disabled &&
-          (l.scope == null || l.scope === projectId)
+          (l.scope == null || l.scope === projectId) &&
+          inModelScope(l, currentModel)
       );
       const sorted = allLessons.slice().sort((a, b) => (b.priority ?? 5) - (a.priority ?? 5));
       let bytesUsed = 0;
@@ -107,7 +112,8 @@ function main() {
       l =>
         (l.type === 'protocol' || l.type === 'directive') &&
         !l.disabled &&
-        (l.scope == null || l.scope === projectId)
+        (l.scope == null || l.scope === projectId) &&
+        inModelScope(l, currentModel)
     );
 
     const cfg = manifest.config ?? {};
