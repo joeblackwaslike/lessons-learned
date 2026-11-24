@@ -134,7 +134,8 @@ What each trial gets:
   `PATH` is the provider's own, so node, pnpm, uv, and python3 stay available.
 - On macOS, `sandbox-exec` (turn off with `EVAL_SANDBOX_EXEC=0`) with this profile: allow by
   default, then deny every write except to the trial root (workspace, home, tmp, logs),
-  `/dev`, and paths a provider adds (Serena's `.uv-cache`); deny reads of
+  `/dev`, paths a provider adds (Serena's `.uv-cache`), and the nested Claude Code's own
+  `/private/tmp/claude-<uid>/` dir for this trial; deny reads of
   `~/.ssh`, `~/.config/gh`, `~/.aws`, `~/Library/Keychains`, `~/.git-credentials`,
   `~/.claude/.credentials.json`, `~/.netrc`, and `~/.npmrc`; deny outbound connections to unix
   sockets under the real home (this covers OrbStack's Docker socket) or matching

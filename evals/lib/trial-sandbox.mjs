@@ -26,10 +26,14 @@ import {
   readFileSync,
   readdirSync,
   realpathSync,
+  rmSync,
   writeFileSync,
 } from 'node:fs';
 import { tmpdir, userInfo } from 'node:os';
-import { join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const UV_GIT_CACHE = join(dirname(fileURLToPath(import.meta.url)), '..', '.uv-cache', 'git-v1');
 
 const WATCH_FILES = [
   '.claude/settings.json',
@@ -124,6 +128,35 @@ function writeStubs(sb) {
       '  fi',
       '  next="$a"; break',
       'done',
+      ...(realGit
+        ? [
+            `GITCACHE=${shellQuote(UV_GIT_CACHE)}`,
+            'ok=1; url=""; cached=""; PROTO=""',
+            'case "$1" in',
+            '  fetch)',
+            '    case "$(pwd -P)" in "$GITCACHE"/*) ;; *) ok="";; esac',
+            `    [ -n "$(env -i PATH="$PATH" HOME="$HOME" GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null ${shellQuote(realGit)} config --get-regexp '^(url\\..*insteadof|remote\\..*\\.(url|pushurl))$' 2>/dev/null)" ] && ok=""`,
+            '    PROTO="-c protocol.allow=never -c protocol.https.allow=always"',
+            '    for a in "$@"; do case "$a" in',
+            '      fetch|--force|--update-head-ok|--quiet|-q|--no-tags|--tags|+*:refs/remotes/*) ;;',
+            '      https://github.com/oraios/serena) url=1;;',
+            '      *) ok="";;',
+            '    esac; done',
+            '    [ -z "$url" ] && ok="";;',
+            '  clone)',
+            '    n=0',
+            '    for a in "$@"; do case "$a" in',
+            '      clone|--local|--shared|--no-hardlinks|--no-checkout|--quiet|-l|-s|-n|-q) ;;',
+            '      -*|*:*|*/../*|*/..) ok="";;',
+            '      *) n=$((n+1)); [ "$n" = 1 ] && case "$a" in "$GITCACHE"/*) cached=1;; esac;;',
+            '    esac; done',
+            '    [ -z "$cached" ] && ok="";;',
+            '  *) ok="";;',
+            'esac',
+            `HARD="-c core.hooksPath=/dev/null -c core.fsmonitor= -c core.sshCommand= -c core.gitProxy= -c http.proxy= -c https.proxy="`,
+            `[ -n "$ok" ] && exec env -i PATH="$PATH" HOME="$HOME" TMPDIR="\${TMPDIR:-/tmp}" LANG="\${LANG:-C}" HTTPS_PROXY="$HTTPS_PROXY" SSL_CERT_FILE="$SSL_CERT_FILE" GIT_SSL_CAINFO="$GIT_SSL_CAINFO" GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null ${shellQuote(realGit)} $HARD $PROTO "$@"`,
+          ]
+        : []),
       'case "$sub" in',
       `  push|pull|fetch|clone|ls-remote) ${gitNetwork};;`,
       `  remote) case "$next" in add|set-url) ${gitNetwork};; esac;;`,
@@ -191,9 +224,25 @@ export function sandboxCommand(sb, bin, args, extraWritable = [], { selfConfined
   };
 }
 
+function claudeTmpSlug(sb) {
+  return basename(sb.root).replace(/[^A-Za-z0-9]/g, '[^/]');
+}
+
+/** Remove the trial root and the nested Claude Code's scratch dirs for this trial. */
+export function removeTrialSandbox(sb) {
+  rmSync(sb.root, { recursive: true, force: true });
+  const base = `/private/tmp/claude-${process.getuid()}`;
+  if (!existsSync(base)) return;
+  const own = new RegExp(`^[^/]*${claudeTmpSlug(sb)}[^/]*$`);
+  for (const name of readdirSync(base)) {
+    if (own.test(name)) rmSync(join(base, name), { recursive: true, force: true });
+  }
+}
+
 /**
  * sandbox-exec profile: allow by default, then deny every write except to the trial root,
- * /dev, `extraWritable`, and the colon-separated `EVAL_SANDBOX_WRITABLE` (tests log there);
+ * /dev, `extraWritable`, the colon-separated `EVAL_SANDBOX_WRITABLE` (tests log there), and
+ * the nested Claude Code's scratch dir `/private/tmp/claude-<uid>/<slug containing the trial root>`;
  * deny reads of credential paths under the real home, and outbound connections to unix
  * sockets under it or in /var/run, to localhost, and to TCP ports 22 (SSH) and 9418 (git://).
  */
@@ -205,6 +254,10 @@ export function sandboxProfile(sb, extraWritable = []) {
     mkdirSync(p, { recursive: true });
     return `(allow file-write* (subpath ${quote(realpathSync(p))}))`;
   });
+  const claudeTmpRoot = `/private/tmp/claude-${process.getuid()}`;
+  if (process.platform === 'darwin') mkdirSync(claudeTmpRoot, { recursive: true, mode: 0o700 });
+  const trialSlug = claudeTmpSlug(sb);
+  const claudeTmp = `(allow file-write* (regex #"^${claudeTmpRoot}/[^/]*${trialSlug}[^/]*(/.*)?$"))`;
   const secrets = [
     ...SECRET_SUBPATHS.map(rel => `(subpath ${quote(join(home, rel))})`),
     ...SECRET_FILES.map(rel => `(literal ${quote(join(home, rel))})`),
@@ -214,6 +267,7 @@ export function sandboxProfile(sb, extraWritable = []) {
     '(allow default)',
     '(deny file-write*)',
     ...writable,
+    claudeTmp,
     `(deny file-read* ${secrets.join(' ')})`,
     '(deny network-outbound',
     `  (remote unix-socket (subpath ${quote(home)}))`,
