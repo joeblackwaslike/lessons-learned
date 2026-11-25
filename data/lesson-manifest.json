@@ -2,7 +2,7 @@
   "$schema": "../schemas/manifest.schema.json",
   "type": "lessons-learned-manifest",
   "version": 1,
-  "generatedAt": "2026-11-24T16:31:41.580Z",
+  "generatedAt": "2026-11-25T22:57:50.077Z",
   "config": {
     "injectionBudgetBytes": 4096,
     "maxLessonsPerInjection": 3,
@@ -485,28 +485,6 @@
       "summary": "Multiple-choice questions buried in prose force the user to parse first",
       "problem": "Presenting multiple-choice questions as prose paragraphs buries the options, makes them easy to miss, and requires the user to parse text before answering. The AskUserQuestion tool exists precisely for this and renders choices as a structured, scannable format the user can respond to directly.",
       "solution": "Always invoke the AskUserQuestion tool for any question that has discrete options or choices. Never present multiple-choice options as inline prose, numbered lists in regular text, or as part of a sentence — use the tool every time without exception."
-    },
-    "01KPDWJ4EDZ7ERJPYPR37H8RB1": {
-      "slug": "asking-should-i-proceed-on-routine-rever-29f4",
-      "type": "directive",
-      "priority": 8,
-      "toolNames": [],
-      "commandRegexSources": [],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
-      "contentRegexSources": [],
-      "modelScopeRegexSources": [],
-      "outputRegexSources": [],
-      "tags": [
-        "topic:autonomy",
-        "topic:ux",
-        "topic:workflow"
-      ],
-      "scope": null,
-      "message": "## Lesson: Asking 'should I proceed?' on routine reversible actions adds friction\nPausing to ask \"Should I proceed?\", \"Want me to implement this?\", or \"Ready to start?\" on routine, low-risk, reversible actions (editing files, running tests, rebuilding manifests) interrupts flow without adding value. When the user assigns a task, authorization to complete it is implicit in the request. Exception: when the user's message is a question or exploratory prompt rather than a task directive, there is no implicit authorization — answering is the correct response, not taking action.\n**Fix**: Execute routine, reversible actions proactively without asking permission when the user has assigned a task. Reserve confirmation for: irreversible operations, large blast radius (deleting data, force-pushing), actions affecting shared systems, or actions clearly outside the original request. When in doubt, state what you are about to do in one sentence — then do it. Critical distinction: task directives (\"add X\", \"fix Y\", \"implement Z\") carry implicit authorization; questions and exploratory prompts (\"what would you do?\", \"how should we approach X?\") do not — respond with information, not action.",
-      "summary": "Asking 'should I proceed?' on routine reversible actions adds friction",
-      "problem": "Pausing to ask \"Should I proceed?\", \"Want me to implement this?\", or \"Ready to start?\" on routine, low-risk, reversible actions (editing files, running tests, rebuilding manifests) interrupts flow without adding value. When the user assigns a task, authorization to complete it is implicit in the request. Exception: when the user's message is a question or exploratory prompt rather than a task directive, there is no implicit authorization — answering is the correct response, not taking action.",
-      "solution": "Execute routine, reversible actions proactively without asking permission when the user has assigned a task. Reserve confirmation for: irreversible operations, large blast radius (deleting data, force-pushing), actions affecting shared systems, or actions clearly outside the original request. When in doubt, state what you are about to do in one sentence — then do it. Critical distinction: task directives (\"add X\", \"fix Y\", \"implement Z\") carry implicit authorization; questions and exploratory prompts (\"what would you do?\", \"how should we approach X?\") do not — respond with information, not action."
     },
     "01KS4PE99M2SR27AS3YW1D0TD7": {
       "slug": "vercel-free-tier-enforces-maxduration-80-273f",
@@ -2377,30 +2355,6 @@
       "summary": "Agents expand scope mid-execution, adding unreviewed, buggy changes",
       "problem": "Batch plan said 'add rate limiting' but agent also refactored auth middleware and added logging — unreviewed changes introduced bugs",
       "solution": "Add explicit prohibition to batch instructions: 'Do not implement anything not listed here. Note improvements in a progress file for future batches.'"
-    },
-    "01KNH36NCH76JR86ET2A8TANG4": {
-      "slug": "file-reads-at-batch-start-become-stale-a-d847",
-      "type": "hint",
-      "priority": 6,
-      "toolNames": [
-        "Read"
-      ],
-      "commandRegexSources": [],
-      "commandMatchTarget": "full",
-      "pathRegexSources": [],
-      "contentRegexSources": [],
-      "modelScopeRegexSources": [],
-      "outputRegexSources": [],
-      "tags": [
-        "env:claude-code",
-        "topic:context-management",
-        "category:context-retrieval"
-      ],
-      "scope": null,
-      "message": "## Lesson: File reads at batch start go stale; agent misses earlier tasks' changes\nTask 1 added a new API endpoint; Task 2 used the batch-start file snapshot, missing the new endpoint; frontend integration broke\n**Fix**: Instruct agent to re-read files immediately before consuming them: 'Before Task 2, re-read src/api.py to see current state.' Or split into separate batches.",
-      "summary": "File reads at batch start go stale; agent misses earlier tasks' changes",
-      "problem": "Task 1 added a new API endpoint; Task 2 used the batch-start file snapshot, missing the new endpoint; frontend integration broke",
-      "solution": "Instruct agent to re-read files immediately before consuming them: 'Before Task 2, re-read src/api.py to see current state.' Or split into separate batches."
     },
     "01KNH37RSV0QY5A5XGJWASPMVR": {
       "slug": "batch-executed-without-a-rollback-plan-l-19b8",

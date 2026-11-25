@@ -1898,16 +1898,61 @@
       "evalScenario": "TC-P19-drive-pr-to-merge",
       "priorStatus": "active",
       "sonnetRevalidated": false
+    },
+    {
+      "slug": "asking-should-i-proceed-on-routine-rever-29f4",
+      "id": "01KPDWJ4EDZ7ERJPYPR37H8RB1",
+      "type": "directive",
+      "summary": "Asking 'should I proceed?' on routine reversible actions adds friction",
+      "problem": "Pausing to ask \"Should I proceed?\", \"Want me to implement this?\", or \"Ready to start?\" on routine, low-risk, reversible actions (editing files, running tests, rebuilding manifests) interrupts flow without adding value. When the user assigns a task, authorization to complete it is implicit in the request. Exception: when the user's message is a question or exploratory prompt rather than a task directive, there is no implicit authorization — answering is the correct response, not taking action.",
+      "solution": "Execute routine, reversible actions proactively without asking permission when the user has assigned a task. Reserve confirmation for: irreversible operations, large blast radius (deleting data, force-pushing), actions affecting shared systems, or actions clearly outside the original request. When in doubt, state what you are about to do in one sentence — then do it. Critical distinction: task directives (\"add X\", \"fix Y\", \"implement Z\") carry implicit authorization; questions and exploratory prompts (\"what would you do?\", \"how should we approach X?\") do not — respond with information, not action.",
+      "toolNames": "[]",
+      "commandPatterns": "[]",
+      "pathPatterns": "[]",
+      "commandMatchTarget": null,
+      "tags": "[\"topic:autonomy\",\"topic:ux\",\"topic:workflow\"]",
+      "scope": null,
+      "priority": 8,
+      "confidence": 0.92,
+      "requires": null,
+      "duplicatedBy": null,
+      "obsoletedAt": "2026-11-25",
+      "obsoletedReason": "CONTROL_CORRECT on sonnet-4-6 and sonnet-5-5 under judge Form A",
+      "evalScenario": "TC-D9-asking-should-i-proceed-on-rou",
+      "priorStatus": "active",
+      "sonnetRevalidated": true
+    },
+    {
+      "slug": "file-reads-at-batch-start-become-stale-a-d847",
+      "id": "01KNH36NCH76JR86ET2A8TANG4",
+      "type": "hint",
+      "summary": "File reads at batch start go stale; agent misses earlier tasks' changes",
+      "problem": "Task 1 added a new API endpoint; Task 2 used the batch-start file snapshot, missing the new endpoint; frontend integration broke",
+      "solution": "Instruct agent to re-read files immediately before consuming them: 'Before Task 2, re-read src/api.py to see current state.' Or split into separate batches.",
+      "toolNames": "[\"Read\"]",
+      "commandPatterns": "[]",
+      "pathPatterns": "[]",
+      "commandMatchTarget": null,
+      "tags": "[\"env:claude-code\",\"topic:context-management\",\"category:context-retrieval\"]",
+      "scope": null,
+      "priority": 6,
+      "confidence": 0.85,
+      "requires": null,
+      "duplicatedBy": null,
+      "obsoletedAt": "2026-11-25",
+      "obsoletedReason": "CONTROL_CORRECT on sonnet-4-6 and sonnet-5-5 under judge Form A",
+      "evalScenario": "TC-H30-file-reads-at-batch-start-beco",
+      "priorStatus": "active",
+      "sonnetRevalidated": true
     }
   ],
   "revalidation": {
     "status": "VALIDATED on pinned claude-sonnet-4-6 (2026-06-25): 30/35 reproduced CONTROL_CORRECT on Sonnet — genuinely obsolete, not an Opus artifact. Re-archived.",
     "keptActive": [
-      "TC-H30-file-reads-at-batch-start-beco (file-reads-at-batch-start-become-stale-a-d847) — Sonnet SKIP",
       "TC-H38-nodejs-deprecationwarnings-pol (nodejs-deprecationwarnings-pollute-cli-o-112c) — Sonnet PASS",
       "TC-H50-tasks-without-a-verification-c (tasks-without-a-verification-command-pas-fc8f) — Sonnet SKIP",
       "TC-H12-bare-except-catches-everything (bare-except-...-52b1) — restored; lesson broadened to specific-exceptions+logging best practice"
     ],
-    "note": "TC-H38 PASS = Sonnet still benefits (kept active). 4 SKIP (H12,H30,H45,H50) inconclusive, kept active pending a clean re-run. H30 scenario fixed (real multi-file seed). H45 (VIRTUAL_ENV env-var) + H50 (task-definition) remain hard to CLI-test. H12 RESTORED 2026-06-26: lesson+verify rewrote — `except Exception` (the model default) is still bad (swallows errors, no logging); not obsolete. H56+H21 obsoleted 2026-06-26 (strict archive-all-CC; adversarial scenarios kept as regression canaries). Full Sonnet re-baseline 2026-06-26: archived 5 more CC (H1,H7,H10,H35,H59). 22 PASS / 5 FAIL / 4 SKIP kept active."
+    "note": "TC-H38 PASS = Sonnet still benefits (kept active). 4 SKIP (H12,H30,H45,H50) inconclusive, kept active pending a clean re-run. H30 scenario fixed (real multi-file seed). H45 (VIRTUAL_ENV env-var) + H50 (task-definition) remain hard to CLI-test. H12 RESTORED 2026-06-26: lesson+verify rewrote — `except Exception` (the model default) is still bad (swallows errors, no logging); not obsolete. H56+H21 obsoleted 2026-06-26 (strict archive-all-CC; adversarial scenarios kept as regression canaries). Full Sonnet re-baseline 2026-06-26: archived 5 more CC (H1,H7,H10,H35,H59). 22 PASS / 5 FAIL / 4 SKIP kept active. Update 2026-11-25: H30 rerun on sonnet-4-6 and sonnet-5-5 returned CONTROL_CORRECT and the lesson was archived (see its entry above)."
   }
 }
