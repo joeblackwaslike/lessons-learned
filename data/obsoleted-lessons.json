@@ -1949,7 +1949,6 @@
   "revalidation": {
     "status": "VALIDATED on pinned claude-sonnet-4-6 (2026-06-25): 30/35 reproduced CONTROL_CORRECT on Sonnet — genuinely obsolete, not an Opus artifact. Re-archived.",
     "keptActive": [
-      "TC-H30-file-reads-at-batch-start-beco (file-reads-at-batch-start-become-stale-a-d847) — Sonnet SKIP",
       "TC-H38-nodejs-deprecationwarnings-pol (nodejs-deprecationwarnings-pollute-cli-o-112c) — Sonnet PASS",
       "TC-H50-tasks-without-a-verification-c (tasks-without-a-verification-command-pas-fc8f) — Sonnet SKIP",
       "TC-H12-bare-except-catches-everything (bare-except-...-52b1) — restored; lesson broadened to specific-exceptions+logging best practice"
