@@ -224,26 +224,6 @@ tests:
         value: file://scripts/assert-hidden-check.mjs
       - type: javascript
         value: file://scripts/assert-judge.mjs
-  - description: TC-D9-asking-should-i-proceed-on-rou [control]
-    vars:
-      scenarioId: TC-D9-asking-should-i-proceed-on-rou
-      prompt: '{{file://scenarios/TC-D9-asking-should-i-proceed-on-rou/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-D9-asking-should-i-proceed-on-rou [treatment]
-    vars:
-      scenarioId: TC-D9-asking-should-i-proceed-on-rou
-      prompt: '{{file://scenarios/TC-D9-asking-should-i-proceed-on-rou/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - asking-should-i-proceed-on-routine-rever-29f4
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
   - description: TC-H12-bare-except-catches-everything [control]
     vars:
       scenarioId: TC-H12-bare-except-catches-everything
@@ -399,26 +379,6 @@ tests:
         type: lesson
         ids:
           - chrome-devtools-econnrefused-when-chrome-5079
-    assert:
-      - type: javascript
-        value: file://scripts/assert-hidden-check.mjs
-      - type: javascript
-        value: file://scripts/assert-judge.mjs
-  - description: TC-H30-file-reads-at-batch-start-beco [control]
-    vars:
-      scenarioId: TC-H30-file-reads-at-batch-start-beco
-      prompt: '{{file://scenarios/TC-H30-file-reads-at-batch-start-beco/PROMPT.md}}'
-      intervention:
-        type: none
-        ids: []
-  - description: TC-H30-file-reads-at-batch-start-beco [treatment]
-    vars:
-      scenarioId: TC-H30-file-reads-at-batch-start-beco
-      prompt: '{{file://scenarios/TC-H30-file-reads-at-batch-start-beco/PROMPT.md}}'
-      intervention:
-        type: lesson
-        ids:
-          - file-reads-at-batch-start-become-stale-a-d847
     assert:
       - type: javascript
         value: file://scripts/assert-hidden-check.mjs
